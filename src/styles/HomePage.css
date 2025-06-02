@@ -69,7 +69,8 @@ body {
 .hero-cta {
   padding: 12px 24px;
   font-size: 1rem;
-  font-weight: 500;
+  font-size: large;
+  font-weight: bold;
   text-decoration: none;
   border-radius: 25px;
   transition: var(--transition);
@@ -78,10 +79,13 @@ body {
 .hero-cta.primary {
   background: var(--white);
   color: #6b9fff;
+  font-size: large;
+  font-weight: bold;
 }
 
 .hero-cta.primary:hover {
-  background: #f0f0f0;
+  background: #2B66D3;
+  color: var(--white);
 }
 
 .hero-cta.secondary {
