@@ -34,13 +34,18 @@
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
-  transition: box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.3s ease;
+  position: relative;
   padding: 4px 8px;
 }
 
 .nav-links a:hover {
-  box-shadow: 0 0 12px 0 rgba(255, 255, 255, 0.4);
-  animation: hover-glow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #e0e7ff;
+  box-shadow: 
+    0 0 5px rgba(224, 231, 255, 0.6),
+    0 0 10px rgba(224, 231, 255, 0.4),
+    0 0 15px rgba(224, 231, 255, 0.2);
+  transition: box-shadow 0.3s ease, color 0.3s ease;
 }
 
 .auth-section {
@@ -56,7 +61,7 @@
   color: #6b9fff;
   font-weight: 600;
   text-decoration: none;
-  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1), color 0.5s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
   display: inline-block;
   text-align: center;
   min-width: 90px;
@@ -65,13 +70,17 @@
 .nav-links .sign-in-btn:hover {
   background: #f5f5f5;
   color: #5a8fee;
-  box-shadow: 0 0 12px 0 rgba(255, 255, 255, 0.4);
-  animation: hover-glow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 0 5px rgba(224, 231, 255, 0.6),
+    0 0 10px rgba(224, 231, 255, 0.4),
+    0 0 15px rgba(224, 231, 255, 0.2);
+  transition: box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .nav-links .sign-in-btn:active {
-  box-shadow: 0 0 16px 0 rgba(107, 159, 255, 0.7);
-  animation: glow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 0 8px rgba(107, 159, 255, 0.7),
+    0 0 12px rgba(107, 159, 255, 0.5);
 }
 
 .auth-message {
@@ -84,13 +93,17 @@
   color: #ffffff;
   font-weight: 600;
   text-decoration: none;
-  transition: box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.3s ease;
   padding: 2px 4px;
 }
 
 .auth-message a:hover {
-  box-shadow: 0 0 12px 0 rgba(255, 255, 255, 0.4);
-  animation: hover-glow 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  color: #e0e7ff;
+  box-shadow: 
+    0 0 5px rgba(224, 231, 255, 0.6),
+    0 0 10px rgba(224, 231, 255, 0.4),
+    0 0 15px rgba(224, 231, 255, 0.2);
+  transition: box-shadow 0.3s ease, color 0.3s ease;
 }
 
 .menu-toggle {
@@ -141,18 +154,6 @@
 .nav-links.open .menu-icon::after {
   transform: rotate(-45deg);
   top: 0;
-}
-
-@keyframes glow {
-  0% { box-shadow: 0 0 0 0 rgba(107, 159, 255, 0.7); }
-  50% { box-shadow: 0 0 16px 0 rgba(107, 159, 255, 0.9); }
-  100% { box-shadow: 0 0 0 0 rgba(107, 159, 255, 0.7); }
-}
-
-@keyframes hover-glow {
-  0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
-  50% { box-shadow: 0 0 12px 0 rgba(255, 255, 255, 0.6); }
-  100% { box-shadow: 0 0 12px 0 rgba(255, 255, 255, 0.4); }
 }
 
 @media (max-width: 768px) {

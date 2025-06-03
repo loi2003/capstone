@@ -17,15 +17,16 @@ const Header = () => {
           <span className="menu-icon"></span>
         </button>
         <nav className={`nav-links ${isMenuOpen ? 'open' : ''}`}>
-          <Link to="/health-a-z">Health A-Z</Link>
-          <Link to="/gender-care">Gender Care</Link>
-          <Link to="/conditions">Conditions</Link>
-          <Link to="/treatments">Treatments</Link>
-          <Link to="/resources">Resources</Link>
+          <Link to="/about">About</Link>
+          <Link to="/pregnancy">Pregnancy</Link>
+          <Link to="/nutritional-guidance">Nutritional Guidance</Link>
+          <Link to="/consultation">Consultation</Link>
+          <Link to="/community">Community</Link>
+          <Link to="/donation">Donation</Link>
           <div className="auth-section">
             <Link to="/signin" className="sign-in-btn">Sign In</Link>
             <p className="auth-message">
-              Don't have an account? <Link to="/signin">Sign up here</Link>.
+              Don't have an account? <Link to="/signup">Sign up here</Link>.
             </p>
           </div>
         </nav>
