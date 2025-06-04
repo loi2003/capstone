@@ -1,22 +1,25 @@
+/* Reset default margins and paddings */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* Set font and background for the entire page */
 body {
   font-family: 'Inter', sans-serif;
   background-color: #f5f7fa;
   color: #333;
 }
 
+/* Main page container */
 .home-page {
   min-height: 100vh;
 }
 
-/* CSS Variables */
+/* Color variables for easy customization */
 :root {
-  --primary-gradient: linear-gradient(135deg, #6b9fff 0%, #a3c9ff 100%);
+  --primary-gradient: linear-gradient(90deg, #2564EA, #14B7A6);
   --cta-color: #6b9fff;
   --cta-hover: #5a8dde;
   --white: #ffffff;
@@ -38,27 +41,38 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 20px;
 }
 
 .hero-text {
   max-width: 50%;
-  text-align: left;
 }
 
 .hero-title {
   font-size: 3rem;
-  margin-bottom: 1rem;
   font-weight: 700;
-  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.hero-tagline {
+  font-size: 1.4rem;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-bottom: 1rem;
 }
 
 .hero-subtitle {
   font-size: 1.2rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.hero-quote {
+  font-size: 1.1rem;
+  font-style: italic;
+  opacity: 0.7;
   margin-bottom: 2rem;
-  opacity: 0.9;
 }
 
 .hero-buttons {
@@ -66,36 +80,42 @@ body {
   gap: 15px;
 }
 
-.hero-cta {
+.hero-button {
   padding: 12px 24px;
   font-size: 1rem;
-  font-size: large;
   font-weight: bold;
   text-decoration: none;
   border-radius: 25px;
   transition: var(--transition);
 }
 
-.hero-cta.primary {
+.hero-button.primary {
   background: var(--white);
-  color: #6b9fff;
-  font-size: large;
-  font-weight: bold;
+  color: var(--cta-color);
 }
 
-.hero-cta.primary:hover {
+.hero-button.primary:hover {
   background: #2B66D3;
   color: var(--white);
 }
 
-.hero-cta.secondary {
+.hero-button.secondary {
   background: transparent;
   color: var(--white);
   border: 2px solid var(--white);
 }
 
-.hero-cta.secondary:hover {
+.hero-button.secondary:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-button.video {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
+}
+
+.hero-button.video:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .hero-graphic {
@@ -109,11 +129,11 @@ body {
   background-color: var(--white);
 }
 
-.features-section h2 {
+.section-title {
   font-size: 2.5rem;
-  margin-bottom: 50px;
   font-weight: 700;
   color: #222;
+  margin-bottom: 50px;
 }
 
 .features-grid {
@@ -141,20 +161,410 @@ body {
 .feature-icon {
   font-size: 3rem;
   margin-bottom: 20px;
-  color: #6b9fff;
+  color: var(--cta-color);
 }
 
-.feature-card h3 {
+.feature-title {
   font-size: 1.6rem;
-  margin-bottom: 15px;
   font-weight: 600;
   color: #333;
+  margin-bottom: 15px;
 }
 
-.feature-card p {
+.feature-description {
   font-size: 1.05rem;
   color: #555;
   line-height: 1.6;
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #f8fafc;
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.testimonial-card {
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid #eee;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.testimonial-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-bottom: 15px;
+}
+
+.testimonial-name {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.testimonial-feedback {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Community Section */
+.community-section {
+  padding: 80px 20px;
+  text-align: center;
+  background: var(--primary-gradient);
+  color: var(--white);
+}
+
+.community-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.community-description {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.community-highlight {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.community-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 25px;
+  background: var(--white);
+  color: var(--cta-color);
+  transition: var(--transition);
+  display: inline-block;
+}
+
+.community-button:hover {
+  background: #2B66D3;
+  color: var(--white);
+}
+
+/* Pregnancy Tracker Section */
+.pregnancy-tracker-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: var(--white);
+  position: relative;
+}
+
+.section-description {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 30px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tracker-chart-container {
+  max-width: 1200px; /* Increased width for larger chart */
+  margin: 0 auto;
+  height: 600px; /* Increased height for a more "vertical" appearance */
+  padding: 30px;
+  background: var(--white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow-x: auto; /* Allow horizontal scrolling on smaller screens */
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 2000px; /* Increased width to spread out weeks */
+  height: 100%;
+}
+
+.custom-tooltip {
+  position: absolute;
+  background-color: rgba(107, 159, 255, 0.9);
+  color: var(--white);
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 1rem;
+  font-weight: 500;
+  transform: translateX(-50%);
+  pointer-events: none;
+  transition: var(--transition);
+  z-index: 1001;
+}
+
+.week-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  max-width: 350px; /* Slightly larger popup for readability */
+  border: 1px solid #eee;
+  z-index: 1000;
+}
+
+.week-popup-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.week-popup-description {
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.week-popup-tip {
+  font-size: 1.1rem;
+  color: #555;
+  line-height: 1.6;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.week-popup-close {
+  padding: 8px 16px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--white);
+  background-color: var(--cta-color);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.week-popup-close:hover {
+  background-color: var(--cta-hover);
+}
+
+.tracker-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 25px;
+  background: var(--cta-color);
+  color: var(--white);
+  transition: var(--transition);
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.tracker-button:hover {
+  background: var(--cta-hover);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Health Tips Section */
+.health-tips-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #f8fafc;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tip-card {
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid #eee;
+}
+
+.tip-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.tip-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.tip-list {
+  list-style: disc;
+  padding-left: 20px;
+  text-align: left;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+.tips-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 25px;
+  background: var(--cta-color);
+  color: var(--white);
+  transition: var(--transition);
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.tips-button:hover {
+  background: var(--cta-hover);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Resources Section */
+.resources-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: var(--white);
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.resource-card {
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid #eee;
+}
+
+.resource-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.resource-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.resource-description {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+.resource-link {
+  font-size: 0.95rem;
+  color: var(--cta-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.resource-link:hover {
+  color: var(--cta-hover);
+  text-decoration: underline;
+}
+
+.resources-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-decoration: none;
+  border-radius: 25px;
+  background: var(--cta-color);
+  color: var(--white);
+  transition: var(--transition);
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.resources-button:hover {
+  background: var(--cta-hover);
+  box-shadow: var(--shadow-hover);
+}
+
+/* Partners Section */
+.partners-section {
+  padding: 80px 20px;
+  text-align: center;
+  background-color: #f8fafc;
+}
+
+.partners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.partner-card {
+  background: var(--white);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid #eee;
+}
+
+.partner-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.partner-logo {
+  width: 100px;
+  height: 50px;
+  object-fit: contain;
+  margin-bottom: 10px;
+}
+
+.partner-name {
+  font-size: 1rem;
+  color: #555;
+  font-weight: 500;
 }
 
 /* Contact Icon */
@@ -171,7 +581,6 @@ body {
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow);
-  z-index: 1000;
   cursor: pointer;
   transition: var(--transition);
 }
@@ -181,8 +590,8 @@ body {
   box-shadow: var(--shadow-hover);
 }
 
-/* Popup */
-.popup {
+/* Contact Popup */
+.contact-popup {
   position: fixed;
   bottom: 100px;
   right: 30px;
@@ -190,7 +599,6 @@ body {
   padding: 20px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  z-index: 1001;
   text-align: center;
   max-width: 260px;
   border: 1px solid #eee;
@@ -216,78 +624,147 @@ body {
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 15px;
-  }
-
+@media (max-width: 1024px) {
   .hero-content {
     flex-direction: column;
     text-align: center;
+    gap: 30px;
   }
 
   .hero-text {
-    max-width: 100%;
-    text-align: center;
+    max-width: 80%;
+  }
+
+  .hero-graphic {
+    max-width: 60%;
   }
 
   .hero-title {
     font-size: 2.5rem;
   }
 
-  .hero-subtitle {
-    font-size: 1rem;
+  .tracker-chart-container {
+    height: 500px; /* Reduced height for medium screens */
   }
 
-  .hero-buttons {
-    justify-content: center;
-    flex-wrap: wrap;
+  .chart-wrapper {
+    width: 1500px; /* Adjusted width for medium screens */
   }
+}
 
-  .hero-graphic {
-    max-width: 60%;
-    margin-top: 20px;
-  }
-
-  .features-section {
+@media (max-width: 768px) {
+  .hero-section,
+  .features-section,
+  .testimonials-section,
+  .community-section,
+  .pregnancy-tracker-section,
+  .health-tips-section,
+  .resources-section,
+  .partners-section {
     padding: 60px 15px;
   }
 
-  .features-section h2 {
-    font-size: 1.8rem;
+  .section-title {
+    font-size: 2rem;
   }
 
-  .feature-card {
-    padding: 25px;
+  .hero-title {
+    font-size: 2.2rem;
   }
 
-  .popup-button {
-    padding: 12px 25px;
-    font-size: 1rem;
+  .hero-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .week-popup {
+    max-width: 300px;
+    padding: 15px;
+  }
+
+  .tracker-chart-container {
+    height: 400px; /* Reduced height for smaller screens */
+  }
+
+  .chart-wrapper {
+    width: 1200px; /* Adjusted width for smaller screens */
   }
 }
 
 @media (max-width: 480px) {
   .hero-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
-  .feature-card h3 {
-    font-size: 1.4rem;
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .hero-button,
+  .community-button,
+  .tracker-button,
+  .tips-button,
+  .resources-button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
   }
 
   .contact-icon {
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
   }
 
-  .contact-icon svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  .popup {
+  .contact-popup {
     max-width: 220px;
     padding: 15px;
+  }
+
+  .tracker-chart-container {
+    height: 350px;
+  }
+
+  .chart-wrapper {
+    width: 1000px;
+  }
+
+  .week-popup {
+    max-width: 250px;
+    padding: 10px;
+  }
+
+  .week-popup-title {
+    font-size: 1.4rem;
+  }
+
+  .week-popup-description,
+  .week-popup-tip {
+    font-size: 1rem;
+  }
+
+  .week-popup-close {
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .features-grid,
+  .testimonials-grid,
+  .tips-grid,
+  .resources-grid,
+  .partners-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .tracker-chart-container {
+    height: 300px;
+  }
+
+  .chart-wrapper {
+    width: 800px;
   }
 }
