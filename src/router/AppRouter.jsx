@@ -1,8 +1,8 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
-import SignIn from '../components/authentication/SignIn';
-import SignUp from '../components/authentication/SignUp';
+import SignIn from '../pages/authentication/SignIn';
+import SignUp from '../pages/authentication/SignUp';
 import AboutPage from '../pages/AboutPage';
 // import PregnancyPage from '../pages/PregnancyPage';
 // import NutritionalGuidancePage from '../pages/NutritionalGuidancePage';
