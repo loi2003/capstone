@@ -1,10 +1,9 @@
-/* Sign Up Section */
 .signup-section {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #ff9cbb, #ffffff); /* Pink to white gradient */
+  background: linear-gradient(135deg, #ff9cbb, #ffffff);
   padding: 4rem 1.5rem;
   font-family: 'Inter', sans-serif;
   position: relative;
@@ -37,6 +36,8 @@
 .shape {
   position: absolute;
   opacity: 0.5;
+  background: radial-gradient(circle, rgba(255, 156, 187, 0.3), transparent);
+  border-radius: 50%;
 }
 
 .shape-1 {
@@ -249,7 +250,7 @@
 /* Responsive Design */
 @media (min-width: 1024px) {
   .signup-container {
-    flex-direction: row-reverse;
+    flex-direction: row;
     justify-content: center;
     gap: 5rem;
   }
@@ -257,6 +258,7 @@
   .signup-branding {
     width: 50%;
     text-align: left;
+    align-items: flex-start;
   }
 
   .signup-title,
@@ -340,8 +342,5 @@
     height: 150px;
   }
 
-  .instagram-icon, .tiktok-icon {
-    width: 25px;
-    height: 25px;
-  }
+  
 }

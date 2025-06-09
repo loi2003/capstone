@@ -1,136 +1,206 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, LineElement, PointElement, LinearScale, Title, Tooltip, Legend, CategoryScale } from 'chart.js';
+import { Scatter } from 'react-chartjs-2';
+import { Chart as ChartJS, PointElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement } from 'chart.js';
 import '../styles/HomePage.css';
 import MainLayout from '../layouts/MainLayout';
 import { homepageData } from '../data/homepageData';
 
-// Đăng ký các thành phần cần thiết cho Chart.js
-ChartJS.register(LineElement, PointElement, LinearScale, Title, Tooltip, Legend, CategoryScale);
+// Register Chart.js components
+ChartJS.register(PointElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement);
 
 const HomePage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(null);
   const [hoveredWeek, setHoveredWeek] = useState(null);
+  const [currentTrimester, setCurrentTrimester] = useState(0);
   const chartRef = useRef(null);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
 
-  // Dữ liệu mẫu cho 40 tuần thai
-  const pregnancyData = Array.from({ length: 40 }, (_, index) => {
-    const week = index + 1;
-    return {
-      week: `Tuần ${week}`,
-      title: `Tuần ${week}`,
-      description: `Đây là tuần thứ ${week} của thai kỳ. Bé đang phát triển ${week === 1 ? 'từ một tế bào nhỏ' : `nhanh chóng, kích thước khoảng ${week} cm`}.`,
-      tip: `Hãy nghỉ ngơi nhiều và ăn uống lành mạnh trong tuần ${week}!`,
-    };
-  });
+  // Get pregnancy data
+  const pregnancyData = homepageData.pregnancyTracker.chartData.weeks;
 
-  // Dữ liệu cho biểu đồ
+  // Define trimester ranges (0-based indices)
+  const trimesters = [
+    { start: 0, end: 11 }, // Weeks 1–12
+    { start: 12, end: 25 }, // Weeks 13–26
+    { start: 26, end: 39 }, // Weeks 27–40
+  ];
+
+  // Chart data for timeline
   const chartData = {
-    labels: pregnancyData.map(data => data.week),
     datasets: [
       {
         label: 'Tiến độ thai kỳ',
-        data: Array.from({ length: 40 }, (_, i) => i + 1),
-        borderColor: 'rgba(107, 159, 255, 1)',
-        backgroundColor: 'rgba(107, 159, 255, 0.1)',
-        pointBackgroundColor: (context) => {
+        data: pregnancyData
+          .slice(trimesters[currentTrimester].start, trimesters[currentTrimester].end + 1)
+          .map((data, index) => ({
+            x: index + trimesters[currentTrimester].start,
+            y: 0,
+            week: data.week,
+          })),
+        backgroundColor: (context) => {
           const index = context.dataIndex;
-          return selectedWeek && pregnancyData[index].week === selectedWeek.week
+          const globalIndex = index + trimesters[currentTrimester].start;
+          return selectedWeek && pregnancyData[globalIndex]?.week === selectedWeek.week
             ? '#ff6b6b'
             : 'rgba(107, 159, 255, 1)';
         },
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(107, 159, 255, 1)',
-        pointRadius: 10,
-        pointHoverRadius: 12,
-        pointHitRadius: 20,
-        tension: 0,
+        borderColor: 'rgba(107, 159, 255, 1)',
+        borderWidth: 2,
+        pointRadius: 8,
+        pointHoverRadius: 10,
+        pointHoverBackgroundColor: 'rgba(90, 140, 230, 1)',
+        showLine: true,
+        lineTension: 0,
+        fill: false,
       },
     ],
   };
 
-  // Tùy chọn biểu đồ
+  // Chart options for timeline
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        enabled: false,
+        external: (context) => {
+          const { tooltip } = context;
+          if (tooltip.opacity === 0) {
+            setHoveredWeek(null);
+            return;
+          }
+          const index = tooltip.dataPoints[0].dataIndex;
+          const globalIndex = index + trimesters[currentTrimester].start;
+          setHoveredWeek(pregnancyData[globalIndex]);
+        },
+      },
+    },
     scales: {
       x: {
-        title: {
-          display: true,
-          text: 'Tuần Thai Kỳ',
-          font: { size: 16, weight: 'bold' },
-        },
+        type: 'linear',
+        min: trimesters[currentTrimester].start - 0.5,
+        max: trimesters[currentTrimester].end + 0.5,
         ticks: {
-          maxTicksLimit: 8,
-          font: { size: 14 },
+          stepSize: 1,
+          callback: (value) => {
+            const index = Math.round(value);
+            return index >= 0 && index < pregnancyData.length ? pregnancyData[index].week : '';
+          },
+          font: { size: 12 },
+          maxRotation: 0,
           padding: 10,
         },
-        grid: {
-          display: false,
+        grid: { display: false },
+        title: {
+          display: true,
+          text: `Tuần Thai Kỳ (Tam Cá Nguyệt ${currentTrimester + 1})`,
+          font: { size: 16, weight: 'bold' },
+          color: '#333',
         },
       },
       y: {
-        title: {
-          display: true,
-          text: 'Tiến Độ (Tuần)',
-          font: { size: 16, weight: 'bold' },
-        },
-        min: 0,
-        max: 40,
-        ticks: {
-          stepSize: 5,
-          font: { size: 14 },
-          padding: 10,
-        },
-        grid: {
-          display: true,
-          color: 'rgba(200, 220, 200, 0.3)',
-          lineWidth: 1,
-        },
+        display: false, // Hide y-axis
       },
-    },
-    layout: {
-      padding: { left: 20, right: 20, top: 20, bottom: 20 },
-    },
-    plugins: {
-      legend: { display: false },
-      tooltip: { enabled: false },
     },
     onClick: (event, elements) => {
       if (elements.length > 0) {
         const index = elements[0].index;
-        setSelectedWeek(pregnancyData[index]);
+        const globalIndex = index + trimesters[currentTrimester].start;
+        setSelectedWeek(pregnancyData[globalIndex]);
       }
     },
-    onHover: (event, elements) => {
-      if (elements.length > 0) {
-        const index = elements[0].index;
-        setHoveredWeek(pregnancyData[index]);
-      } else {
-        setHoveredWeek(null);
-      }
+    animation: {
+      duration: 800,
+      easing: 'easeOutQuart',
+      onComplete: () => {
+        // Ensure smooth rendering after animation
+      },
+    },
+    layout: {
+      padding: { top: 40, bottom: 20, left: 20, right: 20 },
     },
   };
 
+  // Calculate tooltip position
   const getTooltipPosition = () => {
     if (!hoveredWeek || !chartRef.current) return { display: 'none' };
     const chart = chartRef.current;
-    const index = pregnancyData.findIndex(data => data.week === hoveredWeek.week);
+    const index = pregnancyData.findIndex((data) => data.week === hoveredWeek.week);
     if (index === -1) return { display: 'none' };
 
     const x = chart.scales.x.getPixelForValue(index);
-    const yValue = chartData.datasets[0].data[index];
-    const yPos = chart.scales.y.getPixelForValue(yValue);
     return {
       display: 'block',
       left: `${x}px`,
-      top: `${yPos - 50}px`,
+      top: `${chart.chartArea.top - 60}px`,
       transform: 'translateX(-50%)',
     };
+  };
+
+  // Navigation handlers
+  const handlePrevTrimester = () => {
+    if (currentTrimester > 0) {
+      setCurrentTrimester(currentTrimester - 1);
+    }
+  };
+
+  const handleNextTrimester = () => {
+    if (currentTrimester < trimesters.length - 1) {
+      setCurrentTrimester(currentTrimester + 1);
+    }
+  };
+
+  // Drag scrolling handlers
+  const handleMouseDown = (e) => {
+    isDragging.current = true;
+    startX.current = e.clientX;
+    document.body.style.cursor = 'grabbing';
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging.current) return;
+    const deltaX = startX.current - e.clientX;
+    if (Math.abs(deltaX) > 50) {
+      if (deltaX > 0 && currentTrimester < trimesters.length - 1) {
+        setCurrentTrimester(currentTrimester + 1);
+      } else if (deltaX < 0 && currentTrimester > 0) {
+        setCurrentTrimester(currentTrimester - 1);
+      }
+      isDragging.current = false;
+      document.body.style.cursor = 'default';
+    }
+  };
+
+  const handleMouseUp = () => {
+    isDragging.current = false;
+    document.body.style.cursor = 'default';
+  };
+
+  const handleTouchStart = (e) => {
+    isDragging.current = true;
+    startX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging.current) return;
+    const deltaX = startX.current - e.touches[0].clientX;
+    if (Math.abs(deltaX) > 50) {
+      if (deltaX > 0 && currentTrimester < trimesters.length - 1) {
+        setCurrentTrimester(currentTrimester + 1);
+      } else if (deltaX < 0 && currentTrimester > 0) {
+        setCurrentTrimester(currentTrimester - 1);
+      }
+      isDragging.current = false;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
   };
 
   return (
@@ -251,14 +321,47 @@ const HomePage = () => {
           <h2 className="section-title">{homepageData.pregnancyTracker.title}</h2>
           <p className="section-description">{homepageData.pregnancyTracker.description}</p>
           <div className="tracker-chart-container">
-            <div className="chart-wrapper">
-              <Line ref={chartRef} data={chartData} options={chartOptions} height={600} />
+            <motion.button
+              className="nav-button left"
+              onClick={handlePrevTrimester}
+              disabled={currentTrimester === 0}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </motion.button>
+            <div
+              className="chart-wrapper"
+              onMouseDown={handleMouseDown}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              <Scatter ref={chartRef} data={chartData} options={chartOptions} />
               {hoveredWeek && (
                 <div className="custom-tooltip" style={getTooltipPosition()}>
-                  {hoveredWeek.week}
+                  <span className="tooltip-week">{hoveredWeek.week}</span>
+                  <span className="tooltip-title">{hoveredWeek.title}</span>
+                  <span className="tooltip-tip"><strong>Mẹo:</strong> {hoveredWeek.tip}</span>
                 </div>
               )}
             </div>
+            <motion.button
+              className="nav-button right"
+              onClick={handleNextTrimester}
+              disabled={currentTrimester === trimesters.length - 1}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </motion.button>
           </div>
           {selectedWeek && (
             <motion.div

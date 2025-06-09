@@ -1,0 +1,507 @@
+/* Reset default margins and paddings */
+* {
+  margin: 0;
+  padding: 0
+  box-sizing: border-box;
+}
+
+/* Set font and background for the page */
+.about-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f8fafc;
+  color: #333;
+}
+
+/* Color variables for consistency with HomePage.css */
+:root {
+  --primary-gradient: linear-gradient(90deg, #2564EA, #14B7A6);
+  --cta-color: rgba(107, 159, 255, 1);
+  --cta-hover: rgba(90, 140, 230, 1);
+  --accent-blue: rgba(107, 159, 255, 1);
+  --white: #ffffff;
+  --light-bg: #f8fafc;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
+}
+
+/* Main page container */
+.about-page {
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 80px 20px;
+  background: var(--primary-gradient);
+  color: var(--white);
+}
+
+.hero-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.hero-text {
+  max-width: 50%;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  opacity: 0.9;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.hero-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 25px;
+  background: var(--white);
+  color: var(--cta-color);
+  transition: var(--transition);
+  display: inline-block;
+}
+
+.hero-button:hover {
+  background: var(--cta-hover);
+  color: var(--white);
+  box-shadow: var(--shadow-hover);
+}
+
+.hero-button:focus {
+  outline: 2px solid var(--cta-color);
+  outline-offset: 2px;
+}
+
+.hero-graphic {
+  max-width: 40%;
+}
+
+.hero-graphic svg {
+  width: 100%;
+  height: auto;
+}
+
+/* Mission Section */
+.mission-section {
+  padding: 80px 20px;
+  background-color: var(--white);
+  text-align: center;
+}
+
+.mission-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 1.5rem;
+}
+
+.section-description {
+  font-size: 1.2rem;
+  color: #555;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Team Section */
+.team-section {
+  padding: 80px 20px;
+  background-color: var(--light-bg);
+  text-align: center;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.team-card {
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid #eee;
+}
+
+.team-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.team-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 15px;
+  border: 2px solid var(--accent-blue);
+}
+
+.team-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.team-role {
+  font-size: 1.1rem;
+  color: var(--accent-blue);
+  margin-bottom: 10px;
+}
+
+.team-bio {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Values Section */
+.values-section {
+  padding: 80px 20px;
+  background-color: var(--white);
+  text-align: center;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.value-card {
+  background: var(--white);
+  padding: 30px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+  border: 1px solid #eee;
+}
+
+.value-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-hover);
+}
+
+.value-icon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+  color: var(--accent-blue);
+}
+
+.value-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.value-description {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Contact CTA Section */
+.contact-section {
+  padding: 80px 20px;
+  background: var(--primary-gradient);
+  color: var(--white);
+  text-align: center;
+}
+
+.contact-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.community-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 25px;
+  background: var(--white);
+  color: var(--cta-color);
+  transition: var(--transition);
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.community-button:hover {
+  background: var(--cta-hover);
+  color: var(--white);
+  box-shadow: var(--shadow-hover);
+}
+
+.community-button:focus {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+/* Contact Icon */
+.contact-icon {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: var(--cta-color);
+  color: var(--white);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 1000;
+}
+
+.contact-icon:hover {
+  background-color: var(--cta-hover);
+  box-shadow: var(--shadow-hover);
+}
+
+.contact-icon:focus {
+  outline: 2px solid var(--white);
+  outline-offset: 2px;
+}
+
+/* Contact Popup */
+.contact-popup {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  text-align: center;
+  max-width: 260px;
+  border: 1px solid #eee;
+  z-index: 1001;
+}
+
+.popup-button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--white);
+  background-color: var(--cta-color);
+  border: none;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+.popup-button:hover {
+  background-color: var(--cta-hover);
+}
+
+.popup-button:focus {
+  outline: 2px solid var(--cta-color);
+  outline-offset: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hero-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 30px;
+  }
+
+  .hero-text {
+    max-width: 80%;
+  }
+
+  .hero-graphic {
+    max-width: 60%;
+  }
+
+  .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section,
+  .mission-section,
+  .team-section,
+  .values-section,
+  .contact-section {
+    padding: 60px 15px;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .hero-button,
+  .community-button {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+
+  .team-avatar {
+    width: 80px;
+    height: 80px;
+  }
+
+  .team-name {
+    font-size: 1.4rem;
+  }
+
+  .team-role {
+    font-size: 1rem;
+  }
+
+  .value-icon {
+    font-size: 2rem;
+  }
+
+  .value-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.8rem;
+  }
+
+  .section-title {
+    font-size: 1.8rem;
+  }
+
+  .hero-subtitle,
+  .section-description {
+    font-size: 1rem;
+  }
+
+  .hero-button,
+  .community-button,
+  .popup-button {
+    padding: 10px 18px;
+    font-size: 0.9rem;
+  }
+
+  .contact-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .contact-popup {
+    max-width: 220px;
+    padding: 15px;
+  }
+
+  .team-grid,
+  .values-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .team-card,
+  .value-card {
+    padding: 20px;
+  }
+
+  .team-avatar {
+    width: 70px;
+    height: 70px;
+  }
+
+  .team-name {
+    font-size: 1.3rem;
+  }
+
+  .team-role {
+    font-size: 0.95rem;
+  }
+
+  .team-bio,
+  .value-description {
+    font-size: 0.95rem;
+  }
+
+  .value-icon {
+    font-size: 1.8rem;
+  }
+
+  .value-title {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .hero-title {
+    font-size: 1.6rem;
+  }
+
+  .section-title {
+    font-size: 1.6rem;
+  }
+
+  .hero-graphic {
+    max-width: 80%;
+  }
+
+  .hero-button,
+  .community-button,
+  .popup-button {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+
+  .contact-icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .team-avatar {
+    width: 60px;
+    height: 60px;
+  }
+}

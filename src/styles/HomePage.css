@@ -20,8 +20,9 @@ body {
 /* Color variables for easy customization */
 :root {
   --primary-gradient: linear-gradient(90deg, #2564EA, #14B7A6);
-  --cta-color: #6b9fff;
-  --cta-hover: #5a8dde;
+  --cta-color: rgba(107, 159, 255, 1);
+  --cta-hover: rgba(90, 140, 230, 1);
+  --accent-blue: rgba(107, 159, 255, 1);
   --white: #ffffff;
   --light-bg: #f5f7fa;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -95,7 +96,7 @@ body {
 }
 
 .hero-button.primary:hover {
-  background: #2B66D3;
+  background: var(--cta-hover);
   color: var(--white);
 }
 
@@ -161,7 +162,7 @@ body {
 .feature-icon {
   font-size: 3rem;
   margin-bottom: 20px;
-  color: var(--cta-color);
+  color: var(--accent-blue);
 }
 
 .feature-title {
@@ -264,7 +265,7 @@ body {
 }
 
 .community-button:hover {
-  background: #2B66D3;
+  background: var(--cta-hover);
   color: var(--white);
 }
 
@@ -286,35 +287,61 @@ body {
 }
 
 .tracker-chart-container {
-  max-width: 1200px; /* Increased width for larger chart */
+  max-width: 1200px;
   margin: 0 auto;
-  height: 600px; /* Increased height for a more "vertical" appearance */
+  height: 400px;
   padding: 30px;
   background: var(--white);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   position: relative;
-  overflow-x: auto; /* Allow horizontal scrolling on smaller screens */
+  display: flex;
+  align-items: center;
+  overflow: hidden;
 }
 
 .chart-wrapper {
   position: relative;
-  width: 2000px; /* Increased width to spread out weeks */
+  width: 100%;
   height: 100%;
+  cursor: grab;
+}
+
+.chart-wrapper:active {
+  cursor: grabbing;
 }
 
 .custom-tooltip {
   position: absolute;
   background-color: rgba(107, 159, 255, 0.9);
   color: var(--white);
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-size: 1rem;
-  font-weight: 500;
-  transform: translateX(-50%);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow);
   pointer-events: none;
   transition: var(--transition);
   z-index: 1001;
+  max-width: 250px;
+  text-align: center;
+}
+
+.tooltip-week {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.tooltip-title {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.tooltip-tip {
+  display: block;
+  font-size: 0.85rem;
+  font-style: italic;
 }
 
 .week-popup {
@@ -323,27 +350,27 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   background-color: var(--white);
-  padding: 20px;
+  padding: 25px;
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   text-align: center;
-  max-width: 350px; /* Slightly larger popup for readability */
+  max-width: 400px;
   border: 1px solid #eee;
   z-index: 1000;
 }
 
 .week-popup-title {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 10px;
+  color: var(--accent-blue);
+  margin-bottom: 15px;
 }
 
 .week-popup-description {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: #555;
   line-height: 1.6;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .week-popup-tip {
@@ -351,11 +378,11 @@ body {
   color: #555;
   line-height: 1.6;
   font-style: italic;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .week-popup-close {
-  padding: 8px 16px;
+  padding: 10px 20px;
   font-size: 1rem;
   font-weight: 600;
   color: var(--white);
@@ -386,6 +413,44 @@ body {
 .tracker-button:hover {
   background: var(--cta-hover);
   box-shadow: var(--shadow-hover);
+}
+
+.nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  background-color: var(--cta-color);
+  color: var(--white);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 1002;
+  box-shadow: var(--shadow);
+}
+
+.nav-button:hover {
+  background-color: var(--cta-hover);
+  box-shadow: var(--shadow-hover);
+}
+
+.nav-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.nav-button.left {
+  left: 10px;
+}
+
+.nav-button.right {
+  right: 10px;
 }
 
 /* Health Tips Section */
@@ -420,7 +485,7 @@ body {
 .tip-title {
   font-size: 1.4rem;
   font-weight: 600;
-  color: #333;
+  color: var(--accent-blue);
   margin-bottom: 10px;
 }
 
@@ -483,7 +548,7 @@ body {
 .resource-title {
   font-size: 1.4rem;
   font-weight: 600;
-  color: #333;
+  color: var(--accent-blue);
   margin-bottom: 10px;
 }
 
@@ -644,11 +709,7 @@ body {
   }
 
   .tracker-chart-container {
-    height: 500px; /* Reduced height for medium screens */
-  }
-
-  .chart-wrapper {
-    width: 1500px; /* Adjusted width for medium screens */
+    height: 350px;
   }
 }
 
@@ -678,16 +739,18 @@ body {
   }
 
   .week-popup {
-    max-width: 300px;
-    padding: 15px;
+    max-width: 320px;
+    padding: 20px;
   }
 
   .tracker-chart-container {
-    height: 400px; /* Reduced height for smaller screens */
+    height: 300px;
+    padding: 20px;
   }
 
-  .chart-wrapper {
-    width: 1200px; /* Adjusted width for smaller screens */
+  .nav-button {
+    width: 36px;
+    height: 36px;
   }
 }
 
@@ -720,20 +783,16 @@ body {
   }
 
   .tracker-chart-container {
-    height: 350px;
-  }
-
-  .chart-wrapper {
-    width: 1000px;
+    height: 250px;
   }
 
   .week-popup {
-    max-width: 250px;
-    padding: 10px;
+    max-width: 280px;
+    padding: 15px;
   }
 
   .week-popup-title {
-    font-size: 1.4rem;
+    font-size: 1.6rem;
   }
 
   .week-popup-description,
@@ -742,8 +801,27 @@ body {
   }
 
   .week-popup-close {
-    padding: 6px 12px;
+    padding: 8px 16px;
     font-size: 0.9rem;
+  }
+
+  .custom-tooltip {
+    max-width: 200px;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+  }
+
+  .tooltip-title {
+    font-size: 0.8rem;
+  }
+
+  .tooltip-tip {
+    font-size: 0.75rem;
+  }
+
+  .nav-button {
+    width: 32px;
+    height: 32px;
   }
 }
 
@@ -761,10 +839,6 @@ body {
   }
 
   .tracker-chart-container {
-    height: 300px;
-  }
-
-  .chart-wrapper {
-    width: 800px;
+    height: 200px;
   }
 }
