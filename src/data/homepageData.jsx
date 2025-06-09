@@ -1,3 +1,5 @@
+import { chartData } from './chartData';
+
 export const homepageData = {
   hero: {
     title: "Chào Mừng Mẹ Bầu",
@@ -137,39 +139,40 @@ export const homepageData = {
     milestones: [
       {
         week: 4,
-        title: "Tuần 4: Bé Bắt Đầu Hình Thành",
-        description: "Phôi thai bắt đầu phát triển, tim bé bắt đầu hình thành. Mẹ nên bổ sung axit folic.",
-        tip: "Uống đủ nước và nghỉ ngơi đầy đủ.",
+        title: "Tuần 4: Phôi Thai Hình Thành",
+        description: "Phôi thai bắt đầu hình thành, túi phôi và nhau thai phát triển. Tim bé bắt đầu đập yếu ớt.",
+        tip: "Bắt đầu bổ sung axit folic (400-800 mcg/ngày) để hỗ trợ phát triển ống thần kinh.",
       },
       {
         week: 12,
         title: "Tuần 12: Kết Thúc Tam Cá Nguyệt Thứ Nhất",
-        description: "Bé đã có kích thước bằng quả chanh, các cơ quan chính đã hình thành.",
+        description: "Bé đã xác định được kích thước bằng quả chanh, các cơ quan chính xác định được hình thành.",
         tip: "Tham gia kiểm tra siêu âm đầu tiên để thấy bé yêu.",
       },
       {
         week: 20,
-        title: "Tuần 20: Bé Đạp Rõ Ràng",
-        description: "Bé bắt đầu chuyển động rõ rệt, mẹ có thể cảm nhận những cú đạp đầu tiên.",
+        title: "Tuần 20: Bé Đạp Xác Định",
+        description: "Bé bắt đầu chuyển động xác định, mẹ có thể cảm nhận được những cú đạp đầu tiên.",
         tip: "Ghi lại khoảnh khắc này trong nhật ký bé yêu!",
       },
       {
         week: 28,
         title: "Tuần 28: Tam Cá Nguyệt Thứ Ba",
-        description: "Bé phát triển nhanh, mắt có thể mở và đóng. Mẹ cần thêm năng lượng.",
+        description: "Bé phát triển nhanh, mắt xác định được mở và đóng. Mẹ cần thêm năng lượng.",
         tip: "Tăng cường thực phẩm giàu sắt và canxi.",
       },
       {
         week: 36,
-        title: "Tuần 36: Chuẩn Bị Chào Đón Bé",
-        description: "Bé đã sẵn sàng cho ngày sinh, mẹ nên chuẩn bị túi đồ đi sinh.",
+        title: "Tuần 36: Chuẩn Bị Chào Đón Mẹ",
+        description: "Bé đã sẵn sàng cho ngày sinh, mẹ nên chuẩn bị túi xác định đi được.",
         tip: "Tập thở và thư giãn để chuẩn bị cho chuyển dạ.",
       },
     ],
+    chartData,
   },
   healthTips: {
     title: "Mẹo Sức Khỏe Qua Các Tam Cá Nguyệt",
-    description: "Những lời khuyên thiết thực để giữ sức khỏe cho mẹ và bé qua từng giai đoạn thai kỳ.",
+    description: "Những lời khuyên thiết thực để giữ được sức khỏe cho mẹ và bé qua hành trình thai kỳ.",
     items: [
       {
         trimester: "Tam Cá Nguyệt Thứ Nhất",
