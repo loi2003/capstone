@@ -8,165 +8,185 @@ import { aboutpageData } from '../data/aboutpageData';
 const AboutPage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
+  // Define milestones for Hành Trình Phát Triển
+  const milestones = [
+    {
+      year: 2018,
+      event: 'Thành lập GenderHealthWeb với mục tiêu nâng cao nhận thức về sức khỏe phụ nữ.',
+    },
+    {
+      year: 2020,
+      event: 'Ra mắt ứng dụng theo dõi thai kỳ, hỗ trợ hơn 10,000 bà mẹ.',
+    },
+    {
+      year: 2022,
+      event: 'Mở rộng dịch vụ với các khóa học trực tuyến về chăm sóc trước và sau sinh.',
+    },
+    {
+      year: 2025,
+      event: 'Hợp tác với các bệnh viện quốc tế để cung cấp tư vấn y khoa từ xa.',
+    },
+  ];
+
   return (
     <MainLayout>
       <div className="about-page">
         {/* Hero Section */}
-        <section className="hero-section">
-          <div className="hero-content">
+        <section className="about-hero-section">
+          <div className="about-hero-content">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="hero-text"
+              transition={{ duration: 0.8, ease: 'easeOut' }}
+              className="about-hero-text"
             >
-              <h1 className="hero-title">{aboutpageData.hero.title}</h1>
-              <p className="hero-subtitle">{aboutpageData.hero.subtitle}</p>
-              <Link to={aboutpageData.hero.ctaLink} className="hero-button primary">
+              <h1 className="about-hero-title">{aboutpageData.hero.title}</h1>
+              <p className="about-hero-subtitle">{aboutpageData.hero.subtitle}</p>
+              <Link to={aboutpageData.hero.ctaLink} className="about-hero-button">
                 {aboutpageData.hero.cta}
               </Link>
             </motion.div>
             <motion.div
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="hero-graphic"
+              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+              className="about-hero-graphic"
             >
-              <svg width="300" height="300" viewBox="0 0 300 300" fill="none">
-                <circle cx="150" cy="100" r="80" fill="rgba(255, 255, 255, 0.2)" />
+              <svg width="320" height="320" viewBox="0 0 320 320" fill="none">
+                <circle cx="160" cy="120" r="90" fill="rgba(255, 255, 255, 0.15)" />
                 <path
-                  d="M150 100 C 180 60, 220 60, 250 100 S 220 140, 190 100 S 160 60, 130 100"
-                  stroke="#fff"
+                  d="M160 120 C 190 70, 230 70, 270 120 S 230 170, 200 120 S 170 70, 130 120"
+                  stroke="#ffffff"
                   strokeWidth="4"
                   fill="none"
                 />
-                <circle cx="130" cy="100" r="8" fill="#fff" />
-                <circle cx="190" cy="100" r="8" fill="#fff" />
-                <circle cx="250" cy="100" r="8" fill="#fff" />
-                <rect x="110" y="160" width="80" height="100" rx="20" fill="rgba(255, 255, 255, 0.2)" />
-                <rect x="120" y="170" width="60" height="10" fill="rgba(255, 255, 255, 0.3)" />
-                <rect x="120" y="190" width="60" height="10" fill="rgba(255, 255, 255, 0.3)" />
-                <rect x="120" y="210" width="60" height="10" fill="rgba(255, 255, 255, 0.3)" />
+                <circle cx="130" cy="120" r="10" fill="#ffffff" />
+                <circle cx="200" cy="120" r="10" fill="#ffffff" />
+                <circle cx="270" cy="120" r="10" fill="#ffffff" />
+                <rect x="110" y="180" width="100" height="120" rx="25" fill="rgba(255, 255, 255, 0.1)" />
+                <rect x="125" y="195" width="70" height="15" fill="rgba(255, 255, 255, 0.2)" />
+                <rect x="125" y="220" width="70" height="15" fill="rgba(255, 255, 255, 0.2)" />
+                <rect x="125" y="245" width="70" height="15" fill="rgba(255, 255, 255, 0.2)" />
               </svg>
             </motion.div>
           </div>
         </section>
 
         {/* Mission Section */}
-        <section className="mission-section">
+        <section className="about-mission-section">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="mission-content"
+            className="about-mission-content"
           >
-            <h2 className="section-title">{aboutpageData.mission.title}</h2>
-            <p className="section-description">{aboutpageData.mission.description}</p>
-            <p className="section-vision">{aboutpageData.mission.vision}</p>
+            <h2 className="about-section-title">{aboutpageData.mission.title}</h2>
+            <p className="about-section-description">{aboutpageData.mission.description}</p>
+            <p className="about-section-vision">{aboutpageData.mission.vision}</p>
           </motion.div>
         </section>
 
         {/* History Section */}
-        <section className="history-section">
-          <h2 className="section-title">{aboutpageData.history.title}</h2>
-          <div className="history-timeline">
-            {aboutpageData.history.milestones.map((milestone, index) => (
+        <section className="about-history-section">
+          <h2 className="about-section-title">Hành Trình Phát Triển</h2>
+          <div className="about-history-timeline">
+            {milestones.map((milestone, index) => (
               <motion.div
                 key={index}
-                className="history-milestone"
+                className="about-history-milestone"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
-                <div className="history-milestone-content">
-                  <h3 className="history-year">{milestone.year}</h3>
-                  <p className="history-event">{milestone.event}</p>
+                <div className="about-history-milestone-content">
+                  <h3 className="about-history-year">{milestone.year}</h3>
+                  <p className="about-history-event">{milestone.event}</p>
                 </div>
-                <div className="history-dot"></div>
+                <div className="about-history-dot"></div>
               </motion.div>
             ))}
           </div>
         </section>
 
         {/* Team Section */}
-        <section className="team-section">
-          <h2 className="section-title">{aboutpageData.team.title}</h2>
-          <div className="team-grid">
+        <section className="about-team-section">
+          <h2 className="about-section-title">{aboutpageData.team.title}</h2>
+          <div className="about-team-grid">
             {aboutpageData.team.members.map((member, index) => (
               <motion.div
                 key={index}
-                className="team-card"
+                className="about-team-card"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
-                <img src={member.avatar} alt={`${member.name} avatar`} className="team-avatar" />
-                <h3 className="team-name">{member.name}</h3>
-                <p className="team-role">{member.role}</p>
-                <p className="team-bio">{member.bio}</p>
+                <img src={member.avatar} alt={`${member.name} avatar`} className="about-team-avatar" />
+                <h3 className="about-team-name">{member.name}</h3>
+                <p className="about-team-role">{member.role}</p>
+                <p className="about-team-bio">{member.bio}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
         {/* Values Section */}
-        <section className="values-section">
-          <h2 className="section-title">{aboutpageData.values.title}</h2>
-          <div className="values-grid">
+        <section className="about-values-section">
+          <h2 className="about-section-title">{aboutpageData.values.title}</h2>
+          <div className="about-values-grid">
             {aboutpageData.values.items.map((value, index) => (
               <motion.div
                 key={index}
-                className="value-card"
+                className="about-value-card"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
-                <div className="value-icon">{value.icon}</div>
-                <h3 className="value-title">{value.title}</h3>
-                <p className="value-description">{value.description}</p>
+                <div className="about-value-icon">{value.icon}</div>
+                <h3 className="about-value-title">{value.title}</h3>
+                <p className="about-value-description">{value.description}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
         {/* Partners Section */}
-        <section className="partners-section">
-          <h2 className="section-title">{aboutpageData.partners.title}</h2>
-          <div className="partners-grid">
+        <section className="about-partners-section">
+          <h2 className="about-section-title">{aboutpageData.partners.title}</h2>
+          <div className="about-partners-grid">
             {aboutpageData.partners.items.map((partner, index) => (
               <motion.div
                 key={index}
-                className="partner-card"
+                className="about-partner-card"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
                 <a href={partner.link} target="_blank" rel="noopener noreferrer">
-                  <img src={partner.logo} alt={`${partner.name} logo`} className="partner-logo" />
+                  <img src={partner.logo} alt={`${partner.name} logo`} className="about-partner-logo" />
                 </a>
-                <p className="partner-name">{partner.name}</p>
+                <p className="about-partner-name">{partner.name}</p>
               </motion.div>
             ))}
           </div>
         </section>
 
         {/* Contact CTA Section */}
-        <section className="contact-section">
+        <section className="about-contact-section">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.8, ease: 'easeOut' }}
             viewport={{ once: true }}
-            className="contact-content"
+            className="about-contact-content"
           >
-            <h2 className="section-title">{aboutpageData.contact.title}</h2>
-            <p className="contact-subtitle">{aboutpageData.contact.subtitle}</p>
-            <Link to={aboutpageData.contact.ctaLink} className="community-button">
+            <h2 className="about-section-title">{aboutpageData.contact.title}</h2>
+            <p className="about-contact-subtitle">{aboutpageData.contact.subtitle}</p>
+            <Link to={aboutpageData.contact.ctaLink} className="about-community-button">
               {aboutpageData.contact.cta}
             </Link>
           </motion.div>
@@ -174,7 +194,7 @@ const AboutPage = () => {
 
         {/* Contact Icon */}
         <motion.div
-          className="contact-icon"
+          className="about-contact-icon"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsPopupOpen(!isPopupOpen)}
@@ -191,10 +211,10 @@ const AboutPage = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="contact-popup"
+            className="about-contact-popup"
           >
-            <Link to="/contact" className="popup-button">Liên Hệ</Link>
-            <Link to="/assessment" className="popup-button">Kiểm Tra Sức Khỏe</Link>
+            <Link to="/contact" className="about-popup-button">Liên Hệ</Link>
+            <Link to="/assessment" className="about-popup-button">Kiểm Tra Sức Khỏe</Link>
           </motion.div>
         )}
       </div>
