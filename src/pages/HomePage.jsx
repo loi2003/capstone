@@ -13,7 +13,6 @@ ChartJS.register(PointElement, LinearScale, CategoryScale, Tooltip, Legend, Line
 const HomePage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedWeek, setSelectedWeek] = useState(null);
-  const [hoveredWeek, setHoveredWeek] = useState(null);
   const [currentTrimester, setCurrentTrimester] = useState(0);
   const chartRef = useRef(null);
   const isDragging = useRef(false);
@@ -66,19 +65,7 @@ const HomePage = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
-      tooltip: {
-        enabled: false,
-        external: (context) => {
-          const { tooltip } = context;
-          if (tooltip.opacity === 0) {
-            setHoveredWeek(null);
-            return;
-          }
-          const index = tooltip.dataPoints[0].dataIndex;
-          const globalIndex = index + trimesters[currentTrimester].start;
-          setHoveredWeek(pregnancyData[globalIndex]);
-        },
-      },
+      tooltip: { enabled: false }, // Disable default tooltip
     },
     scales: {
       x: {
@@ -117,41 +104,24 @@ const HomePage = () => {
     animation: {
       duration: 800,
       easing: 'easeOutQuart',
-      onComplete: () => {
-        // Ensure smooth rendering after animation
-      },
     },
     layout: {
       padding: { top: 40, bottom: 20, left: 20, right: 20 },
     },
   };
 
-  // Calculate tooltip position
-  const getTooltipPosition = () => {
-    if (!hoveredWeek || !chartRef.current) return { display: 'none' };
-    const chart = chartRef.current;
-    const index = pregnancyData.findIndex((data) => data.week === hoveredWeek.week);
-    if (index === -1) return { display: 'none' };
-
-    const x = chart.scales.x.getPixelForValue(index);
-    return {
-      display: 'block',
-      left: `${x}px`,
-      top: `${chart.chartArea.top - 60}px`,
-      transform: 'translateX(-50%)',
-    };
-  };
-
   // Navigation handlers
   const handlePrevTrimester = () => {
     if (currentTrimester > 0) {
       setCurrentTrimester(currentTrimester - 1);
+      setSelectedWeek(null); // Close popup when changing trimester
     }
   };
 
   const handleNextTrimester = () => {
     if (currentTrimester < trimesters.length - 1) {
       setCurrentTrimester(currentTrimester + 1);
+      setSelectedWeek(null); // Close popup when changing trimester
     }
   };
 
@@ -168,8 +138,10 @@ const HomePage = () => {
     if (Math.abs(deltaX) > 50) {
       if (deltaX > 0 && currentTrimester < trimesters.length - 1) {
         setCurrentTrimester(currentTrimester + 1);
+        setSelectedWeek(null); // Close popup when dragging
       } else if (deltaX < 0 && currentTrimester > 0) {
         setCurrentTrimester(currentTrimester - 1);
+        setSelectedWeek(null); // Close popup when dragging
       }
       isDragging.current = false;
       document.body.style.cursor = 'default';
@@ -192,8 +164,10 @@ const HomePage = () => {
     if (Math.abs(deltaX) > 50) {
       if (deltaX > 0 && currentTrimester < trimesters.length - 1) {
         setCurrentTrimester(currentTrimester + 1);
+        setSelectedWeek(null); // Close popup when dragging
       } else if (deltaX < 0 && currentTrimester > 0) {
         setCurrentTrimester(currentTrimester - 1);
+        setSelectedWeek(null); // Close popup when dragging
       }
       isDragging.current = false;
     }
@@ -343,13 +317,6 @@ const HomePage = () => {
               onTouchEnd={handleTouchEnd}
             >
               <Scatter ref={chartRef} data={chartData} options={chartOptions} />
-              {hoveredWeek && (
-                <div className="custom-tooltip" style={getTooltipPosition()}>
-                  <span className="tooltip-week">{hoveredWeek.week}</span>
-                  <span className="tooltip-title">{hoveredWeek.title}</span>
-                  <span className="tooltip-tip"><strong>Mẹo:</strong> {hoveredWeek.tip}</span>
-                </div>
-              )}
             </div>
             <motion.button
               className="nav-button right"
@@ -371,9 +338,13 @@ const HomePage = () => {
               transition={{ duration: 0.3 }}
               className="week-popup"
             >
-              <h3 className="week-popup-title">{selectedWeek.title}</h3>
+              <h3 className="week-popup-title">{selectedWeek.week}</h3>
+              <h4 className="week-popup-subtitle">{selectedWeek.title}</h4>
               <p className="week-popup-description">{selectedWeek.description}</p>
               <p className="week-popup-tip"><strong>Mẹo:</strong> {selectedWeek.tip}</p>
+              <Link to="/pregnancy" className="week-popup-button">
+                Để biết thêm thông tin chi tiết, vui lòng chọn tại đây
+              </Link>
               <button className="week-popup-close" onClick={() => setSelectedWeek(null)}>
                 Đóng
               </button>

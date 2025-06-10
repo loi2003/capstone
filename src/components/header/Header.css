@@ -1,16 +1,17 @@
+/* Reset default margins and paddings */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* CSS Variables (aligned with HomePage.css and Footer.css) */
+/* CSS Variables (updated for medical deep blue theme) */
 :root {
-  --primary-gradient: linear-gradient(90deg, rgba(37, 100, 234, 1) 0%, rgba(20, 183, 166, 1) 100%);
-  --cta-color: #6b9fff;
-  --cta-hover: #5a8dde;
+  --primary-bg: #003087; /* Deep navy blue for medical professionalism */
+  --accent-color: #0052cc; /* Brighter blue for highlights */
+  --accent-hover: #003c8f; /* Slightly darker blue for hover */
   --white: #ffffff;
-  --light-bg: #f5f7fa;
+  --light-bg: #e6f0fa; /* Light blue for subtle highlights */
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
   --border-radius: 12px;
@@ -23,7 +24,7 @@ body.dark-theme {
 }
 
 .header {
-  background: var(--primary-gradient);
+  background: var(--primary-bg);
   padding: 20px;
   box-shadow: var(--shadow);
   position: sticky;
@@ -52,7 +53,7 @@ body.dark-theme {
 }
 
 .logo:hover {
-  color: #e0e7ff;
+  color: var(--light-bg);
 }
 
 .nav-links {
@@ -72,8 +73,8 @@ body.dark-theme {
 }
 
 .nav-links a:hover {
-  color: #e0e7ff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--light-bg);
+  background: var(--accent-color);
   box-shadow: var(--shadow-hover);
 }
 
@@ -85,7 +86,7 @@ body.dark-theme {
 
 .nav-links .sign-in-btn {
   background: var(--white);
-  color: var(--cta-color);
+  color: var(--primary-bg);
   border-radius: 25px;
   padding: 10px 24px;
   font-weight: 600;
@@ -96,14 +97,14 @@ body.dark-theme {
 }
 
 .nav-links .sign-in-btn:hover {
-  background: #f5f5f5;
-  color: var(--cta-hover);
+  background: var(--light-bg);
+  color: var(--accent-hover);
   box-shadow: var(--shadow-hover);
 }
 
 .auth-message {
   font-size: 0.85rem;
-  color: #e0e7ff;
+  color: var(--light-bg);
   margin: 0;
 }
 
@@ -116,8 +117,8 @@ body.dark-theme {
 }
 
 .auth-message a:hover {
-  color: #e0e7ff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--light-bg);
+  background: var(--accent-color);
 }
 
 .header-actions {
@@ -141,8 +142,8 @@ body.dark-theme {
 }
 
 .search-toggle:hover, .profile-toggle:hover, .theme-toggle:hover {
-  color: #e0e7ff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--light-bg);
+  background: var(--accent-color);
   border-radius: 50%;
 }
 
@@ -171,11 +172,11 @@ body.dark-theme {
 
 .search-bar input:focus {
   outline: none;
-  box-shadow: 0 0 5px rgba(107, 159, 255, 0.3);
+  box-shadow: 0 0 5px rgba(0, 82, 204, 0.3);
 }
 
 .search-bar .search-submit {
-  background: var(--cta-color);
+  background: var(--accent-color);
   border: none;
   padding: 10px;
   border-radius: var(--border-radius);
@@ -184,7 +185,7 @@ body.dark-theme {
 }
 
 .search-bar .search-submit:hover {
-  background: var(--cta-hover);
+  background: var(--accent-hover);
 }
 
 .search-bar .search-submit svg {
@@ -220,7 +221,7 @@ body.dark-theme {
 
 .profile-dropdown a:hover {
   background: var(--light-bg);
-  color: var(--cta-color);
+  color: var(--accent-color);
 }
 
 .language-selector {
@@ -240,8 +241,8 @@ body.dark-theme {
 }
 
 .language-selector button:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #e0e7ff;
+  background: var(--accent-color);
+  color: var(--light-bg);
 }
 
 .menu-toggle {
@@ -310,7 +311,7 @@ body.dark-theme {
     width: 100%;
     gap: 16px;
     padding: 16px;
-    background: var(--primary-gradient);
+    background: var(--primary-bg);
     position: absolute;
     top: 100%;
     left: 0;
