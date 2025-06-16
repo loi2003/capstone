@@ -10,7 +10,6 @@
   overflow: hidden;
 }
 
-/* Container for form and branding */
 .signup-container {
   max-width: 80rem;
   width: 100%;
@@ -21,6 +20,65 @@
   margin: 0 auto;
   position: relative;
   z-index: 1;
+}
+
+/* Popup Notification Styles */
+.notification-popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  width: 90%;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slideIn 0.4s ease-out;
+}
+
+.notification-success {
+  background-color: #e6ffed;
+  border: 1px solid #34c759;
+}
+
+.notification-error {
+  background-color: #ffe6e6;
+  border: 1px solid #ef4444;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+}
+
+.notification-message {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
 }
 
 /* Background Decorative Elements */
@@ -61,29 +119,6 @@
   height: 200px;
 }
 
-.icon {
-  position: absolute;
-}
-
-.instagram-icon {
-  top: 10%;
-  right: 10%;
-}
-
-.tiktok-icon {
-  top: 30%;
-  right: 15%;
-}
-
-.wave-line {
-  position: absolute;
-  top: 25%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 300px;
-  height: 50px;
-}
-
 /* Branding/Description Section */
 .signup-branding {
   width: 100%;
@@ -110,7 +145,6 @@
   margin-bottom: 1.5rem;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  text-transform: capitalize;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -140,6 +174,7 @@
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   border: 1px solid #f0f0f0;
+  position: relative;
 }
 
 .signup-form-title {
@@ -247,6 +282,13 @@
   text-decoration: underline;
 }
 
+.signup-timer {
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
 /* Responsive Design */
 @media (min-width: 1024px) {
   .signup-container {
@@ -306,11 +348,6 @@
     width: 200px;
     height: 200px;
   }
-
-  .instagram-icon, .tiktok-icon {
-    width: 30px;
-    height: 30px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -342,5 +379,9 @@
     height: 150px;
   }
 
-  
+  .notification-popup {
+    top: 10px;
+    right: 10px;
+    padding: 1rem;
+  }
 }

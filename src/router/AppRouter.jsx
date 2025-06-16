@@ -9,13 +9,14 @@ import ConsultationPage from '../pages/ConsultationPage';
 import CommunityPage from '../pages/CommunityPage';
 import DonationPage from '../pages/DonationPage';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
-import TermsOfService from '../pages/TermsOfService';
+import TermsOfService from '../pages/TermOfService';
 import ContactUs from '../pages/ContactUs';
+import AdminHomePage from '../pages/admin/AdminHomePage';
+import StaffHomePage from '../pages/staff/StaffHomePage';
 
 const AppRoutes = () => {
   const location = useLocation();
 
-  // Scroll to top on route change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [location.pathname]);
@@ -33,6 +34,8 @@ const AppRoutes = () => {
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/admin" element={<AdminHomePage />} />
+        <Route path="/staff" element={<StaffHomePage />} />
       </Routes>
     </ThemeProvider>
   );
