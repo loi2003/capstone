@@ -1,0 +1,278 @@
+/* Reset default margins and paddings */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles for header */
+.staff-header {
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(90deg, #22c55e, #ecfdf5);
+  color: #1f2a44;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Color variables */
+:root {
+  --staff-primary: #22c55e;
+  --staff-secondary: #f97316;
+  --staff-accent: #4ade80;
+  --staff-text: #1f2a44;
+  --staff-white: #ecfdf5;
+  --staff-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --staff-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
+  --staff-border-radius: 10px;
+  --staff-transition: all 0.3s ease-in-out;
+}
+
+/* Header container */
+.staff-header .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+}
+
+/* Logo styling */
+.staff-header .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+}
+
+.staff-header .logo span {
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--staff-text);
+  letter-spacing: -0.02em;
+}
+
+.staff-header .logo svg {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+/* Navigation */
+.staff-header nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.staff-header nav a,
+.staff-header nav button {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--staff-text);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: var(--staff-border-radius);
+  transition: var(--staff-transition);
+}
+
+.staff-header nav a:hover,
+.staff-header nav button:hover {
+  color: var(--staff-primary);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+/* Hamburger menu button */
+.staff-header .menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.staff-header .menu-toggle svg {
+  color: var(--staff-text);
+  width: 22px;
+  height: 22px;
+}
+
+/* Profile section */
+.staff-header .profile-section {
+  position: relative;
+  z-index: 1002;
+}
+
+.staff-header .profile-toggle.icon-only {
+  padding: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  cursor: pointer;
+  transition: var(--staff-transition);
+}
+
+.staff-header .profile-toggle.icon-only:hover {
+  background: rgba(34, 197, 94, 0.3);
+}
+
+.staff-header .profile-toggle.icon-only svg {
+  margin-right: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--staff-text);
+}
+
+.staff-header .profile-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--staff-white);
+  border-radius: var(--staff-border-radius);
+  box-shadow: var(--staff-shadow);
+  padding: 10px;
+  min-width: 200px;
+  z-index: 1003;
+  border: 1px solid #d1fae5;
+}
+
+.staff-header .profile-dropdown .profile-email {
+  display: block;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 500;
+  border-bottom: 1px solid #d1fae5;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.staff-header .profile-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  color: var(--staff-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: var(--staff-transition);
+}
+
+.staff-header .profile-dropdown button:hover {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--staff-primary);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .staff-header nav {
+    display: none;
+  }
+
+  .staff-header .menu-toggle {
+    display: block;
+  }
+
+  .staff-header nav.block {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--staff-white);
+    box-shadow: var(--staff-shadow);
+    padding: 14px;
+    border: 1px solid #d1fae5;
+  }
+
+  .staff-header nav a,
+  .staff-header nav button {
+    padding: 10px;
+  }
+
+  .staff-header .profile-section {
+    margin-top: 10px;
+  }
+
+  .staff-header .profile-dropdown {
+    position: static;
+    width: 100%;
+    margin-top: 6px;
+  }
+}
+
+@media (max-width: 768px) {
+  .staff-header .container {
+    padding: 10px 14px;
+  }
+
+  .staff-header .logo span {
+    font-size: 1.375rem;
+  }
+
+  .staff-header .logo svg {
+    width: 38px;
+    height: 38px;
+  }
+
+  .staff-header nav a,
+  .staff-header nav button {
+    font-size: 0.9rem;
+  }
+
+  .staff-header .profile-toggle.icon-only {
+    width: 32px;
+    height: 32px;
+    padding: 5px;
+  }
+
+  .staff-header .profile-toggle.icon-only svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-header .container {
+    padding: 8px 10px;
+  }
+
+  .staff-header .logo span {
+    font-size: 1.125rem;
+  }
+
+  .staff-header .logo svg {
+    width: 34px;
+    height: 34px;
+  }
+
+  .staff-header .profile-toggle.icon-only {
+    width: 30px;
+    height: 30px;
+    padding: 4px;
+  }
+
+  .staff-header .profile-toggle.icon-only svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .staff-header nav a,
+  .staff-header nav button {
+    font-size: 0.85rem;
+    padding: 8px;
+  }
+}

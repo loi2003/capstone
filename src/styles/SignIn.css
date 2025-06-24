@@ -1,3 +1,4 @@
+
 /* Color variables for a professional and cohesive palette */
 :root {
   --primary-color: #1E40AF; /* Deep blue for a professional tone */
@@ -52,6 +53,8 @@
 .shape {
   position: absolute;
   opacity: 0.5;
+  background: radial-gradient(circle, rgba(30, 64, 175, 0.3), transparent); /* Gradient tròn xanh nhạt */
+  border-radius: 50%;
 }
 
 .shape-1 {
@@ -96,6 +99,53 @@
   transform: translateX(-50%);
   width: 300px;
   height: 50px;
+}
+
+/* Popup thông báo */
+.notification-popup {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 400px;
+  width: 90%;
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-hover);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  animation: slide-in 0.4s ease-out;
+}
+
+.notification-success {
+  background-color: #e6ffed; /* Nền xanh nhạt cho thành công */
+  border: 1px solid #34c759; /* Viền xanh */
+}
+
+.notification-error {
+  background-color: #ffe6e6; /* Nền đỏ nhạt cho lỗi */
+  border: 1px solid #ef4444; /* Viền đỏ */
+}
+
+.notification-icon {
+  flex-shrink: 0; /* Không co lại */
+}
+
+.notification-message {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #333333;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-50px); }
 }
 
 /* Branding/Description Section */
@@ -403,5 +453,11 @@
   .instagram-icon, .tiktok-icon {
     width: 25px;
     height: 25px;
+  }
+
+  .notification-popup {
+    top: 10px;
+    right: 10px;
+    padding: 1rem;
   }
 }

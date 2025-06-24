@@ -38,10 +38,39 @@ export const login = async (data) => {
         Accept: "*/*",
       },
     });
-    console.log('Login API response:', response); // Log for debugging
+    console.log('Login API response:', response);
     return response;
   } catch (error) {
     console.error("Error logging in:", error);
+    throw error;
+  }
+};
+
+export const getCurrentUser = async () => {
+  try {
+    const response = await apiClient.get(`/api/User/get-current-user`, {
+      headers: {
+        "Accept": "*/*",
+      },
+    });
+    console.log('Get current user API response:', response);
+    return response;
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    throw error;
+  }
+};
+export const logout = async (userId) => {
+  try {
+    const response = await apiClient.post(`/api/auth/user/logout`, `"${userId}"`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: '*/*',
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error('Error logging out:', error);
     throw error;
   }
 };
