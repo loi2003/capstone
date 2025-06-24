@@ -1,397 +1,325 @@
-/* Reset default margins and paddings */
+/* Reset mặc định cho margin và padding để đảm bảo giao diện nhất quán */
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: border-box; /* Đảm bảo padding và border không làm tăng kích thước phần tử */
 }
 
-/* CSS Variables (updated for medical deep blue theme) */
+/* Biến CSS cho chủ đề xanh đậm (deep blue medical theme) */
 :root {
-  --primary-bg: #003087; /* Deep navy blue for medical professionalism */
-  --accent-color: #0052cc; /* Brighter blue for highlights */
-  --accent-hover: #003c8f; /* Slightly darker blue for hover */
-  --white: #ffffff;
-  --light-bg: #e6f0fa; /* Light blue for subtle highlights */
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
-  --border-radius: 12px;
-  --transition: all 0.3s ease;
+  --primary-bg: #003087; /* Màu xanh navy đậm cho sự chuyên nghiệp */
+  --accent-color: #0052cc; /* Màu xanh sáng hơn cho điểm nhấn */
+  --accent-hover: #003c8f; /* Màu xanh đậm hơn khi hover */
+  --white: #ffffff; /* Màu trắng */
+  --light-bg: #e6f0fa; /* Màu xanh nhạt cho nền nhẹ */
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08); /* Bóng nhẹ */
+  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12); /* Bóng đậm hơn khi hover */
+  --border-radius: 12px; /* Bo góc */
+  --transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt mà */
 }
 
+/* Chủ đề tối (nếu được kích hoạt) */
 body.dark-theme {
-  background: #1a1a1a;
-  color: #e0e7ff;
+  background: #1a1a1a; /* Nền tối */
+  color: #e0e7ff; /* Màu chữ sáng */
 }
 
+/* Kiểu dáng cho header */
 .header {
-  background: var(--primary-bg);
-  padding: 20px;
-  box-shadow: var(--shadow);
-  position: sticky;
+  background: var(--primary-bg); /* Màu nền xanh đậm */
+  padding: 20px; /* Khoảng cách bên trong */
+  box-shadow: var(--shadow); /* Thêm bóng để tạo chiều sâu */
+  position: sticky; /* Dính ở đầu trang khi cuộn */
   top: 0;
-  z-index: 1000;
-  transition: var(--transition);
-  font-family: 'Inter', sans-serif;
+  z-index: 1000; /* Đảm bảo header nằm trên các phần tử khác */
+  transition: var(--transition); /* Hiệu ứng mượt khi thay đổi */
+  font-family: 'Inter', sans-serif; /* Phông chữ hiện đại */
 }
 
+/* Container giới hạn chiều rộng nội dung */
 .header-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: relative;
+  max-width: 1280px; /* Chiều rộng tối đa */
+  margin: 0 auto; /* Căn giữa */
+  display: flex; /* Sắp xếp các phần tử theo hàng ngang */
+  justify-content: space-between; /* Các phần tử phân bố đều */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  position: relative; /* Để định vị các phần tử con như dropdown */
 }
 
+/* Kiểu dáng logo */
 .logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: var(--white);
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  transition: var(--transition);
+  font-size: 1.8rem; /* Kích thước chữ lớn */
+  font-weight: 700; /* Chữ đậm */
+  color: var(--white); /* Màu trắng */
+  text-decoration: none; /* Bỏ gạch chân */
+  letter-spacing: 0.5px; /* Khoảng cách chữ */
+  transition: var(--transition); /* Hiệu ứng khi hover */
 }
 
 .logo:hover {
-  color: var(--light-bg);
+  color: var(--light-bg); /* Màu xanh nhạt khi hover */
 }
 
+/* Menu điều hướng */
 .nav-links {
-  display: flex;
-  align-items: center;
-  gap: 32px;
+  display: flex; /* Hiển thị các liên kết theo hàng ngang */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  gap: 32px; /* Khoảng cách giữa các liên kết */
 }
 
 .nav-links a {
-  color: var(--white);
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 500;
-  padding: 8px 12px;
-  transition: var(--transition);
-  border-radius: var(--border-radius);
+  color: var(--white); /* Màu trắng */
+  text-decoration: none; /* Bỏ gạch chân */
+  font-size: 1rem; /* Kích thước chữ */
+  font-weight: 500; /* Chữ hơi đậm */
+  padding: 8px 12px; /* Khoảng cách bên trong */
+  transition: var(--transition); /* Hiệu ứng mượt */
+  border-radius: var(--border-radius); /* Bo góc */
 }
 
 .nav-links a:hover {
-  color: var(--light-bg);
-  background: var(--accent-color);
-  box-shadow: var(--shadow-hover);
+  color: var(--light-bg); /* Màu xanh nhạt */
+  background: var(--accent-color); /* Nền xanh sáng */
+  box-shadow: var(--shadow-hover); /* Bóng đậm hơn khi hover */
 }
 
+/* Phần xác thực (Sign In/Sign Up hoặc user icon) */
 .auth-section {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  display: flex; /* Sắp xếp ngang */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  gap: 16px; /* Khoảng cách giữa các phần tử */
 }
 
+/* Nút Sign In */
 .nav-links .sign-in-btn {
-  background: var(--white);
-  color: var(--primary-bg);
-  border-radius: 25px;
-  padding: 10px 24px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: var(--transition);
-  text-align: center;
-  min-width: 90px;
+  background: var(--white); /* Nền trắng */
+  color: var(--primary-bg); /* Chữ xanh đậm */
+  border-radius: 25px; /* Bo góc mạnh */
+  padding: 10px 24px; /* Khoảng cách bên trong */
+  font-weight: 600; /* Chữ đậm */
+  text-decoration: none; /* Bỏ gạch chân */
+  transition: var(--transition); /* Hiệu ứng mượt */
+  text-align: center; /* Căn giữa chữ */
+  min-width: 90px; /* Chiều rộng tối thiểu */
 }
 
 .nav-links .sign-in-btn:hover {
-  background: var(--light-bg);
-  color: var(--accent-hover);
-  box-shadow: var(--shadow-hover);
+  background: var(--light-bg); /* Nền xanh nhạt */
+  color: var(--accent-hover); /* Chữ xanh đậm hơn */
+  box-shadow: var(--shadow-hover); /* Bóng đậm hơn */
 }
 
+/* Thông báo Sign Up */
 .auth-message {
-  font-size: 0.85rem;
-  color: var(--light-bg);
-  margin: 0;
+  font-size: 0.85rem; /* Chữ nhỏ */
+  color: var(--light-bg); /* Màu xanh nhạt */
+  margin: 0; /* Bỏ margin mặc định */
 }
 
 .auth-message a {
-  color: var(--white);
-  font-weight: 600;
-  text-decoration: none;
-  padding: 2px 4px;
-  transition: var(--transition);
+  color: var(--white); /* Màu trắng */
+  font-weight: 600; /* Chữ đậm */
+  text-decoration: none; /* Bỏ gạch chân */
+  padding: 2px 4px; /* Khoảng cách nhỏ */
+  transition: var(--transition); /* Hiệu ứng mượt */
 }
 
 .auth-message a:hover {
-  color: var(--light-bg);
-  background: var(--accent-color);
+  color: var(--light-bg); /* Màu xanh nhạt */
+  background: var(--accent-color); /* Nền xanh sáng */
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+/* Biểu tượng người dùng */
+.profile-toggle {
+  background: none; /* Không có nền */
+  border: none; /* Không có viền */
+  cursor: pointer; /* Con trỏ chuột khi hover */
+  padding: 10px; /* Khoảng cách bên trong */
+  color: var(--white); /* Màu trắng */
+  transition: var(--transition); /* Hiệu ứng mượt */
 }
 
-.search-toggle, .profile-toggle, .theme-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
-  color: var(--white);
-  transition: var(--transition);
+.profile-toggle:hover {
+  color: var(--light-bg); /* Màu xanh nhạt */
+  background: var(--accent-color); /* Nền xanh sáng */
+  border-radius: 50%; /* Bo tròn */
 }
 
-.search-toggle svg, .profile-toggle svg, .theme-toggle svg {
-  width: 24px;
+.profile-toggle svg {
+  width: 24px; /* Kích thước biểu tượng */
   height: 24px;
 }
 
-.search-toggle:hover, .profile-toggle:hover, .theme-toggle:hover {
-  color: var(--light-bg);
-  background: var(--accent-color);
-  border-radius: 50%;
-}
-
-.search-bar {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--white);
-  padding: 10px;
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  width: 300px;
-  max-width: 100%;
-}
-
-.search-bar input {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: var(--border-radius);
-  font-size: 0.95rem;
-}
-
-.search-bar input:focus {
-  outline: none;
-  box-shadow: 0 0 5px rgba(0, 82, 204, 0.3);
-}
-
-.search-bar .search-submit {
-  background: var(--accent-color);
-  border: none;
-  padding: 10px;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.search-bar .search-submit:hover {
-  background: var(--accent-hover);
-}
-
-.search-bar .search-submit svg {
-  width: 20px;
-  height: 20px;
-  color: var(--white);
-}
-
+/* Phần hồ sơ người dùng */
 .profile-section {
-  position: relative;
+  position: relative; /* Để định vị dropdown */
 }
 
+/* Dropdown của người dùng */
 .profile-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--white);
-  border-radius: var(--border-radius);
-  box-shadow: var(--shadow);
-  padding: 10px;
-  min-width: 150px;
-  z-index: 1001;
+  position: absolute; /* Định vị tuyệt đối */
+  top: 100%; /* Nằm ngay dưới biểu tượng người dùng */
+  right: 0; /* Căn phải */
+  background: var(--white); /* Nền trắng */
+  border-radius: var(--border-radius); /* Bo góc */
+  box-shadow: var(--shadow); /* Bóng nhẹ */
+  padding: 10px; /* Khoảng cách bên trong */
+  min-width: 200px; /* Chiều rộng tối thiểu */
+  max-width: 250px; /* Giới hạn chiều rộng */
+  z-index: 1002; /* Đảm bảo nằm trên các phần tử khác */
+  display: flex; /* Sắp xếp dọc */
+  flex-direction: column;
+  gap: 8px; /* Khoảng cách giữa các phần tử */
 }
 
-.profile-dropdown a {
-  display: block;
-  padding: 10px;
-  color: #333;
-  text-decoration: none;
-  font-size: 0.95rem;
-  transition: var(--transition);
+/* Email trong dropdown */
+.profile-email {
+  font-size: 0.95rem; /* Kích thước chữ */
+  color: #333; /* Màu xám đậm */
+  padding: 8px; /* Khoảng cách bên trong */
+  white-space: nowrap; /* Không xuống dòng */
+  overflow: hidden; /* Ẩn nội dung tràn */
+  text-overflow: ellipsis; /* Hiển thị ... cho email dài */
 }
 
-.profile-dropdown a:hover {
-  background: var(--light-bg);
-  color: var(--accent-color);
+/* Nút Đăng xuất */
+.logout-btn {
+  background: var(--accent-color); /* Nền xanh sáng */
+  color: var(--white); /* Chữ trắng */
+  border: none; /* Không có viền */
+  padding: 8px; /* Khoảng cách bên trong */
+  border-radius: var(--border-radius); /* Bo góc */
+  font-size: 0.95rem; /* Kích thước chữ */
+  cursor: pointer; /* Con trỏ chuột */
+  text-align: left; /* Căn trái chữ */
+  transition: var(--transition); /* Hiệu ứng mượt */
 }
 
-.language-selector {
-  display: flex;
-  gap: 10px;
+.logout-btn:hover {
+  background: var(--accent-hover); /* Nền xanh đậm hơn khi hover */
 }
 
-.language-selector button {
-  background: none;
-  border: 1px solid var(--white);
-  color: var(--white);
-  padding: 6px 12px;
-  border-radius: var(--border-radius);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.language-selector button:hover {
-  background: var(--accent-color);
-  color: var(--light-bg);
-}
-
+/* Nút mở/đóng menu trên mobile */
 .menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 10px;
+  display: none; /* Ẩn trên desktop */
+  background: none; /* Không có nền */
+  border: none; /* Không có viền */
+  cursor: pointer; /* Con trỏ chuột */
+  padding: 10px; /* Khoảng cách bên trong */
 }
 
+/* Biểu tượng menu (3 gạch ngang) */
 .menu-icon,
 .menu-icon::before,
 .menu-icon::after {
-  display: block;
-  width: 24px;
-  height: 3px;
-  background: var(--white);
-  transition: var(--transition);
+  display: block; /* Hiển thị khối */
+  width: 24px; /* Chiều rộng gạch */
+  height: 3px; /* Chiều cao gạch */
+  background: var(--white); /* Màu trắng */
+  transition: var(--transition); /* Hiệu ứng mượt */
 }
 
 .menu-icon {
-  position: relative;
+  position: relative; /* Để định vị ::before và ::after */
 }
 
 .menu-icon::before,
 .menu-icon::after {
-  content: '';
-  position: absolute;
+  content: ''; /* Tạo phần tử giả */
+  position: absolute; /* Định vị tuyệt đối */
 }
 
 .menu-icon::before {
-  top: -8px;
+  top: -8px; /* Gạch trên */
 }
 
 .menu-icon::after {
-  top: 8px;
+  top: 8px; /* Gạch dưới */
 }
 
+/* Khi menu mở, tạo dấu X */
 .nav-links.open .menu-icon {
-  background: transparent;
+  background: transparent; /* Ẩn gạch giữa */
 }
 
 .nav-links.open .menu-icon::before {
-  transform: rotate(45deg);
-  top: 0;
+  transform: rotate(45deg); /* Xoay thành \ */
+  top: 0; /* Đưa về giữa */
 }
 
 .nav-links.open .menu-icon::after {
-  transform: rotate(-45deg);
-  top: 0;
+  transform: rotate(-45deg); /* Xoay thành / */
+  top: 0; /* Đưa về giữa */
 }
 
+/* Responsive cho tablet và mobile (dưới 768px) */
 @media (max-width: 768px) {
   .header-container {
-    flex-wrap: wrap;
-    padding: 10px;
+    flex-wrap: wrap; /* Chuyển sang cột khi màn hình nhỏ */
+    padding: 10px; /* Giảm padding */
   }
 
   .menu-toggle {
-    display: block;
+    display: block; /* Hiện nút menu trên mobile */
   }
 
   .nav-links {
-    display: none;
-    flex-direction: column;
-    width: 100%;
-    gap: 16px;
-    padding: 16px;
-    background: var(--primary-bg);
-    position: absolute;
-    top: 100%;
+    display: none; /* Ẩn menu mặc định */
+    flex-direction: column; /* Sắp xếp dọc */
+    width: 100%; /* Chiều rộng đầy đủ */
+    gap: 16px; /* Khoảng cách giữa các liên kết */
+    padding: 16px; /* Khoảng cách bên trong */
+    background: var(--primary-bg); /* Nền xanh đậm */
+    position: absolute; /* Định vị tuyệt đối */
+    top: 100%; /* Nằm dưới header */
     left: 0;
     right: 0;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow); /* Thêm bóng */
   }
 
   .nav-links.open {
-    display: flex;
+    display: flex; /* Hiện menu khi mở */
   }
 
   .auth-section {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column; /* Sắp xếp dọc */
+    align-items: center; /* Căn giữa */
+    gap: 12px; /* Khoảng cách giữa các phần tử */
   }
 
   .auth-message {
-    text-align: center;
-  }
-
-  .header-actions {
-    gap: 10px;
-  }
-
-  .search-bar {
-    width: 100%;
-    right: 0;
+    text-align: center; /* Căn giữa chữ */
   }
 
   .profile-dropdown {
-    width: 100%;
-    right: 0;
-  }
-
-  .language-selector {
-    flex-direction: column;
-    align-items: center;
+    width: 200px; /* Chiều rộng cố định */
+    right: 50%; /* Căn giữa */
+    transform: translateX(50%); /* Dịch chuyển để căn giữa */
   }
 }
 
+/* Responsive cho điện thoại nhỏ (dưới 480px) */
 @media (max-width: 480px) {
   .logo {
-    font-size: 1.5rem;
+    font-size: 1.5rem; /* Giảm kích thước logo */
   }
 
   .nav-links a {
-    font-size: 0.9rem;
-    padding: 6px 10px;
+    font-size: 0.9rem; /* Giảm kích thước chữ */
+    padding: 6px 10px; /* Giảm padding */
   }
 
   .sign-in-btn {
-    padding: 8px 20px;
-    font-size: 0.9rem;
+    padding: 8px 20px; /* Giảm padding */
+    font-size: 0.9rem; /* Giảm kích thước chữ */
   }
 
   .auth-message {
-    font-size: 0.8rem;
+    font-size: 0.8rem; /* Giảm kích thước chữ */
   }
 
-  .search-bar {
-    padding: 8px;
-  }
-
-  .search-bar input {
-    font-size: 0.9rem;
-  }
-
-  .search-bar .search-submit svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .profile-dropdown a {
-    font-size: 0.9rem;
-    padding: 8px;
-  }
-
-  .language-selector button {
-    font-size: 0.85rem;
-    padding: 5px 10px;
+  .profile-email, .logout-btn {
+    font-size: 0.9rem; /* Giảm kích thước chữ */
+    padding: 8px; /* Giảm padding */
   }
 }
