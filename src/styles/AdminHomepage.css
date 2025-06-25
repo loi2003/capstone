@@ -5,17 +5,19 @@
   box-sizing: border-box;
 }
 
-/* Base styles for admin homepage */
+/* Base styles */
 .admin-homepage {
   font-family: 'Roboto', sans-serif;
   background-color: #f4f7fa;
   color: #2c3e50;
   min-height: 100vh;
+  line-height: 1.6;
 }
 
 /* Color variables */
 :root {
   --admin-primary: #3498db;
+  --admin-primary-dark: #2980b9;
   --admin-secondary: #e74c3c;
   --admin-accent: #2ecc71;
   --admin-text: #2c3e50;
@@ -26,8 +28,178 @@
   --admin-transition: all 0.3s ease;
 }
 
+/* Main content layout */
+.admin-homepage .admin-main-content {
+  display: flex;
+  min-height: calc(100vh - 64px); /* Adjust for header height */
+}
+
+/* Sidebar styles */
+.admin-homepage .admin-sidebar {
+  width: 250px;
+  background: var(--admin-background);
+  color: var(--admin-text);
+  padding: 1.5rem 1rem;
+  position: fixed;
+  top: 64px; /* Below header */
+  left: 0;
+  height: calc(100vh - 64px);
+  box-shadow: var(--admin-shadow);
+  z-index: 999;
+  transition: var(--admin-transition);
+  overflow-y: auto;
+}
+
+.admin-homepage .admin-sidebar.closed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-homepage .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.admin-homepage .sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.admin-homepage .sidebar-toggle {
+  background: transparent;
+  border: 1px solid var(--admin-primary);
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  outline: none;
+}
+
+.admin-homepage .sidebar-toggle:hover,
+.admin-homepage .sidebar-toggle:focus {
+  background: var(--admin-primary);
+  border-color: var(--admin-primary);
+}
+
+.admin-homepage .sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: var(--admin-transition);
+}
+
+.admin-homepage .sidebar-toggle svg path {
+  stroke: var(--admin-primary);
+}
+
+.admin-homepage .sidebar-toggle:hover svg path,
+.admin-homepage .sidebar-toggle:focus svg path {
+  stroke: var(--admin-background);
+}
+
+.admin-homepage .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-homepage .sidebar-nav a,
+.admin-homepage .sidebar-nav button {
+  color: var(--admin-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--admin-border-radius);
+  transition: var(--admin-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: block;
+}
+
+.admin-homepage .sidebar-nav a:hover,
+.admin-homepage .sidebar-nav a:focus,
+.admin-homepage .sidebar-nav button:hover,
+.admin-homepage .sidebar-nav button:focus {
+  background: var(--admin-primary);
+  color: var(--admin-background);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-hover);
+}
+
+.admin-homepage .sidebar-action-button {
+  background: var(--admin-primary) !important;
+  color: var(--admin-background) !important;
+  margin-top: 1rem;
+}
+
+.admin-homepage .sidebar-action-button:hover,
+.admin-homepage .sidebar-action-button:focus {
+  background: var(--admin-primary-dark) !important;
+  transform: translateY(-2px);
+}
+
+/* External toggle button (half-circle) */
+.admin-homepage .sidebar-external-toggle {
+  position: fixed;
+  top: 80px; /* Below header */
+  left: 0;
+  width: 40px;
+  height: 80px;
+  background: var(--admin-primary);
+  border-radius: 0 40px 40px 0;
+  border: none;
+  cursor: pointer;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--admin-transition);
+  box-shadow: var(--admin-shadow);
+  outline: none;
+}
+
+.admin-homepage .sidebar-external-toggle.hidden {
+  display: none;
+}
+
+.admin-homepage .sidebar-external-toggle:hover,
+.admin-homepage .sidebar-external-toggle:focus {
+  background: var(--admin-primary-dark);
+}
+
+.admin-homepage .sidebar-external-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-homepage .sidebar-external-toggle svg path {
+  stroke: var(--admin-background);
+}
+
+/* Main content */
+.admin-homepage .admin-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+.admin-homepage .admin-sidebar.closed + .sidebar-external-toggle + .admin-content {
+  margin-left: 0;
+}
+
 /* Banner section */
-.admin-banner {
+.admin-homepage .admin-banner {
   background: linear-gradient(90deg, var(--admin-primary), #5dade2);
   padding: 100px 20px;
   display: flex;
@@ -35,36 +207,36 @@
   justify-content: center;
   gap: 40px;
   flex-wrap: wrap;
-  position: relative;
-  overflow: hidden;
+  border-radius: var(--admin-border-radius);
+  box-shadow: var(--admin-shadow);
 }
 
-.admin-banner-content {
+.admin-homepage .admin-banner-content {
   max-width: 600px;
-  color: #ffffff;
+  color: var(--admin-background);
 }
 
-.admin-banner-title {
+.admin-homepage .admin-banner-title {
   font-size: 2.8rem;
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.3;
 }
 
-.admin-banner-subtitle {
+.admin-homepage .admin-banner-subtitle {
   font-size: 1.2rem;
   opacity: 0.9;
   margin-bottom: 2rem;
   line-height: 1.6;
 }
 
-.admin-banner-buttons {
+.admin-homepage .admin-banner-buttons {
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
 }
 
-.admin-banner-button {
+.admin-homepage .admin-banner-button {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 500;
@@ -73,50 +245,53 @@
   transition: var(--admin-transition);
 }
 
-.admin-banner-button.primary {
+.admin-homepage .admin-banner-button.primary {
   background: var(--admin-background);
   color: var(--admin-primary);
 }
 
-.admin-banner-button.primary:hover {
+.admin-homepage .admin-banner-button.primary:hover,
+.admin-homepage .admin-banner-button.primary:focus {
   background: #ecf0f1;
   transform: translateY(-3px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.admin-banner-button.secondary {
+.admin-homepage .admin-banner-button.secondary {
   background: transparent;
-  color: #ffffff;
-  border: 2px solid #ffffff;
+  color: var(--admin-background);
+  border: 2px solid var(--admin-background);
 }
 
-.admin-banner-button.secondary:hover {
+.admin-homepage .admin-banner-button.secondary:hover,
+.admin-homepage .admin-banner-button.secondary:focus {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-3px);
 }
 
-.admin-banner-image svg {
+.admin-homepage .admin-banner-image svg {
   width: 200px;
   height: 200px;
   max-width: 100%;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
 }
 
 /* Features section */
-.admin-features {
+.admin-homepage .admin-features {
   max-width: 1200px;
   margin: 0 auto;
   padding: 60px 20px;
   text-align: center;
 }
 
-.admin-features-title {
+.admin-homepage .admin-features-title {
   font-size: 2.5rem;
   font-weight: 600;
   color: var(--admin-text);
   margin-bottom: 1rem;
 }
 
-.admin-features-description {
+.admin-homepage .admin-features-description {
   font-size: 1.1rem;
   color: #7f8c8d;
   margin-bottom: 3rem;
@@ -125,13 +300,13 @@
   margin-right: auto;
 }
 
-.admin-features-grid {
+.admin-homepage .admin-features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 25px;
 }
 
-.admin-feature-card {
+.admin-homepage .admin-feature-card {
   background: var(--admin-background);
   padding: 30px;
   border-radius: var(--admin-border-radius);
@@ -139,27 +314,28 @@
   transition: var(--admin-transition);
 }
 
-.admin-feature-card:hover {
+.admin-homepage .admin-feature-card:hover,
+.admin-homepage .admin-feature-card:focus-within {
   transform: translateY(-5px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.admin-feature-card h3 {
+.admin-homepage .admin-feature-card h3 {
   font-size: 1.6rem;
   font-weight: 500;
   color: var(--admin-text);
   margin-bottom: 0.8rem;
 }
 
-.admin-feature-card p {
+.admin-homepage .admin-feature-card p {
   font-size: 0.95rem;
   color: #7f8c8d;
   line-height: 1.5;
   margin-bottom: 1.5rem;
 }
 
-.admin-feature-link {
-  display: inline-block;
+.admin-homepage .admin-feature-link {
+  display: inline-flex;
   padding: 10px 20px;
   font-size: 0.95rem;
   font-weight: 500;
@@ -170,133 +346,206 @@
   transition: var(--admin-transition);
 }
 
-.admin-feature-link:hover {
-  background: #2980b9;
+.admin-homepage .admin-feature-link:hover,
+.admin-homepage .admin-feature-link:focus {
+  background: var(--admin-primary-dark);
   box-shadow: var(--admin-shadow);
+  transform: translateY(-2px);
 }
 
 /* Responsive design */
 @media (max-width: 1024px) {
-  .admin-banner {
+  .admin-homepage .admin-sidebar {
+    width: 220px;
+  }
+
+  .admin-homepage .admin-content {
+    margin-left: 220px;
+  }
+
+  .admin-homepage .admin-sidebar.closed + .sidebar-external-toggle + .admin-content {
+    margin-left: 0;
+  }
+
+  .admin-homepage .admin-banner {
     padding: 80px 15px;
     flex-direction: column;
     text-align: center;
   }
 
-  .admin-banner-content {
+  .admin-homepage .admin-banner-content {
     max-width: 80%;
   }
 
-  .admin-banner-title {
+  .admin-homepage .admin-banner-title {
     font-size: 2.2rem;
   }
 
-  .admin-banner-subtitle {
+  .admin-homepage .admin-banner-subtitle {
     font-size: 1.1rem;
   }
 
-  .admin-banner-image svg {
+  .admin-homepage .admin-banner-image svg {
     width: 180px;
     height: 180px;
   }
 
-  .admin-features {
+  .admin-homepage .admin-features {
     padding: 50px 15px;
   }
 
-  .admin-features-title {
+  .admin-homepage .admin-features-title {
     font-size: 2rem;
   }
 }
 
 @media (max-width: 768px) {
-  .admin-banner {
-    padding: 60px 10px;
+  .admin-homepage .admin-sidebar {
+    width: 200px;
   }
 
-  .admin-banner-title {
+  .admin-homepage .admin-content {
+    margin-left: 200px;
+  }
+
+  .admin-homepage .admin-sidebar.closed + .sidebar-external-toggle + .admin-content {
+    margin-left: 0;
+  }
+
+  .admin-homepage .admin-banner {
+    padding: 60px 10px;
+    gap: 20px;
+  }
+
+  .admin-homepage .admin-banner-content,
+  .admin-homepage .admin-banner-image {
+    max-width: 100%;
+  }
+
+  .admin-homepage .admin-banner-title {
     font-size: 1.8rem;
   }
 
-  .admin-banner-subtitle {
+  .admin-homepage .admin-banner-subtitle {
     font-size: 1rem;
   }
 
-  .admin-banner-button {
+  .admin-homepage .admin-banner-button {
     padding: 10px 20px;
     font-size: 0.95rem;
   }
 
-  .admin-banner-image svg {
+  .admin-homepage .admin-banner-image svg {
     width: 150px;
     height: 150px;
   }
 
-  .admin-features-title {
+  .admin-homepage .admin-features-title {
     font-size: 1.8rem;
   }
 
-  .admin-features-description {
+  .admin-homepage .admin-features-description {
     font-size: 1rem;
   }
 
-  .admin-feature-card h3 {
-    font-size: 1.4rem;
-  }
-
-  .admin-feature-card p {
-    font-size: 0.9rem;
+  .admin-homepage .admin-features-grid {
+    gap: 20px;
   }
 }
 
 @media (max-width: 480px) {
-  .admin-banner {
+  .admin-homepage .admin-sidebar {
+    width: 180px;
+    padding: 1rem 0.75rem;
+  }
+
+  .admin-homepage .admin-content {
+    margin-left: 180px;
+  }
+
+  .admin-homepage .admin-sidebar.closed + .sidebar-external-toggle + .admin-content {
+    margin-left: 0;
+  }
+
+  .admin-homepage .sidebar-external-toggle {
+    width: 36px;
+    height: 72px;
+    border-radius: 0 36px 36px 0;
+  }
+
+  .admin-homepage .sidebar-external-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .admin-homepage .sidebar-title {
+    font-size: 1.125rem;
+  }
+
+  .admin-homepage .sidebar-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .admin-homepage .sidebar-toggle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .admin-homepage .sidebar-nav a,
+  .admin-homepage .sidebar-nav button {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .admin-homepage .admin-banner {
     padding: 40px 10px;
   }
 
-  .admin-banner-content {
+  .admin-homepage .admin-banner-content {
     max-width: 100%;
   }
 
-  .admin-banner-title {
+  .admin-homepage .admin-banner-title {
     font-size: 1.5rem;
   }
 
-  .admin-banner-subtitle {
+  .admin-homepage .admin-banner-subtitle {
     font-size: 0.9rem;
   }
 
-  .admin-banner-button {
+  .admin-homepage .admin-banner-button {
     padding: 8px 16px;
     font-size: 0.9rem;
   }
 
-  .admin-banner-image svg {
+  .admin-homepage .admin-banner-image svg {
     width: 120px;
     height: 120px;
   }
 
-  .admin-features {
+  .admin-homepage .admin-features {
     padding: 40px 10px;
   }
 
-  .admin-features-title {
+  .admin-homepage .admin-features-title {
     font-size: 1.5rem;
   }
 
-  .admin-features-description {
+  .admin-homepage .admin-features-description {
     font-size: 0.9rem;
   }
 
-  .admin-features-grid {
+  .admin-homepage .admin-features-grid {
     grid-template-columns: 1fr;
+    gap: 15px;
   }
 
-  .admin-feature-card {
+  .admin-homepage .admin-feature-card {
     padding: 20px;
   }
 
-  .admin-feature-link {
+  .admin-homepage .admin-feature-link {
     padding: 8px 16px;
     font-size: 0.9rem;
   }

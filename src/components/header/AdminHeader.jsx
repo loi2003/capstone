@@ -159,24 +159,22 @@ const AdminHeader = () => {
           <Link to="/admin/reports">Reports</Link>
           <Link to="/admin/settings">Settings</Link>
           {user ? (
-            <div className="profile-section">
+            <div className="admin-profile-section">
               <button
-                className="profile-toggle icon-only"
+                className="admin-profile-toggle"
                 onClick={toggleDropdown}
                 aria-label="User menu"
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                    fill="#000000"
                   />
                 </svg>
               </button>
               {isDropdownOpen && (
-                <div className="profile-dropdown">
-                  <span className="profile-email">{user.email}</span>
+                <div className="admin-profile-dropdown">
+                  <span className="admin-profile-email">{user.email}</span>
                   <button onClick={handleLogout}>Logout</button>
                 </div>
               )}
