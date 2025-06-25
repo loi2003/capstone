@@ -1,278 +1,233 @@
-/* Reset default margins and paddings */
+/* Reset default styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Base styles for header */
+/* Color variables */
+:root {
+  --staff-green: #10b981;
+  --staff-orange: #f97316;
+  --staff-accent: #34d399;
+  --staff-accent-hover: #059669;
+  --staff-white: #ffffff;
+  --staff-light-bg: #ecfdf5;
+  --staff-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --staff-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --staff-border-radius: 8px;
+  --staff-transition: all 0.3s ease;
+}
+
+/* Dark theme */
+body.dark-theme {
+  background: #111827;
+  color: #f3f4f6;
+}
+
+/* Header styles */
 .staff-header {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(90deg, #22c55e, #ecfdf5);
-  color: #1f2a44;
+  background: var(--staff-green);
+  padding: 1rem;
+  box-shadow: var(--staff-shadow);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
 }
 
-/* Color variables */
-:root {
-  --staff-primary: #22c55e;
-  --staff-secondary: #f97316;
-  --staff-accent: #4ade80;
-  --staff-text: #1f2a44;
-  --staff-white: #ecfdf5;
-  --staff-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --staff-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.12);
-  --staff-border-radius: 10px;
-  --staff-transition: all 0.3s ease-in-out;
-}
-
-/* Header container */
+/* Container */
 .staff-header .container {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  align-items: center;
 }
 
-/* Logo styling */
+/* Logo */
 .staff-header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--staff-white);
+  text-decoration: none;
   display: flex;
   align-items: center;
-  text-decoration: none;
-  gap: 10px;
+  gap: 0.5rem;
+  transition: var(--staff-transition);
 }
 
-.staff-header .logo span {
-  font-size: 1.625rem;
-  font-weight: 600;
-  color: var(--staff-text);
-  letter-spacing: -0.02em;
+.staff-header .logo:hover {
+  color: var(--staff-light-bg);
 }
 
 .staff-header .logo svg {
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
 }
 
 /* Navigation */
 .staff-header nav {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 1.5rem;
 }
 
-.staff-header nav a,
-.staff-header nav button {
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--staff-text);
+.staff-header nav a {
+  color: var(--staff-white);
   text-decoration: none;
-  padding: 8px 10px;
-  border-radius: var(--staff-border-radius);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
   transition: var(--staff-transition);
+  border-radius: var(--staff-border-radius);
 }
 
 .staff-header nav a:hover,
-.staff-header nav button:hover {
-  color: var(--staff-primary);
-  background: rgba(34, 197, 94, 0.1);
-}
-
-/* Hamburger menu button */
-.staff-header .menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-}
-
-.staff-header .menu-toggle svg {
-  color: var(--staff-text);
-  width: 22px;
-  height: 22px;
+.staff-header nav a:focus {
+  background: var(--staff-orange);
+  color: var(--staff-white);
+  box-shadow: var(--staff-shadow-hover);
 }
 
 /* Profile section */
 .staff-header .profile-section {
   position: relative;
-  z-index: 1002;
 }
 
-.staff-header .profile-toggle.icon-only {
-  padding: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+.staff-header .profile-toggle {
+  background: none;
+  border: none;
   cursor: pointer;
+  padding: 0.5rem;
+  color: var(--staff-white);
   transition: var(--staff-transition);
 }
 
-.staff-header .profile-toggle.icon-only:hover {
-  background: rgba(34, 197, 94, 0.3);
+.staff-header .profile-toggle:hover,
+.staff-header .profile-toggle:focus {
+  background: var(--staff-orange);
+  border-radius: 50%;
 }
 
-.staff-header .profile-toggle.icon-only svg {
-  margin-right: 0;
-  width: 22px;
-  height: 22px;
-  color: var(--staff-text);
+.staff-header .profile-toggle svg {
+  width: 24px;
+  height: 24px;
 }
 
+/* Profile dropdown */
 .staff-header .profile-dropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: 100%;
   right: 0;
   background: var(--staff-white);
   border-radius: var(--staff-border-radius);
   box-shadow: var(--staff-shadow);
-  padding: 10px;
-  min-width: 200px;
-  z-index: 1003;
-  border: 1px solid #d1fae5;
+  padding: 0.75rem;
+  min-width: 180px;
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.staff-header .profile-dropdown .profile-email {
-  display: block;
-  padding: 10px 14px;
+.staff-header .profile-email {
   font-size: 0.9rem;
-  color: #374151;
-  font-weight: 500;
-  border-bottom: 1px solid #d1fae5;
-  margin-bottom: 6px;
+  color: #111827;
+  padding: 0.5rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .staff-header .profile-dropdown button {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 10px 14px;
-  font-size: 0.9rem;
-  color: var(--staff-text);
-  background: none;
+  background: var(--staff-orange);
+  color: var(--staff-white);
   border: none;
+  padding: 0.5rem;
+  border-radius: var(--staff-border-radius);
+  font-size: 0.9rem;
   cursor: pointer;
-  border-radius: 4px;
+  text-align: left;
   transition: var(--staff-transition);
 }
 
-.staff-header .profile-dropdown button:hover {
-  background: rgba(34, 197, 94, 0.15);
-  color: var(--staff-primary);
+.staff-header .profile-dropdown button:hover,
+.staff-header .profile-dropdown button:focus {
+  background: var(--staff-accent-hover);
+}
+
+/* Menu toggle */
+.staff-header .menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.staff-header .menu-toggle svg {
+  width: 24px;
+  height: 24px;
 }
 
 /* Responsive design */
-@media (max-width: 1024px) {
-  .staff-header nav {
-    display: none;
+@media (max-width: 768px) {
+  .staff-header .container {
+    flex-wrap: wrap;
+    padding: 0.5rem;
   }
 
   .staff-header .menu-toggle {
     display: block;
   }
 
-  .staff-header nav.block {
-    display: flex;
+  .staff-header nav {
+    display: none;
     flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--staff-green);
     position: absolute;
     top: 100%;
     left: 0;
-    right: 0;
-    background: var(--staff-white);
     box-shadow: var(--staff-shadow);
-    padding: 14px;
-    border: 1px solid #d1fae5;
   }
 
-  .staff-header nav a,
-  .staff-header nav button {
-    padding: 10px;
-  }
-
-  .staff-header .profile-section {
-    margin-top: 10px;
+  .staff-header nav.block {
+    display: flex;
   }
 
   .staff-header .profile-dropdown {
-    position: static;
-    width: 100%;
-    margin-top: 6px;
-  }
-}
-
-@media (max-width: 768px) {
-  .staff-header .container {
-    padding: 10px 14px;
-  }
-
-  .staff-header .logo span {
-    font-size: 1.375rem;
-  }
-
-  .staff-header .logo svg {
-    width: 38px;
-    height: 38px;
-  }
-
-  .staff-header nav a,
-  .staff-header nav button {
-    font-size: 0.9rem;
-  }
-
-  .staff-header .profile-toggle.icon-only {
-    width: 32px;
-    height: 32px;
-    padding: 5px;
-  }
-
-  .staff-header .profile-toggle.icon-only svg {
-    width: 20px;
-    height: 20px;
+    width: 180px;
+    right: 50%;
+    transform: translateX(50%);
   }
 }
 
 @media (max-width: 480px) {
-  .staff-header .container {
-    padding: 8px 10px;
-  }
-
-  .staff-header .logo span {
-    font-size: 1.125rem;
+  .staff-header .logo {
+    font-size: 1.25rem;
   }
 
   .staff-header .logo svg {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
   }
 
-  .staff-header .profile-toggle.icon-only {
-    width: 30px;
-    height: 30px;
-    padding: 4px;
+  .staff-header nav a {
+    font-size: 0.9rem;
+    padding: 0.5rem;
   }
 
-  .staff-header .profile-toggle.icon-only svg {
-    width: 18px;
-    height: 18px;
-  }
-
-  .staff-header nav a,
-  .staff-header nav button {
+  .staff-header .profile-email,
+  .staff-header .profile-dropdown button {
     font-size: 0.85rem;
-    padding: 8px;
+  }
+
+  .staff-header .profile-toggle svg {
+    width: 20px;
+    height: 20px;
   }
 }
