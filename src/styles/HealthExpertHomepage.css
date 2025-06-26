@@ -6,7 +6,7 @@
 }
 
 /* Base styles */
-.staff-homepage {
+.health-expert-homepage {
   font-family: 'Poppins', sans-serif;
   background-color: #f9fafb;
   color: #111827;
@@ -16,40 +16,40 @@
 
 /* Color variables */
 :root {
-  --staff-orange: #f97316;
-  --staff-orange-dark: #e86114;
-  --staff-white: #ffffff;
-  --staff-text: #111827;
-  --staff-subtext: #6b7280;
-  --staff-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --staff-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --staff-border-radius: 8px;
-  --staff-transition: all 0.3s ease;
+  --health-expert-orange: #f97316;
+  --health-expert-orange-dark: #e86114;
+  --health-expert-white: #ffffff;
+  --health-expert-text: #111827;
+  --health-expert-subtext: #6b7280;
+  --health-expert-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --health-expert-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --health-expert-border-radius: 8px;
+  --health-expert-transition: all 0.3s ease;
 }
 
 /* Main content layout */
-.staff-main-content {
+.health-expert-main-content {
   display: flex;
   min-height: calc(100vh - 64px); /* Adjust for header height */
 }
 
 /* Sidebar styles */
-.staff-sidebar {
+.health-expert-sidebar {
   width: 250px;
-  background: var(--staff-white);
-  color: var(--staff-text);
+  background: var(--health-expert-white);
+  color: var(--health-expert-text);
   padding: 1.5rem 1rem;
   position: fixed;
   top: 64px; /* Below header */
   left: 0;
   height: calc(100vh - 64px);
-  box-shadow: var(--staff-shadow);
+  box-shadow: var(--health-expert-shadow);
   z-index: 999;
-  transition: var(--staff-transition);
+  transition: var(--health-expert-transition);
   overflow-y: auto;
 }
 
-.staff-sidebar.closed {
+.health-expert-sidebar.closed {
   width: 0;
   padding: 0;
   overflow: hidden;
@@ -65,12 +65,12 @@
 .sidebar-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--staff-text);
+  color: var(--health-expert-text);
 }
 
 .sidebar-toggle {
   background: transparent;
-  border: 1px solid var(--staff-orange);
+  border: 1px solid var(--health-expert-orange);
   cursor: pointer;
   padding: 0.25rem;
   width: 28px;
@@ -84,19 +84,19 @@
 
 .sidebar-toggle:hover,
 .sidebar-toggle:focus {
-  background: var(--staff-orange);
-  border-color: var(--staff-orange);
+  background: var(--health-expert-orange);
+  border-color: var(--health-expert-orange);
 }
 
 .sidebar-toggle svg {
   width: 18px;
   height: 18px;
-  transition: var(--staff-transition);
+  transition: var(--health-expert-transition);
 }
 
 .sidebar-toggle:hover svg path,
 .sidebar-toggle:focus svg path {
-  stroke: var(--staff-white);
+  stroke: var(--health-expert-white);
 }
 
 .sidebar-nav {
@@ -107,13 +107,13 @@
 
 .sidebar-nav a,
 .sidebar-nav button {
-  color: var(--staff-text);
+  color: var(--health-expert-text);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
   padding: 0.75rem 1rem;
-  border-radius: var(--staff-border-radius);
-  transition: var(--staff-transition);
+  border-radius: var(--health-expert-border-radius);
+  transition: var(--health-expert-transition);
   background: none;
   border: none;
   cursor: pointer;
@@ -125,21 +125,21 @@
 .sidebar-nav a:focus,
 .sidebar-nav button:hover,
 .sidebar-nav button:focus {
-  background: var(--staff-orange);
-  color: var(--staff-white);
+  background: var(--health-expert-orange);
+  color: var(--health-expert-white);
   transform: translateY(-2px);
-  box-shadow: var(--staff-shadow-hover);
+  box-shadow: var(--health-expert-shadow-hover);
 }
 
 .sidebar-action-button {
-  background: var(--staff-orange) !important;
-  color: var(--staff-white) !important;
+  background: var(--health-expert-orange) !important;
+  color: var(--health-expert-white) !important;
   margin-top: 1rem;
 }
 
 .sidebar-action-button:hover,
 .sidebar-action-button:focus {
-  background: var(--staff-orange-dark) !important;
+  background: var(--health-expert-orange-dark) !important;
   transform: translateY(-2px);
 }
 
@@ -150,7 +150,7 @@
   left: 0;
   width: 40px;
   height: 80px;
-  background: var(--staff-orange);
+  background: var(--health-expert-orange);
   border-radius: 0 40px 40px 0;
   border: none;
   cursor: pointer;
@@ -158,8 +158,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: var(--staff-transition);
-  box-shadow: var(--staff-shadow);
+  transition: var(--health-expert-transition);
+  box-shadow: var(--health-expert-shadow);
   outline: none;
 }
 
@@ -169,7 +169,7 @@
 
 .sidebar-external-toggle:hover,
 .sidebar-external-toggle:focus {
-  background: var(--staff-orange-dark);
+  background: var(--health-expert-orange-dark);
 }
 
 .sidebar-external-toggle svg {
@@ -178,99 +178,99 @@
 }
 
 /* Main content */
-.staff-content {
+.health-expert-content {
   flex: 1;
   margin-left: 250px;
   padding: 2rem;
   transition: margin-left 0.3s ease;
 }
 
-.staff-sidebar.closed + .sidebar-external-toggle + .staff-content {
+.health-expert-sidebar.closed + .sidebar-external-toggle + .health-expert-content {
   margin-left: 0;
 }
 
 /* Banner section */
-.staff-banner {
-  background: linear-gradient(135deg, var(--staff-orange) 40%, var(--staff-white) 100%);
+.health-expert-banner {
+  background: linear-gradient(135deg, var(--health-expert-orange) 40%, var(--health-expert-white) 100%);
   padding: 4rem 1rem;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 2rem;
-  border-radius: var(--staff-border-radius);
-  box-shadow: var(--staff-shadow);
+  border-radius: var(--health-expert-border-radius);
+  box-shadow: var(--health-expert-shadow);
 }
 
-.staff-banner-content {
+.health-expert-banner-content {
   flex: 1 1 50%;
   max-width: 600px;
-  color: var(--staff-white);
+  color: var(--health-expert-white);
   padding: 1rem;
 }
 
-.staff-banner-title {
+.health-expert-banner-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--staff-white);
+  color: var(--health-expert-white);
   margin-bottom: 1rem;
 }
 
-.staff-banner-subtitle {
+.health-expert-banner-subtitle {
   font-size: 1.125rem;
   font-weight: 400;
-  color: var(--staff-white);
+  color: var(--health-expert-white);
   margin-bottom: 1.5rem;
   opacity: 0.9;
 }
 
-.staff-banner-buttons {
+.health-expert-banner-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.staff-banner-button {
+.health-expert-banner-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
-  border-radius: var(--staff-border-radius);
-  transition: var(--staff-transition);
+  border-radius: var(--health-expert-border-radius);
+  transition: var(--health-expert-transition);
 }
 
-.staff-banner-button.primary {
-  background: var(--staff-white);
-  color: var(--staff-orange);
+.health-expert-banner-button.primary {
+  background: var(--health-expert-white);
+  color: var(--health-expert-orange);
 }
 
-.staff-banner-button.primary:hover,
-.staff-banner-button.primary:focus {
+.health-expert-banner-button.primary:hover,
+.health-expert-banner-button.primary:focus {
   background: #f3f4f6;
-  box-shadow: var(--staff-shadow);
+  box-shadow: var(--health-expert-shadow);
   transform: translateY(-2px);
 }
 
-.staff-banner-button.secondary {
+.health-expert-banner-button.secondary {
   background: transparent;
-  color: var(--staff-white);
-  border: 2px solid var(--staff-white);
+  color: var(--health-expert-white);
+  border: 2px solid var(--health-expert-white);
 }
 
-.staff-banner-button.secondary:hover,
-.staff-banner-button.secondary:focus {
+.health-expert-banner-button.secondary:hover,
+.health-expert-banner-button.secondary:focus {
   background: rgba(255, 255, 255, 0.2);
-  box-shadow: var(--staff-shadow);
+  box-shadow: var(--health-expert-shadow);
   transform: translateY(-2px);
 }
 
-.staff-banner-image {
+.health-expert-banner-image {
   flex: 1 1 40%;
   max-width: 400px;
   padding: 1rem;
 }
 
-.staff-banner-image svg {
+.health-expert-banner-image svg {
   width: 100%;
   height: auto;
   max-height: 250px;
@@ -278,190 +278,190 @@
 }
 
 /* Features section */
-.staff-features {
+.health-expert-features {
   max-width: 1280px;
   margin: 0 auto;
   padding: 4rem 1rem;
   text-align: center;
 }
 
-.staff-features-title {
+.health-expert-features-title {
   font-size: 2.25rem;
   font-weight: 600;
-  color: var(--staff-text);
+  color: var(--health-expert-text);
   margin-bottom: 1rem;
 }
 
-.staff-features-description {
+.health-expert-features-description {
   font-size: 1.125rem;
-  color: var(--staff-subtext);
+  color: var(--health-expert-subtext);
   margin-bottom: 2rem;
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
 }
 
-.staff-features-grid {
+.health-expert-features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
-.staff-feature-card {
-  background: var(--staff-white);
+.health-expert-feature-card {
+  background: var(--health-expert-white);
   padding: 1.5rem;
-  border-radius: var(--staff-border-radius);
-  box-shadow: var(--staff-shadow);
-  transition: var(--staff-transition);
+  border-radius: var(--health-expert-border-radius);
+  box-shadow: var(--health-expert-shadow);
+  transition: var(--health-expert-transition);
 }
 
-.staff-feature-card:hover,
-.staff-feature-card:focus-within {
+.health-expert-feature-card:hover,
+.health-expert-feature-card:focus-within {
   transform: translateY(-4px);
-  box-shadow: var(--staff-shadow-hover);
+  box-shadow: var(--health-expert-shadow-hover);
 }
 
-.staff-feature-card h3 {
+.health-expert-feature-card h3 {
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--staff-text);
+  color: var(--health-expert-text);
   margin-bottom: 0.75rem;
 }
 
-.staff-feature-card p {
+.health-expert-feature-card p {
   font-size: 0.95rem;
-  color: var(--staff-subtext);
+  color: var(--health-expert-subtext);
   margin-bottom: 1rem;
 }
 
-.staff-feature-link {
+.health-expert-feature-link {
   display: inline-flex;
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--staff-white);
-  background: var(--staff-orange);
-  border-radius: var(--staff-border-radius);
+  color: var(--health-expert-white);
+  background: var(--health-expert-orange);
+  border-radius: var(--health-expert-border-radius);
   text-decoration: none;
-  transition: var(--staff-transition);
+  transition: var(--health-expert-transition);
 }
 
-.staff-feature-link:hover,
-.staff-feature-link:focus {
-  background: var(--staff-orange-dark);
-  box-shadow: var(--staff-shadow);
+.health-expert-feature-link:hover,
+.health-expert-feature-link:focus {
+  background: var(--health-expert-orange-dark);
+  box-shadow: var(--health-expert-shadow);
   transform: translateY(-2px);
 }
 
 /* Responsive design */
 @media (max-width: 1024px) {
-  .staff-sidebar {
+  .health-expert-sidebar {
     width: 220px;
   }
 
-  .staff-content {
+  .health-expert-content {
     margin-left: 220px;
   }
 
-  .staff-sidebar.closed + .sidebar-external-toggle + .staff-content {
+  .health-expert-sidebar.closed + .sidebar-external-toggle + .health-expert-content {
     margin-left: 0;
   }
 
-  .staff-banner {
+  .health-expert-banner {
     padding: 3rem 1rem;
   }
 
-  .staff-banner-title {
+  .health-expert-banner-title {
     font-size: 2rem;
   }
 
-  .staff-banner-subtitle {
+  .health-expert-banner-subtitle {
     font-size: 1rem;
   }
 
-  .staff-banner-image svg {
+  .health-expert-banner-image svg {
     max-height: 200px;
   }
 
-  .staff-features {
+  .health-expert-features {
     padding: 3rem 1rem;
   }
 
-  .staff-features-title {
+  .health-expert-features-title {
     font-size: 2rem;
   }
 }
 
 @media (max-width: 768px) {
-  .staff-sidebar {
+  .health-expert-sidebar {
     width: 200px;
   }
 
-  .staff-content {
+  .health-expert-content {
     margin-left: 200px;
   }
 
-  .staff-sidebar.closed + .sidebar-external-toggle + .staff-content {
+  .health-expert-sidebar.closed + .sidebar-external-toggle + .health-expert-content {
     margin-left: 0;
   }
 
-  .staff-banner {
+  .health-expert-banner {
     padding: 2rem 0.75rem;
     gap: 1.5rem;
   }
 
-  .staff-banner-content,
-  .staff-banner-image {
+  .health-expert-banner-content,
+  .health-expert-banner-image {
     flex: 1 1 100%;
     max-width: 100%;
     text-align: center;
   }
 
-  .staff-banner-buttons {
+  .health-expert-banner-buttons {
     justify-content: center;
   }
 
-  .staff-banner-title {
+  .health-expert-banner-title {
     font-size: 1.75rem;
   }
 
-  .staff-banner-subtitle {
+  .health-expert-banner-subtitle {
     font-size: 0.95rem;
   }
 
-  .staff-banner-button {
+  .health-expert-banner-button {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
 
-  .staff-banner-image svg {
+  .health-expert-banner-image svg {
     max-height: 180px;
   }
 
-  .staff-features-title {
+  .health-expert-features-title {
     font-size: 1.75rem;
   }
 
-  .staff-features-description {
+  .health-expert-features-description {
     font-size: 1rem;
   }
 
-  .staff-features-grid {
+  .health-expert-features-grid {
     gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .staff-sidebar {
+  .health-expert-sidebar {
     width: 180px;
     padding: 1rem 0.75rem;
   }
 
-  .staff-content {
+  .health-expert-content {
     margin-left: 180px;
   }
 
-  .staff-sidebar.closed + .sidebar-external-toggle + .staff-content {
+  .health-expert-sidebar.closed + .sidebar-external-toggle + .health-expert-content {
     margin-left: 0;
   }
 
@@ -496,52 +496,52 @@
     padding: 0.5rem 0.75rem;
   }
 
-  .staff-banner {
+  .health-expert-banner {
     padding: 1.5rem 0.5rem;
   }
 
-  .staff-banner-title {
+  .health-expert-banner-title {
     font-size: 1.5rem;
   }
 
-  .staff-banner-subtitle {
+  .health-expert-banner-subtitle {
     font-size: 0.9rem;
   }
 
-  .staff-banner-button {
+  .health-expert-banner-button {
     padding: 0.5rem 0.75rem;
     font-size: 0.85rem;
   }
 
-  .staff-banner-image svg {
+  .health-expert-banner-image svg {
     max-height: 150px;
   }
 
-  .staff-features {
+  .health-expert-features {
     padding: 2rem 0.5rem;
   }
 
-  .staff-features-title {
+  .health-expert-features-title {
     font-size: 1.5rem;
   }
 
-  .staff-features-description {
+  .health-expert-features-description {
     font-size: 0.9rem;
   }
 
-  .staff-feature-card {
+  .health-expert-feature-card {
     padding: 1rem;
   }
 
-  .staff-feature-card h3 {
+  .health-expert-feature-card h3 {
     font-size: 1.25rem;
   }
 
-  .staff-feature-card p {
+  .health-expert-feature-card p {
     font-size: 0.9rem;
   }
 
-  .staff-feature-link {
+  .health-expert-feature-link {
     padding: 0.5rem 0.75rem;
     font-size: 0.9rem;
   }

@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import StaffHeader from '../../components/header/StaffHeader';
-import '../../styles/StaffHomepage.css'
+import HealthExpertHeader from '../../components/header/HealthExpertHeader';
+import '../../styles/HealthExpertHomepage.css';
 
-
-const StaffHomePage = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar open by default
+const HealthExpertHomePage = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const containerVariants = {
     initial: { opacity: 0, y: 20 },
@@ -55,17 +54,17 @@ const StaffHomePage = () => {
   };
 
   return (
-    <div className="staff-homepage">
-      <StaffHeader />
-      <div className="staff-main-content">
+    <div className="health-expert-homepage">
+      <HealthExpertHeader />
+      <div className="health-expert-main-content">
         <motion.aside
-          className={`staff-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}
+          className={`health-expert-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}
           variants={sidebarVariants}
           animate={isSidebarOpen ? 'open' : 'closed'}
           initial="open"
         >
           <div className="sidebar-header">
-            <h2 className="sidebar-title">Staff Tools</h2>
+            <h2 className="sidebar-title">Health Expert Tools</h2>
             <motion.button
               className="sidebar-toggle"
               onClick={toggleSidebar}
@@ -76,7 +75,7 @@ const StaffHomePage = () => {
             >
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
                 <path
-                  stroke="var(--staff-text)"
+                  stroke="var(--health-expert-text)"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -93,22 +92,22 @@ const StaffHomePage = () => {
             variants={containerVariants}
           >
             <motion.div variants={navItemVariants}>
-              <Link to="/staff/dashboard" onClick={() => setIsSidebarOpen(false)}>
+              <Link to="/health-expert/dashboard" onClick={() => setIsSidebarOpen(false)}>
                 Dashboard Overview
               </Link>
             </motion.div>
             <motion.div variants={navItemVariants}>
-              <Link to="/staff/reports" onClick={() => setIsSidebarOpen(false)}>
+              <Link to="/health-expert/reports" onClick={() => setIsSidebarOpen(false)}>
                 Reports
               </Link>
             </motion.div>
             <motion.div variants={navItemVariants}>
-              <Link to="/staff/settings" onClick={() => setIsSidebarOpen(false)}>
+              <Link to="/health-expert/settings" onClick={() => setIsSidebarOpen(false)}>
                 Settings
               </Link>
             </motion.div>
             <motion.div variants={navItemVariants}>
-              <button className="sidebar-action-button">+ Create Task</button>
+              <button className="sidebar-action-button">+ Create Consultation</button>
             </motion.div>
           </motion.nav>
         </motion.aside>
@@ -122,7 +121,7 @@ const StaffHomePage = () => {
         >
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
             <path
-              stroke="var(--staff-white)"
+              stroke="var(--health-expert-white)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -130,34 +129,34 @@ const StaffHomePage = () => {
             />
           </svg>
         </motion.button>
-        <main className="staff-content">
-          <section className="staff-banner">
+        <main className="health-expert-content">
+          <section className="health-expert-banner">
             <motion.div
-              className="staff-banner-content"
+              className="health-expert-banner-content"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             >
-              <h1 className="staff-banner-title">Staff Dashboard</h1>
-              <p className="staff-banner-subtitle">
-                Manage tasks, provide support, and update your profile with ease.
+              <h1 className="health-expert-banner-title">Health Expert Dashboard</h1>
+              <p className="health-expert-banner-subtitle">
+                Manage consultations, provide health advice, and update your profile with ease.
               </p>
               <motion.div
-                className="staff-banner-buttons"
+                className="health-expert-banner-buttons"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2 }}
               >
-                <Link to="/staff/tasks" className="staff-banner-button primary">
-                  View Tasks
+                <Link to="/health-expert/consultations" className="health-expert-banner-button primary">
+                  View Consultations
                 </Link>
-                <Link to="/staff/support" className="staff-banner-button secondary">
+                <Link to="/health-expert/support" className="health-expert-banner-button secondary">
                   Provide Support
                 </Link>
               </motion.div>
             </motion.div>
             <motion.div
-              className="staff-banner-image"
+              className="health-expert-banner-image"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -165,32 +164,32 @@ const StaffHomePage = () => {
               <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
-                  fill="var(--staff-orange)"
-                  stroke="var(--staff-white)"
+                  fill="var(--health-expert-orange)"
+                  stroke="var(--health-expert-white)"
                   strokeWidth="1.5"
                 />
                 <path
                   d="M4 12H20C20.5523 12 21 11.5523 21 11C21 10.4477 20.5523 10 20 10H4C3.44772 10 3 10.4477 3 11C3 11.5523 3.44772 12 4 12Z"
-                  fill="var(--staff-orange)"
-                  stroke="var(--staff-white)"
+                  fill="var(--health-expert-orange)"
+                  stroke="var(--health-expert-white)"
                   strokeWidth="1.5"
                 />
                 <path
-                  d="M4 GPU 16H16C16.5523 18 17 16 17 16 16.4477 16 16 16H4C4 16.4477 3 16 3 17C3 17.5523 3.44772 18 4 18Z"
-                  fill="var(--staff-orange)"
-                  stroke="var(--staff-white)"
+                  d="M4 18H16C16.5523 18 17 17.5523 17 17C17 16.4477 16.5523 16 16 16H4C3.44772 16 3 16.4477 3 17C3 17.5523 3.44772 18 4 18Z"
+                  fill="var(--health-expert-orange)"
+                  stroke="var(--health-expert-white)"
                   strokeWidth="1.5"
                 />
                 <path
                   d="M7 4.5L8 5.5L10 3.5"
-                  stroke="var(--staff-white)"
+                  stroke="var(--health-expert-white)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
                 <path
                   d="M7 10.5L8 11.5L10 9.5"
-                  stroke="var(--staff-white)"
+                  stroke="var(--health-expert-white)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -199,34 +198,34 @@ const StaffHomePage = () => {
             </motion.div>
           </section>
           <motion.section
-            className="staff-features"
+            className="health-expert-features"
             variants={containerVariants}
             initial="initial"
             animate="animate"
           >
-            <h2 className="staff-features-title">Staff Tools</h2>
-            <p className="staff-features-description">
-              Access essential tools to manage your work and support users efficiently.
+            <h2 className="health-expert-features-title">Health Expert Tools</h2>
+            <p className="health-expert-features-description">
+              Access essential tools to manage your consultations and support users efficiently.
             </p>
-            <div className="staff-features-grid">
-              <motion.div variants={cardVariants} className="staff-feature-card">
-                <h3>Tasks</h3>
-                <p>View and manage assigned tasks, update work status.</p>
-                <Link to="/staff/tasks" className="staff-feature-link">
+            <div className="health-expert-features-grid">
+              <motion.div variants={cardVariants} className="health-expert-feature-card">
+                <h3>Consultations</h3>
+                <p>View and manage assigned consultations, update health advice.</p>
+                <Link to="/health-expert/consultations" className="health-expert-feature-link">
                   Explore
                 </Link>
               </motion.div>
-              <motion.div variants={cardVariants} className="staff-feature-card">
+              <motion.div variants={cardVariants} className="health-expert-feature-card">
                 <h3>Support</h3>
-                <p>Handle user support requests and provide timely solutions.</p>
-                <Link to="/staff/support" className="staff-feature-link">
+                <p>Handle user support requests and provide timely health solutions.</p>
+                <Link to="/health-expert/support" className="health-expert-feature-link">
                   Explore
                 </Link>
               </motion.div>
-              <motion.div variants={cardVariants} className="staff-feature-card">
+              <motion.div variants={cardVariants} className="health-expert-feature-card">
                 <h3>Profile</h3>
                 <p>Update personal information, notification settings, and account details.</p>
-                <Link to="/staff/profile" className="staff-feature-link">
+                <Link to="/health-expert/profile" className="health-expert-feature-link">
                   Explore
                 </Link>
               </motion.div>
@@ -238,4 +237,4 @@ const StaffHomePage = () => {
   );
 };
 
-export default StaffHomePage;
+export default HealthExpertHomePage;

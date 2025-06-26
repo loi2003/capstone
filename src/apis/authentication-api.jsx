@@ -60,6 +60,7 @@ export const getCurrentUser = async () => {
     throw error;
   }
 };
+
 export const logout = async (userId) => {
   try {
     const response = await apiClient.post(`/api/auth/user/logout`, `"${userId}"`, {
@@ -71,6 +72,38 @@ export const logout = async (userId) => {
     return response;
   } catch (error) {
     console.error('Error logging out:', error);
+    throw error;
+  }
+};
+
+export const forgotPassword = async (email) => {
+  try {
+    const formData = new FormData();
+    formData.append('EmailOrPhoneNumber', email);
+    const response = await apiClient.post(`/api/auth/user/password/forgot`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Accept: "*/*",
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error sending OTP for password reset:", error);
+    throw error;
+  }
+};
+
+export const resetPassword = async (data) => {
+  try {
+    const response = await apiClient.post(`/api/auth/user/password/reset`, data, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "*/*",
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error resetting password:", error);
     throw error;
   }
 };
