@@ -1,0 +1,555 @@
+/* Scoped styles for Clinic Homepage */
+.clinic-homepage {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+  min-height: 100vh;
+  line-height: 1.6;
+
+  /* Scoped color variables */
+  --clinic-deep-blue: #1E3A8A;
+  --clinic-light-blue: #3B82F6;
+  --clinic-dark-blue-hover: #1E40AF;
+  --clinic-white: #ffffff;
+  --clinic-text: #111827;
+  --clinic-subtext: #6b7280;
+  --clinic-light-bg: #EFF6FF;
+  --clinic-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --clinic-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --clinic-border-radius: 8px;
+  --clinic-transition: all 0.3s ease;
+}
+
+/* Main Content Layout */
+.clinic-homepage .clinic-main-content {
+  display: flex;
+  min-height: calc(100vh - 64px); /* Adjust for header height */
+}
+
+/* Sidebar Styles */
+.clinic-homepage .clinic-sidebar {
+  width: 250px;
+  background: var(--clinic-white);
+  color: var(--clinic-text);
+  padding: 1.5rem 1rem;
+  position: fixed;
+  top: 64px; /* Below header */
+  left: 0;
+  height: calc(100vh - 64px);
+  box-shadow: var(--clinic-shadow);
+  z-index: 999;
+  transition: var(--clinic-transition);
+  overflow-y: auto;
+}
+
+.clinic-homepage .clinic-sidebar.closed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.clinic-homepage .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.clinic-homepage .sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--clinic-text);
+}
+
+.clinic-homepage .sidebar-toggle {
+  background: transparent;
+  border: 1px solid var(--clinic-deep-blue);
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  outline: none;
+}
+
+.clinic-homepage .sidebar-toggle:hover,
+.clinic-homepage .sidebar-toggle:focus {
+  background: var(--clinic-deep-blue);
+  border-color: var(--clinic-deep-blue);
+}
+
+.clinic-homepage .sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: var(--clinic-transition);
+}
+
+.clinic-homepage .sidebar-toggle:hover svg path,
+.clinic-homepage .sidebar-toggle:focus svg path {
+  stroke: var(--clinic-white);
+}
+
+.clinic-homepage .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.clinic-homepage .sidebar-nav a,
+.clinic-homepage .sidebar-nav button {
+  color: var(--clinic-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--clinic-border-radius);
+  transition: var(--clinic-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: block;
+}
+
+.clinic-homepage .sidebar-nav a:hover,
+.clinic-homepage .sidebar-nav a:focus,
+.clinic-homepage .sidebar-nav button:hover,
+.clinic-homepage .sidebar-nav button:focus {
+  background: var(--clinic-deep-blue);
+  color: var(--clinic-white);
+  transform: translateY(-2px);
+  box-shadow: var(--clinic-shadow-hover);
+}
+
+.clinic-homepage .sidebar-action-button {
+  background: var(--clinic-deep-blue) !important;
+  color: var(--clinic-white) !important;
+  margin-top: 1rem;
+}
+
+.clinic-homepage .sidebar-action-button:hover,
+.clinic-homepage .sidebar-action-button:focus {
+  background: var(--clinic-dark-blue-hover) !important;
+  transform: translateY(-2px);
+}
+
+/* External Toggle Button */
+.clinic-homepage .sidebar-external-toggle {
+  position: fixed;
+  top: 80px; /* Below header */
+  left: 0;
+  width: 40px;
+  height: 80px;
+  background: var(--clinic-deep-blue);
+  border-radius: 0 40px 40px 0;
+  border: none;
+  cursor: pointer;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--clinic-transition);
+  box-shadow: var(--clinic-shadow);
+  outline: none;
+}
+
+.clinic-homepage .sidebar-external-toggle.hidden {
+  display: none;
+}
+
+.clinic-homepage .sidebar-external-toggle:hover,
+.clinic-homepage .sidebar-external-toggle:focus {
+  background: var(--clinic-dark-blue-hover);
+}
+
+.clinic-homepage .sidebar-external-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Main Content */
+.clinic-homepage .clinic-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+.clinic-homepage .clinic-sidebar.closed + .sidebar-external-toggle + .clinic-content {
+  margin-left: 0;
+}
+
+/* Banner Section */
+.clinic-homepage .clinic-banner {
+  background: linear-gradient(135deg, var(--clinic-deep-blue) 40%, var(--clinic-white) 100%);
+  padding: 4rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  border-radius: var(--clinic-border-radius);
+  box-shadow: var(--clinic-shadow);
+}
+
+.clinic-homepage .clinic-banner-content {
+  flex: 1 1 50%;
+  max-width: 600px;
+  color: var(--clinic-white);
+  padding: 1rem;
+}
+
+.clinic-homepage .clinic-banner-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--clinic-white);
+  margin-bottom: 1rem;
+}
+
+.clinic-homepage .clinic-banner-subtitle {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--clinic-white);
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.clinic-homepage .clinic-banner-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.clinic-homepage .clinic-banner-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--clinic-border-radius);
+  transition: var(--clinic-transition);
+}
+
+.clinic-homepage .clinic-banner-button.primary {
+  background: var(--clinic-white);
+  color: var(--clinic-deep-blue);
+}
+
+.clinic-homepage .clinic-banner-button.primary:hover,
+.clinic-homepage .clinic-banner-button.primary:focus {
+  background: var(--clinic-light-bg);
+  box-shadow: var(--clinic-shadow);
+  transform: translateY(-2px);
+}
+
+.clinic-homepage .clinic-banner-button.secondary {
+  background: transparent;
+  color: var(--clinic-white);
+  border: 2px solid var(--clinic-white);
+}
+
+.clinic-homepage .clinic-banner-button.secondary:hover,
+.clinic-homepage .clinic-banner-button.secondary:focus {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--clinic-shadow);
+  transform: translateY(-2px);
+}
+
+.clinic-homepage .clinic-banner-image {
+  flex: 1 1 40%;
+  max-width: 400px;
+  padding: 1rem;
+}
+
+.clinic-homepage .clinic-banner-img {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  object-fit: cover;
+  border-radius: var(--clinic-border-radius);
+  box-shadow: var(--clinic-shadow);
+}
+
+/* Features Section */
+.clinic-homepage .clinic-features {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.clinic-homepage .clinic-features-title {
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--clinic-text);
+  margin-bottom: 1rem;
+}
+
+.clinic-homepage .clinic-features-description {
+  font-size: 1.125rem;
+  color: var(--clinic-subtext);
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.clinic-homepage .clinic-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.clinic-homepage .clinic-feature-card {
+  background: var(--clinic-white);
+  padding: 1.5rem;
+  border-radius: var(--clinic-border-radius);
+  box-shadow: var(--clinic-shadow);
+  transition: var(--clinic-transition);
+}
+
+.clinic-homepage .clinic-feature-card:hover,
+.clinic-homepage .clinic-feature-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: var(--clinic-shadow-hover);
+}
+
+.clinic-homepage .clinic-feature-card h3 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--clinic-text);
+  margin-bottom: 0.75rem;
+}
+
+.clinic-homepage .clinic-feature-card p {
+  font-size: 0.95rem;
+  color: var(--clinic-subtext);
+  margin-bottom: 1rem;
+}
+
+.clinic-homepage .clinic-feature-icon {
+  width: 50px;
+  height: 50px;
+  margin-bottom: 1rem;
+  object-fit: contain;
+}
+
+.clinic-homepage .clinic-feature-link {
+  display: inline-flex;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--clinic-white);
+  background: var(--clinic-deep-blue);
+  border-radius: var(--clinic-border-radius);
+  text-decoration: none;
+  transition: var(--clinic-transition);
+}
+
+.clinic-homepage .clinic-feature-link:hover,
+.clinic-homepage .clinic-feature-link:focus {
+  background: var(--clinic-dark-blue-hover);
+  box-shadow: var(--clinic-shadow);
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .clinic-homepage .clinic-sidebar {
+    width: 220px;
+  }
+
+  .clinic-homepage .clinic-content {
+    margin-left: 220px;
+  }
+
+  .clinic-homepage .clinic-sidebar.closed + .sidebar-external-toggle + .clinic-content {
+    margin-left: 0;
+  }
+
+  .clinic-homepage .clinic-banner {
+    padding: 3rem 1rem;
+  }
+
+  .clinic-homepage .clinic-banner-title {
+    font-size: 2rem;
+  }
+
+  .clinic-homepage .clinic-banner-subtitle {
+    font-size: 1rem;
+  }
+
+  .clinic-homepage .clinic-banner-img {
+    max-height: 200px;
+  }
+
+  .clinic-homepage .clinic-features {
+    padding: 3rem 1rem;
+  }
+
+  .clinic-homepage .clinic-features-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .clinic-homepage .clinic-sidebar {
+    width: 200px;
+  }
+
+  .clinic-homepage .clinic-content {
+    margin-left: 200px;
+  }
+
+  .clinic-homepage .clinic-sidebar.closed + .sidebar-external-toggle + .clinic-content {
+    margin-left: 0;
+  }
+
+  .clinic-homepage .clinic-banner {
+    padding: 2rem 0.75rem;
+    gap: 1.5rem;
+  }
+
+  .clinic-homepage .clinic-banner-content,
+  .clinic-homepage .clinic-banner-image {
+    flex: 1 1 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .clinic-homepage .clinic-banner-buttons {
+    justify-content: center;
+  }
+
+  .clinic-homepage .clinic-banner-title {
+    font-size: 1.75rem;
+  }
+
+  .clinic-homepage .clinic-banner-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .clinic-homepage .clinic-banner-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .clinic-homepage .clinic-banner-img {
+    max-height: 180px;
+  }
+
+  .clinic-homepage .clinic-features-title {
+    font-size: 1.75rem;
+  }
+
+  .clinic-homepage .clinic-features-description {
+    font-size: 1rem;
+  }
+
+  .clinic-homepage .clinic-features-grid {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .clinic-homepage .clinic-sidebar {
+    width: 180px;
+    padding: 1rem 0.75rem;
+  }
+
+  .clinic-homepage .clinic-content {
+    margin-left: 180px;
+  }
+
+  .clinic-homepage .clinic-sidebar.closed + .sidebar-external-toggle + .clinic-content {
+    margin-left: 0;
+  }
+
+  .clinic-homepage .sidebar-external-toggle {
+    width: 36px;
+    height: 72px;
+    border-radius: 0 36px 36px 0;
+  }
+
+  .clinic-homepage .sidebar-external-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .clinic-homepage .sidebar-title {
+    font-size: 1.125rem;
+  }
+
+  .clinic-homepage .sidebar-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .clinic-homepage .sidebar-toggle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .clinic-homepage .sidebar-nav a,
+  .clinic-homepage .sidebar-nav button {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .clinic-homepage .clinic-banner {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .clinic-homepage .clinic-banner-title {
+    font-size: 1.5rem;
+  }
+
+  .clinic-homepage .clinic-banner-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .clinic-homepage .clinic-banner-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .clinic-homepage .clinic-banner-img {
+    max-height: 150px;
+  }
+
+  .clinic-homepage .clinic-features {
+    padding: 2rem 0.5rem;
+  }
+
+  .clinic-homepage .clinic-features-title {
+    font-size: 1.5rem;
+  }
+
+  .clinic-homepage .clinic-features-description {
+    font-size: 0.9rem;
+  }
+
+  .clinic-homepage .clinic-feature-card {
+    padding: 1rem;
+  }
+
+  .clinic-homepage .clinic-feature-card h3 {
+    font-size: 1.25rem;
+  }
+
+  .clinic-homepage .clinic-feature-card p {
+    font-size: 0.9rem;
+  }
+
+  .clinic-homepage .clinic-feature-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .clinic-homepage .clinic-feature-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
