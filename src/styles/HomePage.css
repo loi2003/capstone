@@ -19,7 +19,7 @@ body {
 
 /* Color variables for easy customization */
 :root {
-  --primary-gradient: linear-gradient(90deg, #2564EA, #14B7A6);
+  --primary-gradient: linear-gradient(90deg, #04668D, #03C39A);
   --cta-color: rgba(107, 159, 255, 1);
   --cta-hover: rgba(90, 140, 230, 1);
   --accent-blue: rgba(107, 159, 255, 1);
@@ -29,12 +29,17 @@ body {
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
   --border-radius: 12px;
   --transition: all 0.3s ease;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
 }
 
 /* Hero Section */
 .hero-section {
   padding: 80px 20px;
-  background: var(--primary-gradient);
+  background-color: #17a0af;
   color: var(--white);
 }
 

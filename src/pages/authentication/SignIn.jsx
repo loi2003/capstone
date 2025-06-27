@@ -59,6 +59,7 @@ const SignIn = () => {
 
       // Extract roleId from nested data, with fallback
       const roleId = Number(response.data.data?.roleId) || 2; // Default to 2 if undefined
+      
       console.log('Parsed Role ID:', roleId); // Confirm parsed roleId
 
       // Validate roleId

@@ -7,20 +7,25 @@
 
 /* CSS Variables (updated for medical deep blue theme) */
 :root {
-  --primary-bg: #003087; /* Deep navy blue for medical professionalism */
-  --accent-color: #0052cc; /* Brighter blue for highlights */
+  --primary-bg: #04668D; /* Deep navy blue for medical professionalism */
+  --accent-color: #02808F; /* Brighter blue for highlights */
   --accent-hover: #003c8f; /* Slightly darker blue for hover */
-  --white: #ffffff;
+  --white-text: #ffffd4;
   --light-bg: #e6f0fa; /* Light blue for subtle highlights */
-  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
   --border-radius: 12px;
   --transition: all 0.3s ease;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
 }
 
 body.dark-theme {
   background: #1a1a1a;
-  color: #e0e7ff;
+  color: #F0F3BE;
 }
 
 .header {
@@ -46,7 +51,7 @@ body.dark-theme {
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--white-text);
   text-decoration: none;
   letter-spacing: 0.5px;
   transition: var(--transition);
@@ -63,7 +68,7 @@ body.dark-theme {
 }
 
 .nav-links a {
-  color: var(--white);
+  color: var(--white-text);
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;

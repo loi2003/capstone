@@ -11,6 +11,11 @@
   --shadow-hover: 0 6px 24px rgba(0, 0, 0, 0.12);
   --border-radius: 12px;
   --transition: all 0.3s ease-in-out;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
 }
 
 /* Sign In Section */
