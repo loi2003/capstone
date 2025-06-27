@@ -12,7 +12,11 @@ import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermOfService';
 import ContactUs from '../pages/ContactUs';
 import AdminHomePage from '../pages/admin/AdminHomePage';
-import StaffHomePage from '../pages/staff/StaffHomePage';
+import HealthExpertHomePage from '../pages/staff/HeathExpertHomePage';
+import NutrientSpecialistHomePage from '../pages/staff/NutrientSpecialistHomepage';
+import ClinicHomePage from '../pages/staff/ClinicHomePage';
+import ConsultantHomePage from '../pages/staff/ConsultantHomePage';
+import ForgotPassword from '../pages/ForgotPassword';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -35,7 +39,11 @@ const AppRoutes = () => {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/admin" element={<AdminHomePage />} />
-        <Route path="/staff" element={<StaffHomePage />} />
+        <Route path="/health-expert" element={<HealthExpertHomePage />} />
+        <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
+        <Route path="/clinic" element={<ClinicHomePage />} />
+        <Route path="/consultant" element={<ConsultantHomePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </ThemeProvider>
   );

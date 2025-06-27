@@ -23,7 +23,7 @@ body {
   --cta-color: rgba(107, 159, 255, 1);
   --cta-hover: rgba(90, 140, 230, 1);
   --accent-blue: rgba(107, 159, 255, 1);
-  --white: #ffffff;
+  --white: #feffe9;
   --light-bg: #f5f7fa;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
@@ -56,12 +56,14 @@ body {
 }
 
 .hero-title {
+  color:var(--white);
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 1rem;
 }
 
 .hero-tagline {
+  color:var(--white);
   font-size: 1.4rem;
   font-weight: 500;
   opacity: 0.9;
@@ -69,12 +71,14 @@ body {
 }
 
 .hero-subtitle {
+  color:var(--white);
   font-size: 1.2rem;
   opacity: 0.8;
   margin-bottom: 1rem;
 }
 
 .hero-quote {
+  color:var(--white);
   font-size: 1.1rem;
   font-style: italic;
   opacity: 0.7;
@@ -634,7 +638,7 @@ body {
   right: 30px;
   width: 60px;
   height: 60px;
-  background-color: var(--cta-color);
+  background-color: var(--co-2);
   color: var(--white);
   border-radius: 50%;
   display: flex;
@@ -646,7 +650,7 @@ body {
 }
 
 .contact-icon:hover {
-  background-color: var(--cta-hover);
+  background-color: var(--co-4);
   box-shadow: var(--shadow-hover);
 }
 
@@ -700,6 +704,7 @@ body {
   }
 
   .hero-title {
+    color: #F0F3BE;
     font-size: 2.5rem;
   }
 
@@ -729,7 +734,11 @@ body {
   }
 
   .hero-title {
+    color: #F0F3BE;
     font-size: 2.2rem;
+  }
+  h1 {
+    color: #F0F3BE;
   }
 
   .hero-buttons {
@@ -862,6 +871,7 @@ body {
   }
 
   .hero-title {
+    color: #F0F3BE;
     font-size: 1.6rem;
   }
 

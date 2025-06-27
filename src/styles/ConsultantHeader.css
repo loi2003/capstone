@@ -1,0 +1,219 @@
+/* Scoped styles for Consultant Header */
+.consultant-header {
+  background: var(--consultant-deep-brown);
+  padding: 1rem;
+  box-shadow: var(--consultant-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  font-family: 'Inter', sans-serif;
+
+  /* Scoped color variables */
+  --consultant-deep-brown: #4A2C2A;
+  --consultant-light-brown: #8B5A2B;
+  --consultant-dark-brown-hover: #3C2317;
+  --consultant-white: #ffffff;
+  --consultant-text: #111827;
+  --consultant-light-bg: #FFF4ED;
+  --consultant-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --consultant-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --consultant-border-radius: 8px;
+  --consultant-transition: all 0.3s ease;
+}
+
+/* Container */
+.consultant-header .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo Styles */
+.consultant-header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--consultant-white);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: var(--consultant-transition);
+}
+
+.consultant-header .logo:hover {
+  color: var(--consultant-light-brown);
+}
+
+.consultant-header .logo svg {
+  width: 40px;
+  height: 40px;
+}
+
+/* Navigation Styles */
+.consultant-header nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.consultant-header nav a {
+  color: var(--consultant-white);
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: var(--consultant-transition);
+  border-radius: var(--consultant-border-radius);
+}
+
+.consultant-header nav a:hover,
+.consultant-header nav a:focus {
+  background: var(--consultant-light-brown);
+  color: var(--consultant-white);
+  box-shadow: var(--consultant-shadow-hover);
+}
+
+/* User Section */
+.consultant-header .consultant-user-section {
+  position: relative;
+}
+
+.consultant-header .consultant-user-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: var(--consultant-transition);
+}
+
+.consultant-header .consultant-user-icon:hover,
+.consultant-header .consultant-user-icon:focus {
+  background: var(--consultant-light-brown);
+  border-radius: 50%;
+}
+
+.consultant-header .consultant-user-icon svg {
+  width: 24px;
+  height: 24px;
+  fill: var(--consultant-white);
+}
+
+/* Dropdown Menu */
+.consultant-header .consultant-user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--consultant-white);
+  border-radius: var(--consultant-border-radius);
+  box-shadow: var(--consultant-shadow);
+  padding: 0.75rem;
+  min-width: 180px;
+  z-index: 1002;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.consultant-header .consultant-user-email {
+  font-size: 0.9rem;
+  color: var(--consultant-text);
+  padding: 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.consultant-header .consultant-user-dropdown button {
+  background: var(--consultant-deep-brown);
+  color: var(--consultant-white);
+  border: none;
+  padding: 0.5rem;
+  border-radius: var(--consultant-border-radius);
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-align: left;
+  transition: var(--consultant-transition);
+}
+
+.consultant-header .consultant-user-dropdown button:hover,
+.consultant-header .consultant-user-dropdown button:focus {
+  background: var(--consultant-dark-brown-hover);
+}
+
+/* Menu Toggle */
+.consultant-header .menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.consultant-header .menu-toggle svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--consultant-white);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .consultant-header .container {
+    flex-wrap: wrap;
+    padding: 0.5rem;
+  }
+
+  .consultant-header .menu-toggle {
+    display: block;
+  }
+
+  .consultant-header nav {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--consultant-deep-brown);
+    position: absolute;
+    top: 100%;
+    left: 0;
+    box-shadow: var(--consultant-shadow);
+  }
+
+  .consultant-header nav.open {
+    display: flex;
+  }
+
+  .consultant-header .consultant-user-dropdown {
+    width: 180px;
+    right: 50%;
+    transform: translateX(50%);
+  }
+}
+
+@media (max-width: 480px) {
+  .consultant-header .logo {
+    font-size: 1.25rem;
+  }
+
+  .consultant-header .logo svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .consultant-header nav a {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+
+  .consultant-header .consultant-user-email,
+  .consultant-header .consultant-user-dropdown button {
+    font-size: 0.85rem;
+  }
+
+  .consultant-header .consultant-user-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+}

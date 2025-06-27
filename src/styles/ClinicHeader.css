@@ -1,0 +1,266 @@
+/* Reset default margins and paddings */
+.clinic-header * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles for header */
+.clinic-header {
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(90deg, var(--clinic-color1), var(--clinic-color3));
+  color: var(--clinic-text);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--clinic-shadow);
+}
+
+/* Color variables scoped to clinic-header */
+.clinic-header {
+  --clinic-color1: #a66acb;
+  --clinic-color2: #e269a0;
+  --clinic-color3: #fa938a;
+  --clinic-color4: #f9c394;
+  --clinic-color5: #e5e0a9;
+  --clinic-text: #333333;
+  --clinic-background: #ffffff;
+  --clinic-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --clinic-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --clinic-border-radius: 8px;
+  --clinic-transition: all 0.3s ease;
+}
+
+/* Header container */
+.clinic-header .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+/* Logo styling */
+.clinic-header .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 12px;
+}
+
+.clinic-header .logo span {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--clinic-background);
+  letter-spacing: -0.025em;
+}
+
+.clinic-header .logo svg {
+  width: 48px;
+  height: 48px;
+}
+
+/* Navigation */
+.clinic-header nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.clinic-header nav a,
+.clinic-header nav button {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--clinic-background);
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: var(--clinic-border-radius);
+  transition: var(--clinic-transition);
+}
+
+.clinic-header nav a:hover,
+.clinic-header nav button:hover {
+  color: var(--clinic-background);
+  background: var(--clinic-color2);
+}
+
+/* Hamburger menu button */
+.clinic-header .menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.clinic-header .menu-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Profile section */
+.clinic-header .clinic-profile-section {
+  position: relative;
+  z-index: 1002;
+}
+
+/* Profile toggle (user icon) */
+.clinic-header .clinic-profile-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  transition: var(--clinic-transition);
+}
+
+.clinic-header .clinic-profile-toggle:hover {
+  background: var(--clinic-color2);
+  border-radius: 50%;
+}
+
+.clinic-header .clinic-profile-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Profile dropdown */
+.clinic-header .clinic-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--clinic-background);
+  border-radius: var(--clinic-border-radius);
+  box-shadow: var(--clinic-shadow);
+  padding: 12px;
+  min-width: 220px;
+  z-index: 1003;
+  border: 1px solid #E2E8F0;
+}
+
+.clinic-header .clinic-profile-dropdown .clinic-profile-email {
+  display: block;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--clinic-text);
+  font-weight: 500;
+  border-bottom: 1px solid #E2E8F0;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.clinic-header .clinic-profile-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--clinic-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: var(--clinic-transition);
+}
+
+.clinic-header .clinic-profile-dropdown button:hover {
+  background: var(--clinic-color2);
+  color: var(--clinic-background);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .clinic-header nav {
+    display: none;
+  }
+
+  .clinic-header .menu-toggle {
+    display: block;
+  }
+
+  .clinic-header nav.block {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--clinic-background);
+    box-shadow: var(--clinic-shadow);
+    padding: 16px;
+    border: 1px solid #E2E8F0;
+  }
+
+  .clinic-header nav a,
+  .clinic-header nav button {
+    display: block;
+    padding: 12px;
+  }
+
+  .clinic-header .clinic-profile-section {
+    margin-top: 12px;
+  }
+
+  .clinic-header .clinic-profile-dropdown {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .clinic-header .container {
+    padding: 12px 16px;
+  }
+
+  .clinic-header .logo span {
+    font-size: 1.5rem;
+  }
+
+  .clinic-header .logo svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .clinic-header nav a,
+  .clinic-header nav button {
+    font-size: 0.95rem;
+  }
+
+  .clinic-header .clinic-profile-toggle svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .clinic-header .container {
+    padding: 10px 12px;
+  }
+
+  .clinic-header .logo span {
+    font-size: 1.25rem;
+  }
+
+  .clinic-header .logo svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .clinic-header .clinic-profile-toggle {
+    padding: 6px;
+  }
+
+  .clinic-header .clinic-profile-toggle svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .clinic-header nav a,
+  .clinic-header nav button {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+}

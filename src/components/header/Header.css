@@ -11,6 +11,7 @@
   --accent-color: #02808F; /* Brighter blue for highlights */
   --accent-hover: #003c8f; /* Slightly darker blue for hover */
   --white-text: #ffffd4;
+  --white: #feffe9;
   --light-bg: #e6f0fa; /* Light blue for subtle highlights */
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.8);
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
@@ -51,7 +52,7 @@ body.dark-theme {
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
-  color: var(--white-text);
+  color: var(--white);
   text-decoration: none;
   letter-spacing: 0.5px;
   transition: var(--transition);
@@ -68,7 +69,7 @@ body.dark-theme {
 }
 
 .nav-links a {
-  color: var(--white-text);
+  color: var(--white);
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;

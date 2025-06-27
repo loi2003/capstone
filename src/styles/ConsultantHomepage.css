@@ -1,0 +1,577 @@
+/* Scoped styles for Consultant Homepage */
+.consultant-homepage {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+  min-height: 100vh;
+  line-height: 1.6;
+
+  /* Scoped color variables */
+  --consultant-deep-brown: #4A2C2A;
+  --consultant-light-brown: #8B5A2B;
+  --consultant-dark-brown-hover: #3C2317;
+  --consultant-white: #ffffff;
+  --consultant-text: #111827;
+  --consultant-subtext: #6b7280;
+  --consultant-light-bg: #FFF4ED;
+  --consultant-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --consultant-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --consultant-border-radius: 8px;
+  --consultant-transition: all 0.3s ease;
+}
+
+/* Main Content Layout */
+.consultant-homepage .consultant-main-content {
+  display: flex;
+  min-height: calc(100vh - 64px); /* Adjust for header height */
+}
+
+/* Sidebar Styles */
+.consultant-homepage .consultant-sidebar {
+  width: 250px;
+  background: var(--consultant-white);
+  color: var(--consultant-text);
+  padding: 1.5rem 1rem;
+  position: fixed;
+  top: 64px; /* Below header */
+  left: 0;
+  height: calc(100vh - 64px);
+  box-shadow: var(--consultant-shadow);
+  z-index: 999;
+  transition: var(--consultant-transition);
+  overflow-y: auto;
+}
+
+.consultant-homepage .consultant-sidebar.closed {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.consultant-homepage .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.consultant-homepage .sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--consultant-text);
+}
+
+.consultant-homepage .sidebar-toggle {
+  background: transparent;
+  border: 1px solid var(--consultant-deep-brown);
+  cursor: pointer;
+  padding: 0.25rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  outline: none;
+}
+
+.consultant-homepage .sidebar-toggle:hover,
+.consultant-homepage .sidebar-toggle:focus {
+  background: var(--consultant-deep-brown);
+  border-color: var(--consultant-deep-brown);
+}
+
+.consultant-homepage .sidebar-toggle svg {
+  width: 18px;
+  height: 18px;
+  transition: var(--consultant-transition);
+}
+
+.consultant-homepage .sidebar-toggle svg path {
+  stroke: var(--consultant-text);
+  vector-effect: non-scaling-stroke;
+}
+
+.consultant-homepage .sidebar-toggle:hover svg path,
+.consultant-homepage .sidebar-toggle:focus svg path {
+  stroke: var(--consultant-white);
+}
+
+.consultant-homepage .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.consultant-homepage .sidebar-nav a,
+.consultant-homepage .sidebar-nav button {
+  color: var(--consultant-text);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--consultant-border-radius);
+  transition: var(--consultant-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: block;
+}
+
+.consultant-homepage .sidebar-nav a:hover,
+.consultant-homepage .sidebar-nav a:focus,
+.consultant-homepage .sidebar-nav button:hover,
+.consultant-homepage .sidebar-nav button:focus {
+  background: var(--consultant-deep-brown);
+  color: var(--consultant-white);
+  transform: translateY(-2px);
+  box-shadow: var(--consultant-shadow-hover);
+}
+
+.consultant-homepage .sidebar-action-button {
+  background: var(--consultant-deep-brown) !important;
+  color: var(--consultant-white) !important;
+  margin-top: 1rem;
+}
+
+.consultant-homepage .sidebar-action-button:hover,
+.consultant-homepage .sidebar-action-button:focus {
+  background: var(--consultant-dark-brown-hover) !important;
+  transform: translateY(-2px);
+}
+
+/* External Toggle Button */
+.consultant-homepage .sidebar-external-toggle {
+  position: fixed;
+  top: 80px;
+  left: 0;
+  width: 40px;
+  height: 80px;
+  background: var(--consultant-deep-brown);
+  border-radius: 0 40px 40px 0;
+  border: none;
+  cursor: pointer;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--consultant-transition);
+  box-shadow: var(--consultant-shadow);
+  outline: none;
+}
+
+.consultant-homepage .sidebar-external-toggle.hidden {
+  display: none;
+}
+
+.consultant-homepage .sidebar-external-toggle:hover,
+.consultant-homepage .sidebar-external-toggle:focus {
+  background: var(--consultant-dark-brown-hover);
+}
+
+.consultant-homepage .sidebar-external-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+.consultant-homepage .sidebar-external-toggle svg path {
+  stroke: var(--consultant-white);
+  vector-effect: non-scaling-stroke;
+}
+
+/* Main Content */
+.consultant-homepage .consultant-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 2rem;
+  transition: margin-left 0.3s ease;
+}
+
+.consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
+  margin-left: 0;
+}
+
+/* Banner Section */
+.consultant-homepage .consultant-banner {
+  background: linear-gradient(135deg, var(--consultant-deep-brown) 40%, var(--consultant-white) 100%);
+  padding: 4rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  border-radius: var(--consultant-border-radius);
+  box-shadow: var(--consultant-shadow);
+}
+
+.consultant-homepage .consultant-banner-content {
+  flex: 1 1 50%;
+  max-width: 600px;
+  color: var(--consultant-white);
+  padding: 1rem;
+}
+
+.consultant-homepage .consultant-banner-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--consultant-white);
+  margin-bottom: 1rem;
+}
+
+.consultant-homepage .consultant-banner-subtitle {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--consultant-white);
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
+}
+
+.consultant-homepage .consultant-banner-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.consultant-homepage .consultant-banner-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--consultant-border-radius);
+  transition: var(--consultant-transition);
+}
+
+.consultant-homepage .consultant-banner-button.primary {
+  background: var(--consultant-white);
+  color: var(--consultant-deep-brown);
+}
+
+.consultant-homepage .consultant-banner-button.primary:hover,
+.consultant-homepage .consultant-banner-button.primary:focus {
+  background: var(--consultant-light-bg);
+  box-shadow: var(--consultant-shadow);
+  transform: translateY(-2px);
+}
+
+.consultant-homepage .consultant-banner-button.secondary {
+  background: transparent;
+  color: var(--consultant-white);
+  border: 2px solid var(--consultant-white);
+}
+
+.consultant-homepage .consultant-banner-button.secondary:hover,
+.consultant-homepage .consultant-banner-button.secondary:focus {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: var(--consultant-shadow);
+  transform: translateY(-2px);
+}
+
+.consultant-homepage .consultant-banner-image {
+  flex: 1 1 40%;
+  max-width: 400px;
+  padding: 1rem;
+}
+
+.consultant-homepage .consultant-banner-img {
+  width: 100%;
+  height: auto;
+  max-height: 250px;
+  object-fit: contain;
+  border-radius: var(--consultant-border-radius);
+  box-shadow: var(--consultant-shadow);
+  image-rendering: auto;
+}
+
+/* Features Section */
+.consultant-homepage .consultant-features {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.consultant-homepage .consultant-features-title {
+  font-size: 2.25rem;
+  font-weight: 600;
+  color: var(--consultant-text);
+  margin-bottom: 1rem;
+}
+
+.consultant-homepage .consultant-features-description {
+  font-size: 1.125rem;
+  color: var(--consultant-subtext);
+  margin-bottom: 2rem;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.consultant-homepage .consultant-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.consultant-homepage .consultant-feature-card {
+  background: var(--consultant-white);
+  padding: 1.5rem;
+  border-radius: var(--consultant-border-radius);
+  box-shadow: var(--consultant-shadow);
+  transition: var(--consultant-transition);
+}
+
+.consultant-homepage .consultant-feature-card:hover,
+.consultant-homepage .consultant-feature-card:focus-within {
+  transform: translateY(-4px);
+  box-shadow: var(--consultant-shadow-hover);
+}
+
+.consultant-homepage .consultant-feature-card h3 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--consultant-text);
+  margin-bottom: 0.75rem;
+}
+
+.consultant-homepage .consultant-feature-card p {
+  font-size: 0.95rem;
+  color: var(--consultant-subtext);
+  margin-bottom: 1rem;
+}
+
+.consultant-homepage .consultant-feature-icon {
+  width: 4rem;
+  height: 4rem;
+  margin-bottom: 1rem;
+  object-fit: contain;
+  image-rendering: crisp-edges;
+}
+
+.consultant-homepage .consultant-feature-link {
+  display: inline-flex;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--consultant-white);
+  background: var(--consultant-deep-brown);
+  border-radius: var(--consultant-border-radius);
+  text-decoration: none;
+  transition: var(--consultant-transition);
+}
+
+.consultant-homepage .consultant-feature-link:hover,
+.consultant-homepage .consultant-feature-link:focus {
+  background: var(--consultant-dark-brown-hover);
+  box-shadow: var(--consultant-shadow);
+  transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .consultant-homepage .consultant-sidebar {
+    width: 220px;
+  }
+
+  .consultant-homepage .consultant-content {
+    margin-left: 220px;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
+    margin-left: 0;
+  }
+
+  .consultant-homepage .consultant-banner {
+    padding: 3rem 1rem;
+  }
+
+  .consultant-homepage .consultant-banner-title {
+    font-size: 2rem;
+  }
+
+  .consultant-homepage .consultant-banner-subtitle {
+    font-size: 1rem;
+  }
+
+  .consultant-homepage .consultant-banner-img {
+    max-height: 200px;
+  }
+
+  .consultant-homepage .consultant-features {
+    padding: 3rem 1rem;
+  }
+
+  .consultant-homepage .consultant-features-title {
+    font-size: 2rem;
+  }
+
+  .consultant-homepage .consultant-feature-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .consultant-homepage .consultant-sidebar {
+    width: 200px;
+  }
+
+  .consultant-homepage .consultant-content {
+    margin-left: 200px;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
+    margin-left: 0;
+  }
+
+  .consultant-homepage .consultant-banner {
+    padding: 2rem 0.75rem;
+    gap: 1.5rem;
+  }
+
+  .consultant-homepage .consultant-banner-content,
+  .consultant-homepage .consultant-banner-image {
+    flex: 1 1 100%;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .consultant-homepage .consultant-banner-buttons {
+    justify-content: center;
+  }
+
+  .consultant-homepage .consultant-banner-title {
+    font-size: 1.75rem;
+  }
+
+  .consultant-homepage .consultant-banner-subtitle {
+    font-size: 0.95rem;
+  }
+
+  .consultant-homepage .consultant-banner-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .consultant-homepage .consultant-banner-img {
+    max-height: 180px;
+  }
+
+  .consultant-homepage .consultant-features-title {
+    font-size: 1.75rem;
+  }
+
+  .consultant-homepage .consultant-features-description {
+    font-size: 1rem;
+  }
+
+  .consultant-homepage .consultant-features-grid {
+    gap: 1rem;
+  }
+
+  .consultant-homepage .consultant-feature-icon {
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .consultant-homepage .consultant-sidebar {
+    width: 180px;
+    padding: 1rem 0.75rem;
+  }
+
+  .consultant-homepage .consultant-content {
+    margin-left: 180px;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
+    margin-left: 0;
+  }
+
+  .consultant-homepage .sidebar-external-toggle {
+    width: 36px;
+    height: 72px;
+    border-radius: 0 36px 36px 0;
+  }
+
+  .consultant-homepage .sidebar-external-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .consultant-homepage .sidebar-title {
+    font-size: 1.125rem;
+  }
+
+  .consultant-homepage .sidebar-toggle {
+    width: 24px;
+    height: 24px;
+  }
+
+  .consultant-homepage .sidebar-toggle svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .consultant-homepage .sidebar-nav a,
+  .consultant-homepage .sidebar-nav button {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .consultant-homepage .consultant-banner {
+    padding: 1.5rem 0.5rem;
+  }
+
+  .consultant-homepage .consultant-banner-title {
+    font-size: 1.5rem;
+  }
+
+  .consultant-homepage .consultant-banner-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .consultant-homepage .consultant-banner-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  .consultant-homepage .consultant-banner-img {
+    max-height: 150px;
+  }
+
+  .consultant-homepage .consultant-features {
+    padding: 2rem 0.5rem;
+  }
+
+  .consultant-homepage .consultant-features-title {
+    font-size: 1.5rem;
+  }
+
+  .consultant-homepage .consultant-features-description {
+    font-size: 0.9rem;
+  }
+
+  .consultant-homepage .consultant-feature-card {
+    padding: 1rem;
+  }
+
+  .consultant-homepage .consultant-feature-card h3 {
+    font-size: 1.25rem;
+  }
+
+  .consultant-homepage .consultant-feature-card p {
+    font-size: 0.9rem;
+  }
+
+  .consultant-homepage .consultant-feature-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .consultant-homepage .consultant-feature-link {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+}
