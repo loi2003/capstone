@@ -1,218 +1,266 @@
-/* Scoped styles for Health Expert Header */
+/* Reset default margins and paddings */
+.health-expert-header * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles for header */
 .health-expert-header {
-  background: var(--health-expert-orange);
-  padding: 1rem;
-  box-shadow: var(--health-expert-shadow);
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(90deg, var(--health-expert-color1), var(--health-expert-color3));
+  color: var(--health-expert-text);
   position: sticky;
   top: 0;
   z-index: 1000;
-  font-family: 'Inter', sans-serif;
+  box-shadow: var(--health-expert-shadow);
+}
 
-  /* Scoped color variables */
-  --health-expert-orange: #f97316;
-  --health-expert-green: #10b981;
-  --health-expert-accent-hover: #c2410c; /* Darker orange for hover */
-  --health-expert-white: #ffffff;
-  --health-expert-light-bg: #fff7ed; /* Light orange tint */
-  --health-expert-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+/* Color variables scoped to health-expert-header */
+.health-expert-header {
+  --health-expert-color1: #558aa1;
+  --health-expert-color2: #3f8a76;
+  --health-expert-color3: #c4ddbc;
+  --health-expert-color4: #efefe3;
+  --health-expert-color5: #f9f9f9;
+  --health-expert-text: #333333;
+  --health-expert-background: #f9f9f9;
+  --health-expert-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
   --health-expert-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
   --health-expert-border-radius: 8px;
   --health-expert-transition: all 0.3s ease;
 }
 
-/* Container */
+/* Header container */
 .health-expert-header .container {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
 }
 
-/* Logo Styles */
+/* Logo styling */
 .health-expert-header .logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--health-expert-white);
-  text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: var(--health-expert-transition);
+  text-decoration: none;
+  gap: 12px;
 }
 
-.health-expert-header .logo:hover {
-  color: var(--health-expert-green); /* Green for hover */
+.health-expert-header .logo span {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--health-expert-background);
+  letter-spacing: -0.025em;
 }
 
 .health-expert-header .logo svg {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
 }
 
-/* Navigation Styles */
+/* Navigation */
 .health-expert-header nav {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 24px;
 }
 
-.health-expert-header nav a {
-  color: var(--health-expert-white);
-  text-decoration: none;
+.health-expert-header nav a,
+.health-expert-header nav button {
   font-size: 1rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  transition: var(--health-expert-transition);
+  color: var(--health-expert-background);
+  text-decoration: none;
+  padding: 8px 12px;
   border-radius: var(--health-expert-border-radius);
+  transition: var(--health-expert-transition);
 }
 
 .health-expert-header nav a:hover,
-.health-expert-header nav a:focus {
-  background: var(--health-expert-green); /* Green for hover */
-  color: var(--health-expert-white);
-  box-shadow: var(--health-expert-shadow-hover);
+.health-expert-header nav button:hover {
+  color: var(--health-expert-background);
+  background: var(--health-expert-color2);
 }
 
-/* Profile Section */
-.health-expert-header .profile-section {
-  position: relative;
-}
-
-.health-expert-header .profile-toggle {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
-  transition: var(--health-expert-transition);
-}
-
-.health-expert-header .profile-toggle:hover,
-.health-expert-header .profile-toggle:focus {
-  background: var(--health-expert-green); /* Green for hover */
-  border-radius: 50%;
-}
-
-.health-expert-header .profile-toggle svg {
-  width: 24px;
-  height: 24px;
-  fill: var(--health-expert-white);
-}
-
-/* Profile Dropdown */
-.health-expert-header .profile-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--health-expert-white);
-  border-radius: var(--health-expert-border-radius);
-  box-shadow: var(--health-expert-shadow);
-  padding: 0.75rem;
-  min-width: 180px;
-  z-index: 1002;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.health-expert-header .profile-email {
-  font-size: 0.9rem;
-  color: #111827;
-  padding: 0.5rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.health-expert-header .profile-dropdown button {
-  background: var(--health-expert-orange);
-  color: var(--health-expert-white);
-  border: none;
-  padding: 0.5rem;
-  border-radius: var(--health-expert-border-radius);
-  font-size: 0.9rem;
-  cursor: pointer;
-  text-align: left;
-  transition: var(--health-expert-transition);
-}
-
-.health-expert-header .profile-dropdown button:hover,
-.health-expert-header .profile-dropdown button:focus {
-  background: var(--health-expert-accent-hover); /* Darker orange for hover */
-}
-
-/* Menu Toggle */
+/* Hamburger menu button */
 .health-expert-header .menu-toggle {
   display: none;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
+  padding: 8px;
 }
 
 .health-expert-header .menu-toggle svg {
   width: 24px;
   height: 24px;
-  stroke: var(--health-expert-white);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .health-expert-header .container {
-    flex-wrap: wrap;
-    padding: 0.5rem;
+/* Profile section */
+.health-expert-header .health-expert-profile-section {
+  position: relative;
+  z-index: 1002;
+}
+
+/* Profile toggle (user icon) */
+.health-expert-header .health-expert-profile-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  transition: var(--health-expert-transition);
+}
+
+.health-expert-header .health-expert-profile-toggle:hover {
+  background: var(--health-expert-color2);
+  border-radius: 50%;
+}
+
+.health-expert-header .health-expert-profile-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Profile dropdown */
+.health-expert-header .health-expert-profile-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: var(--health-expert-background);
+  border-radius: var(--health-expert-border-radius);
+  box-shadow: var(--health-expert-shadow);
+  padding: 12px;
+  min-width: 220px;
+  z-index: 1003;
+  border: 1px solid #E2E8F0;
+}
+
+.health-expert-header .health-expert-profile-email {
+  display: block;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--health-expert-text);
+  font-weight: 500;
+  border-bottom: 1px solid #E2E8F0;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.health-expert-header .health-expert-profile-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--health-expert-text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: var(--health-expert-transition);
+}
+
+.health-expert-header .health-expert-profile-dropdown button:hover {
+  background: var(--health-expert-color2);
+  color: var(--health-expert-background);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .health-expert-header nav {
+    display: none;
   }
 
   .health-expert-header .menu-toggle {
     display: block;
   }
 
-  .health-expert-header nav {
-    display: none;
+  .health-expert-header nav.block {
+    display: flex;
     flex-direction: column;
-    width: 100%;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--health-expert-orange);
     position: absolute;
     top: 100%;
     left: 0;
+    right: 0;
+    background: var(--health-expert-background);
     box-shadow: var(--health-expert-shadow);
+    padding: 16px;
+    border: 1px solid #E2E8F0;
   }
 
-  .health-expert-header nav.block {
-    display: flex;
+  .health-expert-header nav a,
+  .health-expert-header nav button {
+    display: block;
+    padding: 12px;
   }
 
-  .health-expert-header .profile-dropdown {
-    width: 180px;
-    right: 50%;
-    transform: translateX(50%);
+  .health-expert-header .health-expert-profile-section {
+    margin-top: 12px;
+  }
+
+  .health-expert-header .health-expert-profile-dropdown {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .health-expert-header .container {
+    padding: 12px 16px;
+  }
+
+  .health-expert-header .logo span {
+    font-size: 1.5rem;
+  }
+
+  .health-expert-header .logo svg {
+    width: 40px;
+    height: 40px;
+  }
+
+  .health-expert-header nav a,
+  .health-expert-header nav button {
+    font-size: 0.95rem;
+  }
+
+  .health-expert-header .health-expert-profile-toggle svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
 @media (max-width: 480px) {
-  .health-expert-header .logo {
+  .health-expert-header .container {
+    padding: 10px 12px;
+  }
+
+  .health-expert-header .logo span {
     font-size: 1.25rem;
   }
 
   .health-expert-header .logo svg {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
   }
 
-  .health-expert-header nav a {
-    font-size: 0.9rem;
-    padding: 0.5rem;
+  .health-expert-header .health-expert-profile-toggle {
+    padding: 6px;
   }
 
-  .health-expert-header .profile-email,
-  .health-expert-header .profile-dropdown button {
-    font-size: 0.85rem;
-  }
-
-  .health-expert-header .profile-toggle svg {
+  .health-expert-header .health-expert-profile-toggle svg {
     width: 20px;
     height: 20px;
+  }
+
+  .health-expert-header nav a,
+  .health-expert-header nav button {
+    font-size: 0.9rem;
+    padding: 10px;
   }
 }

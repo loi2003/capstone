@@ -1,38 +1,91 @@
-/* Scoped styles for Nutrient Specialist Homepage */
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles */
 .nutrient-specialist-homepage {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f9fafb;
-  color: #111827;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-text);
   min-height: 100vh;
   line-height: 1.6;
+}
 
-  /* Scoped color variables */
-  --nutrient-specialist-purple: #8B5CF6;
-  --nutrient-specialist-purple-dark: #7C3AED;
-  --nutrient-specialist-yellow: #FACC15;
+/* Color variables */
+:root {
+  --nutrient-specialist-primary: #602931; /* .color1 */
+  --nutrient-specialist-secondary: #7c3d3f; /* .color2 */
+  --nutrient-specialist-accent: #ab5a5d; /* .color3 */
+  --nutrient-specialist-highlight: #ec867f; /* .color4 */
+  --nutrient-specialist-light-bg: #f6b6a1; /* .color5 */
   --nutrient-specialist-white: #ffffff;
   --nutrient-specialist-text: #111827;
-  --nutrient-specialist-subtext: #6b7280;
-  --nutrient-specialist-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --nutrient-specialist-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --nutrient-specialist-shadow: 0 4px 12px rgba(171, 90, 93, 0.1); /* .color3 */
+  --nutrient-specialist-shadow-hover: 0 8px 24px rgba(171, 90, 93, 0.15);
   --nutrient-specialist-border-radius: 8px;
   --nutrient-specialist-transition: all 0.3s ease;
+}
+
+/* Dark theme */
+body.dark-theme {
+  background: #1f2937;
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-specialist-homepage {
+  background: #1f2937;
+}
+
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-sidebar,
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-content,
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-feature-card {
+  background: #2d3748;
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav a,
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav button {
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav a:hover,
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav a:focus,
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav button:hover,
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav button:focus {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-features-title,
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-feature-card h3 {
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-features-description,
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-feature-card p {
+  color: #d1d5db;
+}
+
+body.dark-theme .nutrient-specialist-homepage .icon-stroke {
+  stroke: var(--nutrient-specialist-highlight);
 }
 
 /* Main content layout */
 .nutrient-specialist-homepage .nutrient-specialist-main-content {
   display: flex;
-  min-height: calc(100vh - 64px); /* Adjust for header height */
+  min-height: calc(100vh - 64px);
 }
 
 /* Sidebar styles */
 .nutrient-specialist-homepage .nutrient-specialist-sidebar {
-  width: 250px;
-  background: var(--nutrient-specialist-white);
+  background: var(--nutrient-specialist-light-bg);
   color: var(--nutrient-specialist-text);
-  padding: 1.5rem 1rem;
+  padding: 1.5rem;
   position: fixed;
-  top: 64px; /* Below header */
+  top: 64px;
   left: 0;
   height: calc(100vh - 64px);
   box-shadow: var(--nutrient-specialist-shadow);
@@ -42,11 +95,11 @@
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed {
-  width: 0;
-  padding: 0;
-  overflow: hidden;
+  width: 60px;
+  padding: 1.5rem 0.5rem;
 }
 
+/* Sidebar header */
 .nutrient-specialist-homepage .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -57,12 +110,16 @@
 .nutrient-specialist-homepage .sidebar-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--nutrient-specialist-text);
+  color: var(--nutrient-specialist-primary);
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .sidebar-title {
+  display: none;
 }
 
 .nutrient-specialist-homepage .sidebar-toggle {
   background: transparent;
-  border: 1px solid var(--nutrient-specialist-purple);
+  border: 1px solid var(--nutrient-specialist-primary);
   cursor: pointer;
   padding: 0.25rem;
   width: 28px;
@@ -70,150 +127,201 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  outline: none;
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
 }
 
 .nutrient-specialist-homepage .sidebar-toggle:hover,
 .nutrient-specialist-homepage .sidebar-toggle:focus {
-  background: var(--nutrient-specialist-purple);
-  border-color: var(--nutrient-specialist-purple);
+  background: var(--nutrient-specialist-primary);
+  border-color: var(--nutrient-specialist-primary);
+  box-shadow: 0 0 0 3px rgba(96, 41, 49, 0.3);
 }
 
-.nutrient-specialist-homepage .sidebar-toggle svg {
-  width: 18px;
-  height: 18px;
-  transition: var(--nutrient-specialist-transition);
+.nutrient-specialist-homepage .sidebar-toggle svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-secondary);
 }
 
 .nutrient-specialist-homepage .sidebar-toggle:hover svg path,
 .nutrient-specialist-homepage .sidebar-toggle:focus svg path {
   stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-white);
 }
 
+/* Sidebar navigation */
 .nutrient-specialist-homepage .sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
+.nutrient-specialist-homepage .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+}
+
 .nutrient-specialist-homepage .sidebar-nav a,
 .nutrient-specialist-homepage .sidebar-nav button {
-  color: var(--nutrient-specialist-text);
+  color: var(--nutrient-specialist-primary);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   border-radius: var(--nutrient-specialist-border-radius);
   transition: var(--nutrient-specialist-transition);
   background: none;
   border: none;
   cursor: pointer;
   text-align: left;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.nutrient-specialist-homepage .sidebar-nav svg {
+  width: 24px;
+  height: 24px;
+}
+
+.nutrient-specialist-homepage .sidebar-nav svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-secondary);
+}
+
+body.dark-theme .nutrient-specialist-homepage .sidebar-nav svg path {
+  stroke: var(--nutrient-specialist-highlight);
+  fill: var(--nutrient-specialist-secondary);
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .sidebar-nav a span,
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .sidebar-nav button span {
+  display: none;
 }
 
 .nutrient-specialist-homepage .sidebar-nav a:hover,
 .nutrient-specialist-homepage .sidebar-nav a:focus,
 .nutrient-specialist-homepage .sidebar-nav button:hover,
 .nutrient-specialist-homepage .sidebar-nav button:focus {
-  background: var(--nutrient-specialist-purple);
-  color: var(--nutrient-specialist-white);
+  background: var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-primary);
   transform: translateY(-2px);
   box-shadow: var(--nutrient-specialist-shadow-hover);
 }
 
+.nutrient-specialist-homepage .sidebar-nav a:hover svg path,
+.nutrient-specialist-homepage .sidebar-nav button:hover svg path {
+  stroke: var(--nutrient-specialist-highlight);
+  fill: var(--nutrient-specialist-secondary);
+}
+
 .nutrient-specialist-homepage .sidebar-action-button {
-  background: var(--nutrient-specialist-purple) !important;
-  color: var(--nutrient-specialist-white) !important;
+  background: var(--nutrient-specialist-highlight);
+  color: var(--nutrient-specialist-primary);
   margin-top: 1rem;
+}
+
+.nutrient-specialist-homepage .sidebar-action-button svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-secondary);
 }
 
 .nutrient-specialist-homepage .sidebar-action-button:hover,
 .nutrient-specialist-homepage .sidebar-action-button:focus {
-  background: var(--nutrient-specialist-purple-dark) !important;
-  transform: translateY(-2px);
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
 }
 
-/* External toggle button (half-circle) */
+.nutrient-specialist-homepage .sidebar-action-button:hover svg path,
+.nutrient-specialist-homepage .sidebar-action-button:focus svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-white);
+}
+
+/* External sidebar toggle */
 .nutrient-specialist-homepage .sidebar-external-toggle {
   position: fixed;
-  top: 80px; /* Below header */
-  left: 0;
-  width: 40px;
-  height: 80px;
-  background: var(--nutrient-specialist-purple);
-  border-radius: 0 40px 40px 0;
-  border: none;
+  top: 80px;
+  left: 1rem;
+  background: var(--nutrient-specialist-white);
+  border: 1px solid var(--nutrient-specialist-primary);
+  padding: 0.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
   cursor: pointer;
   z-index: 998;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: var(--nutrient-specialist-transition);
-  box-shadow: var(--nutrient-specialist-shadow);
-  outline: none;
+}
+
+.nutrient-specialist-homepage .sidebar-external-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+.nutrient-specialist-homepage .sidebar-external-toggle svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-secondary);
+}
+
+.nutrient-specialist-homepage .sidebar-external-toggle:hover,
+.nutrient-specialist-homepage .sidebar-external-toggle:focus {
+  background: var(--nutrient-specialist-light-bg);
+  border-color: var(--nutrient-specialist-secondary);
+  box-shadow: var(--nutrient-specialist-shadow-hover);
+}
+
+.nutrient-specialist-homepage .sidebar-external-toggle:hover svg path,
+.nutrient-specialist-homepage .sidebar-external-toggle:focus svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-secondary);
 }
 
 .nutrient-specialist-homepage .sidebar-external-toggle.hidden {
   display: none;
 }
 
-.nutrient-specialist-homepage .sidebar-external-toggle:hover,
-.nutrient-specialist-homepage .sidebar-external-toggle:focus {
-  background: var(--nutrient-specialist-purple-dark);
-}
-
-.nutrient-specialist-homepage .sidebar-external-toggle svg {
-  width: 20px;
-  height: 20px;
-}
-
 /* Main content */
 .nutrient-specialist-homepage .nutrient-specialist-content {
   flex: 1;
-  margin-left: 250px;
+  margin-left: 260px;
   padding: 2rem;
   transition: margin-left 0.3s ease;
+  background: var(--nutrient-specialist-white);
 }
 
-.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .sidebar-external-toggle + .nutrient-specialist-content {
-  margin-left: 0;
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .nutrient-specialist-content {
+  margin-left: 60px;
 }
 
 /* Banner section */
 .nutrient-specialist-homepage .nutrient-specialist-banner {
-  background: linear-gradient(135deg, var(--nutrient-specialist-purple) 40%, var(--nutrient-specialist-white) 100%);
-  padding: 4rem 1rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 2rem;
+  background: linear-gradient(135deg, var(--nutrient-specialist-white) 0%, var(--nutrient-specialist-light-bg) 100%);
+  padding: 3rem;
   border-radius: var(--nutrient-specialist-border-radius);
   box-shadow: var(--nutrient-specialist-shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2rem;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-content {
-  flex: 1 1 50%;
   max-width: 600px;
-  color: var(--nutrient-specialist-white);
-  padding: 1rem;
+  color: var(--nutrient-specialist-primary);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-title {
   font-size: 2.5rem;
   font-weight: 700;
-  color: var(--nutrient-specialist-white);
   margin-bottom: 1rem;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-subtitle {
-  font-size: 1.125rem;
-  font-weight: 400;
-  color: var(--nutrient-specialist-white);
-  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
   opacity: 0.9;
+  margin-bottom: 1.5rem;
+  color: var(--nutrient-specialist-secondary);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-buttons {
@@ -227,75 +335,81 @@
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
-  border-radius: var(--nutrient-specialist-border-radius);
+  border-radius: 25px;
   transition: var(--nutrient-specialist-transition);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-button.primary {
-  background: var(--nutrient-specialist-white);
-  color: var(--nutrient-specialist-purple);
+  background: var(--nutrient-specialist-highlight);
+  color: var(--nutrient-specialist-primary);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-button.primary:hover,
 .nutrient-specialist-homepage .nutrient-specialist-banner-button.primary:focus {
-  background: #f3f4f6;
-  box-shadow: var(--nutrient-specialist-shadow);
-  transform: translateY(-2px);
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+  transform: translateY(-3px);
+  box-shadow: var(--nutrient-specialist-shadow-hover);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-button.secondary {
   background: transparent;
-  color: var(--nutrient-specialist-white);
-  border: 2px solid var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-primary);
+  border: 2px solid var(--nutrient-specialist-accent);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-button.secondary:hover,
 .nutrient-specialist-homepage .nutrient-specialist-banner-button.secondary:focus {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: var(--nutrient-specialist-shadow);
-  transform: translateY(-2px);
-}
-
-.nutrient-specialist-homepage .nutrient-specialist-banner-image {
-  flex: 1 1 40%;
-  max-width: 400px;
-  padding: 1rem;
+  background: var(--nutrient-specialist-accent);
+  color: var(--nutrient-specialist-white);
+  transform: translateY(-3px);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-banner-image svg {
-  width: 100%;
-  height: auto;
-  max-height: 250px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  filter: drop-shadow(0 4px 12px rgba(96, 41, 49, 0.2));
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-banner-image svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-secondary);
+}
+
+body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-banner-image svg path {
+  stroke: var(--nutrient-specialist-highlight);
+  fill: var(--nutrient-specialist-secondary);
 }
 
 /* Features section */
 .nutrient-specialist-homepage .nutrient-specialist-features {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 4rem 1rem;
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 2rem;
   text-align: center;
+  background: var(--nutrient-specialist-white);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-features-title {
-  font-size: 2.25rem;
+  font-size: 2rem;
   font-weight: 600;
-  color: var(--nutrient-specialist-text);
+  color: var(--nutrient-specialist-primary);
   margin-bottom: 1rem;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-features-description {
-  font-size: 1.125rem;
-  color: var(--nutrient-specialist-subtext);
+  font-size: 1.1rem;
+  color: var(--nutrient-specialist-secondary);
   margin-bottom: 2rem;
-  max-width: 800px;
+  max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
@@ -309,20 +423,20 @@
 
 .nutrient-specialist-homepage .nutrient-specialist-feature-card:hover,
 .nutrient-specialist-homepage .nutrient-specialist-feature-card:focus-within {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   box-shadow: var(--nutrient-specialist-shadow-hover);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-feature-card h3 {
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--nutrient-specialist-text);
+  color: var(--nutrient-specialist-primary);
   margin-bottom: 0.75rem;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-feature-card p {
   font-size: 0.95rem;
-  color: var(--nutrient-specialist-subtext);
+  color: var(--nutrient-specialist-secondary);
   margin-bottom: 1rem;
 }
 
@@ -331,18 +445,18 @@
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--nutrient-specialist-white);
-  background: var(--nutrient-specialist-purple);
-  border-radius: var(--nutrient-specialist-border-radius);
+  color: var(--nutrient-specialist-primary);
+  background: var(--nutrient-specialist-highlight);
+  border-radius: 20px;
   text-decoration: none;
   transition: var(--nutrient-specialist-transition);
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-feature-link:hover,
 .nutrient-specialist-homepage .nutrient-specialist-feature-link:focus {
-  background: var(--nutrient-specialist-purple-dark);
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
   box-shadow: var(--nutrient-specialist-shadow);
-  transform: translateY(-2px);
 }
 
 /* Responsive design */
@@ -355,87 +469,52 @@
     margin-left: 220px;
   }
 
-  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .sidebar-external-toggle + .nutrient-specialist-content {
-    margin-left: 0;
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .nutrient-specialist-content {
+    margin-left: 60px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner {
-    padding: 3rem 1rem;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-banner-title {
-    font-size: 2rem;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-banner-subtitle {
-    font-size: 1rem;
+    padding: 2rem;
+    flex-direction: column;
+    text-align: center;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-image svg {
-    max-height: 200px;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-features {
-    padding: 3rem 1rem;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-features-title {
-    font-size: 2rem;
+    width: 180px;
+    height: 180px;
   }
 }
 
 @media (max-width: 768px) {
   .nutrient-specialist-homepage .nutrient-specialist-sidebar {
     width: 200px;
+    padding: 1rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-content {
     margin-left: 200px;
+    padding: 1.5rem;
   }
 
-  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .sidebar-external-toggle + .nutrient-specialist-content {
-    margin-left: 0;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-banner {
-    padding: 2rem 0.75rem;
-    gap: 1.5rem;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-banner-content,
-  .nutrient-specialist-homepage .nutrient-specialist-banner-image {
-    flex: 1 1 100%;
-    max-width: 100%;
-    text-align: center;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-banner-buttons {
-    justify-content: center;
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .nutrient-specialist-content {
+    margin-left: 60px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-title {
-    font-size: 1.75rem;
+    font-size: 2rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-subtitle {
-    font-size: 0.95rem;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-banner-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-image svg {
-    max-height: 180px;
+    width: 150px;
+    height: 150px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-features-title {
-    font-size: 1.75rem;
-  }
-
-  .nutrient-specialist-homepage .nutrient-specialist-features-description {
-    font-size: 1rem;
+    font-size: 1.8rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-features-grid {
@@ -451,21 +530,11 @@
 
   .nutrient-specialist-homepage .nutrient-specialist-content {
     margin-left: 180px;
+    padding: 1rem;
   }
 
-  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .sidebar-external-toggle + .nutrient-specialist-content {
-    margin-left: 0;
-  }
-
-  .nutrient-specialist-homepage .sidebar-external-toggle {
-    width: 36px;
-    height: 72px;
-    border-radius: 0 36px 36px 0;
-  }
-
-  .nutrient-specialist-homepage .sidebar-external-toggle svg {
-    width: 18px;
-    height: 18px;
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .nutrient-specialist-content {
+    margin-left: 60px;
   }
 
   .nutrient-specialist-homepage .sidebar-title {
@@ -485,11 +554,11 @@
   .nutrient-specialist-homepage .sidebar-nav a,
   .nutrient-specialist-homepage .sidebar-nav button {
     font-size: 0.9rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner {
-    padding: 1.5rem 0.5rem;
+    padding: 1.5rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-title {
@@ -501,16 +570,17 @@
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-banner-image svg {
-    max-height: 150px;
+    width: 120px;
+    height: 120px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-features {
-    padding: 2rem 0.5rem;
+    padding: 1.5rem;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-features-title {
@@ -521,6 +591,10 @@
     font-size: 0.9rem;
   }
 
+  .nutrient-specialist-homepage .nutrient-specialist-features-grid {
+    grid-template-columns: 1fr;
+  }
+
   .nutrient-specialist-homepage .nutrient-specialist-feature-card {
     padding: 1rem;
   }
@@ -529,12 +603,8 @@
     font-size: 1.25rem;
   }
 
-  .nutrient-specialist-homepage .nutrient-specialist-feature-card p {
-    font-size: 0.9rem;
-  }
-
   .nutrient-specialist-homepage .nutrient-specialist-feature-link {
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
 }

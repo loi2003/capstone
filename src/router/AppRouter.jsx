@@ -15,7 +15,7 @@ import AdminHomePage from '../pages/admin/AdminHomePage';
 import HealthExpertHomePage from '../pages/staff/HeathExpertHomePage';
 import NutrientSpecialistHomePage from '../pages/staff/NutrientSpecialistHomepage';
 import ClinicHomePage from '../pages/staff/ClinicHomePage';
-// import ConsultantHomePage from '../pages/consultant/ConsultantHomePage';
+import ConsultantHomePage from '../pages/staff/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
 
 const AppRoutes = () => {
@@ -42,7 +42,7 @@ const AppRoutes = () => {
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
-        {/* <Route path="/consultant" element={<ConsultantHomePage />} /> */}
+        <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </ThemeProvider>
