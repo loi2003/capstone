@@ -19,165 +19,117 @@ body {
 
 /* Color variables for easy customization */
 :root {
-  --primary-gradient: linear-gradient(90deg, #2564EA, #14B7A6);
+  --primary-gradient: linear-gradient(90deg, #04668D, #03C39A);
   --cta-color: rgba(107, 159, 255, 1);
   --cta-hover: rgba(90, 140, 230, 1);
   --accent-blue: rgba(107, 159, 255, 1);
-  --white: #ffffff;
+  --white: #feffe9;
   --light-bg: #f5f7fa;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
   --border-radius: 12px;
   --transition: all 0.3s ease;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
 }
 
 /* Hero Section */
 .hero-section {
-  padding: 100px 20px;
-  background: linear-gradient(135deg, #6B9FFF, #FF9CC6);
-  color: #FFFFFF;
-  position: relative;
-  overflow: hidden;
-  min-height: 80vh;
-  display: flex;
-  align-items: center;
+  padding: 80px 20px;
+  background-color: #17a0af;
+  color: var(--white);
 }
 
 .hero-content {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 40px;
-  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .hero-text {
-  max-width: 55%;
-  flex: 1;
+  max-width: 50%;
 }
 
 .hero-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  line-height: 1.2;
-  margin-bottom: 1.5rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color:var(--white);
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
 .hero-tagline {
-  font-size: 1.5rem;
+  color:var(--white);
+  font-size: 1.4rem;
   font-weight: 500;
-  opacity: 0.95;
+  opacity: 0.9;
   margin-bottom: 1rem;
-  line-height: 1.4;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
-  opacity: 0.85;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
+  color:var(--white);
+  font-size: 1.2rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
 }
 
 .hero-quote {
-  font-size: 1.15rem;
+  color:var(--white);
+  font-size: 1.1rem;
   font-style: italic;
-  opacity: 0.8;
-  margin-bottom: 2.5rem;
+  opacity: 0.7;
+  margin-bottom: 2rem;
 }
 
 .hero-buttons {
   display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+  gap: 15px;
 }
 
 .hero-button {
-  padding: 14px 28px;
-  font-size: 1.1rem;
-  font-weight: 600;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
   text-decoration: none;
-  border-radius: 30px;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 25px;
+  transition: var(--transition);
 }
 
 .hero-button.primary {
-  background: #6B9FFF;
-  color: #FFFFFF;
+  background: var(--white);
+  color: var(--cta-color);
 }
 
 .hero-button.primary:hover {
-  background: #5A8CE6;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  background: var(--cta-hover);
+  color: var(--white);
 }
 
 .hero-button.secondary {
   background: transparent;
-  color: #FF9CC6;
-  border: 2px solid #FF9CC6;
+  color: var(--white);
+  border: 2px solid var(--white);
 }
 
 .hero-button.secondary:hover {
-  background: rgba(255, 156, 198, 0.1);
-  color: #FFFFFF;
-  border-color: #FFFFFF;
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .hero-button.video {
-  background: #FFD7A8;
-  color: #333333;
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--white);
 }
 
 .hero-button.video:hover {
-  background: #FFCA8A;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .hero-graphic {
   max-width: 40%;
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.hero-graphic svg {
-  width: 100%;
-  height: auto;
-  max-height: 300px;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
-}
-
-/* Decorative Background Elements */
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: -50px;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2), transparent);
-  border-radius: 50%;
-  z-index: 0;
-}
-
-.hero-section::after {
-  content: '';
-  position: absolute;
-  bottom: -100px;
-  right: -100px;
-  width: 300px;
-  height: 300px;
-  background: radial-gradient(circle, rgba(255, 156, 198, 0.15), transparent);
-  border-radius: 50%;
-  z-index: 0;
 }
 
 /* Features Section */
@@ -686,7 +638,7 @@ body {
   right: 30px;
   width: 60px;
   height: 60px;
-  background-color: var(--cta-color);
+  background-color: var(--co-2);
   color: var(--white);
   border-radius: 50%;
   display: flex;
@@ -698,7 +650,7 @@ body {
 }
 
 .contact-icon:hover {
-  background-color: var(--cta-hover);
+  background-color: var(--co-4);
   box-shadow: var(--shadow-hover);
 }
 
@@ -744,7 +696,7 @@ body {
   }
 
   .hero-text {
-    max-width: 90%;
+    max-width: 80%;
   }
 
   .hero-graphic {
@@ -752,23 +704,8 @@ body {
   }
 
   .hero-title {
-    font-size: 2.8rem;
-  }
-
-  .hero-tagline {
-    font-size: 1.3rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.1rem;
-  }
-
-  .hero-quote {
-    font-size: 1rem;
-  }
-
-  .hero-buttons {
-    justify-content: center;
+    color: #F0F3BE;
+    font-size: 2.5rem;
   }
 
   .tracker-chart-container {
@@ -797,32 +734,16 @@ body {
   }
 
   .hero-title {
-    font-size: 2.3rem;
+    color: #F0F3BE;
+    font-size: 2.2rem;
+  }
+  h1 {
+    color: #F0F3BE;
   }
 
-  .hero-tagline {
-    font-size: 1.2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-
-  .hero-quote {
-    font-size: 0.95rem;
-  }
-
-  .hero-button {
-    padding: 12px 24px;
-    font-size: 1rem;
-  }
-
-  .hero-graphic {
-    max-width: 80%;
-  }
-
-  .hero-graphic svg {
-    max-height: 250px;
+  .hero-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .tracker-chart-container {
@@ -870,43 +791,15 @@ body {
 }
 
 @media (max-width: 480px) {
-  .hero-section {
-    padding: 60px 10px;
-  }
-
   .hero-title {
     font-size: 1.8rem;
-  }
-
-  .hero-tagline {
-    font-size: 1rem;
-  }
-
-  .hero-subtitle {
-    font-size: 0.9rem;
-  }
-
-  .hero-quote {
-    font-size: 0.85rem;
-  }
-
-  .hero-button {
-    padding: 10px 20px;
-    font-size: 0.9rem;
-  }
-
-  .hero-graphic {
-    max-width: 100%;
-  }
-
-  .hero-graphic svg {
-    max-height: 200px;
   }
 
   .section-title {
     font-size: 1.8rem;
   }
 
+  .hero-button,
   .community-button,
   .tracker-button,
   .tips-button,
@@ -978,6 +871,7 @@ body {
   }
 
   .hero-title {
+    color: #F0F3BE;
     font-size: 1.6rem;
   }
 
