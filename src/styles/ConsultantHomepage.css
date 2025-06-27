@@ -1,39 +1,47 @@
-/* Scoped styles for Consultant Homepage */
+/* Reset default styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles */
 .consultant-homepage {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f9fafb;
-  color: #111827;
+  font-family: 'Roboto', sans-serif;
+  background-color: #ffffff; /* White main color */
+  color: #002212; /* .color1 */
   min-height: 100vh;
   line-height: 1.6;
+}
 
-  /* Scoped color variables */
-  --consultant-deep-brown: #4A2C2A;
-  --consultant-light-brown: #8B5A2B;
-  --consultant-dark-brown-hover: #3C2317;
-  --consultant-white: #ffffff;
-  --consultant-text: #111827;
-  --consultant-subtext: #6b7280;
-  --consultant-light-bg: #FFF4ED;
-  --consultant-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --consultant-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --consultant-border-radius: 8px;
+/* Color variables */
+:root {
+  --consultant-primary: #002212; /* .color1 */
+  --consultant-primary-dark: #033c1c; /* .color2 */
+  --consultant-secondary: #2a5f23; /* .color3 */
+  --consultant-accent: #5d8925; /* .color4 */
+  --consultant-light-accent: #a4b921; /* .color5 */
+  --consultant-text: #002212; /* .color1 */
+  --consultant-background: #ffffff; /* White */
+  --consultant-shadow: 0 4px 16px rgba(0, 34, 18, 0.1); /* Shadow with .color1 tint */
+  --consultant-shadow-hover: 0 8px 24px rgba(0, 34, 18, 0.15); /* Shadow with .color1 tint */
+  --consultant-border-radius: 10px;
   --consultant-transition: all 0.3s ease;
 }
 
-/* Main Content Layout */
+/* Main content layout */
 .consultant-homepage .consultant-main-content {
   display: flex;
-  min-height: calc(100vh - 64px); /* Adjust for header height */
+  min-height: calc(100vh - 64px);
 }
 
-/* Sidebar Styles */
+/* Sidebar styles */
 .consultant-homepage .consultant-sidebar {
-  width: 250px;
-  background: var(--consultant-white);
+  background: var(--consultant-background);
   color: var(--consultant-text);
   padding: 1.5rem 1rem;
   position: fixed;
-  top: 64px; /* Below header */
+  top: 64px;
   left: 0;
   height: calc(100vh - 64px);
   box-shadow: var(--consultant-shadow);
@@ -43,9 +51,7 @@
 }
 
 .consultant-homepage .consultant-sidebar.closed {
-  width: 0;
-  padding: 0;
-  overflow: hidden;
+  padding: 1.5rem 0.5rem;
 }
 
 .consultant-homepage .sidebar-header {
@@ -63,7 +69,7 @@
 
 .consultant-homepage .sidebar-toggle {
   background: transparent;
-  border: 1px solid var(--consultant-deep-brown);
+  border: 1px solid var(--consultant-primary);
   cursor: pointer;
   padding: 0.25rem;
   width: 28px;
@@ -73,28 +79,23 @@
   justify-content: center;
   border-radius: 50%;
   outline: none;
+  margin-left: auto;
 }
 
 .consultant-homepage .sidebar-toggle:hover,
 .consultant-homepage .sidebar-toggle:focus {
-  background: var(--consultant-deep-brown);
-  border-color: var(--consultant-deep-brown);
-}
-
-.consultant-homepage .sidebar-toggle svg {
-  width: 18px;
-  height: 18px;
-  transition: var(--consultant-transition);
+  background: var(--consultant-primary);
+  border-color: var(--consultant-primary);
 }
 
 .consultant-homepage .sidebar-toggle svg path {
-  stroke: var(--consultant-text);
+  stroke: var(--consultant-primary);
   vector-effect: non-scaling-stroke;
 }
 
 .consultant-homepage .sidebar-toggle:hover svg path,
 .consultant-homepage .sidebar-toggle:focus svg path {
-  stroke: var(--consultant-white);
+  stroke: var(--consultant-background);
 }
 
 .consultant-homepage .sidebar-nav {
@@ -103,84 +104,62 @@
   gap: 0.5rem;
 }
 
+.consultant-homepage .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+}
+
 .consultant-homepage .sidebar-nav a,
 .consultant-homepage .sidebar-nav button {
   color: var(--consultant-text);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem;
   border-radius: var(--consultant-border-radius);
   transition: var(--consultant-transition);
   background: none;
   border: none;
   cursor: pointer;
   text-align: left;
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.consultant-homepage .consultant-sidebar.closed .sidebar-nav a span,
+.consultant-homepage .consultant-sidebar.closed .sidebar-nav button span {
+  display: none;
 }
 
 .consultant-homepage .sidebar-nav a:hover,
 .consultant-homepage .sidebar-nav a:focus,
 .consultant-homepage .sidebar-nav button:hover,
 .consultant-homepage .sidebar-nav button:focus {
-  background: var(--consultant-deep-brown);
-  color: var(--consultant-white);
+  background: var(--consultant-primary);
+  color: var(--consultant-background);
   transform: translateY(-2px);
   box-shadow: var(--consultant-shadow-hover);
 }
 
+.consultant-homepage .sidebar-nav a:hover svg path,
+.consultant-homepage .sidebar-nav button:hover svg path {
+  stroke: var(--consultant-background);
+}
+
 .consultant-homepage .sidebar-action-button {
-  background: var(--consultant-deep-brown) !important;
-  color: var(--consultant-white) !important;
+  background: var(--consultant-primary);
+  color: var(--consultant-background);
   margin-top: 1rem;
 }
 
 .consultant-homepage .sidebar-action-button:hover,
 .consultant-homepage .sidebar-action-button:focus {
-  background: var(--consultant-dark-brown-hover) !important;
-  transform: translateY(-2px);
+  background: var(--consultant-primary-dark);
 }
 
-/* External Toggle Button */
-.consultant-homepage .sidebar-external-toggle {
-  position: fixed;
-  top: 80px;
-  left: 0;
-  width: 40px;
-  height: 80px;
-  background: var(--consultant-deep-brown);
-  border-radius: 0 40px 40px 0;
-  border: none;
-  cursor: pointer;
-  z-index: 998;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--consultant-transition);
-  box-shadow: var(--consultant-shadow);
-  outline: none;
-}
-
-.consultant-homepage .sidebar-external-toggle.hidden {
-  display: none;
-}
-
-.consultant-homepage .sidebar-external-toggle:hover,
-.consultant-homepage .sidebar-external-toggle:focus {
-  background: var(--consultant-dark-brown-hover);
-}
-
-.consultant-homepage .sidebar-external-toggle svg {
-  width: 20px;
-  height: 20px;
-}
-
-.consultant-homepage .sidebar-external-toggle svg path {
-  stroke: var(--consultant-white);
-  vector-effect: non-scaling-stroke;
-}
-
-/* Main Content */
+/* Main content */
 .consultant-homepage .consultant-content {
   flex: 1;
   margin-left: 250px;
@@ -188,134 +167,123 @@
   transition: margin-left 0.3s ease;
 }
 
-.consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
-  margin-left: 0;
+.consultant-homepage .consultant-sidebar.closed + .consultant-content {
+  margin-left: 60px;
 }
 
-/* Banner Section */
+/* Banner section */
 .consultant-homepage .consultant-banner {
-  background: linear-gradient(135deg, var(--consultant-deep-brown) 40%, var(--consultant-white) 100%);
-  padding: 4rem 1rem;
+  background: var(--consultant-background); /* White background */
+  padding: 100px 20px;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 40px;
+  flex-wrap: wrap;
   border-radius: var(--consultant-border-radius);
   box-shadow: var(--consultant-shadow);
 }
 
 .consultant-homepage .consultant-banner-content {
-  flex: 1 1 50%;
   max-width: 600px;
-  color: var(--consultant-white);
-  padding: 1rem;
+  color: var(--consultant-text); /* Dark text for readability */
 }
 
 .consultant-homepage .consultant-banner-title {
-  font-size: 2.5rem;
+  font-size: 2.8rem;
   font-weight: 700;
-  color: var(--consultant-white);
   margin-bottom: 1rem;
+  line-height: 1.3;
 }
 
 .consultant-homepage .consultant-banner-subtitle {
-  font-size: 1.125rem;
-  font-weight: 400;
-  color: var(--consultant-white);
-  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
   opacity: 0.9;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+  color: var(--consultant-secondary);
 }
 
 .consultant-homepage .consultant-banner-buttons {
   display: flex;
-  gap: 1rem;
+  gap: 15px;
   flex-wrap: wrap;
 }
 
 .consultant-homepage .consultant-banner-button {
-  padding: 0.75rem 1.5rem;
+  padding: 12px 24px;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
-  border-radius: var(--consultant-border-radius);
+  border-radius: 25px;
   transition: var(--consultant-transition);
 }
 
 .consultant-homepage .consultant-banner-button.primary {
-  background: var(--consultant-white);
-  color: var(--consultant-deep-brown);
+  background: var(--consultant-primary);
+  color: var(--consultant-background);
 }
 
 .consultant-homepage .consultant-banner-button.primary:hover,
 .consultant-homepage .consultant-banner-button.primary:focus {
-  background: var(--consultant-light-bg);
-  box-shadow: var(--consultant-shadow);
-  transform: translateY(-2px);
+  background: var(--consultant-primary-dark);
+  transform: translateY(-3px);
+  box-shadow: var(--consultant-shadow-hover);
 }
 
 .consultant-homepage .consultant-banner-button.secondary {
   background: transparent;
-  color: var(--consultant-white);
-  border: 2px solid var(--consultant-white);
+  color: var(--consultant-primary);
+  border: 2px solid var(--consultant-primary);
 }
 
 .consultant-homepage .consultant-banner-button.secondary:hover,
 .consultant-homepage .consultant-banner-button.secondary:focus {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: var(--consultant-shadow);
-  transform: translateY(-2px);
+  background: var(--consultant-secondary);
+  color: var(--consultant-background);
+  transform: translateY(-3px);
 }
 
-.consultant-homepage .consultant-banner-image {
-  flex: 1 1 40%;
-  max-width: 400px;
-  padding: 1rem;
+.consultant-homepage .consultant-banner-image svg {
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  filter: drop-shadow(0 4px 12px rgba(0, 34, 18, 0.2));
 }
 
-.consultant-homepage .consultant-banner-img {
-  width: 100%;
-  height: auto;
-  max-height: 250px;
-  object-fit: contain;
-  border-radius: var(--consultant-border-radius);
-  box-shadow: var(--consultant-shadow);
-  image-rendering: auto;
-}
-
-/* Features Section */
+/* Features section */
 .consultant-homepage .consultant-features {
-  max-width: 1280px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 4rem 1rem;
+  padding: 60px 20px;
   text-align: center;
 }
 
 .consultant-homepage .consultant-features-title {
-  font-size: 2.25rem;
+  font-size: 2.5rem;
   font-weight: 600;
   color: var(--consultant-text);
   margin-bottom: 1rem;
 }
 
 .consultant-homepage .consultant-features-description {
-  font-size: 1.125rem;
-  color: var(--consultant-subtext);
-  margin-bottom: 2rem;
-  max-width: 800px;
+  font-size: 1.1rem;
+  color: var(--consultant-secondary);
+  margin-bottom: 3rem;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .consultant-homepage .consultant-features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 25px;
 }
 
 .consultant-homepage .consultant-feature-card {
-  background: var(--consultant-white);
-  padding: 1.5rem;
+  background: var(--consultant-background);
+  padding: 30px;
   border-radius: var(--consultant-border-radius);
   box-shadow: var(--consultant-shadow);
   transition: var(--consultant-transition);
@@ -323,91 +291,90 @@
 
 .consultant-homepage .consultant-feature-card:hover,
 .consultant-homepage .consultant-feature-card:focus-within {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   box-shadow: var(--consultant-shadow-hover);
 }
 
 .consultant-homepage .consultant-feature-card h3 {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   font-weight: 500;
   color: var(--consultant-text);
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.8rem;
 }
 
 .consultant-homepage .consultant-feature-card p {
   font-size: 0.95rem;
-  color: var(--consultant-subtext);
-  margin-bottom: 1rem;
-}
-
-.consultant-homepage .consultant-feature-icon {
-  width: 4rem;
-  height: 4rem;
-  margin-bottom: 1rem;
-  object-fit: contain;
-  image-rendering: crisp-edges;
+  color: var(--consultant-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
 }
 
 .consultant-homepage .consultant-feature-link {
   display: inline-flex;
-  padding: 0.5rem 1rem;
+  padding: 10px 20px;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--consultant-white);
-  background: var(--consultant-deep-brown);
-  border-radius: var(--consultant-border-radius);
+  color: var(--consultant-background);
+  background: var(--consultant-primary);
+  border-radius: 20px;
   text-decoration: none;
   transition: var(--consultant-transition);
 }
 
 .consultant-homepage .consultant-feature-link:hover,
 .consultant-homepage .consultant-feature-link:focus {
-  background: var(--consultant-dark-brown-hover);
+  background: var(--consultant-primary-dark);
   box-shadow: var(--consultant-shadow);
   transform: translateY(-2px);
 }
 
-/* Responsive Design */
+/* Responsive design */
 @media (max-width: 1024px) {
   .consultant-homepage .consultant-sidebar {
     width: 220px;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed {
+    width: 60px;
   }
 
   .consultant-homepage .consultant-content {
     margin-left: 220px;
   }
 
-  .consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
-    margin-left: 0;
+  .consultant-homepage .consultant-sidebar.closed + .consultant-content {
+    margin-left: 60px;
   }
 
   .consultant-homepage .consultant-banner {
-    padding: 3rem 1rem;
+    padding: 80px 15px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .consultant-homepage .consultant-banner-content {
+    max-width: 80%;
   }
 
   .consultant-homepage .consultant-banner-title {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
 
   .consultant-homepage .consultant-banner-subtitle {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
-  .consultant-homepage .consultant-banner-img {
-    max-height: 200px;
+  .consultant-homepage .consultant-banner-image svg {
+    width: 180px;
+    height: 180px;
   }
 
   .consultant-homepage .consultant-features {
-    padding: 3rem 1rem;
+    padding: 50px 15px;
   }
 
   .consultant-homepage .consultant-features-title {
     font-size: 2rem;
-  }
-
-  .consultant-homepage .consultant-feature-icon {
-    width: 3.5rem;
-    height: 3.5rem;
   }
 }
 
@@ -416,49 +383,48 @@
     width: 200px;
   }
 
+  .consultant-homepage .consultant-sidebar.closed {
+    width: 60px;
+  }
+
   .consultant-homepage .consultant-content {
     margin-left: 200px;
   }
 
-  .consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
-    margin-left: 0;
+  .consultant-homepage .consultant-sidebar.closed + .consultant-content {
+    margin-left: 60px;
   }
 
   .consultant-homepage .consultant-banner {
-    padding: 2rem 0.75rem;
-    gap: 1.5rem;
+    padding: 60px 10px;
+    gap: 20px;
   }
 
   .consultant-homepage .consultant-banner-content,
   .consultant-homepage .consultant-banner-image {
-    flex: 1 1 100%;
     max-width: 100%;
-    text-align: center;
-  }
-
-  .consultant-homepage .consultant-banner-buttons {
-    justify-content: center;
   }
 
   .consultant-homepage .consultant-banner-title {
-    font-size: 1.75rem;
+    font-size: 1.8rem;
   }
 
   .consultant-homepage .consultant-banner-subtitle {
-    font-size: 0.95rem;
+    font-size: 1rem;
   }
 
   .consultant-homepage .consultant-banner-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
+    padding: 10px 20px;
+    font-size: 0.95rem;
   }
 
-  .consultant-homepage .consultant-banner-img {
-    max-height: 180px;
+  .consultant-homepage .consultant-banner-image svg {
+    width: 150px;
+    height: 150px;
   }
 
   .consultant-homepage .consultant-features-title {
-    font-size: 1.75rem;
+    font-size: 1.8rem;
   }
 
   .consultant-homepage .consultant-features-description {
@@ -466,12 +432,7 @@
   }
 
   .consultant-homepage .consultant-features-grid {
-    gap: 1rem;
-  }
-
-  .consultant-homepage .consultant-feature-icon {
-    width: 3rem;
-    height: 3rem;
+    gap: 20px;
   }
 }
 
@@ -481,23 +442,17 @@
     padding: 1rem 0.75rem;
   }
 
+  .consultant-homepage .consultant-sidebar.closed {
+    width: 60px;
+    padding: 1rem 0.5rem;
+  }
+
   .consultant-homepage .consultant-content {
     margin-left: 180px;
   }
 
-  .consultant-homepage .consultant-sidebar.closed + .sidebar-external-toggle + .consultant-content {
-    margin-left: 0;
-  }
-
-  .consultant-homepage .sidebar-external-toggle {
-    width: 36px;
-    height: 72px;
-    border-radius: 0 36px 36px 0;
-  }
-
-  .consultant-homepage .sidebar-external-toggle svg {
-    width: 18px;
-    height: 18px;
+  .consultant-homepage .consultant-sidebar.closed + .consultant-content {
+    margin-left: 60px;
   }
 
   .consultant-homepage .sidebar-title {
@@ -517,11 +472,15 @@
   .consultant-homepage .sidebar-nav a,
   .consultant-homepage .sidebar-nav button {
     font-size: 0.9rem;
-    padding: 0.5rem 0.75rem;
+    padding: 0.5rem;
   }
 
   .consultant-homepage .consultant-banner {
-    padding: 1.5rem 0.5rem;
+    padding: 40px 10px;
+  }
+
+  .consultant-homepage .consultant-banner-content {
+    max-width: 100%;
   }
 
   .consultant-homepage .consultant-banner-title {
@@ -533,16 +492,17 @@
   }
 
   .consultant-homepage .consultant-banner-button {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.85rem;
+    padding: 8px 16px;
+    font-size: 0.9rem;
   }
 
-  .consultant-homepage .consultant-banner-img {
-    max-height: 150px;
+  .consultant-homepage .consultant-banner-image svg {
+    width: 120px;
+    height: 120px;
   }
 
   .consultant-homepage .consultant-features {
-    padding: 2rem 0.5rem;
+    padding: 40px 10px;
   }
 
   .consultant-homepage .consultant-features-title {
@@ -553,25 +513,17 @@
     font-size: 0.9rem;
   }
 
+  .consultant-homepage .consultant-features-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
   .consultant-homepage .consultant-feature-card {
-    padding: 1rem;
-  }
-
-  .consultant-homepage .consultant-feature-card h3 {
-    font-size: 1.25rem;
-  }
-
-  .consultant-homepage .consultant-feature-card p {
-    font-size: 0.9rem;
-  }
-
-  .consultant-homepage .consultant-feature-icon {
-    width: 2.5rem;
-    height: 2.5rem;
+    padding: 20px;
   }
 
   .consultant-homepage .consultant-feature-link {
-    padding: 0.5rem 0.75rem;
+    padding: 8px 16px;
     font-size: 0.9rem;
   }
 }

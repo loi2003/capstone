@@ -17,6 +17,7 @@ import NutrientSpecialistHomePage from '../pages/staff/NutrientSpecialistHomepag
 import ClinicHomePage from '../pages/staff/ClinicHomePage';
 import ConsultantHomePage from '../pages/staff/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
+import BlogCategoryManagement from '../pages/BlogCategoryManagement';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -44,6 +45,7 @@ const AppRoutes = () => {
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/admin/categories" element={<BlogCategoryManagement />} />
       </Routes>
     </ThemeProvider>
   );

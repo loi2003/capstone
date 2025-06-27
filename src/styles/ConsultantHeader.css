@@ -1,23 +1,24 @@
 /* Scoped styles for Consultant Header */
 .consultant-header {
-  background: var(--consultant-deep-brown);
+  background: #ffffff; /* White main color */
   padding: 1rem;
   box-shadow: var(--consultant-shadow);
   position: sticky;
   top: 0;
   z-index: 1000;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Roboto', sans-serif;
 
   /* Scoped color variables */
-  --consultant-deep-brown: #4A2C2A;
-  --consultant-light-brown: #8B5A2B;
-  --consultant-dark-brown-hover: #3C2317;
-  --consultant-white: #ffffff;
-  --consultant-text: #111827;
-  --consultant-light-bg: #FFF4ED;
-  --consultant-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --consultant-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --consultant-border-radius: 8px;
+  --consultant-primary: #002212; /* .color1 */
+  --consultant-primary-dark: #033c1c; /* .color2 */
+  --consultant-secondary: #2a5f23; /* .color3 */
+  --consultant-accent: #5d8925; /* .color4 */
+  --consultant-light-accent: #a4b921; /* .color5 */
+  --consultant-text: #002212; /* .color1 */
+  --consultant-background: #ffffff; /* White */
+  --consultant-shadow: 0 4px 12px rgba(0, 34, 18, 0.1); /* Shadow with .color1 tint */
+  --consultant-shadow-hover: 0 8px 24px rgba(0, 34, 18, 0.15); /* Shadow with .color1 tint */
+  --consultant-border-radius: 10px;
   --consultant-transition: all 0.3s ease;
 }
 
@@ -34,7 +35,7 @@
 .consultant-header .logo {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--consultant-white);
+  color: var(--consultant-text);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -43,12 +44,21 @@
 }
 
 .consultant-header .logo:hover {
-  color: var(--consultant-light-brown);
+  color: var(--consultant-accent);
 }
 
 .consultant-header .logo svg {
   width: 40px;
   height: 40px;
+}
+
+.consultant-header .logo svg path[fill] {
+  fill: var(--consultant-primary);
+  stroke: var(--consultant-background);
+}
+
+.consultant-header .logo svg path[stroke][strokeWidth="1.5"] {
+  stroke: var(--consultant-secondary);
 }
 
 /* Navigation Styles */
@@ -59,7 +69,7 @@
 }
 
 .consultant-header nav a {
-  color: var(--consultant-white);
+  color: var(--consultant-text);
   text-decoration: none;
   font-size: 1rem;
   font-weight: 500;
@@ -70,8 +80,8 @@
 
 .consultant-header nav a:hover,
 .consultant-header nav a:focus {
-  background: var(--consultant-light-brown);
-  color: var(--consultant-white);
+  background: var(--consultant-primary);
+  color: var(--consultant-background);
   box-shadow: var(--consultant-shadow-hover);
 }
 
@@ -90,14 +100,14 @@
 
 .consultant-header .consultant-user-icon:hover,
 .consultant-header .consultant-user-icon:focus {
-  background: var(--consultant-light-brown);
+  background: var(--consultant-light-accent);
   border-radius: 50%;
 }
 
 .consultant-header .consultant-user-icon svg {
   width: 24px;
   height: 24px;
-  fill: var(--consultant-white);
+  fill: var(--consultant-text);
 }
 
 /* Dropdown Menu */
@@ -105,7 +115,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  background: var(--consultant-white);
+  background: var(--consultant-background);
   border-radius: var(--consultant-border-radius);
   box-shadow: var(--consultant-shadow);
   padding: 0.75rem;
@@ -126,8 +136,8 @@
 }
 
 .consultant-header .consultant-user-dropdown button {
-  background: var(--consultant-deep-brown);
-  color: var(--consultant-white);
+  background: var(--consultant-primary);
+  color: var(--consultant-background);
   border: none;
   padding: 0.5rem;
   border-radius: var(--consultant-border-radius);
@@ -139,7 +149,7 @@
 
 .consultant-header .consultant-user-dropdown button:hover,
 .consultant-header .consultant-user-dropdown button:focus {
-  background: var(--consultant-dark-brown-hover);
+  background: var(--consultant-primary-dark);
 }
 
 /* Menu Toggle */
@@ -154,7 +164,12 @@
 .consultant-header .menu-toggle svg {
   width: 24px;
   height: 24px;
-  stroke: var(--consultant-white);
+  stroke: var(--consultant-text);
+}
+
+.consultant-header .menu-toggle:hover svg path,
+.consultant-header .menu-toggle:focus svg path {
+  stroke: var(--consultant-background);
 }
 
 /* Responsive Design */
@@ -174,7 +189,7 @@
     width: 100%;
     gap: 1rem;
     padding: 1rem;
-    background: var(--consultant-deep-brown);
+    background: var(--consultant-background);
     position: absolute;
     top: 100%;
     left: 0;

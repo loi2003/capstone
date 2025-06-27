@@ -90,6 +90,20 @@ const AdminHomePage = () => {
             variants={containerVariants}
           >
             <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/admin" onClick={() => setIsSidebarOpen(false)} title="Homepage">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="var(--admin-text)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3m10-11v11a1 1 0 01-1 1h-3"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Homepage</span>}
+              </Link>
+            </motion.div>
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
               <Link to="/admin/dashboard" onClick={() => setIsSidebarOpen(false)} title="Dashboard">
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                   <path
@@ -129,6 +143,20 @@ const AdminHomePage = () => {
                   />
                 </svg>
                 {isSidebarOpen && <span>Settings</span>}
+              </Link>
+            </motion.div>
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/admin/categories" onClick={() => setIsSidebarOpen(false)} title="Blog Category Management">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="var(--admin-text)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2zm2 4h10m-10 4h10m-10 4h10"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Blog Category Management</span>}
               </Link>
             </motion.div>
             <motion.div variants={navItemVariants} className="sidebar-nav-item">
@@ -174,12 +202,14 @@ const AdminHomePage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <svg width="250" height="250" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
-                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"
+                  d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
                   fill="var(--admin-accent)"
-                  stroke="var(--admin-background)"
-                  strokeWidth="1"
+                  stroke="var(--admin-primary)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
             </motion.div>

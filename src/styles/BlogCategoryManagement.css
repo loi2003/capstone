@@ -1,0 +1,219 @@
+/* Reset default styles */
+.category-management * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles */
+.category-management {
+  font-family: 'Roboto', sans-serif;
+  background-color: #ffffff;
+  color: #002212;
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Color variables */
+.category-management {
+  --admin-primary: #002212;
+  --admin-primary-dark: #033c1c;
+  --admin-secondary: #2a5f23;
+  --admin-accent: #5d8925;
+  --admin-light-accent: #a4b921;
+  --admin-text: #002212;
+  --admin-background: #ffffff;
+  --admin-shadow: 0 4px 16px rgba(0, 34, 18, 0.1);
+  --admin-shadow-hover: 0 8px 24px rgba(0, 34, 18, 0.15);
+  --admin-border-radius: 10px;
+  --admin-transition: all 0.3s ease;
+}
+
+/* Title */
+.category-management-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Form */
+.category-form {
+  max-width: 500px;
+  width: 100%;
+  background: var(--admin-background);
+  padding: 2rem;
+  border-radius: var(--admin-border-radius);
+  box-shadow: var(--admin-shadow);
+  margin-bottom: 2rem;
+}
+
+/* Form group */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--admin-text);
+  margin-bottom: 0.5rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 2px solid var(--admin-primary);
+  border-radius: var(--admin-border-radius);
+  color: var(--admin-text);
+  background: var(--admin-background);
+  transition: var(--admin-transition);
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: var(--admin-shadow);
+}
+
+/* Submit button */
+.category-submit-button {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background: var(--admin-primary);
+  color: var(--admin-background);
+  border: none;
+  border-radius: var(--admin-border-radius);
+  cursor: pointer;
+  transition: var(--admin-transition);
+}
+
+.category-submit-button:hover,
+.category-submit-button:focus {
+  background: var(--admin-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow-hover);
+}
+
+.category-submit-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Messages */
+.success-message {
+  color: var(--admin-accent);
+  font-size: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+/* Category list */
+.category-list {
+  max-width: 500px;
+  width: 100%;
+}
+
+.category-list-title {
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: var(--admin-text);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.category-list ul {
+  list-style: none;
+  background: var(--admin-background);
+  padding: 1rem;
+  border-radius: var(--admin-border-radius);
+  box-shadow: var(--admin-shadow);
+}
+
+.category-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.category-item:last-child {
+  border-bottom: none;
+}
+
+.status-active {
+  color: var(--admin-accent);
+  font-weight: 500;
+}
+
+.status-inactive {
+  color: #d32f2f;
+  font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .category-management {
+    padding: 1.5rem;
+  }
+
+  .category-management-title {
+    font-size: 2rem;
+  }
+
+  .category-form {
+    padding: 1.5rem;
+  }
+
+  .category-list-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-management {
+    padding: 1rem;
+  }
+
+  .category-management-title {
+    font-size: 1.5rem;
+  }
+
+  .category-form {
+    padding: 1rem;
+  }
+
+  .form-group input {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+
+  .category-submit-button {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+
+  .category-list-title {
+    font-size: 1.3rem;
+  }
+
+  .category-item {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+}
