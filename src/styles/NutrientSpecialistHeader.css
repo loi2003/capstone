@@ -1,63 +1,37 @@
-/* Reset default styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Color variables */
-:root {
-  --nutrient-specialist-purple: #8B5CF6;
-  --nutrient-specialist-purple-dark: #7C3AED;
-  --nutrient-specialist-yellow: #FACC15;
-  --nutrient-specialist-white: #ffffff;
-  --nutrient-specialist-light-bg: #ede9fe;
-  --nutrient-specialist-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --nutrient-specialist-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --nutrient-specialist-border-radius: 8px;
-  --nutrient-specialist-transition: all 0.3s ease;
-}
-
-/* Dark theme */
-body.dark-theme {
-  background: #111827;
-  color: #f3f4f6;
-}
-
-/* Header styles */
+/* Base styles for header */
 .nutrient-specialist-header {
-  background: var(--nutrient-specialist-purple);
-  padding: 1rem;
-  box-shadow: var(--nutrient-specialist-shadow);
+  font-family: 'Inter', sans-serif;
+  background: var(--nutrient-specialist-primary);
+  color: var(--nutrient-specialist-text);
   position: sticky;
   top: 0;
   z-index: 1000;
-  font-family: 'Inter', sans-serif;
+  box-shadow: var(--nutrient-specialist-shadow);
 }
 
-/* Container */
+/* Header container */
 .nutrient-specialist-header .container {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
 }
 
-/* Logo */
+/* Logo styling */
 .nutrient-specialist-header .logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--nutrient-specialist-white);
-  text-decoration: none;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  transition: var(--nutrient-specialist-transition);
+  text-decoration: none;
+  gap: 12px;
 }
 
-.nutrient-specialist-header .logo:hover {
-  color: var(--nutrient-specialist-light-bg);
+.nutrient-specialist-header .logo span {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--nutrient-specialist-white);
+  letter-spacing: -0.025em;
 }
 
 .nutrient-specialist-header .logo svg {
@@ -65,47 +39,70 @@ body.dark-theme {
   height: 40px;
 }
 
+.nutrient-specialist-header .logo svg path {
+  stroke: var(--nutrient-specialist-highlight);
+  fill: var(--nutrient-specialist-primary);
+}
+
 /* Navigation */
 .nutrient-specialist-header nav {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 24px;
 }
 
-.nutrient-specialist-header nav a {
-  color: var(--nutrient-specialist-white);
-  text-decoration: none;
+.nutrient-specialist-header nav a,
+.nutrient-specialist-header nav button {
   font-size: 1rem;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  transition: var(--nutrient-specialist-transition);
+  color: var(--nutrient-specialist-white);
+  text-decoration: none;
+  padding: 8px 12px;
   border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
 }
 
 .nutrient-specialist-header nav a:hover,
-.nutrient-specialist-header nav a:focus {
-  background: var(--nutrient-specialist-yellow);
-  color: var(--nutrient-specialist-purple);
-  box-shadow: var(--nutrient-specialist-shadow-hover);
+.nutrient-specialist-header nav button:hover {
+  background: var(--nutrient-specialist-highlight);
+  color: var(--nutrient-specialist-primary);
+}
+
+/* Hamburger menu button */
+.nutrient-specialist-header .menu-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+}
+
+.nutrient-specialist-header .menu-toggle svg {
+  width: 24px;
+  height: 24px;
+}
+
+.nutrient-specialist-header .menu-toggle svg path {
+  stroke: var(--nutrient-specialist-highlight);
 }
 
 /* Profile section */
 .nutrient-specialist-header .profile-section {
   position: relative;
+  z-index: 1002;
 }
 
+/* Profile toggle (user icon) */
 .nutrient-specialist-header .profile-toggle {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0.5rem;
-  color: var(--nutrient-specialist-white);
+  padding: 10px;
   transition: var(--nutrient-specialist-transition);
 }
 
-.nutrient-specialist-header .profile-toggle:hover,
-.nutrient-specialist-header .profile-toggle:focus {
-  background: var(--nutrient-specialist-yellow);
+.nutrient-specialist-header .profile-toggle:hover {
+  background: var(--nutrient-specialist-highlight);
   border-radius: 50%;
 }
 
@@ -114,100 +111,166 @@ body.dark-theme {
   height: 24px;
 }
 
+.nutrient-specialist-header .profile-toggle svg path {
+  stroke: var(--nutrient-specialist-highlight);
+}
+
 /* Profile dropdown */
 .nutrient-specialist-header .profile-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   right: 0;
   background: var(--nutrient-specialist-white);
   border-radius: var(--nutrient-specialist-border-radius);
   box-shadow: var(--nutrient-specialist-shadow);
-  padding: 0.75rem;
+  padding: 12px;
   min-width: 180px;
-  z-index: 1002;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  z-index: 1003;
+  border: 1px solid var(--nutrient-specialist-accent);
 }
 
 .nutrient-specialist-header .profile-email {
-  font-size: 0.9rem;
-  color: #111827;
-  padding: 0.5rem;
+  display: block;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--nutrient-specialist-text);
+  font-weight: 500;
+  border-bottom: 1px solid var(--nutrient-specialist-accent);
+  margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .nutrient-specialist-header .profile-dropdown button {
-  background: var(--nutrient-specialist-yellow);
-  color: var(--nutrient-specialist-purple);
-  border: none;
-  padding: 0.5rem;
-  border-radius: var(--nutrient-specialist-border-radius);
-  font-size: 0.9rem;
-  cursor: pointer;
+  display: block;
+  width: 100%;
   text-align: left;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  color: var(--nutrient-specialist-primary);
+  background: var(--nutrient-specialist-highlight);
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
   transition: var(--nutrient-specialist-transition);
 }
 
-.nutrient-specialist-header .profile-dropdown button:hover,
-.nutrient-specialist-header .profile-dropdown button:focus {
-  background: var(--nutrient-specialist-purple-dark);
+.nutrient-specialist-header .profile-dropdown button:hover {
+  background: var(--nutrient-specialist-secondary);
   color: var(--nutrient-specialist-white);
 }
 
-/* Menu toggle */
-.nutrient-specialist-header .menu-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0.5rem;
+/* Dark theme */
+body.dark-theme .nutrient-specialist-header {
+  background: #1f2937;
 }
 
-.nutrient-specialist-header .menu-toggle svg {
-  width: 24px;
-  height: 24px;
+body.dark-theme .nutrient-specialist-header .profile-dropdown {
+  background: #1f2937;
+  border-color: var(--nutrient-specialist-accent);
+}
+
+body.dark-theme .nutrient-specialist-header .profile-email {
+  color: #f3f4f6;
+  border-bottom-color: var(--nutrient-specialist-accent);
+}
+
+body.dark-theme .nutrient-specialist-header nav.block {
+  background: #1f2937;
+  border-color: var(--nutrient-specialist-accent);
+}
+
+body.dark-theme .nutrient-specialist-header nav a,
+body.dark-theme .nutrient-specialist-header nav button {
+  color: #f3f4f6;
+}
+
+body.dark-theme .nutrient-specialist-header nav a:hover,
+body.dark-theme .nutrient-specialist-header nav button:hover {
+  background: var(--nutrient-specialist-highlight);
+  color: var(--nutrient-specialist-primary);
 }
 
 /* Responsive design */
-@media (max-width: 768px) {
-  .nutrient-specialist-header .container {
-    flex-wrap: wrap;
-    padding: 0.5rem;
+@media (max-width: 1024px) {
+  .nutrient-specialist-header nav {
+    display: none;
   }
 
   .nutrient-specialist-header .menu-toggle {
     display: block;
   }
 
-  .nutrient-specialist-header nav {
-    display: none;
+  .nutrient-specialist-header nav.block {
+    display: flex;
     flex-direction: column;
-    width: 100%;
-    gap: 1rem;
-    padding: 1rem;
-    background: var(--nutrient-specialist-purple);
     position: absolute;
     top: 100%;
     left: 0;
+    right: 0;
+    background: var(--nutrient-specialist-white);
     box-shadow: var(--nutrient-specialist-shadow);
+    padding: 16px;
+    border: 1px solid var(--nutrient-specialist-accent);
+    transition: opacity 0.3s ease;
   }
 
-  .nutrient-specialist-header nav.block {
-    display: flex;
+  .nutrient-specialist-header nav a,
+  .nutrient-specialist-header nav button {
+    display: block;
+    padding: 12px;
+    color: var(--nutrient-specialist-text);
+  }
+
+  .nutrient-specialist-header nav a:hover,
+  .nutrient-specialist-header nav button:hover {
+    background: var(--nutrient-specialist-highlight);
+    color: var(--nutrient-specialist-primary);
+  }
+
+  .nutrient-specialist-header .profile-section {
+    margin-top: 12px;
   }
 
   .nutrient-specialist-header .profile-dropdown {
-    width: 180px;
-    right: 50%;
-    transform: translateX(50%);
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .nutrient-specialist-header .container {
+    padding: 12px 16px;
+  }
+
+  .nutrient-specialist-header .logo span {
+    font-size: 1.5rem;
+  }
+
+  .nutrient-specialist-header .logo svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .nutrient-specialist-header nav a,
+  .nutrient-specialist-header nav button {
+    font-size: 0.95rem;
+  }
+
+  .nutrient-specialist-header .profile-toggle svg {
+    width: 22px;
+    height: 22px;
   }
 }
 
 @media (max-width: 480px) {
-  .nutrient-specialist-header .logo {
+  .nutrient-specialist-header .container {
+    padding: 10px 12px;
+  }
+
+  .nutrient-specialist-header .logo span {
     font-size: 1.25rem;
   }
 
@@ -216,18 +279,18 @@ body.dark-theme {
     height: 32px;
   }
 
-  .nutrient-specialist-header nav a {
-    font-size: 0.9rem;
-    padding: 0.5rem;
-  }
-
-  .nutrient-specialist-header .profile-email,
-  .nutrient-specialist-header .profile-dropdown button {
-    font-size: 0.85rem;
+  .nutrient-specialist-header .profile-toggle {
+    padding: 6px;
   }
 
   .nutrient-specialist-header .profile-toggle svg {
     width: 20px;
     height: 20px;
+  }
+
+  .nutrient-specialist-header nav a,
+  .nutrient-specialist-header nav button {
+    font-size: 0.9rem;
+    padding: 10px;
   }
 }

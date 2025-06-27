@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import HealthExpertHeader from '../../components/header/HealthExpertHeader';
-import '../../styles/HealthExpertHomepage.css';
+import '../../styles/HealthExpertHomePage.css';
 
 const HealthExpertHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const containerVariants = {
-    initial: { opacity: 0, y: 20 },
+    initial: { opacity: 0, y: 30 },
     animate: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: 'easeOut', staggerChildren: 0.1 },
+      transition: { duration: 0.8, ease: 'easeOut', staggerChildren: 0.1 },
     },
   };
 
@@ -21,21 +21,19 @@ const HealthExpertHomePage = () => {
     animate: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.4, ease: 'easeOut' },
+      transition: { duration: 0.5, ease: 'easeOut' },
     },
   };
 
   const sidebarVariants = {
     open: {
-      x: 0,
+      width: '250px',
       opacity: 1,
-      scale: 1,
       transition: { duration: 0.3, ease: 'easeOut' },
     },
     closed: {
-      x: '-100%',
-      opacity: 0.8,
-      scale: 0.98,
+      width: '60px',
+      opacity: 1,
       transition: { duration: 0.3, ease: 'easeIn' },
     },
   };
@@ -64,22 +62,23 @@ const HealthExpertHomePage = () => {
           initial="open"
         >
           <div className="sidebar-header">
-            <h2 className="sidebar-title">Health Expert Tools</h2>
+            {isSidebarOpen && <h2 className="sidebar-title">Health Expert Tools</h2>}
             <motion.button
               className="sidebar-toggle"
               onClick={toggleSidebar}
-              aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+              aria-label={isSidebarOpen ? 'Minimize sidebar' : 'Expand sidebar'}
               aria-expanded={isSidebarOpen}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
+              whileFocus={{ scale: 1.1, boxShadow: '0 0 0 3px rgba(85, 138, 161, 0.3)' }}
             >
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
                 <path
-                  stroke="var(--health-expert-text)"
+                  stroke="var(--health-expert-color1)"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d={isSidebarOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+                  d={isSidebarOpen ? 'M13 18L7 12L13 6M18 18L12 12L18 6' : 'M6 18L12 12L6 6M11 18L17 12L11 6'}
                 />
               </svg>
             </motion.button>
@@ -91,108 +90,94 @@ const HealthExpertHomePage = () => {
             animate="animate"
             variants={containerVariants}
           >
-            <motion.div variants={navItemVariants}>
-              <Link to="/health-expert/dashboard" onClick={() => setIsSidebarOpen(false)}>
-                Dashboard Overview
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/health-expert/dashboard" onClick={() => setIsSidebarOpen(false)} title="Dashboard">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stethoscope icon for dashboard">
+                  <path
+                    d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
+                    fill="var(--health-expert-color1)"
+                    stroke="var(--health-expert-text)"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Dashboard Overview</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <Link to="/health-expert/reports" onClick={() => setIsSidebarOpen(false)}>
-                Reports
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/health-expert/reports" onClick={() => setIsSidebarOpen(false)} title="Reports">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stethoscope icon for reports">
+                  <path
+                    d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
+                    fill="var(--health-expert-color2)"
+                    stroke="var(--health-expert-text)"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Reports</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <Link to="/health-expert/settings" onClick={() => setIsSidebarOpen(false)}>
-                Settings
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/health-expert/settings" onClick={() => setIsSidebarOpen(false)} title="Settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stethoscope icon for settings">
+                  <path
+                    d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
+                    fill="var(--health-expert-color3)"
+                    stroke="var(--health-expert-text)"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Settings</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <button className="sidebar-action-button">+ Create Consultation</button>
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <button className="sidebar-action-button" title="Create Consultation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Plus icon for create consultation">
+                  <path
+                    d="M12 5v14m-7-7h14"
+                    stroke="var(--health-expert-background)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Create Consultation</span>}
+              </button>
             </motion.div>
           </motion.nav>
         </motion.aside>
-        <motion.button
-          className={`sidebar-external-toggle ${isSidebarOpen ? 'hidden' : ''}`}
-          onClick={toggleSidebar}
-          aria-label="Open sidebar"
-          aria-hidden={isSidebarOpen}
-          whileHover={{ scale: 1.05, x: 4 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-            <path
-              stroke="var(--health-expert-white)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </motion.button>
         <main className="health-expert-content">
           <section className="health-expert-banner">
             <motion.div
               className="health-expert-banner-content"
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, ease: 'easeOut' }}
+              transition={{ duration: 0.8 }}
             >
               <h1 className="health-expert-banner-title">Health Expert Dashboard</h1>
               <p className="health-expert-banner-subtitle">
                 Manage consultations, provide health advice, and update your profile with ease.
               </p>
-              <motion.div
-                className="health-expert-banner-buttons"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.2 }}
-              >
+              <div className="health-expert-banner-buttons">
                 <Link to="/health-expert/consultations" className="health-expert-banner-button primary">
                   View Consultations
                 </Link>
                 <Link to="/health-expert/support" className="health-expert-banner-button secondary">
                   Provide Support
                 </Link>
-              </motion.div>
+              </div>
             </motion.div>
             <motion.div
               className="health-expert-banner-image"
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
             >
-              <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Stethoscope icon for health expert dashboard">
                 <path
-                  d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
-                  fill="var(--health-expert-orange)"
-                  stroke="var(--health-expert-white)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 12H20C20.5523 12 21 11.5523 21 11C21 10.4477 20.5523 10 20 10H4C3.44772 10 3 10.4477 3 11C3 11.5523 3.44772 12 4 12Z"
-                  fill="var(--health-expert-orange)"
-                  stroke="var(--health-expert-white)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 18H16C16.5523 18 17 17.5523 17 17C17 16.4477 16.5523 16 16 16H4C3.44772 16 3 16.4477 3 17C3 17.5523 3.44772 18 4 18Z"
-                  fill="var(--health-expert-orange)"
-                  stroke="var(--health-expert-white)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M7 4.5L8 5.5L10 3.5"
-                  stroke="var(--health-expert-white)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M7 10.5L8 11.5L10 9.5"
-                  stroke="var(--health-expert-white)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
+                  fill="var(--health-expert-color3)"
+                  stroke="var(--health-expert-color4)"
+                  strokeWidth="1"
                 />
               </svg>
             </motion.div>

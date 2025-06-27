@@ -86,38 +86,13 @@ const NutrientSpecialistHeader = () => {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            aria-label="Apple icon for nutrient specialist panel"
           >
             <path
-              d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
-              fill="var(--nutrient-specialist-purple)"
-              stroke="var(--nutrient-specialist-white)"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M4 12H20C20.5523 12 21 11.5523 21 11C21 10.4477 20.5523 10 20 10H4C3.44772 10 3 10.4477 3 11C3 11.5523 3.44772 12 4 12Z"
+              d="M12 3C8.686 3 6 5.686 6 9c0 2.5 1.5 4.5 3.5 5.5C7.5 16 6 18 6 20h12c0-2-1.5-4-3.5-5.5C16.5 13.5 18 11.5 18 9c0-3.314-2.686-6-6-6zm0 2c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm-1 12h2v4h-2v-4z"
               fill="var(--nutrient-specialist-yellow)"
               stroke="var(--nutrient-specialist-white)"
               strokeWidth="1.5"
-            />
-            <path
-              d="M4 18H16C16.5523 18 17 17.5523 17 17C17 16.4477 16.5523 16 16 16H4C3.44772 16 3 16.4477 3 17C3 17.5523 3.44772 18 4 18Z"
-              fill="var(--nutrient-specialist-purple)"
-              stroke="var(--nutrient-specialist-white)"
-              strokeWidth="1.5"
-            />
-            <path
-              d="M7 4.5L8 5.5L10 3.5"
-              stroke="var(--nutrient-specialist-yellow)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M7 10.5L8 11.5L10 9.5"
-              stroke="var(--nutrient-specialist-purple)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
             />
           </motion.svg>
           <span>Nutrient Specialist Panel</span>

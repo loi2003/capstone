@@ -100,7 +100,7 @@ const AdminHeader = () => {
             <path
               d="M3 4C3 3.44772 3.44772 3 4 3H8C8.55228 3 9 3.44772 9 4V8C9 8.55228 8.55228 9 8 9H4C3.44772 9 3 8.55228 3 8V4Z"
               fill="var(--admin-text)"
-              stroke="var(--admin-white)"
+              stroke="var(--admin-background)"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -108,7 +108,7 @@ const AdminHeader = () => {
             <path
               d="M3 16C3 15.4477 3.44772 15 4 15H8C8.55228 15 9 15.4477 9 16V20C9 20.5523 8.55228 21 8 21H4C3.44772 21 3 20.5523 3 20V16Z"
               fill="var(--admin-text)"
-              stroke="var(--admin-white)"
+              stroke="var(--admin-background)"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -116,7 +116,7 @@ const AdminHeader = () => {
             <path
               d="M15 4C15 3.44772 15.4477 3 16 3H20C20.5523 3 21 3.44772 21 4V8C21 8.55228 20.5523 9 20 9H16C15.4477 9 15 8.55228 15 8V4Z"
               fill="var(--admin-text)"
-              stroke="var(--admin-white)"
+              stroke="var(--admin-background)"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -124,7 +124,7 @@ const AdminHeader = () => {
             <path
               d="M15 16C15 15.4477 15.4477 15 16 15H20C20.5523 15 21 15.4477 21 16V20C21 20.5523 20.5523 21 20 21H16C15.4477 21 15 20.5523 15 20V16Z"
               fill="var(--admin-text)"
-              stroke="var(--admin-white)"
+              stroke="var(--admin-background)"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -132,7 +132,7 @@ const AdminHeader = () => {
             <path
               d="M10 6C10 5.44772 10.4477 5 11 5H13C13.5523 5 14 5.44772 14 6V18C14 18.5523 13.5523 19 13 19H11C10.4477 19 10 18.5523 10 18V6Z"
               fill="var(--admin-primary)"
-              stroke="var(--admin-white)"
+              stroke="var(--admin-background)"
               strokeWidth="1.5"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -167,8 +167,8 @@ const AdminHeader = () => {
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
-                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                    fill="#000000"
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-花费3.5 3.22-6 3.22z"
+                    fill="var(--admin-text)"
                   />
                 </svg>
               </button>

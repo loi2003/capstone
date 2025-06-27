@@ -5,7 +5,7 @@ import AdminHeader from '../../components/header/AdminHeader';
 import '../../styles/AdminHomePage.css';
 
 const AdminHomePage = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar open by default
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const containerVariants = {
     initial: { opacity: 0, y: 30 },
@@ -27,15 +27,13 @@ const AdminHomePage = () => {
 
   const sidebarVariants = {
     open: {
-      x: 0,
+      width: '250px',
       opacity: 1,
-      scale: 1,
       transition: { duration: 0.3, ease: 'easeOut' },
     },
     closed: {
-      x: '-100%',
-      opacity: 0.8,
-      scale: 0.98,
+      width: '60px',
+      opacity: 1,
       transition: { duration: 0.3, ease: 'easeIn' },
     },
   };
@@ -64,11 +62,11 @@ const AdminHomePage = () => {
           initial="open"
         >
           <div className="sidebar-header">
-            <h2 className="sidebar-title">Admin Tools</h2>
+            {isSidebarOpen && <h2 className="sidebar-title">Admin Tools</h2>}
             <motion.button
               className="sidebar-toggle"
               onClick={toggleSidebar}
-              aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
+              aria-label={isSidebarOpen ? 'Minimize sidebar' : 'Expand sidebar'}
               aria-expanded={isSidebarOpen}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -79,7 +77,7 @@ const AdminHomePage = () => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d={isSidebarOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
+                  d={isSidebarOpen ? 'M13 18L7 12L13 6M18 18L12 12L18 6' : 'M6 18L12 12L6 6M11 18L17 12L11 6'}
                 />
               </svg>
             </motion.button>
@@ -91,44 +89,64 @@ const AdminHomePage = () => {
             animate="animate"
             variants={containerVariants}
           >
-            <motion.div variants={navItemVariants}>
-              <Link to="/admin/dashboard" onClick={() => setIsSidebarOpen(false)}>
-                Dashboard Overview
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/admin/dashboard" onClick={() => setIsSidebarOpen(false)} title="Dashboard">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="var(--admin-text)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 12h18M12 3v18"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Dashboard Overview</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <Link to="/admin/reports" onClick={() => setIsSidebarOpen(false)}>
-                Reports
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/admin/reports" onClick={() => setIsSidebarOpen(false)} title="Reports">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="var(--admin-text)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m-4-4l8-8"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Reports</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <Link to="/admin/settings" onClick={() => setIsSidebarOpen(false)}>
-                Settings
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/admin/settings" onClick={() => setIsSidebarOpen(false)} title="Settings">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="var(--admin-text)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 8a4 4 0 100 8 4 4 0 000-8z"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Settings</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <button className="sidebar-action-button">+ Create Task</button>
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <button className="sidebar-action-button" title="Create Task">
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path
+                    stroke="var(--admin-background)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 5v14m-7-7h14"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Create Task</span>}
+              </button>
             </motion.div>
           </motion.nav>
         </motion.aside>
-        <motion.button
-          className={`sidebar-external-toggle ${isSidebarOpen ? 'hidden' : ''}`}
-          onClick={toggleSidebar}
-          aria-label="Open sidebar"
-          aria-hidden={isSidebarOpen}
-          whileHover={{ scale: 1.05, x: 4 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
-            <path
-              stroke="var(--admin-background)"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 6h16M4 12h16M4 18h16"
-            />
-          </svg>
-        </motion.button>
         <main className="admin-content">
           <section className="admin-banner">
             <motion.div
@@ -160,7 +178,7 @@ const AdminHomePage = () => {
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v4h4v2h-4v4h-2v-4H7v-2h4V7z"
                   fill="var(--admin-accent)"
-                  stroke="#ffffff"
+                  stroke="var(--admin-background)"
                   strokeWidth="1"
                 />
               </svg>

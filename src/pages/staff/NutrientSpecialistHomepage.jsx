@@ -27,15 +27,13 @@ const NutrientSpecialistHomePage = () => {
 
   const sidebarVariants = {
     open: {
-      x: 0,
+      width: '260px',
       opacity: 1,
-      scale: 1,
       transition: { duration: 0.3, ease: 'easeOut' },
     },
     closed: {
-      x: '-100%',
-      opacity: 0.8,
-      scale: 0.98,
+      width: '60px',
+      opacity: 0.9,
       transition: { duration: 0.3, ease: 'easeIn' },
     },
   };
@@ -75,7 +73,7 @@ const NutrientSpecialistHomePage = () => {
             >
               <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
                 <path
-                  stroke="var(--nutrient-specialist-text)"
+                  stroke="var(--nutrient-specialist-purple)"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -91,23 +89,62 @@ const NutrientSpecialistHomePage = () => {
             animate="animate"
             variants={containerVariants}
           >
-            <motion.div variants={navItemVariants}>
-              <Link to="/nutrient-specialist/dashboard" onClick={() => setIsSidebarOpen(false)}>
-                Dashboard Overview
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/nutrient-specialist/dashboard" onClick={() => setIsSidebarOpen(false)} title="Dashboard Overview">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Apple icon for dashboard">
+                  <path
+                    d="M12 3C8.686 3 6 5.686 6 9c0 2.5 1.5 4.5 3.5 5.5C7.5 16 6 18 6 20h12c0-2-1.5-4-3.5-5.5C16.5 13.5 18 11.5 18 9c0-3.314-2.686-6-6-6zm0 2c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm-1 12h2v4h-2v-4z"
+                    fill="var(--nutrient-specialist-purple)"
+                    stroke="var(--nutrient-specialist-purple-dark)"
+                    strokeWidth="1.5"
+                    className="icon-stroke"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Dashboard Overview</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <Link to="/nutrient-specialist/reports" onClick={() => setIsSidebarOpen(false)}>
-                Reports
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/nutrient-specialist/reports" onClick={() => setIsSidebarOpen(false)} title="Reports">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Apple icon for reports">
+                  <path
+                    d="M12 3C8.686 3 6 5.686 6 9c0 2.5 1.5 4.5 3.5 5.5C7.5 16 6 18 6 20h12c0-2-1.5-4-3.5-5.5C16.5 13.5 18 11.5 18 9c0-3.314-2.686-6-6-6zm0 2c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm-1 12h2v4h-2v-4z"
+                    fill="var(--nutrient-specialist-purple-dark)"
+                    stroke="var(--nutrient-specialist-purple-dark)"
+                    strokeWidth="1.5"
+                    className="icon-stroke"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Reports</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <Link to="/nutrient-specialist/settings" onClick={() => setIsSidebarOpen(false)}>
-                Settings
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link to="/nutrient-specialist/settings" onClick={() => setIsSidebarOpen(false)} title="Settings">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Apple icon for settings">
+                  <path
+                    d="M12 3C8.686 3 6 5.686 6 9c0 2.5 1.5 4.5 3.5 5.5C7.5 16 6 18 6 20h12c0-2-1.5-4-3.5-5.5C16.5 13.5 18 11.5 18 9c0-3.314-2.686-6-6-6zm0 2c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm-1 12h2v4h-2v-4z"
+                    fill="var(--nutrient-specialist-light-bg)"
+                    stroke="var(--nutrient-specialist-purple-dark)"
+                    strokeWidth="1.5"
+                    className="icon-stroke"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Settings</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants}>
-              <button className="sidebar-action-button">+ Create Consultation</button>
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <button className="sidebar-action-button" title="Create Consultation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Plus icon for create consultation">
+                  <path
+                    d="M12 5v14m-7-7h14"
+                    stroke="var(--nutrient-specialist-purple)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="icon-stroke"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Create Consultation</span>}
+              </button>
             </motion.div>
           </motion.nav>
         </motion.aside>
@@ -121,11 +158,12 @@ const NutrientSpecialistHomePage = () => {
         >
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24">
             <path
-              stroke="var(--nutrient-specialist-white)"
+              stroke="var(--nutrient-specialist-yellow)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
               d="M4 6h16M4 12h16M4 18h16"
+              className="icon-stroke"
             />
           </svg>
         </motion.button>
@@ -161,38 +199,13 @@ const NutrientSpecialistHomePage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="200" height="200" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Apple icon for nutrient specialist dashboard">
                 <path
-                  d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
-                  fill="var(--nutrient-specialist-purple)"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 12H20C20.5523 12 21 11.5523 21 11C21 10.4477 20.5523 10 20 10H4C3.44772 10 3 10.4477 3 11C3 11.5523 3.44772 12 4 12Z"
-                  fill="var(--nutrient-specialist-purple)"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 18H16C16.5523 18 17 17.5523 17 17C17 16.4477 16.5523 16 16 16H4C3.44772 16 3 16.4477 3 17C3 17.5523 3.44772 18 4 18Z"
-                  fill="var(--nutrient-specialist-purple)"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M7 4.5L8 5.5L10 3.5"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M7 10.5L8 11.5L10 9.5"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                  d="M12 3C8.686 3 6 5.686 6 9c0 2.5 1.5 4.5 3.5 5.5C7.5 16 6 18 6 20h12c0-2-1.5-4-3.5-5.5C16.5 13.5 18 11.5 18 9c0-3.314-2.686-6-6-6zm0 2c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm-1 12h2v4h-2v-4z"
+                  fill="var(--nutrient-specialist-yellow)"
+                  stroke="var(--nutrient-specialist-purple-dark)"
+                  strokeWidth="1"
+                  className="icon-stroke"
                 />
               </svg>
             </motion.div>
