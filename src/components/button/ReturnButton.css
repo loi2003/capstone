@@ -1,0 +1,15 @@
+.return-button {
+  position: absolute;
+  margin-bottom: 200px;
+  width: 200px;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2C658A; /* Main color */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  font-family: 'Open Sans', sans-serif;
+}

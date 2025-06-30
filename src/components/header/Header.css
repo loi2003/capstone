@@ -63,6 +63,7 @@ body.dark-theme {
 }
 
 .nav-links {
+  margin-left: 20px;
   display: flex;
   align-items: center;
   gap: 32px;
@@ -80,7 +81,7 @@ body.dark-theme {
 
 .nav-links a:hover {
   color: var(--light-bg);
-  background: var(--accent-color);
+  background: #035474;
   box-shadow: var(--shadow-hover);
 }
 
@@ -124,7 +125,7 @@ body.dark-theme {
 
 .auth-message a:hover {
   color: var(--light-bg);
-  background: var(--accent-color);
+  background: #035474;
 }
 
 .header-actions {

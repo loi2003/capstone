@@ -18,6 +18,7 @@ import ClinicHomePage from '../pages/staff/ClinicHomePage';
 import ConsultantHomePage from '../pages/staff/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
 import BlogCategoryManagement from '../pages/BlogCategoryManagement';
+import NotFound from '../pages/error/404NotFound';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -30,6 +31,7 @@ const AppRoutes = () => {
     <ThemeProvider>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path='*' element={<NotFound />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/about" element={<AboutPage />} />
