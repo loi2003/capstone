@@ -15,8 +15,9 @@
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^7.1.0",
     "axios": "^1.9.0",
-    "chart.js": "^4.5.0",
-    "framer-motion": "^12.20.1",
+    "chart.js": "^4.4.9",
+        "framer-motion": "^12.20.1",
+
     "install": "^0.13.0",
     "motion": "^12.12.1",
     "npm": "^11.4.1",
