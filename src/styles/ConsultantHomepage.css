@@ -8,110 +8,189 @@
 /* Base styles */
 .consultant-homepage {
   font-family: 'Roboto', sans-serif;
-  background-color: #ffffff; /* White main color */
-  color: #002212; /* .color1 */
+  background-color: #f9f9f9;
+  color: var(--consultant-text);
   min-height: 100vh;
   line-height: 1.6;
 }
 
 /* Color variables */
 :root {
-  --consultant-primary: #002212; /* .color1 */
-  --consultant-primary-dark: #033c1c; /* .color2 */
-  --consultant-secondary: #2a5f23; /* .color3 */
-  --consultant-accent: #5d8925; /* .color4 */
-  --consultant-light-accent: #a4b921; /* .color5 */
-  --consultant-text: #002212; /* .color1 */
-  --consultant-background: #ffffff; /* White */
-  --consultant-shadow: 0 4px 16px rgba(0, 34, 18, 0.1); /* Shadow with .color1 tint */
-  --consultant-shadow-hover: 0 8px 24px rgba(0, 34, 18, 0.15); /* Shadow with .color1 tint */
-  --consultant-border-radius: 10px;
+  --consultant-primary: #002212;
+  --consultant-primary-dark: #033c1c;
+  --consultant-secondary: #2a5f23;
+  --consultant-accent: #5d8925;
+  --consultant-light-accent: #a4b921;
+  --consultant-text: #002212;
+  --consultant-background: #ffffff;
+  --consultant-logout: #e53e3e;
+  --consultant-shadow: 0 4px 16px rgba(0, 34, 18, 0.1);
+  --consultant-shadow-hover: 0 8px 24px rgba(0, 34, 18, 0.15);
+  --consultant-border-radius: 8px;
   --consultant-transition: all 0.3s ease;
-}
-
-/* Main content layout */
-.consultant-homepage .consultant-main-content {
-  display: flex;
-  min-height: calc(100vh - 64px);
 }
 
 /* Sidebar styles */
 .consultant-homepage .consultant-sidebar {
-  background: var(--consultant-background);
-  color: var(--consultant-text);
-  padding: 1.5rem 1rem;
+  background: linear-gradient(180deg, var(--consultant-primary), var(--consultant-accent));
+  color: var(--consultant-background);
   position: fixed;
-  top: 64px;
+  top: 0;
   left: 0;
-  height: calc(100vh - 64px);
+  height: 100vh;
   box-shadow: var(--consultant-shadow);
-  z-index: 999;
+  z-index: 1000;
   transition: var(--consultant-transition);
+  overflow-x: hidden;
   overflow-y: auto;
+  max-width: 250px;
+}
+
+/* Sidebar widths */
+.consultant-homepage .consultant-sidebar.open {
+  width: 250px;
 }
 
 .consultant-homepage .consultant-sidebar.closed {
-  padding: 1.5rem 0.5rem;
+  width: 60px;
 }
 
+/* Sidebar header */
 .consultant-homepage .sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
+}
+
+.consultant-homepage .consultant-sidebar.closed .sidebar-header {
+  flex-direction: column;
+  padding: 1rem 0.5rem;
+  gap: 0.75rem;
 }
 
 .consultant-homepage .sidebar-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--consultant-text);
+  color: var(--consultant-background);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
 }
 
+.consultant-homepage .consultant-sidebar.closed .sidebar-title {
+  display: none;
+}
+
+/* Logo styling */
+.consultant-homepage .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.consultant-homepage .logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--consultant-background);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 180px;
+}
+
+.consultant-homepage .consultant-sidebar.closed .logo-text {
+  display: none;
+}
+
+.consultant-homepage .logo-svg-container {
+  display: inline-flex;
+}
+
+.consultant-homepage .logo-svg {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+}
+
+.consultant-homepage .consultant-sidebar.closed .logo-svg {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+}
+
+/* Sidebar toggle button */
 .consultant-homepage .sidebar-toggle {
-  background: transparent;
-  border: 1px solid var(--consultant-primary);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--consultant-background);
   cursor: pointer;
-  padding: 0.25rem;
-  width: 28px;
-  height: 28px;
+  padding: 8px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  outline: none;
-  margin-left: auto;
+  transition: var(--consultant-transition);
+}
+
+.consultant-homepage .consultant-sidebar.closed .sidebar-toggle {
+  margin: 0 auto;
 }
 
 .consultant-homepage .sidebar-toggle:hover,
 .consultant-homepage .sidebar-toggle:focus {
-  background: var(--consultant-primary);
+  background: var(--consultant-background);
   border-color: var(--consultant-primary);
 }
 
+.consultant-homepage .sidebar-toggle svg {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
 .consultant-homepage .sidebar-toggle svg path {
-  stroke: var(--consultant-primary);
-  vector-effect: non-scaling-stroke;
+  stroke: var(--consultant-background);
 }
 
 .consultant-homepage .sidebar-toggle:hover svg path,
 .consultant-homepage .sidebar-toggle:focus svg path {
-  stroke: var(--consultant-background);
+  stroke: var(--consultant-primary);
 }
 
+/* Sidebar navigation */
 .consultant-homepage .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  padding: 0 1rem;
+}
+
+.consultant-homepage .consultant-sidebar.closed .sidebar-nav {
+  padding: 0;
+  gap: 1rem;
 }
 
 .consultant-homepage .sidebar-nav-item {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+}
+
+.consultant-homepage .consultant-sidebar.closed .sidebar-nav-item {
+  justify-content: center;
 }
 
 .consultant-homepage .sidebar-nav a,
 .consultant-homepage .sidebar-nav button {
-  color: var(--consultant-text);
+  color: var(--consultant-background);
   text-decoration: none;
   font-size: 0.95rem;
   font-weight: 500;
@@ -126,6 +205,23 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.consultant-homepage .consultant-sidebar.closed .sidebar-nav a,
+.consultant-homepage .consultant-sidebar.closed .sidebar-nav button {
+  padding: 0.75rem 0;
+  justify-content: center;
+}
+
+.consultant-homepage .sidebar-nav a svg,
+.consultant-homepage .sidebar-nav button svg {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
 }
 
 .consultant-homepage .consultant-sidebar.closed .sidebar-nav a span,
@@ -134,29 +230,112 @@
 }
 
 .consultant-homepage .sidebar-nav a:hover,
-.consultant-homepage .sidebar-nav a:focus,
-.consultant-homepage .sidebar-nav button:hover,
-.consultant-homepage .sidebar-nav button:focus {
-  background: var(--consultant-primary);
-  color: var(--consultant-background);
+.consultant-homepage .sidebar-nav button:hover {
+  background: var(--consultant-secondary);
   transform: translateY(-2px);
-  box-shadow: var(--consultant-shadow-hover);
 }
 
 .consultant-homepage .sidebar-nav a:hover svg path,
 .consultant-homepage .sidebar-nav button:hover svg path {
-  stroke: var(--consultant-background);
+  fill: var(--consultant-background);
+  stroke: var(--consultant-text);
 }
 
 .consultant-homepage .sidebar-action-button {
-  background: var(--consultant-primary);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--consultant-background);
   color: var(--consultant-background);
-  margin-top: 1rem;
+  font-weight: 600;
 }
 
 .consultant-homepage .sidebar-action-button:hover,
 .consultant-homepage .sidebar-action-button:focus {
-  background: var(--consultant-primary-dark);
+  background: var(--consultant-secondary);
+  border-color: var(--consultant-secondary);
+}
+
+/* Profile section */
+.consultant-homepage .consultant-profile-section {
+  margin-top: 1rem;
+}
+
+.consultant-homepage .consultant-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--consultant-border-radius);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--consultant-background);
+  font-size: 1rem;
+  font-weight: 600;
+  width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  position: relative;
+}
+
+.consultant-homepage .consultant-sidebar.closed .consultant-profile-info {
+  padding: 0.75rem 0;
+  justify-content: center;
+}
+
+.consultant-homepage .consultant-profile-info svg {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.consultant-homepage .consultant-sidebar.closed .consultant-profile-info span {
+  display: none;
+}
+
+.consultant-homepage .consultant-profile-info:hover .consultant-profile-email {
+  text-decoration: underline;
+}
+
+/* Logout button */
+.consultant-homepage .logout-button {
+  background: rgba(229, 62, 62, 0.1);
+  color: var(--consultant-logout);
+  font-weight: 600;
+  padding: 0.75rem;
+  border: 1px solid var(--consultant-logout);
+  border-radius: var(--consultant-border-radius);
+  transition: var(--consultant-transition);
+}
+
+.consultant-homepage .consultant-sidebar.closed .logout-button {
+  padding: 0.75rem 0;
+  justify-content: center;
+}
+
+.consultant-homepage .logout-button svg {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.consultant-homepage .logout-button:hover,
+.consultant-homepage .logout-button:focus {
+  background: var(--consultant-logout);
+  color: var(--consultant-background);
+  transform: translateY(-2px);
+}
+
+.consultant-homepage .logout-button svg path {
+  stroke: var(--consultant-logout);
+}
+
+.consultant-homepage .logout-button:hover svg path,
+.consultant-homepage .logout-button:focus svg path {
+  stroke: var(--consultant-background);
+}
+
+.consultant-homepage .consultant-sidebar.closed .logout-button span {
+  display: none;
 }
 
 /* Main content */
@@ -164,7 +343,7 @@
   flex: 1;
   margin-left: 250px;
   padding: 2rem;
-  transition: margin-left 0.3s ease;
+  transition: margin-left var(--consultant-transition);
 }
 
 .consultant-homepage .consultant-sidebar.closed + .consultant-content {
@@ -173,12 +352,12 @@
 
 /* Banner section */
 .consultant-homepage .consultant-banner {
-  background: var(--consultant-background); /* White background */
-  padding: 100px 20px;
+  background: linear-gradient(90deg, var(--consultant-primary), var(--consultant-accent));
+  padding: 3rem 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 40px;
+  gap: 2rem;
   flex-wrap: wrap;
   border-radius: var(--consultant-border-radius);
   box-shadow: var(--consultant-shadow);
@@ -186,90 +365,87 @@
 
 .consultant-homepage .consultant-banner-content {
   max-width: 600px;
-  color: var(--consultant-text); /* Dark text for readability */
+  color: var(--consultant-background);
 }
 
 .consultant-homepage .consultant-banner-title {
-  font-size: 2.8rem;
+  font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
   line-height: 1.3;
+  color: #ffffff;
 }
 
 .consultant-homepage .consultant-banner-subtitle {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   opacity: 0.9;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   line-height: 1.6;
-  color: var(--consultant-secondary);
 }
 
 .consultant-homepage .consultant-banner-buttons {
   display: flex;
-  gap: 15px;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .consultant-homepage .consultant-banner-button {
-  padding: 12px 24px;
+  padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
   text-decoration: none;
-  border-radius: 25px;
+  border-radius: 20px;
   transition: var(--consultant-transition);
 }
 
 .consultant-homepage .consultant-banner-button.primary {
-  background: var(--consultant-primary);
-  color: var(--consultant-background);
+  background: var(--consultant-background);
+  color: var(--consultant-primary);
 }
 
-.consultant-homepage .consultant-banner-button.primary:hover,
-.consultant-homepage .consultant-banner-button.primary:focus {
-  background: var(--consultant-primary-dark);
-  transform: translateY(-3px);
+.consultant-homepage .consultant-banner-button.primary:hover {
+  background: #f5f5f5;
+  transform: translateY(-2px);
   box-shadow: var(--consultant-shadow-hover);
 }
 
 .consultant-homepage .consultant-banner-button.secondary {
   background: transparent;
-  color: var(--consultant-primary);
-  border: 2px solid var(--consultant-primary);
+  color: var(--consultant-background);
+  border: 2px solid var(--consultant-background);
 }
 
-.consultant-homepage .consultant-banner-button.secondary:hover,
-.consultant-homepage .consultant-banner-button.secondary:focus {
-  background: var(--consultant-secondary);
-  color: var(--consultant-background);
-  transform: translateY(-3px);
+.consultant-homepage .consultant-banner-button.secondary:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .consultant-homepage .consultant-banner-image svg {
   width: 200px;
   height: 200px;
   max-width: 100%;
-  filter: drop-shadow(0 4px 12px rgba(0, 34, 18, 0.2));
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
 }
 
 /* Features section */
 .consultant-homepage .consultant-features {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 60px 20px;
+  padding: 3rem 1rem;
   text-align: center;
 }
 
 .consultant-homepage .consultant-features-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: var(--consultant-text);
   margin-bottom: 1rem;
 }
 
 .consultant-homepage .consultant-features-description {
-  font-size: 1.1rem;
-  color: var(--consultant-secondary);
-  margin-bottom: 3rem;
+  font-size: 1rem;
+  color: #5f788a;
+  margin-bottom: 2rem;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
@@ -277,60 +453,61 @@
 
 .consultant-homepage .consultant-features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
 .consultant-homepage .consultant-feature-card {
   background: var(--consultant-background);
-  padding: 30px;
+  padding: 1.5rem;
   border-radius: var(--consultant-border-radius);
   box-shadow: var(--consultant-shadow);
   transition: var(--consultant-transition);
 }
 
-.consultant-homepage .consultant-feature-card:hover,
-.consultant-homepage .consultant-feature-card:focus-within {
-  transform: translateY(-5px);
+.consultant-homepage .consultant-feature-card:hover {
+  transform: translateY(-4px);
   box-shadow: var(--consultant-shadow-hover);
 }
 
 .consultant-homepage .consultant-feature-card h3 {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: var(--consultant-text);
-  margin-bottom: 0.8rem;
+  margin-bottom: 0.75rem;
 }
 
 .consultant-homepage .consultant-feature-card p {
-  font-size: 0.95rem;
-  color: var(--consultant-secondary);
+  font-size: 0.9rem;
+  color: #5f788a;
   line-height: 1.5;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .consultant-homepage .consultant-feature-link {
   display: inline-flex;
-  padding: 10px 20px;
-  font-size: 0.95rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
   font-weight: 500;
   color: var(--consultant-background);
   background: var(--consultant-primary);
-  border-radius: 20px;
+  border-radius: 16px;
   text-decoration: none;
   transition: var(--consultant-transition);
 }
 
-.consultant-homepage .consultant-feature-link:hover,
-.consultant-homepage .consultant-feature-link:focus {
-  background: var(--consultant-primary-dark);
-  box-shadow: var(--consultant-shadow);
+.consultant-homepage .consultant-feature-link:hover {
+  background: var(--consultant-secondary);
   transform: translateY(-2px);
 }
 
 /* Responsive design */
 @media (max-width: 1024px) {
   .consultant-homepage .consultant-sidebar {
+    max-width: 220px;
+  }
+
+  .consultant-homepage .consultant-sidebar.open {
     width: 220px;
   }
 
@@ -347,21 +524,21 @@
   }
 
   .consultant-homepage .consultant-banner {
-    padding: 80px 15px;
+    padding: 2.5rem 1rem;
     flex-direction: column;
     text-align: center;
   }
 
   .consultant-homepage .consultant-banner-content {
-    max-width: 80%;
+    max-width: 100%;
   }
 
   .consultant-homepage .consultant-banner-title {
-    font-size: 2.2rem;
+    font-size: 2rem;
   }
 
   .consultant-homepage .consultant-banner-subtitle {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .consultant-homepage .consultant-banner-image svg {
@@ -370,16 +547,20 @@
   }
 
   .consultant-homepage .consultant-features {
-    padding: 50px 15px;
+    padding: 2.5rem 1rem;
   }
 
   .consultant-homepage .consultant-features-title {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 }
 
 @media (max-width: 768px) {
   .consultant-homepage .consultant-sidebar {
+    max-width: 200px;
+  }
+
+  .consultant-homepage .consultant-sidebar.open {
     width: 200px;
   }
 
@@ -396,13 +577,8 @@
   }
 
   .consultant-homepage .consultant-banner {
-    padding: 60px 10px;
-    gap: 20px;
-  }
-
-  .consultant-homepage .consultant-banner-content,
-  .consultant-homepage .consultant-banner-image {
-    max-width: 100%;
+    padding: 2rem 0.75rem;
+    gap: 1.5rem;
   }
 
   .consultant-homepage .consultant-banner-title {
@@ -410,41 +586,45 @@
   }
 
   .consultant-homepage .consultant-banner-subtitle {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .consultant-homepage .consultant-banner-button {
-    padding: 10px 20px;
+    padding: 0.6rem 1.2rem;
     font-size: 0.95rem;
   }
 
   .consultant-homepage .consultant-banner-image svg {
-    width: 150px;
-    height: 150px;
+    width: 160px;
+    height: 160px;
   }
 
   .consultant-homepage .consultant-features-title {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 
   .consultant-homepage .consultant-features-description {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .consultant-homepage .consultant-features-grid {
-    gap: 20px;
+    gap: 1rem;
   }
 }
 
 @media (max-width: 480px) {
   .consultant-homepage .consultant-sidebar {
+    max-width: 180px;
+    padding: 1rem 0;
+  }
+
+  .consultant-homepage .consultant-sidebar.open {
     width: 180px;
-    padding: 1rem 0.75rem;
   }
 
   .consultant-homepage .consultant-sidebar.closed {
     width: 60px;
-    padding: 1rem 0.5rem;
+    padding: 1rem 0;
   }
 
   .consultant-homepage .consultant-content {
@@ -455,32 +635,111 @@
     margin-left: 60px;
   }
 
+  .consultant-homepage .sidebar-header {
+    padding: 0.75rem 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed .sidebar-header {
+    padding: 0.75rem 0;
+    gap: 0.5rem;
+  }
+
   .consultant-homepage .sidebar-title {
     font-size: 1.125rem;
+    max-width: 120px;
+  }
+
+  .consultant-homepage .logo-text {
+    font-size: 1.125rem;
+    max-width: 120px;
+  }
+
+  .consultant-homepage .logo-svg {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed .logo-svg {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
   }
 
   .consultant-homepage .sidebar-toggle {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
+    padding: 6px;
   }
 
   .consultant-homepage .sidebar-toggle svg {
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+  }
+
+  .consultant-homepage .sidebar-nav {
+    padding: 0 0.5rem;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed .sidebar-nav {
+    padding: 0;
   }
 
   .consultant-homepage .sidebar-nav a,
   .consultant-homepage .sidebar-nav button {
     font-size: 0.9rem;
-    padding: 0.5rem;
+    padding: 0.6rem 0.5rem;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed .sidebar-nav a,
+  .consultant-homepage .consultant-sidebar.closed .sidebar-nav button {
+    padding: 0.6rem 0;
+  }
+
+  .consultant-homepage .sidebar-nav a svg,
+  .consultant-homepage .sidebar-nav button svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+  }
+
+  .consultant-homepage .consultant-profile-info {
+    padding: 0.6rem 0.5rem;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed .consultant-profile-info {
+    padding: 0.6rem 0;
+  }
+
+  .consultant-homepage .consultant-profile-info svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+  }
+
+  .consultant-homepage .consultant-profile-email {
+    font-size: 0.95rem;
+  }
+
+  .consultant-homepage .logout-button {
+    padding: 0.6rem 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .consultant-homepage .consultant-sidebar.closed .logout-button {
+    padding: 0.6rem 0;
+  }
+
+  .consultant-homepage .logout-button svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
   }
 
   .consultant-homepage .consultant-banner {
-    padding: 40px 10px;
-  }
-
-  .consultant-homepage .consultant-banner-content {
-    max-width: 100%;
+    padding: 1.5rem 0.5rem;
   }
 
   .consultant-homepage .consultant-banner-title {
@@ -492,7 +751,7 @@
   }
 
   .consultant-homepage .consultant-banner-button {
-    padding: 8px 16px;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
 
@@ -502,11 +761,11 @@
   }
 
   .consultant-homepage .consultant-features {
-    padding: 40px 10px;
+    padding: 2rem 0.5rem;
   }
 
   .consultant-homepage .consultant-features-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .consultant-homepage .consultant-features-description {
@@ -515,15 +774,19 @@
 
   .consultant-homepage .consultant-features-grid {
     grid-template-columns: 1fr;
-    gap: 15px;
+    gap: 0.75rem;
   }
 
   .consultant-homepage .consultant-feature-card {
-    padding: 20px;
+    padding: 1rem;
+  }
+
+  .consultant-homepage .consultant-feature-card h3 {
+    font-size: 1.2rem;
   }
 
   .consultant-homepage .consultant-feature-link {
-    padding: 8px 16px;
-    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
   }
 }

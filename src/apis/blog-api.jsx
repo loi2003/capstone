@@ -23,7 +23,7 @@ export const createCategory = async (userId, categoryName, token) => {
 
 export const getAllCategories = async (token, params = {}) => {
   try {
-    const response = await apiClient.get('/api/category/view-all-categories', {
+    const response = await apiClient.get('/api/category/view-all-active-categories', {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'text/plain',
