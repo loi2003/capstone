@@ -1,0 +1,271 @@
+/* Reset default styles */
+.admin-policy * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles */
+.admin-policy {
+  font-family: 'Roboto', sans-serif;
+  background-color: #f4f7fa;
+  color: var(--admin-text);
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+/* Color variables */
+.admin-policy {
+  --admin-primary: #146f89;
+  --admin-primary-dark: #122f4b;
+  --admin-secondary: #1aa3ab;
+  --admin-accent: #20dacc;
+  --admin-text: #124966;
+  --admin-background: #ffffff;
+  --admin-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --admin-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --admin-border-radius: 10px;
+  --admin-transition: all 0.3s ease;
+}
+
+/* Header */
+.policy-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.policy-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+/* Back Button */
+.policy-back-button {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--admin-primary);
+  border-radius: var(--admin-border-radius);
+  background: var(--admin-background);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--admin-shadow);
+  transition: var(--admin-transition);
+}
+
+.policy-back-button::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23146f89" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>') no-repeat center;
+  background-size: contain;
+}
+
+.policy-back-button:hover,
+.policy-back-button:focus {
+  background: var(--admin-primary);
+  box-shadow: var(--admin-shadow-hover);
+  transform: scale(1.1);
+}
+
+.policy-back-button:hover::before,
+.policy-back-button:focus::before {
+  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>') no-repeat center;
+}
+
+.policy-back-button:active {
+  transform: scale(0.95);
+}
+
+.policy-back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(20, 111, 137, 0.3);
+}
+
+/* Content section */
+.policy-content {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--admin-background);
+  padding: 2rem;
+  border-radius: var(--admin-border-radius);
+  box-shadow: var(--admin-shadow);
+}
+
+.policy-content h2 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--admin-text);
+  margin-bottom: 1rem;
+}
+
+.policy-content h3 {
+  font-size: 1.6rem;
+  font-weight: 500;
+  color: var(--admin-text);
+  margin: 1.5rem 0 0.8rem;
+}
+
+.policy-content p {
+  font-size: 1.1rem;
+  color: #5f788a;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.policy-content ul {
+  list-style: none;
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.policy-content ul li {
+  font-size: 1.1rem;
+  color: #5f788a;
+  position: relative;
+  margin-bottom: 0.5rem;
+}
+
+.policy-content ul li::before {
+  content: '•';
+  position: absolute;
+  left: -1rem;
+  color: var(--admin-accent);
+  font-size: 1.2rem;
+}
+
+.policy-content a {
+  color: var(--admin-accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--admin-transition);
+}
+
+.policy-content a:hover,
+.policy-content a:focus {
+  color: var(--admin-primary);
+  text-decoration: underline;
+}
+
+.policy-content code {
+  background: #f4f7fa;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: var(--admin-text);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .admin-policy {
+    padding: 1.5rem;
+  }
+
+  .policy-title {
+    font-size: 2.2rem;
+  }
+
+  .policy-content {
+    padding: 1.5rem;
+  }
+
+  .policy-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .policy-content h3 {
+    font-size: 1.4rem;
+  }
+
+  .policy-content p,
+  .policy-content ul li {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-policy {
+    padding: 1rem;
+  }
+
+  .policy-title {
+    font-size: 1.8rem;
+  }
+
+  .policy-back-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .policy-back-button::before {
+    width: 18px;
+    height: 18px;
+  }
+
+  .policy-content {
+    padding: 1rem;
+  }
+
+  .policy-content h2 {
+    font-size: 1.6rem;
+  }
+
+  .policy-content h3 {
+    font-size: 1.3rem;
+  }
+
+  .policy-content p,
+  .policy-content ul li {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-policy {
+    padding: 0.75rem;
+  }
+
+  .policy-title {
+    font-size: 1.5rem;
+  }
+
+  .policy-back-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .policy-back-button::before {
+    width: 16px;
+    height: 16px;
+  }
+
+  .policy-content {
+    padding: 0.75rem;
+  }
+
+  .policy-content h2 {
+    font-size: 1.4rem;
+  }
+
+  .policy-content h3 {
+    font-size: 1.2rem;
+  }
+
+  .policy-content p,
+  .policy-content ul li {
+    font-size: 0.9rem;
+  }
+
+  .policy-content code {
+    font-size: 0.85rem;
+  }
+}
