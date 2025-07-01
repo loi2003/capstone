@@ -12,12 +12,14 @@ import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermOfService';
 import ContactUs from '../pages/ContactUs';
 import AdminHomePage from '../pages/admin/AdminHomePage';
-import HealthExpertHomePage from '../pages/staff/HeathExpertHomePage';
-import NutrientSpecialistHomePage from '../pages/staff/NutrientSpecialistHomepage';
-import ClinicHomePage from '../pages/staff/ClinicHomePage';
-import ConsultantHomePage from '../pages/staff/ConsultantHomePage';
+import HealthExpertHomePage from '../pages/healthexpert/HealthExpertHomePage'
+import NutrientSpecialistHomePage from '../pages/nutrientspecialist/NutrientSpecialistHomepage';
+import ClinicHomePage from '../pages/clinic/ClinicHomePage';
+import ConsultantHomePage from '../pages/consultant/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
-import BlogCategoryManagement from '../pages/BlogCategoryManagement';
+import BlogCategoryManagement from '../pages/admin/BlogCategoryManagement';
+import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
+import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -46,6 +48,8 @@ const AppRoutes = () => {
         <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/admin/categories" element={<BlogCategoryManagement />} />
+              <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
+        <Route path="/admin/policy" element={<AdminPolicyPage />} />
       </Routes>
     </ThemeProvider>
   );

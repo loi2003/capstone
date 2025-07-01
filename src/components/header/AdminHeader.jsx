@@ -155,10 +155,10 @@ const AdminHeader = () => {
           </svg>
         </button>
         <nav className={isMenuOpen ? 'block' : ''}>
-          <Link to="/admin/users">User Management</Link>
-          <Link to="/admin/categories">Blog Category Management</Link>
+          <Link to="/admin/tutorial">Tutorial</Link>
+          <Link to="/admin/policy">Admin Policy</Link>
           <Link to="/admin/reports">Reports</Link>
-          <Link to="/admin/settings">Settings</Link>
+ 
           {user ? (
             <div className="admin-profile-section">
               <button
