@@ -12,9 +12,10 @@ import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermOfService';
 import ContactUs from '../pages/ContactUs';
 import AdminHomePage from '../pages/admin/AdminHomePage';
-import HealthExpertHomePage from '../pages/healthexpert/HealthExpertHomePage'
+import HealthExpertHomePage from '../pages/healthexpert/HealthExpertHomePage';
 import NutrientSpecialistHomePage from '../pages/nutrientspecialist/NutrientSpecialistHomepage';
 import ClinicHomePage from '../pages/clinic/ClinicHomePage';
+import BlogManagement from '../pages/BlogManagement';
 import ConsultantHomePage from '../pages/consultant/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
 import BlogCategoryManagement from '../pages/admin/BlogCategoryManagement';
@@ -47,10 +48,11 @@ const AppRoutes = () => {
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
+        <Route path="/clinic/blog-management" element={<BlogManagement />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/admin/categories" element={<BlogCategoryManagement />} />
-              <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
+        <Route path="/admin/categories" element={<BlogCategoryManagement />} />
+        <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
       </Routes>
     </ThemeProvider>
