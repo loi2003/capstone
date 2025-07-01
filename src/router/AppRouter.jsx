@@ -17,7 +17,8 @@ import NutrientSpecialistHomePage from '../pages/nutrientspecialist/NutrientSpec
 import ClinicHomePage from '../pages/clinic/ClinicHomePage';
 import ConsultantHomePage from '../pages/consultant/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
-import BlogCategoryManagement from '../pages/admin/BlogCategoryManagement';
+import BlogCategoryManagement from '../pages/BlogCategoryManagement';
+import NotFound from '../pages/error/404NotFound';
 import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
 import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
 
@@ -32,6 +33,7 @@ const AppRoutes = () => {
     <ThemeProvider>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path='*' element={<NotFound />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/about" element={<AboutPage />} />

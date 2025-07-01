@@ -1,0 +1,171 @@
+/* Theme color settings */
+:root {
+  --color-main: #067dad;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
+}
+
+/* Layout Utilities */
+.center-all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.full-screen {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
+
+/* Backgrounds */
+.florageBackground {
+  background-image: url('/textures/floragething.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.batthernBackground {
+  background-image: url('/textures/batthern.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.asfaltBackground {
+  background-image: url('/textures/asfalt-dark.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* Buttons */
+.itemCardButton {
+  padding: 0.5rem 1rem;
+  z-index: 50;
+  opacity: 0.75;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+  transition: transform 0.2s ease-in;
+}
+
+.itemCardButton:hover {
+  transform: scale(1.05);
+}
+
+.secondary-item-card-button {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #334155; /* text-slate-700 */
+  font-weight: 300;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.main-gradient-bg {
+  background: linear-gradient(to bottom, var(--color-main), var(--color-secondary));
+}
+
+.round {
+  border-radius: 30px;
+}
+
+/* Media Query Helpers */
+.show-pc-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .show-pc-only {
+    display: block;
+  }
+  .show-mobile-only {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .show-mobile-only {
+    display: block;
+  }
+}
+
+/* Text Utilities */
+.big-font {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+}
+
+.hoverable {
+  transition: all 0.15s ease-in-out;
+}
+
+.hoverable:hover {
+  background-color: rgba(59, 130, 246, 0.6); /* bg-blue-500/60 */
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  background: transparent;
+  display: none;
+}
+
+.scroll-bar::-webkit-scrollbar {
+  width: 5px;
+  display: block;
+}
+
+.scroll-bar::-webkit-scrollbar-track {
+  border-radius: 1px;
+}
+
+.scroll-bar::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Input Date Fields (Chrome/WebKit) */
+::-webkit-datetime-edit-year-field:not([aria-valuenow]),
+::-webkit-datetime-edit-month-field:not([aria-valuenow]),
+::-webkit-datetime-edit-day-field:not([aria-valuenow]) {
+  color: transparent;
+  display: none;
+}
+
+/* Base Styles */
+* {
+  font-family: var(--font-inter), sans-serif;
+}
+
+body {
+  background-color: var(--color-general);
+  color: var(--color-text);
+  margin: 0;
+}

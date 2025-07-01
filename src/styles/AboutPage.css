@@ -1,7 +1,7 @@
 /* About Page Specific Styles */
 .about-page {
   min-height: 100vh;
-  padding: 20px 0;
+  /* padding: 20px 0; */
   font-family: 'Inter', sans-serif;
 }
 
@@ -41,6 +41,7 @@
 .about-hero-subtitle {
   font-size: 1.5rem;
   font-weight: 400;
+  margin-left: 50px;
   margin-bottom: 2.5rem;
   color: #2e6da4;
   max-width: 85%;
@@ -49,6 +50,7 @@
 
 .about-hero-button {
   padding: 16px 36px;
+  /* margin-left: 250px; */
   font-size: 1.2rem;
   font-weight: 700;
   text-decoration: none;

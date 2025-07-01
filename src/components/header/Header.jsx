@@ -95,7 +95,7 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         {/* Logo liên kết về trang chủ */}
-        <Link to="/" className="logo">GenderHealthWeb</Link>
+        <Link to="/" className="logo">NestlyCare</Link>
         {/* Nút mở/đóng menu trên mobile */}
         <button className="menu-toggle" onClick={toggleMenu} aria-label="Toggle navigation">
           <span className="menu-icon"></span>

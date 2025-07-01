@@ -175,6 +175,7 @@
 .signin-title {
   font-size: 3.5rem;
   font-weight: 800;
+  text-align: center;
   margin-bottom: 1.5rem;
   line-height: 1.2;
   color: var(--white);
@@ -376,7 +377,7 @@
   .signin-title,
   .signin-description,
   .signin-quote {
-    text-align: left;
+    text-align: center;
   }
 
   .signin-form-container {
