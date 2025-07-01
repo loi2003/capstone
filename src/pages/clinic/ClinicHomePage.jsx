@@ -152,7 +152,7 @@ const ClinicHomePage = () => {
             </motion.div>
             {isSidebarOpen && <span className="logo-text">Clinic Panel</span>}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title"> </h2>}
+          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -293,6 +293,28 @@ const ClinicHomePage = () => {
               </svg>
               {isSidebarOpen && <span>Add Appointment</span>}
             </button>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link to="/clinic/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Book icon for blog management"
+              >
+                <path
+                  d="M4 19.5A2.5 2.5 0 016.5 17H20m-16-13h13.5c1.38 0 2.5 1.12 2.5 2.5v13c0 1.38-1.12 2.5-2.5 2.5H4m2.5-13v13"
+                  fill="var(--clinic-color5)"
+                  stroke="var(--clinic-text)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Blog Management</span>}
+            </Link>
           </motion.div>
           {user ? (
             <>

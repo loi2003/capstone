@@ -239,7 +239,21 @@ const HealthExpertHomePage = () => {
               {isSidebarOpen && <span>Support</span>}
             </Link>
           </motion.div>
-      
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link to="/clinic/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Book icon for blog management">
+                <path
+                  d="M4 19.5A2.5 2.5 0 016.5 17H20m-16 0V5a2 2 0 012-2h12a2 2 0 012 2v12.5m-16 0H20a2 2 0 002-2V7.5L16.5 3"
+                  fill="var(--health-expert-color3)"
+                  stroke="var(--health-expert-text)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Blog Management</span>}
+            </Link>
+          </motion.div>
           {user ? (
             <>
               <motion.div variants={navItemVariants} className="sidebar-nav-item health-expert-profile-section">

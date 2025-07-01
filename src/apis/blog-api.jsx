@@ -16,14 +16,14 @@ export const createCategory = async (userId, categoryName, token) => {
     console.log('Create category response:', response.data);
     return response;
   } catch (error) {
-    console.error('Error creating category:', error.response?.data, error.response?.status);
+    console.error('Error creating category:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };
 
 export const getAllCategories = async (token, params = {}) => {
   try {
-    const response = await apiClient.get('/api/category/view-all-active-categories', {
+    const response = await apiClient.get('/api/category/view-all-categories-not-deleted', {
       headers: {
         Authorization: `Bearer ${token}`,
         Accept: 'text/plain',
@@ -33,7 +33,7 @@ export const getAllCategories = async (token, params = {}) => {
     console.log('Get all categories response:', response.data);
     return response;
   } catch (error) {
-    console.error('Error fetching categories:', error.response?.data, error.response?.status);
+    console.error('Error fetching categories:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };
@@ -55,7 +55,7 @@ export const updateCategory = async (categoryId, categoryName, isActive, token) 
     console.log('Update category response:', response.data);
     return response;
   } catch (error) {
-    console.error('Error updating category:', error.response?.data, error.response?.status);
+    console.error('Error updating category:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };
@@ -71,7 +71,50 @@ export const deleteCategory = async (categoryId, token) => {
     console.log('Delete category response:', response.data);
     return response;
   } catch (error) {
-    console.error('Error deleting category:', error.response?.data, error.response?.status);
+    console.error('Error deleting category:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };
+
+
+export const addBlog = async (blogData, token) => {
+  try {
+    const formData = new FormData();
+    formData.append('Id', blogData.id || '');
+    formData.append('UserId', blogData.userId);
+    formData.append('CategoryId', blogData.categoryId);
+    formData.append('Title', blogData.title);
+    formData.append('Body', blogData.body);
+    blogData.tags.forEach((tag, index) => formData.append(`Tags[${index}]`, tag));
+    blogData.images.forEach((image, index) => formData.append(`Images[${index}]`, image));
+
+    const response = await apiClient.post('/api/blog/upload-blog', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Add blog response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error adding blog:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllBlogs = async (token) => {
+  try {
+    const response = await apiClient.get('/api/blog/view-all-blogs', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Get all blogs response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error fetching blogs:', error.response?.data || error.message);
+    throw error;
+  }
+}
