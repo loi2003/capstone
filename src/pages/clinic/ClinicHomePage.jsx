@@ -40,26 +40,36 @@ const ClinicHomePage = () => {
     setIsSidebarOpen((prev) => !prev);
   };
 
-  const handleLogout = async () => {
-    if (!user?.userId) {
+ const handleLogout = async () => {
+  if (!user?.userId) {
+    console.log('No userId found, clearing local storage and redirecting to signin');
+    localStorage.removeItem('token');
+    delete apiClient.defaults.headers.common['Authorization'];
+    setUser(null);
+    navigate('/signin', { replace: true });
+    return;
+  }
+  if (window.confirm('Are you sure you want to sign out?')) {
+    try {
+      console.log('Attempting logout for userId:', user.userId);
+      await logout(user.userId);
+      console.log('Logout successful, clearing local storage and redirecting');
       localStorage.removeItem('token');
+      delete apiClient.defaults.headers.common['Authorization'];
       setUser(null);
+      setIsSidebarOpen(true);
       navigate('/signin', { replace: true });
-      return;
+    } catch (error) {
+      console.error('Error logging out:', error.response?.data || error.message);
+      console.log('Clearing local storage and redirecting despite error');
+      localStorage.removeItem('token');
+      delete apiClient.defaults.headers.common['Authorization'];
+      setUser(null);
+      setIsSidebarOpen(true);
+      navigate('/signin', { replace: true });
     }
-    if (window.confirm('Are you sure you want to sign out?')) {
-      try {
-        await logout(user.userId);
-      } catch (error) {
-        console.error('Error logging out:', error.message);
-      } finally {
-        localStorage.removeItem('token');
-        setUser(null);
-        setIsSidebarOpen(true);
-        navigate('/signin', { replace: true });
-      }
-    }
-  };
+  }
+};
 
   const logoVariants = {
     animate: {
@@ -295,7 +305,7 @@ const ClinicHomePage = () => {
             </button>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/clinic/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
+            <Link to="/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
               <svg
                 width="24"
                 height="24"
