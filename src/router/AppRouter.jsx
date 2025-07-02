@@ -48,7 +48,7 @@ const AppRoutes = () => {
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
-        <Route path="/clinic/blog-management" element={<BlogManagement />} />
+        <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/admin/categories" element={<BlogCategoryManagement />} />

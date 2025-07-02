@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { addBlog, getAllBlogs, getAllCategories } from "../apis/blog-api";
+import { addBlog, getAllBlogs, getAllCategories, approveBlog, rejectBlog } from "../apis/blog-api";
 import { getCurrentUser } from "../apis/authentication-api";
 import "../styles/BlogManagement.css";
 
@@ -20,6 +20,7 @@ const BlogManagement = () => {
     tags: "",
     images: [],
   });
+  const [rejectionReasons, setRejectionReasons] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,7 +45,6 @@ const BlogManagement = () => {
           );
           localStorage.removeItem("token");
           navigate("/signin", { replace: true });
-
           return;
         }
 
@@ -188,6 +188,60 @@ const BlogManagement = () => {
     }
   };
 
+  const handleApproveBlog = async (blogId) => {
+    const token = localStorage.getItem("token");
+    try {
+      setLoading(true);
+      await approveBlog(blogId, user.id, token);
+      setMessage("Blog approved successfully!");
+      setIsError(false);
+      const blogsResponse = await getAllBlogs(token);
+      setBlogs(blogsResponse.data?.data || []);
+    } catch (error) {
+      console.error(
+        "Error approving blog:",
+        error.response?.data || error.message
+      );
+      setMessage(error.response?.data?.message || "Error approving blog");
+      setIsError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDenyBlog = async (blogId) => {
+    const reason = rejectionReasons[blogId]?.trim();
+    if (!reason) {
+      setMessage("Rejection reason is required");
+      setIsError(true);
+      return;
+    }
+
+    const token = localStorage.getItem("token");
+    try {
+      setLoading(true);
+      await rejectBlog(blogId, user.id, reason, token);
+      setMessage("Blog denied successfully!");
+      setIsError(false);
+      setRejectionReasons((prev) => ({ ...prev, [blogId]: "" }));
+      const blogsResponse = await getAllBlogs(token);
+      setBlogs(blogsResponse.data?.data || []);
+    } catch (error) {
+      console.error(
+        "Error denying blog:",
+        error.response?.data || error.message
+      );
+      setMessage(error.response?.data?.message || "Error denying blog");
+      setIsError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRejectionReasonChange = (blogId, value) => {
+    setRejectionReasons((prev) => ({ ...prev, [blogId]: value }));
+  };
+
   const containerVariants = {
     initial: { opacity: 0, y: 20 },
     animate: {
@@ -216,110 +270,211 @@ const BlogManagement = () => {
           transition={{ duration: 0.5 }}
         >
           <h1 className="blog-header-title">Blog Management</h1>
-          <Link to="/clinic" className="blog-action-button secondary">
+          <button
+            onClick={() => navigate(-1)}
+            className="blog-action-button secondary"
+          >
             Back to Dashboard
-          </Link>
+          </button>
         </motion.div>
       </header>
       <main className="blog-content">
         <div className="blog-split">
-          <motion.section
-            className="blog-section blog-form-section"
-            variants={containerVariants}
-            initial="initial"
-            animate="animate"
-          >
-            <h2 className="blog-section-title">Add New Blog</h2>
-            <form className="blog-form" onSubmit={handleSubmit}>
-              <div className="blog-form-field">
-                <label htmlFor="categoryId">Category</label>
-                <select
-                  id="categoryId"
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleInputChange}
-                  required
-                  disabled={
-                    categories.length === 0 ||
-                    !user ||
-                    Number(user.roleId) !== 5
-                  }
+          {user && [3, 4, 5].includes(Number(user.roleId)) && (
+            <motion.section
+              className="blog-section blog-form-section"
+              variants={containerVariants}
+              initial="initial"
+              animate="animate"
+            >
+              <h2 className="blog-section-title">Add New Blog</h2>
+              <form className="blog-form" onSubmit={handleSubmit}>
+                <div className="blog-form-field">
+                  <label htmlFor="categoryId">Category</label>
+                  <select
+                    id="categoryId"
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleInputChange}
+                    required
+                    disabled={categories.length === 0 || !user}
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.categoryName}
+                      </option>
+                    ))}
+                  </select>
+                  {categories.length === 0 && (
+                    <p className="error-message">
+                      Please create a category in the Categories section.
+                    </p>
+                  )}
+                </div>
+                <div className="blog-form-field">
+                  <label htmlFor="title">Title</label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    required
+                    disabled={!user}
+                    placeholder="Enter blog title"
+                    aria-label="Blog title"
+                  />
+                </div>
+                <div className="blog-form-field">
+                  <label htmlFor="body">Body</label>
+                  <textarea
+                    id="body"
+                    name="body"
+                    value={formData.body}
+                    onChange={handleInputChange}
+                    required
+                    disabled={!user}
+                    placeholder="Enter blog content"
+                    aria-label="Blog content"
+                  />
+                </div>
+                <div className="blog-form-field">
+                  <label htmlFor="tags">Tags (comma-separated)</label>
+                  <input
+                    type="text"
+                    id="tags"
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleInputChange}
+                    placeholder="e.g., health, nutrition, wellness"
+                    disabled={!user}
+                    aria-label="Blog tags"
+                  />
+                </div>
+                <div className="blog-form-field">
+                  <label htmlFor="images">Images</label>
+                  <input
+                    type="file"
+                    id="images"
+                    name="images"
+                    accept="image/*"
+                    multiple
+                    onChange={handleFileChange}
+                    disabled={loading || !user}
+                    aria-label="Upload blog images"
+                  />
+                </div>
+                <motion.button
+                  type="submit"
+                  className="blog-action-button primary"
+                  disabled={loading || !user}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.categoryName}
-                    </option>
-                  ))}
-                </select>
-                {categories.length === 0 && (
-                  <p className="error-message">
-                    Please create a category in the Categories section.
-                  </p>
+                  {loading ? "Submitting..." : "Submit Blog"}
+                </motion.button>
+                {message && (
+                  <motion.p
+                    className={`blog-form-message ${
+                      isError ? "error" : "success"
+                    }`}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {message}
+                  </motion.p>
                 )}
-              </div>
-              <div className="blog-form-field">
-                <label htmlFor="title">Title</label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleInputChange}
-                  required
-                  disabled={!user || Number(user.roleId) !== 5}
-                  placeholder="Enter blog title"
-                  aria-label="Blog title"
-                />
-              </div>
-              <div className="blog-form-field">
-                <label htmlFor="body">Body</label>
-                <textarea
-                  id="body"
-                  name="body"
-                  value={formData.body}
-                  onChange={handleInputChange}
-                  required
-                  disabled={!user || Number(user.roleId) !== 5}
-                  placeholder="Enter blog content"
-                  aria-label="Blog content"
-                />
-              </div>
-              <div className="blog-form-field">
-                <label htmlFor="tags">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  id="tags"
-                  name="tags"
-                  value={formData.tags}
-                  onChange={handleInputChange}
-                  placeholder="e.g., health, nutrition, wellness"
-                  disabled={!user || Number(user.roleId) !== 5}
-                  aria-label="Blog tags"
-                />
-              </div>
-              <div className="blog-form-field">
-                <label htmlFor="images">Images</label>
-                <input
-                  type="file"
-                  id="images"
-                  name="images"
-                  accept="image/*"
-                  multiple
-                  onChange={handleFileChange}
-                  disabled={loading || !user || Number(user.roleId) !== 5}
-                  aria-label="Upload blog images"
-                />
-              </div>
-              <motion.button
-                type="submit"
-                className="blog-action-button primary"
-                disabled={loading || !user || Number(user.roleId) !== 5}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                {loading ? "Submitting..." : "Submit Blog"}
-              </motion.button>
+              </form>
+            </motion.section>
+          )}
+          {user && [3, 4].includes(Number(user.roleId)) && (
+            <motion.section
+              className="blog-section blog-approve-deny-section"
+              variants={containerVariants}
+              initial="initial"
+              animate="animate"
+            >
+              <h2 className="blog-section-title">Approve/Deny Blogs</h2>
+              {loading ? (
+                <p className="blog-list-loading">Loading blogs...</p>
+              ) : error ? (
+                <p className="blog-list-error">{error}</p>
+              ) : blogs.filter((blog) => blog.status?.toLowerCase() === "pending" && blog.user?.roleId === 5).length === 0 ? (
+                <p className="blog-list-error">No pending blogs from Clinic users available.</p>
+              ) : (
+                <div className="blog-list">
+                  {blogs
+                    .filter((blog) => blog.status?.toLowerCase() === "pending" && blog.user?.roleId === 5)
+                    .map((blog) => (
+                      <motion.div
+                        key={blog.id}
+                        className="blog-list-item"
+                        variants={blogItemVariants}
+                      >
+                        <h3>{blog.title}</h3>
+                        <p>
+                          <strong>Category:</strong>{" "}
+                          {blog.category?.categoryName || "N/A"}
+                        </p>
+                        <p>
+                          <strong>Body:</strong>{" "}
+                          {blog.body.length > 100
+                            ? `${blog.body.substring(0, 100)}...`
+                            : blog.body}
+                        </p>
+                        <p>
+                          <strong>Tags:</strong>{" "}
+                          {blog.blogTags?.length > 0
+                            ? blog.blogTags.join(", ")
+                            : "None"}
+                        </p>
+                        <p>
+                          <strong>Created By:</strong>{" "}
+                          {blog.user?.roleId === 5 ? "Clinic" : "Unknown"}
+                        </p>
+                        <p>
+                          <strong>Created:</strong>{" "}
+                          {new Date(blog.creationDate).toLocaleDateString()}
+                        </p>
+                        <div className="blog-action-buttons">
+                          <motion.button
+                            className="blog-action-button approve"
+                            onClick={() => handleApproveBlog(blog.id)}
+                            disabled={loading}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            Approve
+                          </motion.button>
+                          <div className="blog-deny-section">
+                            <input
+                              type="text"
+                              value={rejectionReasons[blog.id] || ""}
+                              onChange={(e) =>
+                                handleRejectionReasonChange(blog.id, e.target.value)
+                              }
+                              placeholder="Enter rejection reason"
+                              className="blog-rejection-input"
+                              disabled={loading}
+                              aria-label="Rejection reason"
+                            />
+                            <motion.button
+                              className="blog-action-button deny"
+                              onClick={() => handleDenyBlog(blog.id)}
+                              disabled={loading || !rejectionReasons[blog.id]?.trim()}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              Deny
+                            </motion.button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                </div>
+              )}
               {message && (
                 <motion.p
                   className={`blog-form-message ${
@@ -332,8 +487,8 @@ const BlogManagement = () => {
                   {message}
                 </motion.p>
               )}
-            </form>
-          </motion.section>
+            </motion.section>
+          )}
           <motion.section
             className="blog-section blog-list-section"
             variants={containerVariants}
@@ -393,6 +548,12 @@ const BlogManagement = () => {
                       <span className="blog-status">
                         {blog.status || "Pending"}
                       </span>
+                    </p>
+                    <p>
+                      <strong>Created By:</strong>{" "}
+                      {blog.user?.roleId === 5 ? "Clinic" : 
+                       blog.user?.roleId === 4 ? "Nutrient Specialist" : 
+                       blog.user?.roleId === 3 ? "Health Expert" : "Unknown"}
                     </p>
                     <p>
                       <strong>Created:</strong>{" "}

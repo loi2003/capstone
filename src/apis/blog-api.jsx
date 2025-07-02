@@ -76,7 +76,6 @@ export const deleteCategory = async (categoryId, token) => {
   }
 };
 
-
 export const addBlog = async (blogData, token) => {
   try {
     const formData = new FormData();
@@ -117,4 +116,44 @@ export const getAllBlogs = async (token) => {
     console.error('Error fetching blogs:', error.response?.data || error.message);
     throw error;
   }
-}
+};
+
+export const approveBlog = async (blogId, approvedByUserId, token) => {
+  try {
+    const response = await apiClient.put(
+      `/api/blog/approve-blog?blogId=${blogId}&approvedByUserId=${approvedByUserId}`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'text/plain',
+        },
+      }
+    );
+    console.log('Approve blog response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error approving blog:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, token) => {
+  try {
+    const response = await apiClient.put(
+      `/api/blog/reject-blog?blogId=${blogId}&approvedByUserId=${approvedByUserId}&rejectionReason=${encodeURIComponent(rejectionReason)}`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'text/plain',
+        },
+      }
+    );
+    console.log('Reject blog response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error rejecting blog:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};

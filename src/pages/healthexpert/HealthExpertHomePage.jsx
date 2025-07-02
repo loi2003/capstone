@@ -240,7 +240,7 @@ const HealthExpertHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/clinic/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
+            <Link to="/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Book icon for blog management">
                 <path
                   d="M4 19.5A2.5 2.5 0 016.5 17H20m-16 0V5a2 2 0 012-2h12a2 2 0 012 2v12.5m-16 0H20a2 2 0 002-2V7.5L16.5 3"
@@ -258,7 +258,7 @@ const HealthExpertHomePage = () => {
             <>
               <motion.div variants={navItemVariants} className="sidebar-nav-item health-expert-profile-section">
                 <div className="health-expert-profile-info" title={isSidebarOpen ? user.email : ''}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="24" height="24" viewBox="0 0 24 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--health-expert-background)"
