@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'; // Thư viện React và hoo
 import { Link, useNavigate } from 'react-router-dom'; // Link để tạo liên kết, useNavigate để chuyển hướng
 import { motion } from 'framer-motion'; // Thư viện tạo animation
 import { register, verifyOtp } from '../../apis/authentication-api'; // Hàm gọi API đăng ký và xác minh OTP
+import apiClient from '../../apis/url-api';
 import '../../styles/SignUp.css'; // Tệp CSS định dạng trang đăng ký
 
 // Component SignUp: Trang đăng ký tài khoản
@@ -28,6 +29,12 @@ const SignUp = () => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+  // Fix bug
+  useEffect(() => {
+    // ✅ CLEAR token and Authorization header
+    localStorage.removeItem('token');
+    delete apiClient.defaults.headers.common['Authorization'];
+  }, []);
 
   // Kiểm tra dữ liệu form
   const validateForm = () => {
