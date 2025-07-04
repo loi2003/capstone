@@ -16,6 +16,7 @@ import HealthExpertHomePage from '../pages/healthexpert/HealthExpertHomePage';
 import NutrientSpecialistHomePage from '../pages/nutrientspecialist/NutrientSpecialistHomepage';
 import ClinicHomePage from '../pages/clinic/ClinicHomePage';
 import BlogManagement from '../pages/BlogManagement';
+import AddingBlog from '../pages/AddingBlog';
 import ConsultantHomePage from '../pages/consultant/ConsultantHomePage';
 import ForgotPassword from '../pages/ForgotPassword';
 import BlogCategoryManagement from '../pages/admin/BlogCategoryManagement';
@@ -49,6 +50,7 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/blog-management" element={<BlogManagement />} />
+        <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/admin/categories" element={<BlogCategoryManagement />} />
