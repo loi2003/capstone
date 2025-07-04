@@ -1,573 +1,488 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { addBlog, getAllBlogs, getAllCategories, approveBlog, rejectBlog } from "../apis/blog-api";
-import { getCurrentUser } from "../apis/authentication-api";
-import "../styles/BlogManagement.css";
+  import React, { useState, useEffect, useRef } from 'react';
+  import { motion } from 'framer-motion';
+  import { useNavigate, useLocation } from 'react-router-dom';
+  import Chart from 'chart.js/auto';
+  import { getAllBlogs, getAllCategories } from '../apis/blog-api';
+  import { getCurrentUser } from '../apis/authentication-api';
+  import '../styles/BlogManagement.css';
 
-const BlogManagement = () => {
-  const [user, setUser] = useState(null);
-  const [categories, setCategories] = useState([]);
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
-  const [formData, setFormData] = useState({
-    categoryId: "",
-    title: "",
-    body: "",
-    tags: "",
-    images: [],
-  });
-  const [rejectionReasons, setRejectionReasons] = useState({});
-  const navigate = useNavigate();
+  const BlogManagement = () => {
+    const [user, setUser] = useState(null);
+    const [categories, setCategories] = useState([]);
+    const [blogs, setBlogs] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [sortOption, setSortOption] = useState('title-asc');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [selectedImage, setSelectedImage] = useState(null);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const blogsPerPage = 6;
+    const chartRef = useRef(null);
+    const chartInstanceRef = useRef(null);
+    const navigate = useNavigate();
+    const location = useLocation();
 
-  useEffect(() => {
-    const fetchUserAndData = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("Please sign in to access Blog Management.");
-        navigate("/signin", { replace: true });
-        return;
-      }
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          setLoading(true);
+          const token = localStorage.getItem('token');
+          if (!token) {
+            throw new Error('No token found. Please log in.');
+          }
 
-      try {
-        // Fetch user data
-        const userResponse = await getCurrentUser();
-        console.log("getCurrentUser response:", userResponse.data);
-        const userData = userResponse.data?.data || userResponse.data;
-        if (userData?.id && [3, 4, 5].includes(Number(userData.roleId))) {
-          setUser(userData);
-        } else {
-          setError(
-            "Only Clinic, Health Expert, or Nutrient Specialist users can access this page."
-          );
-          localStorage.removeItem("token");
-          navigate("/signin", { replace: true });
-          return;
+          const userResponse = await getCurrentUser();
+          const userData = userResponse.data?.data || userResponse.data;
+          if (userData?.id && [3, 4, 5].includes(Number(userData.roleId))) {
+            setUser(userData);
+          } else {
+            throw new Error('Only Clinic, Health Expert, or Nutrient Specialist users can access this page.');
+          }
+
+          const [categoriesResponse, blogsResponse] = await Promise.all([
+            getAllCategories(token),
+            getAllBlogs(token),
+          ]);
+
+          const categoriesData = Array.isArray(categoriesResponse.data?.data)
+            ? categoriesResponse.data.data
+            : [];
+          setCategories(categoriesData);
+          if (categoriesData.length === 0) {
+            setError('No categories available. Please create a category first.');
+          }
+
+          const blogsData = Array.isArray(blogsResponse.data?.data)
+            ? blogsResponse.data.data
+            : [];
+          console.log('Blogs data:', blogsData);
+          setBlogs(blogsData);
+        } catch (err) {
+          console.error('Fetch error:', err.response?.data || err.message);
+          setError(err.response?.data?.message || 'Failed to fetch data. Please log in again.');
+          localStorage.removeItem('token');
+          navigate('/signin', { replace: true });
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchData();
+    }, [navigate, location]);
+
+    useEffect(() => {
+      if (!loading && blogs.length > 0 && categories.length > 0 && chartRef.current) {
+        if (chartInstanceRef.current) {
+          chartInstanceRef.current.destroy();
         }
 
-        // Fetch categories and blogs concurrently
-        const [categoriesResponse, blogsResponse] = await Promise.all([
-          getAllCategories(token),
-          getAllBlogs(token),
-        ]);
+        const categoryCounts = categories.reduce((acc, category) => {
+          acc[category.categoryName] = blogs.filter(
+            (blog) => blog.categoryName === category.categoryName
+          ).length;
+          return acc;
+        }, {});
 
-        // Handle categories response
-        const categoriesData = categoriesResponse.data?.data || [];
-        setCategories(categoriesData);
-        if (categoriesData.length === 0) {
-          setError("No categories available. Please create a category first.");
+        const labels = Object.keys(categoryCounts).filter((key) => categoryCounts[key] > 0);
+        const data = labels.map((key) => categoryCounts[key]);
+        const colors = labels.map((_, index) => `hsl(${(index * 137.5) % 360}, 70%, 60%)`);
+
+        chartInstanceRef.current = new Chart(chartRef.current, {
+          type: 'pie',
+          data: {
+            labels,
+            datasets: [{ data, backgroundColor: colors, borderColor: '#ffffff', borderWidth: 2 }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { font: { family: "'Inter', sans-serif", size: 14 }, color: '#124966', padding: 20 },
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                titleFont: { family: "'Inter', sans-serif", size: 14 },
+                bodyFont: { family: "'Inter', sans-serif", size: 12 },
+              },
+            },
+          },
+        });
+      }
+
+      return () => {
+        if (chartInstanceRef.current) {
+          chartInstanceRef.current.destroy();
+          chartInstanceRef.current = null;
         }
+      };
+    }, [blogs, categories, loading]);
 
-        // Handle blogs response
-        setBlogs(blogsResponse.data?.data || []);
-        setLoading(false);
-      } catch (error) {
-        console.error(
-          "Error fetching data:",
-          error.response?.data || error.message
-        );
-        setError(error.response?.data?.message || "Error fetching data");
-        setLoading(false);
-        localStorage.removeItem("token");
-        navigate("/signin", { replace: true });
-      }
-    };
-    fetchUserAndData();
-  }, [navigate]);
+    useEffect(() => {
+      setCurrentPage(1);
+    }, [searchQuery, statusFilter, sortOption]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-
-    const validTypes = ["image/jpeg", "image/png", "image/gif"];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const validFiles = files.filter(
-      (file) => validTypes.includes(file.type) && file.size <= maxSize
-    );
-
-    if (validFiles.length !== files.length) {
-      setMessage(
-        "Some files are invalid (only JPEG, PNG, GIF, max 5MB allowed)."
-      );
-      setIsError(true);
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      images: [...prev.images, ...validFiles],
-    }));
-    setMessage("");
-    setIsError(false);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setMessage("");
-    setIsError(false);
-
-    if (!user) {
-      setMessage("User not authenticated");
-      setIsError(true);
-      navigate("/signin", { replace: true });
-      return;
-    }
-
-    // Client-side validation
-    if (!formData.title.trim()) {
-      setMessage("Title is required");
-      setIsError(true);
-      return;
-    }
-    if (!formData.body.trim()) {
-      setMessage("Body is required");
-      setIsError(true);
-      return;
-    }
-    if (!formData.categoryId) {
-      setMessage("Please select a valid category");
-      setIsError(true);
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    const blogData = {
-      id: "", // Backend generates UUID
-      userId: user.id, // Use user.id from getCurrentUser
-      categoryId: formData.categoryId,
-      title: formData.title.trim(),
-      body: formData.body.trim(),
-      tags: formData.tags
-        .split(",")
-        .map((tag) => tag.trim())
-        .filter((tag) => tag),
-      images: formData.images,
+    const openImageModal = (image, index, images) => {
+      setSelectedImage({ image, images });
+      setCurrentImageIndex(index);
     };
 
-    try {
-      setLoading(true);
-      const response = await addBlog(blogData, token);
-      setMessage("Blog post created successfully!");
-      setIsError(false);
-      setFormData({
-        categoryId: "",
-        title: "",
-        body: "",
-        tags: "",
-        images: [],
-      });
-      const blogsResponse = await getAllBlogs(token);
-      setBlogs(blogsResponse.data?.data || []);
-    } catch (error) {
-      console.error(
-        "Blog submission error:",
-        error.response?.data || error.message
-      );
-      const validationErrors = error.response?.data?.errors;
-      if (validationErrors && typeof validationErrors === "object") {
-        const errorMessages = Object.values(validationErrors).flat().join("; ");
-        setMessage(
-          errorMessages ||
-            error.response?.data?.message ||
-            "Error creating blog post"
-        );
-      } else {
-        setMessage(error.response?.data?.message || "Error creating blog post");
+    const closeImageModal = () => {
+      setSelectedImage(null);
+      setCurrentImageIndex(0);
+    };
+
+    const prevImage = () => {
+      setCurrentImageIndex((prev) => (prev === 0 ? selectedImage.images.length - 1 : prev - 1));
+    };
+
+    const nextImage = () => {
+      setCurrentImageIndex((prev) => (prev === selectedImage.images.length - 1 ? 0 : prev + 1));
+    };
+
+    const filteredBlogs = blogs.filter((blog) => {
+      const matchesTitle = blog.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'approved' && blog.status?.toLowerCase() === 'approved') ||
+        (statusFilter === 'pending' && blog.status?.toLowerCase() === 'pending') ||
+        (statusFilter === 'denied' && blog.status?.toLowerCase() === 'denied');
+      return matchesTitle && matchesStatus;
+    });
+
+    const sortedBlogs = [...filteredBlogs].sort((a, b) => {
+      if (sortOption === 'title-asc') {
+        return a.title.localeCompare(b.title);
+      } else if (sortOption === 'title-desc') {
+        return b.title.localeCompare(a.title);
+      } else if (sortOption === 'approved-first') {
+        return (b.status?.toLowerCase() === 'approved' ? 1 : 0) - (a.status?.toLowerCase() === 'approved' ? 1 : 0);
+      } else if (sortOption === 'pending-first') {
+        return (b.status?.toLowerCase() === 'pending' ? 1 : 0) - (a.status?.toLowerCase() === 'pending' ? 1 : 0);
       }
-      setIsError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+      return 0;
+    });
 
-  const handleApproveBlog = async (blogId) => {
-    const token = localStorage.getItem("token");
-    try {
-      setLoading(true);
-      await approveBlog(blogId, user.id, token);
-      setMessage("Blog approved successfully!");
-      setIsError(false);
-      const blogsResponse = await getAllBlogs(token);
-      setBlogs(blogsResponse.data?.data || []);
-    } catch (error) {
-      console.error(
-        "Error approving blog:",
-        error.response?.data || error.message
-      );
-      setMessage(error.response?.data?.message || "Error approving blog");
-      setIsError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const indexOfLastBlog = currentPage * blogsPerPage;
+    const indexOfFirstBlog = indexOfLastBlog - blogsPerPage;
+    const currentBlogs = sortedBlogs.slice(indexOfFirstBlog, indexOfLastBlog);
+    const totalPages = Math.ceil(sortedBlogs.length / blogsPerPage);
 
-  const handleDenyBlog = async (blogId) => {
-    const reason = rejectionReasons[blogId]?.trim();
-    if (!reason) {
-      setMessage("Rejection reason is required");
-      setIsError(true);
-      return;
-    }
+    const handlePageChange = (pageNumber) => {
+      if (pageNumber >= 1 && pageNumber <= totalPages) {
+        setCurrentPage(pageNumber);
+      }
+    };
 
-    const token = localStorage.getItem("token");
-    try {
-      setLoading(true);
-      await rejectBlog(blogId, user.id, reason, token);
-      setMessage("Blog denied successfully!");
-      setIsError(false);
-      setRejectionReasons((prev) => ({ ...prev, [blogId]: "" }));
-      const blogsResponse = await getAllBlogs(token);
-      setBlogs(blogsResponse.data?.data || []);
-    } catch (error) {
-      console.error(
-        "Error denying blog:",
-        error.response?.data || error.message
-      );
-      setMessage(error.response?.data?.message || "Error denying blog");
-      setIsError(true);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handlePreviousPage = () => {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    };
 
-  const handleRejectionReasonChange = (blogId, value) => {
-    setRejectionReasons((prev) => ({ ...prev, [blogId]: value }));
-  };
+    const handleNextPage = () => {
+      if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+      }
+    };
 
-  const containerVariants = {
-    initial: { opacity: 0, y: 20 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut", staggerChildren: 0.1 },
-    },
-  };
+    const handleBack = () => {
+      navigate('/clinic');
+    };
 
-  const blogItemVariants = {
-    initial: { opacity: 0, y: 10 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.4, ease: "easeOut" },
-    },
-  };
+    const handleAddBlog = () => {
+      navigate('/blog-management/add');
+    };
 
-  return (
-    <div className="blog-management">
-      <header className="blog-header">
+    if (loading) {
+      return (
         <motion.div
-          className="blog-header-content"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+          className="blog-management"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="blog-header-title">Blog Management</h1>
-          <button
-            onClick={() => navigate(-1)}
-            className="blog-action-button secondary"
-          >
-            Back to Dashboard
-          </button>
+          <div className="loading-spinner">Loading...</div>
         </motion.div>
-      </header>
-      <main className="blog-content">
-        <div className="blog-split">
-          {user && [3, 4, 5].includes(Number(user.roleId)) && (
-            <motion.section
-              className="blog-section blog-form-section"
-              variants={containerVariants}
-              initial="initial"
-              animate="animate"
+      );
+    }
+
+    return (
+      <motion.div
+        className="blog-management"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <header className="blog-header">
+          <motion.button
+            className="blog-back-button"
+            onClick={handleBack}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Go back to previous page"
+          />
+          <h1 className="blog-management-title">Blog Management</h1>
+        </header>
+        <div className="blog-content">
+          {error && (
+            <motion.p
+              className="error-message"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <h2 className="blog-section-title">Add New Blog</h2>
-              <form className="blog-form" onSubmit={handleSubmit}>
-                <div className="blog-form-field">
-                  <label htmlFor="categoryId">Category</label>
-                  <select
-                    id="categoryId"
-                    name="categoryId"
-                    value={formData.categoryId}
-                    onChange={handleInputChange}
-                    required
-                    disabled={categories.length === 0 || !user}
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.categoryName}
-                      </option>
-                    ))}
-                  </select>
-                  {categories.length === 0 && (
-                    <p className="error-message">
-                      Please create a category in the Categories section.
-                    </p>
-                  )}
-                </div>
-                <div className="blog-form-field">
-                  <label htmlFor="title">Title</label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    required
-                    disabled={!user}
-                    placeholder="Enter blog title"
-                    aria-label="Blog title"
-                  />
-                </div>
-                <div className="blog-form-field">
-                  <label htmlFor="body">Body</label>
-                  <textarea
-                    id="body"
-                    name="body"
-                    value={formData.body}
-                    onChange={handleInputChange}
-                    required
-                    disabled={!user}
-                    placeholder="Enter blog content"
-                    aria-label="Blog content"
-                  />
-                </div>
-                <div className="blog-form-field">
-                  <label htmlFor="tags">Tags (comma-separated)</label>
-                  <input
-                    type="text"
-                    id="tags"
-                    name="tags"
-                    value={formData.tags}
-                    onChange={handleInputChange}
-                    placeholder="e.g., health, nutrition, wellness"
-                    disabled={!user}
-                    aria-label="Blog tags"
-                  />
-                </div>
-                <div className="blog-form-field">
-                  <label htmlFor="images">Images</label>
-                  <input
-                    type="file"
-                    id="images"
-                    name="images"
-                    accept="image/*"
-                    multiple
-                    onChange={handleFileChange}
-                    disabled={loading || !user}
-                    aria-label="Upload blog images"
-                  />
-                </div>
-                <motion.button
-                  type="submit"
-                  className="blog-action-button primary"
-                  disabled={loading || !user}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {loading ? "Submitting..." : "Submit Blog"}
-                </motion.button>
-                {message && (
-                  <motion.p
-                    className={`blog-form-message ${
-                      isError ? "error" : "success"
-                    }`}
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {message}
-                  </motion.p>
-                )}
-              </form>
-            </motion.section>
+              {error}
+            </motion.p>
           )}
-          {user && [3, 4].includes(Number(user.roleId)) && (
-            <motion.section
-              className="blog-section blog-approve-deny-section"
-              variants={containerVariants}
-              initial="initial"
-              animate="animate"
+          <section className="blog-stats-section">
+            <h2 className="blog-stats-title">Blog Statistics</h2>
+            <motion.div
+              className="blog-stats"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              role="region"
+              aria-label="Blog statistics"
             >
-              <h2 className="blog-section-title">Approve/Deny Blogs</h2>
-              {loading ? (
-                <p className="blog-list-loading">Loading blogs...</p>
-              ) : error ? (
-                <p className="blog-list-error">{error}</p>
-              ) : blogs.filter((blog) => blog.status?.toLowerCase() === "pending" && blog.user?.roleId === 5).length === 0 ? (
-                <p className="blog-list-error">No pending blogs from Clinic users available.</p>
-              ) : (
-                <div className="blog-list">
-                  {blogs
-                    .filter((blog) => blog.status?.toLowerCase() === "pending" && blog.user?.roleId === 5)
-                    .map((blog) => (
-                      <motion.div
-                        key={blog.id}
-                        className="blog-list-item"
-                        variants={blogItemVariants}
-                      >
-                        <h3>{blog.title}</h3>
-                        <p>
-                          <strong>Category:</strong>{" "}
-                          {blog.category?.categoryName || "N/A"}
-                        </p>
-                        <p>
-                          <strong>Body:</strong>{" "}
-                          {blog.body.length > 100
-                            ? `${blog.body.substring(0, 100)}...`
-                            : blog.body}
-                        </p>
-                        <p>
-                          <strong>Tags:</strong>{" "}
-                          {blog.blogTags?.length > 0
-                            ? blog.blogTags.join(", ")
-                            : "None"}
-                        </p>
-                        <p>
-                          <strong>Created By:</strong>{" "}
-                          {blog.user?.roleId === 5 ? "Clinic" : "Unknown"}
-                        </p>
-                        <p>
-                          <strong>Created:</strong>{" "}
-                          {new Date(blog.creationDate).toLocaleDateString()}
-                        </p>
-                        <div className="blog-action-buttons">
-                          <motion.button
-                            className="blog-action-button approve"
-                            onClick={() => handleApproveBlog(blog.id)}
-                            disabled={loading}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Approve
-                          </motion.button>
-                          <div className="blog-deny-section">
-                            <input
-                              type="text"
-                              value={rejectionReasons[blog.id] || ""}
-                              onChange={(e) =>
-                                handleRejectionReasonChange(blog.id, e.target.value)
-                              }
-                              placeholder="Enter rejection reason"
-                              className="blog-rejection-input"
-                              disabled={loading}
-                              aria-label="Rejection reason"
-                            />
-                            <motion.button
-                              className="blog-action-button deny"
-                              onClick={() => handleDenyBlog(blog.id)}
-                              disabled={loading || !rejectionReasons[blog.id]?.trim()}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                            >
-                              Deny
-                            </motion.button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                </div>
-              )}
-              {message && (
-                <motion.p
-                  className={`blog-form-message ${
-                    isError ? "error" : "success"
-                  }`}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
+              <div className="blog-stat-item">
+                <span className="stat-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" fill="currentColor"/>
+                  </svg>
+                </span>
+                <span className="stat-label">Total Blogs</span>
+                <span className="stat-value">{blogs.length}</span>
+              </div>
+              <div className="blog-stat-item">
+                <span className="stat-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <span className="stat-label">Approved Blogs</span>
+                <span className="stat-value">{blogs.filter(blog => blog.status?.toLowerCase() === 'approved').length}</span>
+              </div>
+              <div className="blog-stat-item">
+                <span className="stat-icon" aria-hidden="true">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </span>
+                <span className="stat-label">Pending Blogs</span>
+                <span className="stat-value">{blogs.filter(blog => blog.status?.toLowerCase() === 'pending').length}</span>
+              </div>
+            </motion.div>
+          </section>
+          <section className="blog-add-section">
+            <motion.button
+              className="blog-add-button"
+              onClick={handleAddBlog}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Add new blog"
+            >
+              Add Blog
+            </motion.button>
+          </section>
+          <section className="blog-list-section">
+            <h2 className="blog-list-title">All Blogs</h2>
+            <motion.section
+              className="blog-controls-section"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              role="search"
+              aria-label="Search and filter blogs"
+              aria-controls="blog-table"
+            >
+              <div className="control-group">
+                <label htmlFor="searchQuery">Search by Title</label>
+                <input
+                  type="text"
+                  id="searchQuery"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Enter blog title"
+                  aria-label="Search blogs by title"
+                />
+              </div>
+              <div className="control-group">
+                <label htmlFor="statusFilter">Filter by Status</label>
+                <select
+                  id="statusFilter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  aria-label="Filter blogs by status"
                 >
-                  {message}
-                </motion.p>
-              )}
+                  <option value="all">All</option>
+                  <option value="approved">Approved</option>
+                  <option value="pending">Pending</option>
+                  <option value="denied">Denied</option>
+                </select>
+              </div>
+              <div className="control-group">
+                <label htmlFor="sortOption">Sort By</label>
+                <select
+                  id="sortOption"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  aria-label="Sort blogs"
+                >
+                  <option value="title-asc">Title (A-Z)</option>
+                  <option value="title-desc">Title (Z-A)</option>
+                  <option value="approved-first">Approved First</option>
+                  <option value="pending-first">Pending First</option>
+                </select>
+              </div>
             </motion.section>
-          )}
-          <motion.section
-            className="blog-section blog-list-section"
-            variants={containerVariants}
-            initial="initial"
-            animate="animate"
-          >
-            <h2 className="blog-section-title">All Blogs</h2>
-            {loading ? (
-              <p className="blog-list-loading">Loading blogs...</p>
-            ) : error ? (
-              <p className="blog-list-error">{error}</p>
-            ) : blogs.length === 0 ? (
-              <p className="blog-list-error">No blogs available.</p>
+            {currentBlogs.length === 0 ? (
+              <p>No blogs found.</p>
             ) : (
-              <div className="blog-list">
-                {blogs.map((blog) => (
+              <div className="blog-table" id="blog-table">
+                <div className="blog-table-header">
+                  <span>Title</span>
+                  <span>Category</span>
+                  <span>Status</span>
+                  <span>Images</span>
+                </div>
+                {currentBlogs.map((blog) => (
                   <motion.div
                     key={blog.id}
-                    className="blog-list-item"
-                    variants={blogItemVariants}
+                    className="blog-table-row"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    <h3>{blog.title}</h3>
-                    <p>
-                      <strong>Category:</strong>{" "}
-                      {blog.category?.categoryName || "N/A"}
-                    </p>
-                    <p>
-                      <strong>Body:</strong>{" "}
-                      {blog.body.length > 100
-                        ? `${blog.body.substring(0, 100)}...`
-                        : blog.body}
-                    </p>
-                    <p>
-                      <strong>Tags:</strong>{" "}
-                      {blog.blogTags?.length > 0
-                        ? blog.blogTags.join(", ")
-                        : "None"}
-                    </p>
-                    <p>
-                      <strong>Status:</strong>{" "}
+                    <span>{blog.title}</span>
+                    <span>{blog.categoryName || 'Uncategorized'}</span>
+                    <span>
                       <motion.span
                         className="status-dot"
-                        title={blog.status || "Pending"}
+                        title={blog.status || 'Pending'}
                         style={{
                           backgroundColor:
-                            blog.status?.toLowerCase() === "approved"
-                              ? "#34C759"
-                              : blog.status?.toLowerCase() === "denied"
-                              ? "#FF3B30"
-                              : "#FFC107",
+                            blog.status?.toLowerCase() === 'approved'
+                              ? '#34C759'
+                              : blog.status?.toLowerCase() === 'denied'
+                              ? '#FF3B30'
+                              : '#FBC107',
                         }}
-                        whileHover={{
-                          scale: 1.2,
-                          boxShadow: "0 0 8px rgba(0,0,0,0.2)",
-                        }}
+                        whileHover={{ scale: 1.2, boxShadow: '0 0 8px rgba(0,0,0,0.2)' }}
                       />
-                      <span className="blog-status">
-                        {blog.status || "Pending"}
-                      </span>
-                    </p>
-                    <p>
-                      <strong>Created By:</strong>{" "}
-                      {blog.user?.roleId === 5 ? "Clinic" : 
-                       blog.user?.roleId === 4 ? "Nutrient Specialist" : 
-                       blog.user?.roleId === 3 ? "Health Expert" : "Unknown"}
-                    </p>
-                    <p>
-                      <strong>Created:</strong>{" "}
-                      {new Date(blog.creationDate).toLocaleDateString()}
-                    </p>
+                    </span>
+                    <span className="blog-images">
+                      {blog.images?.length > 0 ? (
+                        blog.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image.fileUrl || ''}
+                            alt={image.fileName || 'Blog image'}
+                            className="blog-image"
+                            onClick={() => openImageModal(image, index, blog.images)}
+                            onError={() => console.error(`Failed to load image: ${image.fileUrl}`)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') {
+                                openImageModal(image, index, blog.images);
+                              }
+                            }}
+                          />
+                        ))
+                      ) : (
+                        <span className="text-gray-500">No images</span>
+                      )}
+                    </span>
                   </motion.div>
                 ))}
               </div>
             )}
-          </motion.section>
+            {totalPages > 1 && (
+              <div className="pagination">
+                <motion.button
+                  className="pagination-button previous"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Go to previous page"
+                />
+                {Array.from({ length: totalPages }, (_, index) => (
+                  <motion.button
+                    key={index + 1}
+                    className={`pagination-button ${currentPage === index + 1 ? 'active' : ''}`}
+                    onClick={() => handlePageChange(index + 1)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label={`Go to page ${index + 1}`}
+                  >
+                    {index + 1}
+                  </motion.button>
+                ))}
+                <motion.button
+                  className="pagination-button next"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Go to next page"
+                />
+              </div>
+            )}
+          </section>
+          <section className="blog-chart-section">
+            <h2 className="blog-chart-title">Blog Distribution by Category</h2>
+            <div className="chart-container">
+              <canvas ref={chartRef} />
+            </div>
+          </section>
         </div>
-      </main>
-    </div>
-  );
-};
+        {selectedImage && (
+          <div className="blog-image-modal">
+            <motion.div
+              className="blog-image-modal-content"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <button
+                className="blog-image-modal-close"
+                onClick={closeImageModal}
+                aria-label="Close image modal"
+              >
+                ×
+              </button>
+              {selectedImage.images.length > 1 && (
+                <>
+                  <button
+                    className="blog-image-modal-nav prev"
+                    onClick={prevImage}
+                    aria-label="Previous image"
+                  >
+                    ←
+                  </button>
+                  <button
+                    className="blog-image-modal-nav next"
+                    onClick={nextImage}
+                    aria-label="Next image"
+                  >
+                    →
+                  </button>
+                </>
+              )}
+              <img
+                src={selectedImage.images[currentImageIndex].fileUrl || ''}
+                alt={selectedImage.images[currentImageIndex].fileName || 'Blog image'}
+                onError={() => console.error(`Failed to load modal image: ${selectedImage.images[currentImageIndex].fileUrl}`)}
+              />
+            </motion.div>
+          </div>
+        )}
+      </motion.div>
+    );
+  };
 
-export default BlogManagement;
+  export default BlogManagement;

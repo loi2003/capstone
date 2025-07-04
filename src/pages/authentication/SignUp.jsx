@@ -1,22 +1,30 @@
+<<<<<<< Updated upstream
 import React, { useState, useEffect } from 'react'; // Thư viện React và hook để quản lý trạng thái, hiệu ứng
 import { Link, useNavigate } from 'react-router-dom'; // Link để tạo liên kết, useNavigate để chuyển hướng
 import { motion } from 'framer-motion'; // Thư viện tạo animation
 import { register, verifyOtp } from '../../apis/authentication-api'; // Hàm gọi API đăng ký và xác minh OTP
 import '../../styles/SignUp.css'; // Tệp CSS định dạng trang đăng ký
+=======
+>>>>>>> Stashed changes
 
-// Component SignUp: Trang đăng ký tài khoản
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { register, verifyOtp } from '../../apis/authentication-api';
+import apiClient from '../../apis/url-api';
+import '../../styles/SignUp.css';
+
 const SignUp = () => {
-  // Trạng thái lưu dữ liệu người dùng nhập
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [phoneNo, setPhoneNo] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false); // Hiển thị/ẩn mật khẩu
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Hiển thị/ẩn xác nhận mật khẩu
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [otp, setOtp] = useState('');
-  const [showOtpForm, setShowOtpForm] = useState(false); // Hiển thị form OTP
-  const [timer, setTimer] = useState(120); // Bộ đếm ngược OTP (120 giây)
+  const [showOtpForm, setShowOtpForm] = useState(false);
+  const [timer, setTimer] = useState(120);
   const [errors, setErrors] = useState({
     username: '',
     email: '',
@@ -28,54 +36,123 @@ const SignUp = () => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
+<<<<<<< Updated upstream
+=======
 
-  // Kiểm tra dữ liệu form
+  // Clear token and Authorization header
+  useEffect(() => {
+    localStorage.removeItem('token');
+    delete apiClient.defaults.headers.common['Authorization'];
+  }, []);
+>>>>>>> Stashed changes
+
+  // Clear notification after 5 seconds
+  useEffect(() => {
+    if (errors.server || successMessage) {
+      const timeout = setTimeout(() => {
+        setErrors({ ...errors, server: '' });
+        setSuccessMessage('');
+      }, 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [errors.server, successMessage]);
+
+  // Real-time validation for username
+  const validateUsername = (value) => {
+    if (!value) {
+      return 'Vui lòng nhập tên người dùng';
+    } else if (value.length < 3) {
+      return 'Tên người dùng phải có ít nhất 3 ký tự';
+    }
+    return '';
+  };
+
+  // Real-time validation for email
+  const validateEmail = (value) => {
+    if (!value) {
+      return 'Vui lòng nhập email';
+    } else if (!/\S+@\S+\.\S+/.test(value)) {
+      return 'Email không hợp lệ';
+    }
+    return '';
+  };
+
+  // Real-time validation for phoneNo
+  const validatePhoneNo = (value) => {
+    if (value && !/^\d{10,15}$/.test(value)) {
+      return 'Số điện thoại không hợp lệ';
+    }
+    return '';
+  };
+
+  // Real-time validation for password
+  const validatePassword = (value) => {
+    if (!value) {
+      return 'Vui lòng nhập mật khẩu';
+    } else if (value.length < 6) {
+      return 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+    return '';
+  };
+
+  // Real-time validation for confirmPassword
+  const validateConfirmPassword = (value, password) => {
+    if (!value) {
+      return 'Vui lòng nhập lại mật khẩu';
+    } else if (value !== password) {
+      return 'Mật khẩu nhập lại không khớp';
+    }
+    return '';
+  };
+
+  // Handle input changes with real-time validation
+  const handleUsernameChange = (e) => {
+    const value = e.target.value;
+    setUsername(value);
+    setErrors({ ...errors, username: validateUsername(value) });
+  };
+
+  const handleEmailChange = (e) => {
+    const value = e.target.value;
+    setEmail(value);
+    setErrors({ ...errors, email: validateEmail(value) });
+  };
+
+  const handlePhoneNoChange = (e) => {
+    const value = e.target.value;
+    setPhoneNo(value);
+    setErrors({ ...errors, phoneNo: validatePhoneNo(value) });
+  };
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+    setErrors({
+      ...errors,
+      password: validatePassword(value),
+      confirmPassword: validateConfirmPassword(confirmPassword, value),
+    });
+  };
+
+  const handleConfirmPasswordChange = (e) => {
+    const value = e.target.value;
+    setConfirmPassword(value);
+    setErrors({ ...errors, confirmPassword: validateConfirmPassword(value, password) });
+  };
+
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
-      username: '',
-      email: '',
-      phoneNo: '',
-      password: '',
-      confirmPassword: '',
+      username: validateUsername(username),
+      email: validateEmail(email),
+      phoneNo: validatePhoneNo(phoneNo),
+      password: validatePassword(password),
+      confirmPassword: validateConfirmPassword(confirmPassword, password),
       otp: '',
       server: '',
     };
 
-    if (!username) {
-      newErrors.username = 'Vui lòng nhập tên người dùng';
-      isValid = false;
-    } else if (username.length < 3) {
-      newErrors.username = 'Tên người dùng phải có ít nhất 3 ký tự';
-      isValid = false;
-    }
-
-    if (!email) {
-      newErrors.email = 'Vui lòng nhập email';
-      isValid = false;
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email không hợp lệ';
-      isValid = false;
-    }
-
-    if (phoneNo && !/^\d{10,15}$/.test(phoneNo)) {
-      newErrors.phoneNo = 'Số điện thoại không hợp lệ';
-      isValid = false;
-    }
-
-    if (!password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
-      isValid = false;
-    } else if (password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
-      isValid = false;
-    }
-
-    if (!confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng nhập lại mật khẩu';
-      isValid = false;
-    } else if (confirmPassword !== password) {
-      newErrors.confirmPassword = 'Mật khẩu nhập lại không khớp';
+    if (newErrors.username || newErrors.email || newErrors.phoneNo || newErrors.password || newErrors.confirmPassword) {
       isValid = false;
     }
 
@@ -83,13 +160,23 @@ const SignUp = () => {
     return isValid;
   };
 
-  // Xử lý đăng ký
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({ ...errors, server: '' });
     setSuccessMessage('');
 
     if (!validateForm()) return;
+
+    // Clear all field-specific errors on successful validation
+    setErrors({
+      username: '',
+      email: '',
+      phoneNo: '',
+      password: '',
+      confirmPassword: '',
+      otp: '',
+      server: '',
+    });
 
     const formData = new FormData();
     formData.append('UserName', username);
@@ -110,7 +197,6 @@ const SignUp = () => {
     }
   };
 
-  // Xử lý xác minh OTP
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     setErrors({ ...errors, otp: '', server: '' });
@@ -138,7 +224,6 @@ const SignUp = () => {
     }
   };
 
-  // Bộ đếm ngược cho OTP
   useEffect(() => {
     let interval;
     if (showOtpForm && timer > 0) {
@@ -157,17 +242,14 @@ const SignUp = () => {
     return () => clearInterval(interval);
   }, [showOtpForm, timer]);
 
-  // Bật/tắt hiển thị mật khẩu
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
-  // Bật/tắt hiển thị xác nhận mật khẩu
   const toggleShowConfirmPassword = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  // Hiệu ứng cho logo (nhịp tim)
   const logoVariants = {
     animate: {
       scale: [1, 1.08, 1],
@@ -185,19 +267,16 @@ const SignUp = () => {
     },
   };
 
-  // Hiệu ứng cho form
   const formVariants = {
     initial: { opacity: 0, scale: 0.95, y: 20 },
     animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
   };
 
-  // Hiệu ứng cho phần branding
   const brandingVariants = {
     initial: { opacity: 0, x: -30 },
     animate: { opacity: 1, x: 0, transition: { duration: 0.8, ease: 'easeOut' } },
   };
 
-  // Hiệu ứng cho popup
   const popupVariants = {
     initial: { opacity: 0, y: -50 },
     animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
@@ -288,7 +367,7 @@ const SignUp = () => {
                     type="text"
                     placeholder="Nhập tên người dùng"
                     value={username}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={handleUsernameChange}
                     className={`signup-input ${errors.username ? 'signup-input-error' : ''}`}
                   />
                   {errors.username && <p className="signup-error">{errors.username}</p>}
@@ -300,7 +379,7 @@ const SignUp = () => {
                     type="email"
                     placeholder="Nhập email của bạn"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleEmailChange}
                     className={`signup-input ${errors.email ? 'signup-input-error' : ''}`}
                   />
                   {errors.email && <p className="signup-error">{errors.email}</p>}
@@ -312,7 +391,7 @@ const SignUp = () => {
                     type="text"
                     placeholder="Nhập số điện thoại"
                     value={phoneNo}
-                    onChange={(e) => setPhoneNo(e.target.value)}
+                    onChange={handlePhoneNoChange}
                     className={`signup-input ${errors.phoneNo ? 'signup-input-error' : ''}`}
                   />
                   {errors.phoneNo && <p className="signup-error">{errors.phoneNo}</p>}
@@ -325,7 +404,7 @@ const SignUp = () => {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Nhập mật khẩu của bạn"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={handlePasswordChange}
                       className={`signup-input ${errors.password ? 'signup-input-error' : ''}`}
                     />
                     <span onClick={toggleShowPassword} className="password-toggle-icon">
@@ -360,7 +439,7 @@ const SignUp = () => {
                       type={showConfirmPassword ? 'text' : 'password'}
                       placeholder="Nhập lại mật khẩu"
                       value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      onChange={handleConfirmPasswordChange}
                       className={`signup-input ${errors.confirmPassword ? 'signup-input-error' : ''}`}
                     />
                     <span onClick={toggleShowConfirmPassword} className="password-toggle-icon">
@@ -429,4 +508,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp; // Xuất component để dùng trong ứng dụng
+export default SignUp;

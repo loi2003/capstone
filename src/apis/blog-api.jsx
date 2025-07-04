@@ -85,7 +85,7 @@ export const addBlog = async (blogData, token) => {
     formData.append('Title', blogData.title);
     formData.append('Body', blogData.body);
     blogData.tags.forEach((tag, index) => formData.append(`Tags[${index}]`, tag));
-    blogData.images.forEach((image, index) => formData.append(`Images[${index}]`, image));
+    blogData.images.forEach((image, index) => formData.append(`Images`, image));
 
     const response = await apiClient.post('/api/blog/upload-blog', formData, {
       headers: {
@@ -102,6 +102,31 @@ export const addBlog = async (blogData, token) => {
   }
 };
 
+export const editBlog = async (blogData, token) => {
+  try {
+    const formData = new FormData();
+    formData.append('Id', blogData.id);
+    formData.append('CategoryId', blogData.categoryId);
+    formData.append('Title', blogData.title);
+    formData.append('Body', blogData.body);
+    blogData.tags.forEach((tag, index) => formData.append(`Tags[${index}]`, tag));
+    blogData.images.forEach((image, index) => formData.append(`Images`, image));
+
+    const response = await apiClient.put('/api/blog/edit-blog', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Edit blog response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error editing blog:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
 export const getAllBlogs = async (token) => {
   try {
     const response = await apiClient.get('/api/blog/view-all-blogs', {
@@ -114,6 +139,22 @@ export const getAllBlogs = async (token) => {
     return response;
   } catch (error) {
     console.error('Error fetching blogs:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteBlog = async (blogId, token) => {
+  try {
+    const response = await apiClient.delete(`/api/blog/delete-blog?blogId=${blogId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Delete blog response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error deleting blog:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };

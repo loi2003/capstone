@@ -175,9 +175,15 @@ const SignIn = () => {
       }, 2000);
     } catch (error) {
       console.error('Lỗi đăng nhập:', error);
+      const errorMessage =
+        error.response?.data?.message?.toLowerCase().includes('invalid') ||
+        error.response?.status === 401 ||
+        error.message.includes('invalid')
+          ? 'Invalid email or account does not exist.'
+          : error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.';
       setErrors({
         ...errors,
-        server: error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.',
+        server: errorMessage,
       });
     }
   };
