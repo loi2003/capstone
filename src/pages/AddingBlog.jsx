@@ -31,7 +31,7 @@ const AddingBlog = () => {
       }
 
       try {
-        const userResponse = await getCurrentUser();
+        const userResponse = await getCurrentUser(token);
         const userData = userResponse.data?.data || userResponse.data;
         if (userData?.id && [3, 4, 5].includes(Number(userData.roleId))) {
           setUser(userData);

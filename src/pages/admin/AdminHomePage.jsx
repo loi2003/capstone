@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { getCurrentUser, logout } from '../../apis/authentication-api';
-import '../../styles/AdminHomePage.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { getCurrentUser, logout } from "../../apis/authentication-api";
+import "../../styles/AdminHomePage.css";
 
 const AdminHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -11,26 +11,26 @@ const AdminHomePage = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
         return;
       }
       try {
-        const response = await getCurrentUser();
+        const response = await getCurrentUser(token);
         const userData = response.data?.data || response.data;
         if (userData && userData.roleId === 1) {
           setUser(userData);
         } else {
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
           setUser(null);
-          navigate('/signin', { replace: true });
+          navigate("/signin", { replace: true });
         }
       } catch (error) {
-        console.error('Error fetching user:', error.message);
-        localStorage.removeItem('token');
+        console.error("Error fetching user:", error.message);
+        localStorage.removeItem("token");
         setUser(null);
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
       }
     };
     fetchUser();
@@ -42,21 +42,21 @@ const AdminHomePage = () => {
 
   const handleLogout = async () => {
     if (!user?.userId) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
-      navigate('/signin', { replace: true });
+      navigate("/signin", { replace: true });
       return;
     }
-    if (window.confirm('Are you sure you want to sign out?')) {
+    if (window.confirm("Are you sure you want to sign out?")) {
       try {
         await logout(user.userId);
       } catch (error) {
-        console.error('Error logging out:', error.message);
+        console.error("Error logging out:", error.message);
       } finally {
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
         setUser(null);
         setIsSidebarOpen(true);
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
       }
     }
   };
@@ -66,14 +66,14 @@ const AdminHomePage = () => {
       scale: [1, 1.05, 1],
       transition: {
         duration: 1.8,
-        ease: 'easeInOut',
+        ease: "easeInOut",
         repeat: Infinity,
-        repeatType: 'loop',
+        repeatType: "loop",
       },
     },
     hover: {
       scale: 1.1,
-      filter: 'brightness(1.15)',
+      filter: "brightness(1.15)",
       transition: { duration: 0.3 },
     },
   };
@@ -83,7 +83,7 @@ const AdminHomePage = () => {
     animate: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: 'easeOut', staggerChildren: 0.1 },
+      transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 },
     },
   };
 
@@ -92,18 +92,18 @@ const AdminHomePage = () => {
     animate: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.5, ease: 'easeOut' },
+      transition: { duration: 0.5, ease: "easeOut" },
     },
   };
 
   const sidebarVariants = {
     open: {
-      width: '250px',
-      transition: { duration: 0.3, ease: 'easeOut' },
+      width: "250px",
+      transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: '60px',
-      transition: { duration: 0.3, ease: 'easeIn' },
+      width: "60px",
+      transition: { duration: 0.3, ease: "easeIn" },
     },
   };
 
@@ -112,34 +112,36 @@ const AdminHomePage = () => {
     animate: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' },
+      transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
   return (
     <div className="admin-homepage">
       <motion.aside
-        className={`admin-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}
+        className={`admin-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
-        animate={isSidebarOpen ? 'open' : 'closed'}
+        animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
       >
         <div className="sidebar-header">
-          <Link to="/admin" className="logo" onClick={() => setIsSidebarOpen(true)}>
+          <Link
+            to="/admin"
+            className="logo"
+            onClick={() => setIsSidebarOpen(true)}
+          >
             <motion.div
               variants={logoVariants}
               animate="animate"
               whileHover="hover"
               className="logo-svg-container"
-            >
-       
-            </motion.div>
+            ></motion.div>
             {isSidebarOpen && <span>Admin Panel</span>}
           </Link>
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
-            aria-label={isSidebarOpen ? 'Minimize sidebar' : 'Expand sidebar'}
+            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -149,7 +151,11 @@ const AdminHomePage = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d={isSidebarOpen ? 'M13 18L7 12L13 6M18 18L12 12L18 6' : 'M6 18L12 12L6 6M11 18L17 12L11 6'}
+                d={
+                  isSidebarOpen
+                    ? "M13 18L7 12L13 6M18 18L12 12L18 6"
+                    : "M6 18L12 12L6 6M11 18L17 12L11 6"
+                }
               />
             </svg>
           </motion.button>
@@ -162,7 +168,11 @@ const AdminHomePage = () => {
           variants={containerVariants}
         >
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/admin" onClick={() => setIsSidebarOpen(true)} title="Dashboard">
+            <Link
+              to="/admin"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Dashboard"
+            >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
@@ -176,7 +186,11 @@ const AdminHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/admin/categories" onClick={() => setIsSidebarOpen(true)} title="Blog Categories">
+            <Link
+              to="/admin/categories"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Blog Categories"
+            >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
@@ -190,7 +204,11 @@ const AdminHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/admin/tutorial" onClick={() => setIsSidebarOpen(true)} title="Tutorial">
+            <Link
+              to="/admin/tutorial"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Tutorial"
+            >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
@@ -204,7 +222,11 @@ const AdminHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/admin/policy" onClick={() => setIsSidebarOpen(true)} title="Admin Policy">
+            <Link
+              to="/admin/policy"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Admin Policy"
+            >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
@@ -218,7 +240,11 @@ const AdminHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/admin/reports" onClick={() => setIsSidebarOpen(true)} title="Reports">
+            <Link
+              to="/admin/reports"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Reports"
+            >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
@@ -233,18 +259,35 @@ const AdminHomePage = () => {
           </motion.div>
           {user ? (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item admin-profile-section">
-                <div className="admin-profile-info" title={isSidebarOpen ? user.email : ''}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item admin-profile-section"
+              >
+                <div
+                  className="admin-profile-info"
+                  title={isSidebarOpen ? user.email : ""}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
                     <path
                       d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--admin-background)"
                     />
                   </svg>
-                  {isSidebarOpen && <span className="admin-profile-email">{user.email}</span>}
+                  {isSidebarOpen && (
+                    <span className="admin-profile-email">{user.email}</span>
+                  )}
                 </div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -265,7 +308,11 @@ const AdminHomePage = () => {
             </>
           ) : (
             <motion.div variants={navItemVariants} className="sidebar-nav-item">
-              <Link to="/signin" onClick={() => setIsSidebarOpen(true)} title="Sign In">
+              <Link
+                to="/signin"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sign In"
+              >
                 <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                   <path
                     stroke="var(--admin-background)"
@@ -291,13 +338,17 @@ const AdminHomePage = () => {
           >
             <h1 className="admin-banner-title">Welcome to Admin Dashboard</h1>
             <p className="admin-banner-subtitle">
-              Streamline your operations with powerful tools to manage users, analyze reports, and configure settings.
+              Streamline your operations with powerful tools to manage users,
+              analyze reports, and configure settings.
             </p>
             <div className="admin-banner-buttons">
               <Link to="/admin/users" className="admin-banner-button primary">
                 Manage Users
               </Link>
-              <Link to="/admin/reports" className="admin-banner-button secondary">
+              <Link
+                to="/admin/reports"
+                className="admin-banner-button secondary"
+              >
                 View Reports
               </Link>
             </div>
@@ -308,7 +359,13 @@ const AdminHomePage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <svg width="180" height="180" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              width="180"
+              height="180"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <path
                 d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
                 fill="var(--admin-accent)"
@@ -340,7 +397,10 @@ const AdminHomePage = () => {
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>Reports</h3>
-              <p>Generate and analyze detailed reports to track system performance.</p>
+              <p>
+                Generate and analyze detailed reports to track system
+                performance.
+              </p>
               <Link to="/admin/reports" className="admin-feature-link">
                 Explore
               </Link>

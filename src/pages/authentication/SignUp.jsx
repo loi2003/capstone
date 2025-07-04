@@ -1,48 +1,45 @@
-
-
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { register, verifyOtp } from '../../apis/authentication-api';
-import apiClient from '../../apis/url-api';
-import '../../styles/SignUp.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { register, verifyOtp } from "../../apis/authentication-api";
+import apiClient from "../../apis/url-api";
+import "../../styles/SignUp.css";
 
 const SignUp = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [phoneNo, setPhoneNo] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [phoneNo, setPhoneNo] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
   const [showOtpForm, setShowOtpForm] = useState(false);
   const [timer, setTimer] = useState(120);
   const [errors, setErrors] = useState({
-    username: '',
-    email: '',
-    phoneNo: '',
-    password: '',
-    confirmPassword: '',
-    otp: '',
-    server: '',
+    username: "",
+    email: "",
+    phoneNo: "",
+    password: "",
+    confirmPassword: "",
+    otp: "",
+    server: "",
   });
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
-
 
   // Clear token and Authorization header
   useEffect(() => {
-    localStorage.removeItem('token');
-    delete apiClient.defaults.headers.common['Authorization'];
+    localStorage.removeItem("token");
+    delete apiClient.defaults.headers.common["Authorization"];
   }, []);
 
   // Clear notification after 5 seconds
   useEffect(() => {
     if (errors.server || successMessage) {
       const timeout = setTimeout(() => {
-        setErrors({ ...errors, server: '' });
-        setSuccessMessage('');
+        setErrors({ ...errors, server: "" });
+        setSuccessMessage("");
       }, 5000);
       return () => clearTimeout(timeout);
     }
@@ -51,49 +48,49 @@ const SignUp = () => {
   // Real-time validation for username
   const validateUsername = (value) => {
     if (!value) {
-      return 'Vui lòng nhập tên người dùng';
+      return "Vui lòng nhập tên người dùng";
     } else if (value.length < 3) {
-      return 'Tên người dùng phải có ít nhất 3 ký tự';
+      return "Tên người dùng phải có ít nhất 3 ký tự";
     }
-    return '';
+    return "";
   };
 
   // Real-time validation for email
   const validateEmail = (value) => {
     if (!value) {
-      return 'Vui lòng nhập email';
+      return "Vui lòng nhập email";
     } else if (!/\S+@\S+\.\S+/.test(value)) {
-      return 'Email không hợp lệ';
+      return "Email không hợp lệ";
     }
-    return '';
+    return "";
   };
 
   // Real-time validation for phoneNo
   const validatePhoneNo = (value) => {
     if (value && !/^\d{10,15}$/.test(value)) {
-      return 'Số điện thoại không hợp lệ';
+      return "Số điện thoại không hợp lệ";
     }
-    return '';
+    return "";
   };
 
   // Real-time validation for password
   const validatePassword = (value) => {
     if (!value) {
-      return 'Vui lòng nhập mật khẩu';
+      return "Vui lòng nhập mật khẩu";
     } else if (value.length < 6) {
-      return 'Mật khẩu phải có ít nhất 6 ký tự';
+      return "Mật khẩu phải có ít nhất 6 ký tự";
     }
-    return '';
+    return "";
   };
 
   // Real-time validation for confirmPassword
   const validateConfirmPassword = (value, password) => {
     if (!value) {
-      return 'Vui lòng nhập lại mật khẩu';
+      return "Vui lòng nhập lại mật khẩu";
     } else if (value !== password) {
-      return 'Mật khẩu nhập lại không khớp';
+      return "Mật khẩu nhập lại không khớp";
     }
-    return '';
+    return "";
   };
 
   // Handle input changes with real-time validation
@@ -128,7 +125,10 @@ const SignUp = () => {
   const handleConfirmPasswordChange = (e) => {
     const value = e.target.value;
     setConfirmPassword(value);
-    setErrors({ ...errors, confirmPassword: validateConfirmPassword(value, password) });
+    setErrors({
+      ...errors,
+      confirmPassword: validateConfirmPassword(value, password),
+    });
   };
 
   const validateForm = () => {
@@ -139,11 +139,17 @@ const SignUp = () => {
       phoneNo: validatePhoneNo(phoneNo),
       password: validatePassword(password),
       confirmPassword: validateConfirmPassword(confirmPassword, password),
-      otp: '',
-      server: '',
+      otp: "",
+      server: "",
     };
 
-    if (newErrors.username || newErrors.email || newErrors.phoneNo || newErrors.password || newErrors.confirmPassword) {
+    if (
+      newErrors.username ||
+      newErrors.email ||
+      newErrors.phoneNo ||
+      newErrors.password ||
+      newErrors.confirmPassword
+    ) {
       isValid = false;
     }
 
@@ -153,64 +159,68 @@ const SignUp = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({ ...errors, server: '' });
-    setSuccessMessage('');
+    setErrors({ ...errors, server: "" });
+    setSuccessMessage("");
 
     if (!validateForm()) return;
 
     // Clear all field-specific errors on successful validation
     setErrors({
-      username: '',
-      email: '',
-      phoneNo: '',
-      password: '',
-      confirmPassword: '',
-      otp: '',
-      server: '',
+      username: "",
+      email: "",
+      phoneNo: "",
+      password: "",
+      confirmPassword: "",
+      otp: "",
+      server: "",
     });
 
     const formData = new FormData();
-    formData.append('UserName', username);
-    formData.append('Email', email);
-    formData.append('PhoneNo', phoneNo || '');
-    formData.append('PasswordHash', password);
+    formData.append("UserName", username);
+    formData.append("Email", email);
+    formData.append("PhoneNo", phoneNo || "");
+    formData.append("PasswordHash", password);
 
     try {
       const response = await register(formData);
-      setSuccessMessage('Đăng ký thành công! Vui lòng nhập OTP được gửi đến email của bạn.');
+      setSuccessMessage(
+        "Đăng ký thành công! Vui lòng nhập OTP được gửi đến email của bạn."
+      );
       setShowOtpForm(true);
       setTimer(120);
     } catch (error) {
       setErrors({
         ...errors,
-        server: error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký',
+        server: error.response?.data?.message || "Có lỗi xảy ra khi đăng ký",
       });
     }
   };
 
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
-    setErrors({ ...errors, otp: '', server: '' });
-    setSuccessMessage('');
+    setErrors({ ...errors, otp: "", server: "" });
+    setSuccessMessage("");
 
     if (!otp || otp.length !== 6) {
-      setErrors({ ...errors, otp: 'Vui lòng nhập OTP 6 chữ số' });
+      setErrors({ ...errors, otp: "Vui lòng nhập OTP 6 chữ số" });
       return;
     }
 
     try {
       const response = await verifyOtp({ email, otp });
-      setSuccessMessage('Xác minh OTP thành công! Tài khoản của bạn đã được kích hoạt.');
+      setSuccessMessage(
+        "Xác minh OTP thành công! Tài khoản của bạn đã được kích hoạt."
+      );
       setShowOtpForm(false);
-      setOtp('');
+      setOtp("");
       setTimer(0);
       setTimeout(() => {
-        navigate('/signin');
+        navigate("/signin");
       }, 2000);
     } catch (error) {
       setErrors({
         ...errors,
-        otp: error.response?.data?.message || 'OTP không hợp lệ',
+        otp: error.response?.data?.message || "OTP không hợp lệ",
       });
     }
   };
@@ -223,7 +233,10 @@ const SignUp = () => {
           if (prev <= 1) {
             clearInterval(interval);
             setShowOtpForm(false);
-            setErrors({ ...errors, server: 'OTP đã hết hạn. Vui lòng đăng ký lại.' });
+            setErrors({
+              ...errors,
+              server: "OTP đã hết hạn. Vui lòng đăng ký lại.",
+            });
             return 0;
           }
           return prev - 1;
@@ -246,31 +259,44 @@ const SignUp = () => {
       scale: [1, 1.08, 1],
       transition: {
         duration: 1.8,
-        ease: 'easeInOut',
+        ease: "easeInOut",
         repeat: Infinity,
-        repeatType: 'loop',
+        repeatType: "loop",
       },
     },
     hover: {
       scale: 1.15,
-      filter: 'brightness(1.15)',
+      filter: "brightness(1.15)",
       transition: { duration: 0.3 },
     },
   };
 
   const formVariants = {
     initial: { opacity: 0, scale: 0.95, y: 20 },
-    animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
   };
 
   const brandingVariants = {
     initial: { opacity: 0, x: -30 },
-    animate: { opacity: 1, x: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
   };
 
   const popupVariants = {
     initial: { opacity: 0, y: -50 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
     exit: { opacity: 0, y: -50, transition: { duration: 0.3 } },
   };
 
@@ -301,7 +327,9 @@ const SignUp = () => {
                   fill="#ff9cbb"
                   stroke="#ffffff"
                   strokeWidth="12"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' }}
+                  style={{
+                    filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
+                  }}
                 />
                 <circle cx="161.931" cy="461.576" r="27.152" fill="#ff9cbb" />
                 <circle cx="350.052" cy="461.576" r="27.152" fill="#ff9cbb" />
@@ -315,7 +343,8 @@ const SignUp = () => {
           <div className="signup-branding-text">
             <h1 className="signup-title">Tạo Tài Khoản Mới</h1>
             <p className="signup-description">
-              Đăng ký để bắt đầu hành trình thai kỳ, nhận tư vấn sức khỏe chuyên nghiệp và kết nối với cộng đồng các bà mẹ.
+              Đăng ký để bắt đầu hành trình thai kỳ, nhận tư vấn sức khỏe chuyên
+              nghiệp và kết nối với cộng đồng các bà mẹ.
             </p>
             <p className="signup-quote">"Hành trình làm mẹ bắt đầu từ đây!"</p>
           </div>
@@ -327,24 +356,33 @@ const SignUp = () => {
           animate="animate"
           className="signup-form-container"
         >
-          <h2 className="signup-form-title">{showOtpForm ? 'Xác Minh OTP' : 'Đăng Ký'}</h2>
+          <h2 className="signup-form-title">
+            {showOtpForm ? "Xác Minh OTP" : "Đăng Ký"}
+          </h2>
           <div className="signup-form">
             {showOtpForm ? (
               <>
                 <div className="signup-input-group">
-                  <label htmlFor="otp" className="signup-label">Mã OTP</label>
+                  <label htmlFor="otp" className="signup-label">
+                    Mã OTP
+                  </label>
                   <input
                     id="otp"
                     type="text"
                     placeholder="Nhập mã OTP 6 chữ số"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className={`signup-input ${errors.otp ? 'signup-input-error' : ''}`}
+                    className={`signup-input ${
+                      errors.otp ? "signup-input-error" : ""
+                    }`}
                     maxLength="6"
                   />
                   {errors.otp && <p className="signup-error">{errors.otp}</p>}
                 </div>
-                <p className="signup-timer">Thời gian còn lại: {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}</p>
+                <p className="signup-timer">
+                  Thời gian còn lại: {Math.floor(timer / 60)}:
+                  {(timer % 60).toString().padStart(2, "0")}
+                </p>
                 <button onClick={handleOtpSubmit} className="signup-button">
                   Xác Minh OTP
                 </button>
@@ -352,53 +390,78 @@ const SignUp = () => {
             ) : (
               <>
                 <div className="signup-input-group">
-                  <label htmlFor="username" className="signup-label">Tên người dùng</label>
+                  <label htmlFor="username" className="signup-label">
+                    Tên người dùng
+                  </label>
                   <input
                     id="username"
                     type="text"
                     placeholder="Nhập tên người dùng"
                     value={username}
                     onChange={handleUsernameChange}
-                    className={`signup-input ${errors.username ? 'signup-input-error' : ''}`}
+                    className={`signup-input ${
+                      errors.username ? "signup-input-error" : ""
+                    }`}
                   />
-                  {errors.username && <p className="signup-error">{errors.username}</p>}
+                  {errors.username && (
+                    <p className="signup-error">{errors.username}</p>
+                  )}
                 </div>
                 <div className="signup-input-group">
-                  <label htmlFor="email" className="signup-label">Email</label>
+                  <label htmlFor="email" className="signup-label">
+                    Email
+                  </label>
                   <input
                     id="email"
                     type="email"
                     placeholder="Nhập email của bạn"
                     value={email}
                     onChange={handleEmailChange}
-                    className={`signup-input ${errors.email ? 'signup-input-error' : ''}`}
+                    className={`signup-input ${
+                      errors.email ? "signup-input-error" : ""
+                    }`}
                   />
-                  {errors.email && <p className="signup-error">{errors.email}</p>}
+                  {errors.email && (
+                    <p className="signup-error">{errors.email}</p>
+                  )}
                 </div>
                 <div className="signup-input-group">
-                  <label htmlFor="phoneNo" className="signup-label">Số điện thoại (Tùy chọn)</label>
+                  <label htmlFor="phoneNo" className="signup-label">
+                    Số điện thoại (Tùy chọn)
+                  </label>
                   <input
                     id="phoneNo"
                     type="text"
                     placeholder="Nhập số điện thoại"
                     value={phoneNo}
                     onChange={handlePhoneNoChange}
-                    className={`signup-input ${errors.phoneNo ? 'signup-input-error' : ''}`}
+                    className={`signup-input ${
+                      errors.phoneNo ? "signup-input-error" : ""
+                    }`}
                   />
-                  {errors.phoneNo && <p className="signup-error">{errors.phoneNo}</p>}
+                  {errors.phoneNo && (
+                    <p className="signup-error">{errors.phoneNo}</p>
+                  )}
                 </div>
                 <div className="signup-input-group">
-                  <label htmlFor="password" className="signup-label">Mật khẩu</label>
+                  <label htmlFor="password" className="signup-label">
+                    Mật khẩu
+                  </label>
                   <div className="password-wrapper">
                     <input
                       id="password"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       placeholder="Nhập mật khẩu của bạn"
                       value={password}
                       onChange={handlePasswordChange}
-                      className={`signup-input ${errors.password ? 'signup-input-error' : ''}`}
+                      className={`signup-input ${
+                        errors.password ? "signup-input-error" : ""
+                      }`}
                     />
-                    <span onClick={toggleShowPassword} className="password-toggle-icon">
+                    <span
+                      onClick={toggleShowPassword}
+                      className="password-toggle-icon"
+                    >
                       <svg
                         width="24"
                         height="24"
@@ -420,20 +483,29 @@ const SignUp = () => {
                       </svg>
                     </span>
                   </div>
-                  {errors.password && <p className="signup-error">{errors.password}</p>}
+                  {errors.password && (
+                    <p className="signup-error">{errors.password}</p>
+                  )}
                 </div>
                 <div className="signup-input-group">
-                  <label htmlFor="confirmPassword" className="signup-label">Nhập lại mật khẩu</label>
+                  <label htmlFor="confirmPassword" className="signup-label">
+                    Nhập lại mật khẩu
+                  </label>
                   <div className="password-wrapper">
                     <input
                       id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
+                      type={showConfirmPassword ? "text" : "password"}
                       placeholder="Nhập lại mật khẩu"
                       value={confirmPassword}
                       onChange={handleConfirmPasswordChange}
-                      className={`signup-input ${errors.confirmPassword ? 'signup-input-error' : ''}`}
+                      className={`signup-input ${
+                        errors.confirmPassword ? "signup-input-error" : ""
+                      }`}
                     />
-                    <span onClick={toggleShowConfirmPassword} className="password-toggle-icon">
+                    <span
+                      onClick={toggleShowConfirmPassword}
+                      className="password-toggle-icon"
+                    >
                       <svg
                         width="24"
                         height="24"
@@ -455,7 +527,9 @@ const SignUp = () => {
                       </svg>
                     </span>
                   </div>
-                  {errors.confirmPassword && <p className="signup-error">{errors.confirmPassword}</p>}
+                  {errors.confirmPassword && (
+                    <p className="signup-error">{errors.confirmPassword}</p>
+                  )}
                 </div>
                 <button onClick={handleSubmit} className="signup-button">
                   Đăng Ký
@@ -468,25 +542,47 @@ const SignUp = () => {
                 initial="initial"
                 animate="animate"
                 exit="exit"
-                className={`notification-popup ${errors.server ? 'notification-error' : 'notification-success'}`}
+                className={`notification-popup ${
+                  errors.server ? "notification-error" : "notification-success"
+                }`}
               >
                 <span className="notification-icon">
                   {errors.server ? (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#ef4444"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                        fill="#ef4444"
+                      />
                     </svg>
                   ) : (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#34c759"/>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                        fill="#34c759"
+                      />
                     </svg>
                   )}
                 </span>
-                <p className="notification-message">{errors.server || successMessage}</p>
+                <p className="notification-message">
+                  {errors.server || successMessage}
+                </p>
               </motion.div>
             )}
             <div className="signup-links">
               <p>
-                Đã có tài khoản?{' '}
+                Đã có tài khoản?{" "}
                 <Link to="/signin" className="signup-link">
                   Đăng nhập
                 </Link>
