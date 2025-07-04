@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { getCurrentUser, logout } from '../../apis/authentication-api';
-import '../../styles/ClinicHomePage.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { getCurrentUser, logout } from "../../apis/authentication-api";
+import "../../styles/ClinicHomePage.css";
 
 const ClinicHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -11,26 +11,26 @@ const ClinicHomePage = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
         return;
       }
       try {
-        const response = await getCurrentUser();
+        const response = await getCurrentUser(token);
         const userData = response.data?.data || response.data;
         if (userData && Number(userData.roleId) === 5) {
           setUser(userData);
         } else {
-          localStorage.removeItem('token');
+          localStorage.removeItem("token");
           setUser(null);
-          navigate('/signin', { replace: true });
+          navigate("/signin", { replace: true });
         }
       } catch (error) {
-        console.error('Error fetching user:', error.message);
-        localStorage.removeItem('token');
+        console.error("Error fetching user:", error.message);
+        localStorage.removeItem("token");
         setUser(null);
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
       }
     };
     fetchUser();
@@ -42,21 +42,21 @@ const ClinicHomePage = () => {
 
   const handleLogout = async () => {
     if (!user?.userId) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
-      navigate('/signin', { replace: true });
+      navigate("/signin", { replace: true });
       return;
     }
-    if (window.confirm('Are you sure you want to sign out?')) {
+    if (window.confirm("Are you sure you want to sign out?")) {
       try {
         await logout(user.userId);
       } catch (error) {
-        console.error('Error logging out:', error.message);
+        console.error("Error logging out:", error.message);
       } finally {
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
         setUser(null);
         setIsSidebarOpen(true);
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
       }
     }
   };
@@ -66,14 +66,14 @@ const ClinicHomePage = () => {
       scale: [1, 1.05, 1],
       transition: {
         duration: 1.8,
-        ease: 'easeInOut',
+        ease: "easeInOut",
         repeat: Infinity,
-        repeatType: 'loop',
+        repeatType: "loop",
       },
     },
     hover: {
       scale: 1.1,
-      filter: 'brightness(1.15)',
+      filter: "brightness(1.15)",
       transition: { duration: 0.3 },
     },
   };
@@ -83,7 +83,7 @@ const ClinicHomePage = () => {
     animate: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: 'easeOut', staggerChildren: 0.1 },
+      transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 },
     },
   };
 
@@ -92,18 +92,18 @@ const ClinicHomePage = () => {
     animate: {
       opacity: 1,
       scale: 1,
-      transition: { duration: 0.5, ease: 'easeOut' },
+      transition: { duration: 0.5, ease: "easeOut" },
     },
   };
 
   const sidebarVariants = {
     open: {
-      width: '250px',
-      transition: { duration: 0.3, ease: 'easeOut' },
+      width: "250px",
+      transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: '60px',
-      transition: { duration: 0.3, ease: 'easeIn' },
+      width: "60px",
+      transition: { duration: 0.3, ease: "easeIn" },
     },
   };
 
@@ -112,20 +112,24 @@ const ClinicHomePage = () => {
     animate: {
       opacity: 1,
       x: 0,
-      transition: { duration: 0.3, ease: 'easeOut' },
+      transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
   return (
     <div className="clinic-homepage">
       <motion.aside
-        className={`clinic-sidebar ${isSidebarOpen ? 'open' : 'closed'}`}
+        className={`clinic-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
-        animate={isSidebarOpen ? 'open' : 'closed'}
+        animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
       >
         <div className="sidebar-header">
-          <Link to="/clinic" className="logo" onClick={() => setIsSidebarOpen(true)}>
+          <Link
+            to="/clinic"
+            className="logo"
+            onClick={() => setIsSidebarOpen(true)}
+          >
             <motion.div
               variants={logoVariants}
               animate="animate"
@@ -156,7 +160,7 @@ const ClinicHomePage = () => {
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
-            aria-label={isSidebarOpen ? 'Minimize sidebar' : 'Expand sidebar'}
+            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -172,7 +176,11 @@ const ClinicHomePage = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d={isSidebarOpen ? 'M13 18L7 12L13 6M18 18L12 12L18 6' : 'M6 18L12 12L6 6M11 18L17 12L11 6'}
+                d={
+                  isSidebarOpen
+                    ? "M13 18L7 12L13 6M18 18L12 12L18 6"
+                    : "M6 18L12 12L6 6M11 18L17 12L11 6"
+                }
               />
             </svg>
           </motion.button>
@@ -185,7 +193,11 @@ const ClinicHomePage = () => {
           variants={containerVariants}
         >
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/clinic/dashboard" onClick={() => setIsSidebarOpen(true)} title="Dashboard">
+            <Link
+              to="/clinic/dashboard"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Dashboard"
+            >
               <svg
                 width="24"
                 height="24"
@@ -207,7 +219,11 @@ const ClinicHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/clinic/schedule" onClick={() => setIsSidebarOpen(true)} title="Schedule">
+            <Link
+              to="/clinic/schedule"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Schedule"
+            >
               <svg
                 width="24"
                 height="24"
@@ -229,7 +245,11 @@ const ClinicHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/clinic/patients" onClick={() => setIsSidebarOpen(true)} title="Patients">
+            <Link
+              to="/clinic/patients"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Patients"
+            >
               <svg
                 width="24"
                 height="24"
@@ -251,7 +271,11 @@ const ClinicHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/clinic/support" onClick={() => setIsSidebarOpen(true)} title="Support">
+            <Link
+              to="/clinic/support"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Support"
+            >
               <svg
                 width="24"
                 height="24"
@@ -295,7 +319,11 @@ const ClinicHomePage = () => {
             </button>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
+            <Link
+              to="/blog-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Blog Management"
+            >
               <svg
                 width="24"
                 height="24"
@@ -318,8 +346,14 @@ const ClinicHomePage = () => {
           </motion.div>
           {user ? (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item clinic-profile-section">
-                <div className="clinic-profile-info" title={isSidebarOpen ? user.email : ''}>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item clinic-profile-section"
+              >
+                <div
+                  className="clinic-profile-info"
+                  title={isSidebarOpen ? user.email : ""}
+                >
                   <svg
                     width="24"
                     height="24"
@@ -333,10 +367,15 @@ const ClinicHomePage = () => {
                       fill="var(--clinic-background)"
                     />
                   </svg>
-                  {isSidebarOpen && <span className="clinic-profile-email">{user.email}</span>}
+                  {isSidebarOpen && (
+                    <span className="clinic-profile-email">{user.email}</span>
+                  )}
                 </div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -363,7 +402,11 @@ const ClinicHomePage = () => {
             </>
           ) : (
             <motion.div variants={navItemVariants} className="sidebar-nav-item">
-              <Link to="/signin" onClick={() => setIsSidebarOpen(true)} title="Sign In">
+              <Link
+                to="/signin"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sign In"
+              >
                 <svg
                   width="24"
                   height="24"
@@ -395,13 +438,20 @@ const ClinicHomePage = () => {
           >
             <h1 className="clinic-banner-title">Welcome to Clinic Dashboard</h1>
             <p className="clinic-banner-subtitle">
-              Streamline your clinic operations with tools to manage appointments, patients, and support.
+              Streamline your clinic operations with tools to manage
+              appointments, patients, and support.
             </p>
             <div className="clinic-banner-buttons">
-              <Link to="/clinic/schedule" className="clinic-banner-button primary">
+              <Link
+                to="/clinic/schedule"
+                className="clinic-banner-button primary"
+              >
                 View Schedule
               </Link>
-              <Link to="/clinic/support" className="clinic-banner-button secondary">
+              <Link
+                to="/clinic/support"
+                className="clinic-banner-button secondary"
+              >
                 Contact Support
               </Link>
             </div>
@@ -468,4 +518,4 @@ const ClinicHomePage = () => {
   );
 };
 
-export default ClinicHomePage
+export default ClinicHomePage;

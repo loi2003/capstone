@@ -1,41 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { login, getCurrentUser } from '../../apis/authentication-api';
-import apiClient from '../../apis/url-api';
-import '../../styles/SignIn.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { login, getCurrentUser } from "../../apis/authentication-api";
+import apiClient from "../../apis/url-api";
+import "../../styles/SignIn.css";
 
 // Hàm giải mã token JWT
 const decodeJWT = (token) => {
   try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
       atob(base64)
-        .split('')
-        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
     );
     return JSON.parse(jsonPayload);
   } catch (error) {
-    console.error('Lỗi khi giải mã token:', error);
+    console.error("Lỗi khi giải mã token:", error);
     return null;
   }
 };
 
 const SignIn = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [errors, setErrors] = useState({ email: '', password: '', server: '' });
-  const [successMessage, setSuccessMessage] = useState('');
+  const [errors, setErrors] = useState({ email: "", password: "", server: "" });
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
     if (errors.server || successMessage) {
       const timer = setTimeout(() => {
-        setErrors({ ...errors, server: '' });
-        setSuccessMessage('');
+        setErrors({ ...errors, server: "" });
+        setSuccessMessage("");
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -43,21 +43,21 @@ const SignIn = () => {
 
   const validateForm = () => {
     let isValid = true;
-    const newErrors = { email: '', password: '', server: '' };
+    const newErrors = { email: "", password: "", server: "" };
 
     if (!email) {
-      newErrors.email = 'Vui lòng nhập email';
+      newErrors.email = "Vui lòng nhập email";
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = "Email không hợp lệ";
       isValid = false;
     }
 
     if (!password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
+      newErrors.password = "Vui lòng nhập mật khẩu";
       isValid = false;
     } else if (password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
       isValid = false;
     }
 
@@ -67,18 +67,23 @@ const SignIn = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({ ...errors, server: '' });
-    setSuccessMessage('');
+    setErrors({ ...errors, server: "" });
+    setSuccessMessage("");
 
     if (!validateForm()) return;
 
     try {
       const loginResponse = await login({ email, passwordHash: password });
-      console.log('Phản hồi đầy đủ từ API đăng nhập:', loginResponse);
-      console.log('Dữ liệu phản hồi:', loginResponse.data);
-      console.log('Các key trong dữ liệu:', Object.keys(loginResponse.data));
-      console.log('Nội dung data.data:', loginResponse.data.data);
-      console.log('Các key trong data.data:', loginResponse.data.data ? Object.keys(loginResponse.data.data) : 'Không có trường data');
+      console.log("Phản hồi đầy đủ từ API đăng nhập:", loginResponse);
+      console.log("Dữ liệu phản hồi:", loginResponse.data);
+      console.log("Các key trong dữ liệu:", Object.keys(loginResponse.data));
+      console.log("Nội dung data.data:", loginResponse.data.data);
+      console.log(
+        "Các key trong data.data:",
+        loginResponse.data.data
+          ? Object.keys(loginResponse.data.data)
+          : "Không có trường data"
+      );
 
       const token =
         loginResponse.data.token ||
@@ -95,18 +100,34 @@ const SignIn = () => {
         loginResponse.data.user?.jwt;
 
       if (token) {
-        localStorage.setItem('token', token);
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.log('Đã lưu và thiết lập token:', token);
+        localStorage.setItem("token", token);
+        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        console.log("Đã lưu và thiết lập token:", token);
       } else {
-        throw new Error(`Không tìm thấy token trong phản hồi. Các key: ${JSON.stringify(Object.keys(loginResponse.data))}; Key trong data.data: ${loginResponse.data.data ? JSON.stringify(Object.keys(loginResponse.data.data)) : 'Không có'}`);
+        throw new Error(
+          `Không tìm thấy token trong phản hồi. Các key: ${JSON.stringify(
+            Object.keys(loginResponse.data)
+          )}; Key trong data.data: ${
+            loginResponse.data.data
+              ? JSON.stringify(Object.keys(loginResponse.data.data))
+              : "Không có"
+          }`
+        );
       }
 
       let roleId = 2; // Mặc định là User
       const decodedToken = decodeJWT(token);
-      if (decodedToken && decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role']) {
-        const role = decodedToken['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
-        console.log('Vai trò từ token:', role);
+      if (
+        decodedToken &&
+        decodedToken[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ]
+      ) {
+        const role =
+          decodedToken[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ];
+        console.log("Vai trò từ token:", role);
         const roleMap = {
           Admin: 1,
           User: 2,
@@ -122,65 +143,69 @@ const SignIn = () => {
 
       try {
         const userResponse = await getCurrentUser();
-        console.log('Phản hồi từ API lấy thông tin người dùng:', userResponse);
-        console.log('Dữ liệu người dùng:', userResponse.data);
-        console.log('roleId thô:', userResponse.data.data?.roleId);
+        console.log("Phản hồi từ API lấy thông tin người dùng:", userResponse);
+        console.log("Dữ liệu người dùng:", userResponse.data);
+        console.log("roleId thô:", userResponse.data.data?.roleId);
 
         const roleIdRaw = userResponse.data.data?.roleId;
         if (roleIdRaw && !isNaN(Number(roleIdRaw))) {
           roleId = Number(roleIdRaw);
-          console.log('roleId đã xử lý:', roleId);
+          console.log("roleId đã xử lý:", roleId);
         }
       } catch (userError) {
-        console.warn('Không lấy được thông tin người dùng, dùng vai trò từ token:', userError);
+        console.warn(
+          "Không lấy được thông tin người dùng, dùng vai trò từ token:",
+          userError
+        );
       }
 
       if (![1, 2, 3, 4, 5, 6].includes(roleId)) {
         throw new Error(`roleId không hợp lệ: ${roleId}`);
       }
 
-      localStorage.removeItem('userRole');
+      localStorage.removeItem("userRole");
 
-      setSuccessMessage('Đăng nhập thành công!');
+      setSuccessMessage("Đăng nhập thành công!");
       setTimeout(() => {
         switch (roleId) {
           case 1:
-            console.log('Chuyển hướng đến /admin cho roleId 1');
-            navigate('/admin', { replace: true });
+            console.log("Chuyển hướng đến /admin cho roleId 1");
+            navigate("/admin", { replace: true });
             break;
           case 2:
-            console.log('Chuyển hướng đến / cho roleId 2');
-            navigate('/', { replace: true });
+            console.log("Chuyển hướng đến / cho roleId 2");
+            navigate("/", { replace: true });
             break;
           case 3:
-            console.log('Chuyển hướng đến /health-expert cho roleId 3');
-            navigate('/health-expert', { replace: true });
+            console.log("Chuyển hướng đến /health-expert cho roleId 3");
+            navigate("/health-expert", { replace: true });
             break;
           case 4:
-            console.log('Chuyển hướng đến /nutrient-specialist cho roleId 4');
-            navigate('/nutrient-specialist', { replace: true });
+            console.log("Chuyển hướng đến /nutrient-specialist cho roleId 4");
+            navigate("/nutrient-specialist", { replace: true });
             break;
           case 5:
-            console.log('Chuyển hướng đến /clinic cho roleId 5');
-            navigate('/clinic', { replace: true });
+            console.log("Chuyển hướng đến /clinic cho roleId 5");
+            navigate("/clinic", { replace: true });
             break;
           case 6:
-            console.log('Chuyển hướng đến /consultant cho roleId 6');
-            navigate('/consultant', { replace: true });
+            console.log("Chuyển hướng đến /consultant cho roleId 6");
+            navigate("/consultant", { replace: true });
             break;
           default:
-            console.log('Chuyển hướng mặc định đến /');
-            navigate('/', { replace: true });
+            console.log("Chuyển hướng mặc định đến /");
+            navigate("/", { replace: true });
         }
       }, 2000);
     } catch (error) {
-      console.error('Lỗi đăng nhập:', error);
+      console.error("Lỗi đăng nhập:", error);
       const errorMessage =
-        error.response?.data?.message?.toLowerCase().includes('invalid') ||
+        error.response?.data?.message?.toLowerCase().includes("invalid") ||
         error.response?.status === 401 ||
-        error.message.includes('invalid')
-          ? 'Invalid email or account does not exist.'
-          : error.message || 'Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.';
+        error.message.includes("invalid")
+          ? "Invalid email or account does not exist."
+          : error.message ||
+            "Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.";
       setErrors({
         ...errors,
         server: errorMessage,
@@ -189,7 +214,7 @@ const SignIn = () => {
   };
 
   const handleGmailLogin = () => {
-    console.log('Bắt đầu đăng nhập với Gmail');
+    console.log("Bắt đầu đăng nhập với Gmail");
   };
 
   const toggleShowPassword = () => {
@@ -201,26 +226,35 @@ const SignIn = () => {
       scale: [1, 1.08, 1],
       transition: {
         duration: 1.8,
-        ease: 'easeInOut',
+        ease: "easeInOut",
         repeat: Infinity,
-        repeatType: 'loop',
+        repeatType: "loop",
       },
     },
     hover: {
       scale: 1.15,
-      filter: 'brightness(1.15)',
+      filter: "brightness(1.15)",
       transition: { duration: 0.3 },
     },
   };
 
   const formVariants = {
     initial: { opacity: 0, scale: 0.95, y: 20 },
-    animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
   };
 
   const popupVariants = {
     initial: { opacity: 0, y: -50 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
     exit: { opacity: 0, y: -50, transition: { duration: 0.3 } },
   };
 
@@ -230,7 +264,7 @@ const SignIn = () => {
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="signin-branding"
         >
           <Link to="/" className="signin-logo">
@@ -250,7 +284,9 @@ const SignIn = () => {
                   fill="var(--text-primary)"
                   stroke="var(--white)"
                   strokeWidth="12"
-                  style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' }}
+                  style={{
+                    filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
+                  }}
                 />
               </g>
             </motion.svg>
@@ -258,9 +294,13 @@ const SignIn = () => {
           <div className="signin-branding-text">
             <h1 className="signin-title">Chào Mừng Bạn Đến Với Cộng Đồng</h1>
             <p className="signin-description">
-              Đăng nhập để theo dõi hành trình thai kỳ, nhận tư vấn sức khỏe chuyên nghiệp và kết nối với cộng đồng các bà mẹ.
+              Đăng nhập để theo dõi hành trình thai kỳ, nhận tư vấn sức khỏe
+              chuyên nghiệp và kết nối với cộng đồng các bà mẹ.
             </p>
-            <p className="signin-quote">"Hành trình làm mẹ trở nên dễ dàng hơn với sự hỗ trợ từ chúng tôi!"</p>
+            <p className="signin-quote">
+              "Hành trình làm mẹ trở nên dễ dàng hơn với sự hỗ trợ từ chúng
+              tôi!"
+            </p>
           </div>
         </motion.div>
 
@@ -273,29 +313,40 @@ const SignIn = () => {
           <h2 className="signin-form-title">Đăng Nhập</h2>
           <form onSubmit={handleSubmit} className="signin-form">
             <div className="signin-input-group">
-              <label htmlFor="email" className="signin-label">Email</label>
+              <label htmlFor="email" className="signin-label">
+                Email
+              </label>
               <input
                 id="email"
                 type="email"
                 placeholder="Nhập email của bạn"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className={`signin-input ${errors.email ? 'signin-input-error' : ''}`}
+                className={`signin-input ${
+                  errors.email ? "signin-input-error" : ""
+                }`}
               />
               {errors.email && <p className="signin-error">{errors.email}</p>}
             </div>
             <div className="signin-input-group">
-              <label htmlFor="password" className="signin-label">Mật khẩu</label>
+              <label htmlFor="password" className="signin-label">
+                Mật khẩu
+              </label>
               <div className="password-wrapper">
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Nhập mật khẩu của bạn"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className={`signin-input ${errors.password ? 'signin-input-error' : ''}`}
+                  className={`signin-input ${
+                    errors.password ? "signin-input-error" : ""
+                  }`}
                 />
-                <span onClick={toggleShowPassword} className="password-toggle-icon">
+                <span
+                  onClick={toggleShowPassword}
+                  className="password-toggle-icon"
+                >
                   <svg
                     width="24"
                     height="24"
@@ -317,7 +368,9 @@ const SignIn = () => {
                   </svg>
                 </span>
               </div>
-              {errors.password && <p className="signin-error">{errors.password}</p>}
+              {errors.password && (
+                <p className="signin-error">{errors.password}</p>
+              )}
             </div>
             <button type="submit" className="signin-button">
               Đăng Nhập
@@ -325,7 +378,11 @@ const SignIn = () => {
             <div className="signin-divider">
               <span>hoặc</span>
             </div>
-            <button type="button" onClick={handleGmailLogin} className="signin-gmail-button">
+            <button
+              type="button"
+              onClick={handleGmailLogin}
+              className="signin-gmail-button"
+            >
               <svg
                 className="gmail-icon"
                 width="24"
@@ -348,20 +405,42 @@ const SignIn = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className={`notification-popup ${errors.server ? 'notification-error' : 'notification-success'}`}
+              className={`notification-popup ${
+                errors.server ? "notification-error" : "notification-success"
+              }`}
             >
               <span className="notification-icon">
                 {errors.server ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#EF4444"/>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="#EF4444"
+                    />
                   </svg>
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#34C759"/>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                      fill="#34C759"
+                    />
                   </svg>
                 )}
               </span>
-              <p className="notification-message">{errors.server || successMessage}</p>
+              <p className="notification-message">
+                {errors.server || successMessage}
+              </p>
             </motion.div>
           )}
           <div className="signin-links">
@@ -371,7 +450,7 @@ const SignIn = () => {
               </Link>
             </p>
             <p>
-              Chưa có tài khoản?{' '}
+              Chưa có tài khoản?{" "}
               <Link to="/signup" className="signin-link">
                 Tạo tài khoản mới
               </Link>

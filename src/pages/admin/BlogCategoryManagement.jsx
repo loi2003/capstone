@@ -23,15 +23,14 @@ const BlogCategoryManagement = () => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
   const navigate = useNavigate();
-
+ const token = localStorage.getItem('token');
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const userResponse = await getCurrentUser();
+        const userResponse = await getCurrentUser(token);
         setUser(userResponse.data.data || userResponse.data);
 
-        const token = localStorage.getItem('token');
         if (!token) {
           throw new Error('No token found. Please log in.');
         }

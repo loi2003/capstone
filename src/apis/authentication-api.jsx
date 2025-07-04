@@ -45,12 +45,13 @@ export const login = async (data) => {
     throw error;
   }
 };
-
+ const token = localStorage.getItem('token');
 export const getCurrentUser = async () => {
   try {
     const response = await apiClient.get(`/api/User/get-current-user`, {
       headers: {
         "Accept": "*/*",
+        Authorization: `Bearer ${token}`,
       },
     });
     console.log('Get current user API response:', response);
