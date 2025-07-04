@@ -63,12 +63,17 @@ export const getCurrentUser = async () => {
 
 export const logout = async (userId) => {
   try {
-    const response = await apiClient.post(`/api/auth/user/logout`, `"${userId}"`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: '*/*',
-      },
-    });
+    const response = await apiClient.post(
+      `/api/auth/user/logout`,
+      userId, // ✅ just pass the raw GUID (not quoted) if expecting a Guid from [FromBody]
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: '*/*',
+        },
+        withCredentials: true, // ✅ in case cookie exists
+      }
+    );
     return response;
   } catch (error) {
     console.error('Error logging out:', error);

@@ -60,35 +60,34 @@ const Header = () => {
 
   // Hàm xử lý đăng xuất
   const handleLogout = async () => {
-    if (!user?.userId) {
-      console.error('Không tìm thấy userId để đăng xuất');
-      localStorage.removeItem('token');
-      setUser(null);
-      navigate('/signin', { replace: true });
-      return;
-    }
+  const userId = user?.userId || user?.id;
 
-    try {
-      // Gọi API đăng xuất với userId trong body (thử cả hai định dạng)
-      console.log('Gửi yêu cầu logout với userId:', user.userId);
-      await apiClient.post('/api/auth/user/logout', `"${user.userId}"`, {
-        headers: { 'Content-Type': 'application/json' }
-      });
-      console.log('Đăng xuất thành công');
-    } catch (error) {
-      console.error('Lỗi khi đăng xuất:', error.message);
-    } finally {
-      // Xóa token khỏi localStorage
-      localStorage.removeItem('token');
-      // Đặt user về null để cập nhật giao diện
-      setUser(null);
-      // Đóng dropdown và menu
-      setIsDropdownOpen(false);
-      setIsMenuOpen(false);
-      // Chuyển hướng về trang đăng nhập
-      navigate('/signin', { replace: true });
-    }
-  };
+  if (!userId) {
+    console.error('Không tìm thấy userId để đăng xuất');
+    localStorage.removeItem('token');
+    setUser(null);
+    navigate('/signin', { replace: true });
+    return;
+  }
+
+  try {
+    console.log('Gửi yêu cầu logout với userId');
+    // bug
+    await apiClient.post('/api/auth/user/logout', userId, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    console.log('Đăng xuất thành công');
+  } catch (error) {
+    console.error('Lỗi khi đăng xuất:', error.message);
+  } finally {
+    localStorage.removeItem('token');
+    setUser(null);
+    setIsDropdownOpen(false);
+    setIsMenuOpen(false);
+    navigate('/signin', { replace: true });
+  }
+};
+
 
   // Giao diện thanh header
   return (

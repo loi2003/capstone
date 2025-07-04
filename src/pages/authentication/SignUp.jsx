@@ -1,11 +1,4 @@
-<<<<<<< Updated upstream
-import React, { useState, useEffect } from 'react'; // Thư viện React và hook để quản lý trạng thái, hiệu ứng
-import { Link, useNavigate } from 'react-router-dom'; // Link để tạo liên kết, useNavigate để chuyển hướng
-import { motion } from 'framer-motion'; // Thư viện tạo animation
-import { register, verifyOtp } from '../../apis/authentication-api'; // Hàm gọi API đăng ký và xác minh OTP
-import '../../styles/SignUp.css'; // Tệp CSS định dạng trang đăng ký
-=======
->>>>>>> Stashed changes
+
 
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -36,15 +29,13 @@ const SignUp = () => {
   });
   const [successMessage, setSuccessMessage] = useState('');
   const navigate = useNavigate();
-<<<<<<< Updated upstream
-=======
+
 
   // Clear token and Authorization header
   useEffect(() => {
     localStorage.removeItem('token');
     delete apiClient.defaults.headers.common['Authorization'];
   }, []);
->>>>>>> Stashed changes
 
   // Clear notification after 5 seconds
   useEffect(() => {
