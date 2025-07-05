@@ -67,6 +67,7 @@ const Header = () => {
   // Hàm xử lý đăng xuất
   const handleLogout = async () => {
     if (!user?.userId) {
+
       localStorage.removeItem('token');
       setUser(null);
       navigate('/signin', { replace: true });
@@ -76,7 +77,7 @@ const Header = () => {
     try {
       // Gọi API đăng xuất với userId trong body (thử cả hai định dạng)
       console.log('Gửi yêu cầu logout với userId:', user.userId);
-      await apiClient.post('/api/auth/user/logout', `"${user.userId}"`, {
+      await apiClient.post('/api/auth/user/logout', user.userId, {
         headers: { 'Content-Type': 'application/json' }
       });
       console.log('Đăng xuất thành công');
@@ -114,7 +115,7 @@ const Header = () => {
         {/* Menu điều hướng */}
         <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
           <Link to="/about">About</Link>
-          <Link to="/pregnancy">Pregnancy</Link>
+          <Link to="/pregnancy-tracking">Pregnancy Tracking</Link>
           <Link to="/nutritional-guidance">Nutritional Guidance</Link>
           <Link to="/consultation">Consultation</Link>
           <Link to="/community">Community</Link>
