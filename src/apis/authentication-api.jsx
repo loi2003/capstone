@@ -45,8 +45,7 @@ export const login = async (data) => {
     throw error;
   }
 };
- const token = localStorage.getItem('token');
-export const getCurrentUser = async () => {
+export const getCurrentUser = async (token) => {
   try {
     const response = await apiClient.get(`/api/User/get-current-user`, {
       headers: {

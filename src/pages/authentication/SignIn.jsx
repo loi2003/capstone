@@ -142,7 +142,7 @@ const SignIn = () => {
       }
 
       try {
-        const userResponse = await getCurrentUser();
+        const userResponse = await getCurrentUser(token);
         console.log("Phản hồi từ API lấy thông tin người dùng:", userResponse);
         console.log("Dữ liệu người dùng:", userResponse.data);
         console.log("roleId thô:", userResponse.data.data?.roleId);
