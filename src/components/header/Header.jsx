@@ -67,7 +67,7 @@ const Header = () => {
   // Hàm xử lý đăng xuất
   const handleLogout = async () => {
     if (!user?.userId) {
-      // console.error('Không tìm thấy userId để đăng xuất');
+
       localStorage.removeItem('token');
       setUser(null);
       navigate('/signin', { replace: true });

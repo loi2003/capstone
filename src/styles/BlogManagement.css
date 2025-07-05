@@ -138,6 +138,14 @@
   box-shadow: var(--shadow);
 }
 
+.blog-form-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
 .form-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -191,6 +199,38 @@
   background-size: 16px;
 }
 
+.input-group input[type="file"] {
+  padding: 0.5rem;
+}
+
+.blog-image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.blog-image-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: var(--error);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--border-radius-circle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.blog-image-remove:hover {
+  background: #c82333;
+  transform: scale(1.1);
+}
+
 .form-actions {
   display: flex;
   gap: 1rem;
@@ -207,11 +247,18 @@
   cursor: pointer;
   transition: var(--transition);
   box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .blog-submit-button {
   background: var(--accent);
   color: #ffffff;
+}
+
+.blog-submit-button.delete {
+  background: var(--error);
 }
 
 .blog-cancel-button {
@@ -227,6 +274,10 @@
 
 .blog-submit-button:hover {
   background: var(--accent-dark);
+}
+
+.blog-submit-button.delete:hover {
+  background: #c82333;
 }
 
 .blog-cancel-button:hover {
@@ -431,7 +482,7 @@
 
 .blog-image[onerror] {
   background: #f8f9fa;
- border: 1px solid #dee2e6;
+  border: 1px solid #dee2e6;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -586,25 +637,6 @@
   height: 300px;
 }
 
-.chart-changes {
-  margin-top: 1.5rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgba(0, 123, 255, 0.05), rgba(255, 255, 255, 0.95));
-  border-radius: 10px;
-}
-
-.chart-changes-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 0.75rem;
-}
-
-.chart-change-item {
-  font-size: 0.95rem;
-  color: var(--text);
-}
-
 /* Modal Styles */
 .blog-image-modal {
   position: fixed;
@@ -629,7 +661,7 @@
   flex-direction: column;
   gap: 1.5rem;
   position: relative;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .blog-image-modal-content img {
@@ -703,6 +735,22 @@
   box-shadow: 0 0 0 4px rgba(0, 123, 255, 0.3);
 }
 
+/* Delete Confirmation */
+.delete-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.delete-confirm-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* Loading Spinner */
 .loading-spinner {
   text-align: center;
@@ -729,6 +777,12 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Button Icon */
+.button-icon {
+  width: 20px;
+  height: 20px;
 }
 
 /* Responsive Design */
@@ -857,7 +911,9 @@
 
   .blog-stats-title,
   .blog-list-title,
-  .blog-chart-title {
+  .blog-chart-title,
+  .blog-form-title,
+  .delete-confirm-title {
     font-size: 1.5rem;
   }
 
@@ -934,5 +990,58 @@
 
   .blog-image-modal-content img {
     max-height: 60vh;
+  }
+}
+/* Approve Blogs Section */
+.blog-approve-section {
+  background: var(--card-background);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.blog-approve-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.blog-action-button.approve {
+  background: var(--success);
+  color: #ffffff;
+}
+
+.blog-action-button.approve:hover {
+  background: var(--accent-dark);
+  box-shadow: var(--shadow-hover);
+}
+
+.blog-action-button.reject {
+  background: var(--error);
+  color: #ffffff;
+}
+
+.blog-action-button.reject:hover {
+  background: #c82333;
+  box-shadow: var(--shadow-hover);
+}
+
+@media (min-width: 1024px) {
+  .blog-approve-section {
+    grid-column: 1 / 3;
+  }
+}
+
+@media (max-width: 1023px) {
+  .blog-approve-section {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .blog-approve-title {
+    font-size: 1.5rem;
   }
 }
