@@ -8,10 +8,10 @@ const NutrientSpecialistHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/signin", { replace: true });
         return;
