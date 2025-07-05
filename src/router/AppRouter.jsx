@@ -23,6 +23,7 @@ import BlogCategoryManagement from '../pages/admin/BlogCategoryManagement';
 import NotFound from '../pages/error/404NotFound';
 import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
 import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
+import PregnancyTrackingPage from '../pages/PregnancyTrackingPage'; 
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -49,6 +50,7 @@ const AppRoutes = () => {
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
+        <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
