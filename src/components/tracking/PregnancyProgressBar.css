@@ -1,0 +1,162 @@
+.pregnancy-progress-bar {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+.progress-header {
+  margin-bottom: 1.5rem;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.current-week {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-bg);
+}
+
+.weeks-remaining {
+  font-size: 0.9rem;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.progress-section {
+  margin-bottom: 2rem;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--accent-color);
+}
+
+.progress-bar {
+  position: relative;
+  height: 8px;
+  background: var(--light-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-bg), var(--accent-color));
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-marker {
+  position: absolute;
+  top: -2px;
+  width: 12px;
+  height: 12px;
+  background: var(--primary-bg);
+  border-radius: 50%;
+  transform: translateX(-50%);
+  border: 2px solid var(--white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.milestone-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--accent-color);
+}
+
+.week-calendar {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.5rem 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.week-calendar::-webkit-scrollbar {
+  display: none;
+}
+
+.week-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--light-bg);
+  min-width: 60px;
+  flex-shrink: 0;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.week-item:hover {
+  background: #e3f2fd;
+}
+
+.week-item.current {
+  background: var(--primary-bg);
+  color: var(--white-text);
+}
+
+.week-label {
+  font-size: 0.7rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.week-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .pregnancy-progress-bar {
+    padding: 1rem;
+  }
+
+  .progress-info {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+
+  .current-week {
+    font-size: 1.1rem;
+  }
+
+  .week-calendar {
+    justify-content: flex-start;
+    padding-left: 0.5rem;
+  }
+
+  .week-item {
+    min-width: 50px;
+    padding: 0.5rem;
+  }
+
+  .week-number {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .milestone-labels {
+    font-size: 0.7rem;
+  }
+
+  .progress-labels {
+    font-size: 0.75rem;
+  }
+}
