@@ -102,15 +102,43 @@ export const addBlog = async (blogData, token) => {
   }
 };
 
-export const editBlog = async (blogData, token) => {
+export const editBlog = async (formData, token) => {
   try {
-    const formData = new FormData();
-    formData.append('Id', blogData.id);
-    formData.append('CategoryId', blogData.categoryId);
-    formData.append('Title', blogData.title);
-    formData.append('Body', blogData.body);
-    blogData.tags.forEach((tag, index) => formData.append(`Tags[${index}]`, tag));
-    blogData.images.forEach((image, index) => formData.append(`Images`, image));
+    // Validate required fields
+    const requiredFields = ['Id', 'CategoryId', 'Title', 'Body'];
+    for (const field of requiredFields) {
+      if (!formData.get(field)) {
+        throw new Error(`Missing required field: ${field}`);
+      }
+    }
+
+    // Extract tags from FormData, default to empty array
+    const tags = formData.getAll('Tags') || [];
+    // Clear existing Tags entries to avoid duplicates
+    for (const key of formData.keys()) {
+      if (key.startsWith('Tags[')) {
+        formData.delete(key);
+      }
+    }
+    // Re-append tags to ensure correct formatting
+    tags.forEach((tag, index) => formData.append(`Tags[${index}]`, tag.trim()));
+
+    // Extract images from FormData, default to empty array
+    const images = formData.getAll('Images') || [];
+    // Clear existing Images entries to avoid duplicates
+    for (const key of formData.keys()) {
+      if (key === 'Images') {
+        formData.delete(key);
+      }
+    }
+    // Re-append images
+    images.forEach((image, index) => formData.append(`Images`, image));
+
+    // Debug: Log FormData contents
+    console.log('editBlog FormData contents:');
+    for (const [key, value] of formData.entries()) {
+      console.log(`${key}: ${value instanceof File ? value.name : value}`);
+    }
 
     const response = await apiClient.put('/api/blog/edit-blog', formData, {
       headers: {
@@ -195,6 +223,25 @@ export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, toke
     return response;
   } catch (error) {
     console.error('Error rejecting blog:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export const getBlogsByUser = async (userId, token) => {
+  try {
+    const response = await apiClient.get('/api/blog/view-blogs-from-user', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+      params: {
+        userId,
+      },
+    });
+    console.log('Get blogs by user response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error fetching user blogs:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };
