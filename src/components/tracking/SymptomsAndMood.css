@@ -1,0 +1,173 @@
+.symptoms-and-mood {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  color: var(--primary-bg);
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+.view-history-btn {
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.view-history-btn:hover {
+  color: var(--primary-bg);
+}
+
+.mood-section {
+  margin-bottom: 2rem;
+}
+
+.mood-section h4 {
+  color: var(--primary-bg);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.mood-selector {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.mood-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid var(--light-bg);
+  background: var(--white);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 80px;
+}
+
+.mood-btn:hover {
+  border-color: var(--accent-color);
+}
+
+.mood-btn.selected {
+  border-color: var(--primary-bg);
+  background: var(--light-bg);
+}
+
+.mood-emoji {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.mood-label {
+  font-size: 0.8rem;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+
+.symptoms-section h4 {
+  color: var(--primary-bg);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.symptoms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.symptom-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.9rem;
+  color: var(--accent-color);
+}
+
+.symptom-checkbox:hover {
+  background: var(--light-bg);
+}
+
+.symptom-checkbox input[type="checkbox"] {
+  display: none;
+}
+
+.checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--accent-color);
+  border-radius: 4px;
+  position: relative;
+  transition: var(--transition);
+}
+
+.symptom-checkbox input[type="checkbox"]:checked + .checkmark {
+  background: var(--primary-bg);
+  border-color: var(--primary-bg);
+}
+
+.symptom-checkbox input[type="checkbox"]:checked + .checkmark::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid var(--white-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.add-custom-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: 2px dashed var(--accent-color);
+  color: var(--accent-color);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.add-custom-btn:hover {
+  background: var(--light-bg);
+  border-color: var(--primary-bg);
+  color: var(--primary-bg);
+}
+
+@media (max-width: 768px) {
+  .mood-selector {
+    justify-content: center;
+  }
+
+  .symptoms-grid {
+    grid-template-columns: 1fr;
+  }
+}

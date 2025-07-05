@@ -1,0 +1,76 @@
+.pregnancy-overview {
+  margin-bottom: 2rem;
+}
+
+.overview-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.overview-header h2 {
+  color: var(--primary-bg);
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.overview-header p {
+  color: var(--accent-color);
+  font-size: 1.1rem;
+}
+
+.overview-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.overview-card {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: var(--transition);
+}
+
+.overview-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.overview-card.highlight {
+  background: linear-gradient(135deg, var(--primary-bg), var(--accent-color));
+  color: var(--white-text);
+}
+
+.card-icon {
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.overview-card.highlight .card-icon {
+  color: var(--white-text);
+}
+
+.card-content h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.card-content p {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+  .overview-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-header h2 {
+    font-size: 1.5rem;
+  }
+}

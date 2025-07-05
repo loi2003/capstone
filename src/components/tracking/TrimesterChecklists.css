@@ -1,0 +1,148 @@
+.trimester-checklists {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.trimester-checklists h3 {
+  color: var(--primary-bg);
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.checklist-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--light-bg);
+}
+
+.tab-btn {
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  color: var(--accent-color);
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: var(--transition);
+  font-size: 0.9rem;
+}
+
+.tab-btn:hover {
+  color: var(--primary-bg);
+}
+
+.tab-btn.active {
+  color: var(--primary-bg);
+  border-bottom-color: var(--primary-bg);
+}
+
+.checklist-content {
+  min-height: 300px;
+}
+
+.checklist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.checklist-item:hover {
+  background: var(--light-bg);
+}
+
+.checklist-item input[type="checkbox"] {
+  display: none;
+}
+
+.checklist-item .checkmark {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--accent-color);
+  border-radius: 4px;
+  position: relative;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.checklist-item input[type="checkbox"]:checked + .checkmark {
+  background: var(--primary-bg);
+  border-color: var(--primary-bg);
+}
+
+.checklist-item input[type="checkbox"]:checked + .checkmark::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 10px;
+  border: solid var(--white-text);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.item-label {
+  color: var(--accent-color);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.checklist-item input[type="checkbox"]:checked ~ .item-label {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.add-custom-task-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: 2px dashed var(--accent-color);
+  color: var(--accent-color);
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  justify-content: center;
+}
+
+.add-custom-task-btn:hover {
+  background: var(--light-bg);
+  border-color: var(--primary-bg);
+  color: var(--primary-bg);
+}
+
+@media (max-width: 768px) {
+  .checklist-tabs {
+    flex-direction: column;
+  }
+
+  .tab-btn {
+    text-align: left;
+    border-bottom: none;
+    border-left: 2px solid transparent;
+  }
+
+  .tab-btn.active {
+    border-bottom: none;
+    border-left-color: var(--primary-bg);
+    background: var(--light-bg);
+  }
+}
