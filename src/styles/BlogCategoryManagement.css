@@ -807,3 +807,18 @@
     min-width: 90px;
   }
 }
+.category-table-header,
+.category-table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr; /* Adjusted for new Tag column */
+  align-items: center;
+  padding: 10px;
+}
+
+.input-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}

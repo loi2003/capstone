@@ -8,6 +8,7 @@ import '../../styles/BlogCategoryManagement.css';
 
 const BlogCategoryManagement = () => {
   const [categoryName, setCategoryName] = useState('');
+  const [blogCategoryTag, setBlogCategoryTag] = useState('Nutrient'); // Default to 'Nutrient'
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -23,7 +24,8 @@ const BlogCategoryManagement = () => {
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
   const navigate = useNavigate();
- const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token');
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -143,12 +145,18 @@ const BlogCategoryManagement = () => {
       return;
     }
 
+    if (!['Nutrient', 'Health'].includes(blogCategoryTag)) {
+      setError('Invalid Blog Category Tag. Choose either Nutrient or Health.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found. Please log in.');
-      const response = await createCategory(user.id, categoryName, token);
+      const response = await createCategory(user.id, categoryName, blogCategoryTag, token);
       setMessage(response.data.message || 'Category created successfully.');
       setCategoryName('');
+      setBlogCategoryTag('Nutrient'); // Reset to default
       setCurrentPage(1);
 
       const categoriesResponse = await getAllCategories(token, { params: { t: Date.now() } });
@@ -162,6 +170,7 @@ const BlogCategoryManagement = () => {
   const handleEdit = (category) => {
     setEditingCategory(category);
     setCategoryName(category.categoryName);
+    setBlogCategoryTag(category.blogCategoryTag || 'Nutrient'); // Set tag from category
     setMessage('');
     setError('');
   };
@@ -181,12 +190,18 @@ const BlogCategoryManagement = () => {
       return;
     }
 
+    if (!['Nutrient', 'Health'].includes(blogCategoryTag)) {
+      setError('Invalid Blog Category Tag. Choose either Nutrient or Health.');
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found. Please log in.');
-      const response = await updateCategory(editingCategory.id, categoryName, editingCategory.isActive, token);
+      const response = await updateCategory(editingCategory.id, categoryName, editingCategory.isActive, blogCategoryTag, token);
       setMessage(response.data.message || 'Category updated successfully.');
       setCategoryName('');
+      setBlogCategoryTag('Nutrient'); // Reset to default
       setEditingCategory(null);
 
       const categoriesResponse = await getAllCategories(token, { params: { t: Date.now() } });
@@ -260,11 +275,12 @@ const BlogCategoryManagement = () => {
   // Filter and sort categories
   const filteredCategories = categories.filter((category) => {
     const matchesName = category.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesTag = category.blogCategoryTag?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
     const matchesStatus =
       statusFilter === 'all' ||
       (statusFilter === 'active' && category.isActive) ||
       (statusFilter === 'inactive' && !category.isActive);
-    return matchesName && matchesStatus;
+    return (matchesName || matchesTag) && matchesStatus;
   });
 
   const sortedCategories = [...filteredCategories].sort((a, b) => {
@@ -363,6 +379,19 @@ const BlogCategoryManagement = () => {
                   placeholder="Enter category name"
                 />
               </div>
+              <div className="input-group">
+                <label htmlFor="blogCategoryTag">Blog Category Tag</label>
+                <select
+                  id="blogCategoryTag"
+                  value={blogCategoryTag}
+                  onChange={(e) => setBlogCategoryTag(e.target.value)}
+                  required
+                  aria-label="Select blog category tag"
+                >
+                  <option value="Nutrient">Nutrient</option>
+                  <option value="Health">Health</option>
+                </select>
+              </div>
               {editingCategory && (
                 <div className="form-group toggle-group">
                   <label className="toggle-label" htmlFor="activeToggle">Active</label>
@@ -395,6 +424,7 @@ const BlogCategoryManagement = () => {
                   onClick={() => {
                     setEditingCategory(null);
                     setCategoryName('');
+                    setBlogCategoryTag('Nutrient');
                     setMessage('');
                     setError('');
                   }}
@@ -409,7 +439,7 @@ const BlogCategoryManagement = () => {
         </motion.section>
         {message && (
           <motion.p
-            className="success-message"
+            class23className="success-message"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -478,14 +508,14 @@ const BlogCategoryManagement = () => {
             aria-controls="category-table"
           >
             <div className="control-group">
-              <label htmlFor="searchQuery">Search by Name</label>
+              <label htmlFor="searchQuery">Search by Name or Tag</label>
               <input
                 type="text"
                 id="searchQuery"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter category name"
-                aria-label="Search categories by name"
+                placeholder="Enter category name or tag"
+                aria-label="Search categories by name or tag"
               />
             </div>
             <div className="control-group">
@@ -522,6 +552,7 @@ const BlogCategoryManagement = () => {
             <div className="category-table" id="category-table">
               <div className="category-table-header">
                 <span>Name</span>
+                <span>Tag</span>
                 <span>Status</span>
                 <span>Actions</span>
               </div>
@@ -534,6 +565,7 @@ const BlogCategoryManagement = () => {
                   transition={{ duration: 0.3 }}
                 >
                   <span>{category.categoryName}</span>
+                  <span>{category.blogCategoryTag || 'N/A'}</span>
                   <span>
                     <motion.span
                       className="status-dot"
