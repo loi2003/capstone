@@ -1,10 +1,10 @@
 import apiClient from './url-api';
-
-export const createCategory = async (userId, categoryName, token) => {
+export const createCategory = async (userId, categoryName, blogCategoryTag, token) => {
   try {
     const formData = new FormData();
     formData.append('UserId', userId);
     formData.append('CategoryName', categoryName);
+    formData.append('BlogCategoryTag', blogCategoryTag);
 
     const response = await apiClient.post('/api/category/add-new-category', formData, {
       headers: {
@@ -38,12 +38,13 @@ export const getAllCategories = async (token, params = {}) => {
   }
 };
 
-export const updateCategory = async (categoryId, categoryName, isActive, token) => {
+export const updateCategory = async (categoryId, categoryName, isActive, blogCategoryTag, token) => {
   try {
     const formData = new FormData();
     formData.append('Id', categoryId);
     formData.append('CategoryName', categoryName);
     formData.append('IsActive', isActive);
+    formData.append('BlogCategoryTag', blogCategoryTag);
 
     const response = await apiClient.put('/api/category/edit-category', formData, {
       headers: {
@@ -187,8 +188,16 @@ export const deleteBlog = async (blogId, token) => {
   }
 };
 
-export const approveBlog = async (blogId, approvedByUserId, token) => {
+export const approveBlog = async (blogId, approvedByUserId, token, blogCategoryTag, userRoleId) => {
   try {
+    // Authorization check based on category tag and user role
+    if (userRoleId === '3' && blogCategoryTag !== 'Health') {
+      throw new Error('Health Experts can only approve blogs with Health category tag.');
+    }
+    if (userRoleId === '4' && blogCategoryTag !== 'Nutrient') {
+      throw new Error('Nutrient Specialists can only approve blogs with Nutrient category tag.');
+    }
+
     const response = await apiClient.put(
       `/api/blog/approve-blog?blogId=${blogId}&approvedByUserId=${approvedByUserId}`,
       null,
@@ -207,8 +216,16 @@ export const approveBlog = async (blogId, approvedByUserId, token) => {
   }
 };
 
-export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, token) => {
+export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, token, blogCategoryTag, userRoleId) => {
   try {
+    // Authorization check based on category tag and user role
+    if (userRoleId === '3' && blogCategoryTag !== 'Health') {
+      throw new Error('Health Experts can only reject blogs with Health category tag.');
+    }
+    if (userRoleId === '4' && blogCategoryTag !== 'Nutrient') {
+      throw new Error('Nutrient Specialists can only reject blogs with Nutrient category tag.');
+    }
+
     const response = await apiClient.put(
       `/api/blog/reject-blog?blogId=${blogId}&approvedByUserId=${approvedByUserId}&rejectionReason=${encodeURIComponent(rejectionReason)}`,
       null,
@@ -226,7 +243,6 @@ export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, toke
     throw error;
   }
 };
-
 export const getBlogsByUser = async (userId, token) => {
   try {
     const response = await apiClient.get('/api/blog/view-blogs-from-user', {

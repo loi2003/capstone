@@ -26,6 +26,7 @@ const BlogManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [showFullBody, setShowFullBody] = useState(null); // New state for full body modal
   const blogsPerPage = 6;
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -50,7 +51,7 @@ const BlogManagement = () => {
           setUser({ ...userData, roleId });
         } else {
           throw new Error(
-            `Access denied. Role ID ${roleId} is not authorized for this page. Only Clinic (5), Health Expert (3), or Nutrient Specialist (4) users can access this page.`
+            `Access denied. Role ID ${roleId} is not authorized for this page. Only Clinic (3), Health Expert (4), or Nutrient Specialist (5) users can access this page.`
           );
         }
 
@@ -260,9 +261,7 @@ const BlogManagement = () => {
         throw new Error("All required fields (Id, CategoryId, Title, Body) must be provided.");
       }
 
-      if (user.roleId === "5" && editBlogData.userId !== user.id) {
-        throw new Error("You are not authorized to edit this blog.");
-      }
+    
 
       const formData = new FormData();
       formData.append("Id", editBlogData.id);
@@ -383,7 +382,7 @@ const BlogManagement = () => {
   });
 
   const approvalBlogs = filteredBlogs.filter(
-    (blog) => blog.createdByUser?.roleId === "5" && blog.status?.toLowerCase() === "pending"
+    (blog) => blog.status?.toLowerCase() === "pending"
   );
 
   const sortedBlogs = [...filteredBlogs].sort((a, b) => {
@@ -436,6 +435,19 @@ const BlogManagement = () => {
 
   const handleAddBlog = () => {
     navigate("/blog-management/add");
+  };
+
+  const handleViewFullBody = (blog) => {
+    setShowFullBody(blog);
+  };
+
+  const closeFullBodyModal = () => {
+    setShowFullBody(null);
+  };
+
+  const truncateBody = (body, maxLength = 100) => {
+    if (!body) return "No content";
+    return body.length > maxLength ? `${body.substring(0, maxLength)}...` : body;
   };
 
   if (loading) {
@@ -600,7 +612,6 @@ const BlogManagement = () => {
         </section>
         <section className="blog-list-section">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h2 className="blog-list-title">All Blogs</h2>
             <motion.button
               className={`blog-action-button ${showPersonalBlogs ? '' : 'active'}`}
               onClick={handleShowAllBlogs}
@@ -676,6 +687,7 @@ const BlogManagement = () => {
               <div className="blog-table-header">
                 <span>Title</span>
                 <span>Category</span>
+                <span>Body</span>
                 <span>Status</span>
                 <span>Images</span>
                 <span>Actions</span>
@@ -690,6 +702,21 @@ const BlogManagement = () => {
                 >
                   <span>{blog.title}</span>
                   <span>{blog.categoryName || "Uncategorized"}</span>
+                  <span>
+                    {truncateBody(blog.body)}
+                    {blog.body && blog.body.length > 100 && (
+                      <motion.button
+                        className="blog-action-button view-more"
+                        onClick={() => handleViewFullBody(blog)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label={`View full body of ${blog.title}`}
+                        style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px' }}
+                      >
+                        View More
+                      </motion.button>
+                    )}
+                  </span>
                   <span>
                     <motion.span
                       className="status-dot"
@@ -744,7 +771,6 @@ const BlogManagement = () => {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       aria-label={`Edit blog ${blog.title}`}
-                      disabled={user.roleId === "5" && blog.userId !== user.id}
                     >
                       <svg
                         width="20"
@@ -775,7 +801,6 @@ const BlogManagement = () => {
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       aria-label={`Delete blog ${blog.title}`}
-                      disabled={user.roleId === "5" && blog.userId !== user.id}
                     >
                       <svg
                         width="20"
@@ -1461,6 +1486,36 @@ const BlogManagement = () => {
                       Cancel
                     </motion.button>
                   </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+          {showFullBody && (
+            <motion.div
+              className="blog-image-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="blog-image-modal-content"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
+              >
+                <button
+                  className="blog-image-modal-close"
+                  onClick={closeFullBodyModal}
+                  aria-label="Close full body modal"
+                >
+                  ×
+                </button>
+                <div className="full-body-content">
+                  <h2 className="blog-form-title">{showFullBody.title}</h2>
+                  <p style={{ whiteSpace: 'pre-wrap' }}>{showFullBody.body || "No content"}</p>
                 </div>
               </motion.div>
             </motion.div>
