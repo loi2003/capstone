@@ -3,7 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { login, getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
+import googleLogo from '/images/g-logo.png'
 import "../../styles/SignIn.css";
+// import { googleLogout, useGoogleLogin } from '@react-oauth/google';
+
 
 // Hàm giải mã token JWT
 const decodeJWT = (token) => {
@@ -97,7 +100,7 @@ const SignIn = () => {
         loginResponse.data.data?.accessToken ||
         loginResponse.data.data?.auth_token ||
         loginResponse.data.user?.token ||
-        loginResponse.data.user?.jwt;
+        loginResponse.data.user?.jwt ;
 
       if (token) {
         localStorage.setItem("token", token);
@@ -213,9 +216,85 @@ const SignIn = () => {
     }
   };
 
-  const handleGmailLogin = () => {
-    console.log("Bắt đầu đăng nhập với Gmail");
-  };
+  const handleGoogleLogin = async () => {
+  try {
+    const google = window.google;
+    if (!google || !google.accounts || !google.accounts.id) {
+      setErrors({ ...errors, server: "Google API chưa được tải." });
+      return;
+    }
+
+    google.accounts.id.initialize({
+      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+      callback: async (googleResponse) => {
+        try {
+          console.log("Google Response:", googleResponse);
+          const idToken = googleResponse.credential;
+          console.log("ID Token:", idToken);
+
+          // Register user via Google Signup API
+          await apiClient.post("/api/auth/google-signup", {
+            idToken: idToken,
+          });
+
+          // Login user via Google Login API
+          const loginResponse = await apiClient.post("/api/auth/google-login", {
+            idToken: idToken,
+          });
+
+          // Attempt all fallback paths
+          const token =
+          loginResponse.data?.token ||
+          loginResponse.data?.data?.token ||
+          loginResponse.data?.accessToken ||
+          loginResponse.data?.data?.accessToken ||
+          loginResponse.token;
+          if (!token) throw new Error("Không nhận được token từ máy chủ.");
+
+          localStorage.setItem("token", token);
+          apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+          const decoded = decodeJWT(token);
+          const role =
+            decoded?.[
+              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+            ];
+
+          if (role !== "User") {
+            localStorage.removeItem("token");
+            setErrors({
+              ...errors,
+              server: "Google chỉ hỗ trợ đăng nhập với tài khoản người dùng thường (User).",
+            });
+            return;
+          }
+
+          setSuccessMessage("Đăng nhập bằng Google thành công!");
+          setTimeout(() => navigate("/", { replace: true }), 1500);
+        } catch (err) {
+          console.error("Lỗi đăng nhập Google:", err);
+          setErrors({
+            ...errors,
+            server:
+              err.response?.data?.message ||
+              "Lỗi khi xác thực với Google. Vui lòng thử lại.",
+          });
+        }
+      },
+    });
+
+    google.accounts.id.prompt(); // show login popup
+  } catch (err) {
+    console.error("Google login setup error:", err);
+    setErrors({
+      ...errors,
+      server: "Lỗi khi khởi tạo đăng nhập Google.",
+    });
+  }
+};
+
+
+
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -378,26 +457,10 @@ const SignIn = () => {
             <div className="signin-divider">
               <span>hoặc</span>
             </div>
-            <button
-              type="button"
-              onClick={handleGmailLogin}
-              className="signin-gmail-button"
-            >
-              <svg
-                className="gmail-icon"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M20 6H4C2.895 6 2 6.895 2 8V16C2 17.105 2.895 18 4 18H20C21.105 18 22 17.105 22 16V8C22 6.895 21.105 6 20 6ZM20 8L12 13L4 8V7L12 12L20 7V8Z"
-                  fill="var(--text-primary)"
-                />
-              </svg>
-              Đăng nhập với Gmail
-            </button>
+            <button className="google-login-btn" onClick={handleGoogleLogin}>
+          <img src={googleLogo} alt="Google Logo" className="google-logo" />
+          Sign In With Google
+        </button>
           </form>
           {(errors.server || successMessage) && (
             <motion.div

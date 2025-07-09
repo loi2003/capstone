@@ -1,4 +1,5 @@
 import "./BabyDevelopment.css"
+import BabyDevelopmentData from "../../data/babyDevelopmentData"
 
 const BabyDevelopment = ({ pregnancyData }) => {
   const currentWeek = pregnancyData?.currentGestationalAgeInWeeks || 22
@@ -16,7 +17,7 @@ const BabyDevelopment = ({ pregnancyData }) => {
     )
   }
 
-  // const weekData = developmentData[currentWeek] || developmentData[22]
+  const weekData = BabyDevelopmentData[currentWeek] || BabyDevelopmentData[22]
 
   return (
     <div className="baby-development">
