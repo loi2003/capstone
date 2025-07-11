@@ -120,6 +120,8 @@ const Header = () => {
           <Link to="/consultation">Consultation</Link>
           <Link to="/community">Community</Link>
           <Link to="/donation">Donation</Link>
+          <Link to="/blog">Blog</Link>
+
           {/* Phần xác thực: Hiển thị nút Sign In hoặc user icon */}
           <div className="auth-section">
             {user ? (
