@@ -16,6 +16,7 @@ const BlogManagement = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortOption, setSortOption] = useState("title-asc");
   const [error, setError] = useState("");
+  const [showErrorModal, setShowErrorModal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -26,13 +27,20 @@ const BlogManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  const [showFullBody, setShowFullBody] = useState(null); // New state for full body modal
+  const [showFullBody, setShowFullBody] = useState(null);
   const blogsPerPage = 6;
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const clearError = () => {
+    setTimeout(() => {
+      setError("");
+      setShowErrorModal(null);
+    }, 5000);
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -45,7 +53,6 @@ const BlogManagement = () => {
 
         const userResponse = await getCurrentUser(token);
         const userData = userResponse.data?.data || userResponse.data;
-        console.log("Fetched userData:", userData);
         const roleId = String(userData?.roleId);
         if (userData?.id && ["3", "4", "5"].includes(roleId)) {
           setUser({ ...userData, roleId });
@@ -67,6 +74,7 @@ const BlogManagement = () => {
         setCategories(categoriesData);
         if (categoriesData.length === 0) {
           setError("No categories available. Please create a category first.");
+          clearError();
         }
 
         const blogsData = Array.isArray(blogsResponse.data?.data)
@@ -79,11 +87,10 @@ const BlogManagement = () => {
           : [];
         setPersonalBlogs(personalBlogsData);
       } catch (err) {
-        console.error("Fetch error:", err.response?.data || err.message);
-        setError(
-          err.response?.data?.message ||
-            "Failed to fetch data. Please log in again."
+        setShowErrorModal(
+          err.response?.data?.message || "Failed to fetch data. Please log in again."
         );
+        clearError();
         localStorage.removeItem("token");
         navigate("/signin", { replace: true });
       } finally {
@@ -218,11 +225,13 @@ const BlogManagement = () => {
       const isImage = file.type.startsWith("image/");
       const isUnderSizeLimit = file.size <= 5 * 1024 * 1024;
       if (!isImage) {
-        setError("Only image files are allowed.");
+        setShowErrorModal("Only image files are allowed.");
+        clearError();
         return false;
       }
       if (!isUnderSizeLimit) {
-        setError("Image size must be less than 5MB.");
+        setShowErrorModal("Image size must be less than 5MB.");
+        clearError();
         return false;
       }
       return true;
@@ -251,7 +260,8 @@ const BlogManagement = () => {
       try {
         await getCurrentUser(token);
       } catch (tokenError) {
-        setError("Session expired. Please log in again.");
+        setShowErrorModal("Session expired. Please log in again.");
+        clearError();
         localStorage.removeItem("token");
         navigate("/signin", { replace: true });
         return;
@@ -260,8 +270,6 @@ const BlogManagement = () => {
       if (!editBlogData.id || !editBlogData.categoryId || !editBlogData.title || !editBlogData.body) {
         throw new Error("All required fields (Id, CategoryId, Title, Body) must be provided.");
       }
-
-    
 
       const formData = new FormData();
       formData.append("Id", editBlogData.id);
@@ -302,8 +310,8 @@ const BlogManagement = () => {
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || "Failed to update blog. Please try again.";
-      setError(errorMessage);
-      console.error("Edit blog error:", err.response?.data || err.message);
+      setShowErrorModal(errorMessage);
+      clearError();
     } finally {
       setIsSubmitting(false);
     }
@@ -318,15 +326,35 @@ const BlogManagement = () => {
       setShowDeleteConfirm(null);
       setError("");
     } catch (err) {
-      setError("Failed to delete blog. Please try again.");
-      console.error("Delete blog error:", err.response?.data || err.message);
+      setShowErrorModal("Failed to delete blog. Please try again.");
+      clearError();
     }
   };
 
   const handleApproveBlog = async (blogId) => {
     try {
       const token = localStorage.getItem("token");
+      const blog = blogs.find((b) => b.id === blogId) || personalBlogs.find((b) => b.id === blogId);
+
+      if (user.roleId === "4" && blog.tags?.map(tag => tag.toLowerCase()).includes("nutrient")) {
+        setShowErrorModal("Only Nutrient Specialists can approve blogs with the 'nutrient' tag.");
+        clearError();
+        return;
+      }
+      if (user.roleId === "5" && blog.tags?.map(tag => tag.toLowerCase()).includes("health")) {
+        setShowErrorModal("Only Health Experts can approve blogs with the 'health' tag.");
+        clearError();
+        return;
+      }
+
       const response = await approveBlog(blogId, user.id, token);
+      
+      if (response.data.error) {
+        setShowErrorModal(response.data.message || "Failed to approve blog. Please try again.");
+        clearError();
+        return;
+      }
+
       setBlogs((prev) =>
         prev.map((b) =>
           b.id === blogId ? { ...b, status: "Approved" } : b
@@ -339,19 +367,42 @@ const BlogManagement = () => {
       );
       setError("");
     } catch (err) {
-      setError("Failed to approve blog. Please try again.");
-      console.error("Approve blog error:", err.response?.data || err.message);
+      const errorMessage =
+        err.response?.data?.message || "Failed to approve blog. Please try again.";
+      setShowErrorModal(errorMessage);
+      clearError();
     }
   };
 
   const handleRejectBlog = async (blogId) => {
     if (!rejectionReason.trim()) {
-      setError("Please provide a rejection reason.");
+      setShowErrorModal("Please provide a rejection reason.");
+      clearError();
       return;
     }
     try {
       const token = localStorage.getItem("token");
+      const blog = blogs.find((b) => b.id === blogId) || personalBlogs.find((b) => b.id === blogId);
+
+      if (user.roleId === "4" && blog.tags?.map(tag => tag.toLowerCase()).includes("nutrient")) {
+        setShowErrorModal("Only Nutrient Specialists can reject blogs with the 'nutrient' tag.");
+        clearError();
+        return;
+      }
+      if (user.roleId === "5" && blog.tags?.map(tag => tag.toLowerCase()).includes("health")) {
+        setShowErrorModal("Only Health Experts can reject blogs with the 'health' tag.");
+        clearError();
+        return;
+      }
+
       const response = await rejectBlog(blogId, user.id, rejectionReason, token);
+      
+      if (response.data.error) {
+        setShowErrorModal(response.data.message || "Failed to reject blog. Please try again.");
+        clearError();
+        return;
+      }
+
       setBlogs((prev) =>
         prev.map((b) =>
           b.id === blogId ? { ...b, status: "Rejected" } : b
@@ -366,8 +417,10 @@ const BlogManagement = () => {
       setRejectionReason("");
       setError("");
     } catch (err) {
-      setError("Failed to reject blog. Please try again.");
-      console.error("Reject blog error:", err.response?.data || err.message);
+      const errorMessage =
+        err.response?.data?.message || "Failed to reject blog. Please try again.";
+      setShowErrorModal(errorMessage);
+      clearError();
     }
   };
 
@@ -430,7 +483,20 @@ const BlogManagement = () => {
   };
 
   const handleBack = () => {
-    navigate(-1);
+    switch (user.roleId) {
+      case "5":
+        navigate("/clinic");
+        break;
+      case "3":
+        navigate("/health-expert");
+        break;
+      case "4":
+        navigate("/nutrient-specialist");
+        break;
+      default:
+        navigate("/"); // Fallback to homepage if roleId is invalid
+        break;
+    }
   };
 
   const handleAddBlog = () => {
@@ -476,7 +542,7 @@ const BlogManagement = () => {
           onClick={handleBack}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          aria-label="Go back to previous page"
+          aria-label="Go back to homepage"
         >
           <svg
             width="20"
@@ -1516,6 +1582,62 @@ const BlogManagement = () => {
                 <div className="full-body-content">
                   <h2 className="blog-form-title">{showFullBody.title}</h2>
                   <p style={{ whiteSpace: 'pre-wrap' }}>{showFullBody.body || "No content"}</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+          {showErrorModal && (
+            <motion.div
+              className="blog-image-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="blog-image-modal-content"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <button
+                  className="blog-image-modal-close"
+                  onClick={() => setShowErrorModal(null)}
+                  aria-label="Close error modal"
+                >
+                  ×
+                </button>
+                <div className="delete-confirm">
+                  <h2 className="delete-confirm-title">Error</h2>
+                  <p>{showErrorModal}</p>
+                  <div className="form-actions">
+                    <motion.button
+                      className="blog-cancel-button"
+                      onClick={() => setShowErrorModal(null)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label="Close error"
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="button-icon"
+                      >
+                        <path
+                          d="M18 6L6 18M6 6l12 12"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      Close
+                    </motion.button>
+                  </div>
                 </div>
               </motion.div>
             </motion.div>
