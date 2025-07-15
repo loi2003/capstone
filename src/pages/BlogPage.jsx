@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getAllBlogs } from '../apis/blog-api';
+import apiClient from '../apis/url-api';
 import '../styles/BlogPage.css';
 
 const BlogPage = () => {
@@ -11,7 +12,14 @@ const BlogPage = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortOption, setSortOption] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [bookmarks, setBookmarks] = useState(() => JSON.parse(localStorage.getItem('bookmarks')) || []);
+  const [likes, setLikes] = useState(() => JSON.parse(localStorage.getItem('likes')) || []);
+  const [showAuthPopup, setShowAuthPopup] = useState(false);
+  const postsPerPage = 6;
   const token = localStorage.getItem('token');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -27,22 +35,37 @@ const BlogPage = () => {
       }
     };
     fetchBlogs();
+    console.log(blogs);
   }, [token]);
+
+  useEffect(() => {
+    localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+    localStorage.setItem('likes', JSON.stringify(likes));
+  }, [bookmarks, likes]);
 
   const categories = ['All', ...new Set(blogs.flatMap(blog => blog.tags || []))];
 
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    filterBlogs(term, selectedCategory);
+    filterBlogs(term, selectedCategory, sortOption);
+    setCurrentPage(1);
   };
 
   const handleCategoryFilter = (category) => {
     setSelectedCategory(category);
-    filterBlogs(searchTerm, category);
+    filterBlogs(searchTerm, category, sortOption);
+    setCurrentPage(1);
   };
 
-  const filterBlogs = (term, category) => {
+  const handleSortChange = (e) => {
+    const sort = e.target.value;
+    setSortOption(sort);
+    filterBlogs(searchTerm, selectedCategory, sort);
+    setCurrentPage(1);
+  };
+
+  const filterBlogs = (term, category, sort) => {
     let filtered = blogs;
     if (term) {
       filtered = filtered.filter(
@@ -54,18 +77,122 @@ const BlogPage = () => {
     if (category !== 'All') {
       filtered = filtered.filter(blog => blog.tags?.includes(category));
     }
+    if (sort === 'newest') {
+      filtered = filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sort === 'oldest') {
+      filtered = filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    } else if (sort === 'title') {
+      filtered = filtered.sort((a, b) => a.title.localeCompare(b.title));
+    }
     setFilteredBlogs(filtered);
   };
 
   const clearSearch = () => {
     setSearchTerm('');
-    filterBlogs('', selectedCategory);
+    filterBlogs('', selectedCategory, sortOption);
+    setCurrentPage(1);
+  };
+
+  const toggleBookmark = async (blogId) => {
+    if (!token) {
+      setShowAuthPopup(true);
+      return;
+    }
+    try {
+      const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'text/plain',
+        },
+      });
+      if (response.status === 200) {
+        if (bookmarks.includes(blogId)) {
+          setBookmarks(bookmarks.filter(id => id !== blogId));
+        } else {
+          setBookmarks([...bookmarks, blogId]);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error.response?.data?.message || error.message);
+    }
+  };
+
+  const toggleLike = async (blogId) => {
+    if (!token) {
+      setShowAuthPopup(true);
+      return;
+    }
+    try {
+      const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'text/plain',
+        },
+      });
+      if (response.status === 200) {
+        if (likes.includes(blogId)) {
+          setLikes(likes.filter(id => id !== blogId));
+        } else {
+          setLikes([...likes, blogId]);
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling like:', error.response?.data?.message || error.message);
+    }
+  };
+
+  const shareBlog = (platform, blog) => {
+    const url = encodeURIComponent(window.location.href + `/blog/${blog.id}`);
+    const text = encodeURIComponent(blog.title);
+    let shareUrl;
+    switch (platform) {
+      case 'twitter':
+        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+        break;
+      case 'facebook':
+        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+        break;
+      case 'linkedin':
+        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${text}`;
+        break;
+      default:
+        return;
+    }
+    window.open(shareUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const calculateReadingTime = (text) => {
+    const wordsPerMinute = 200;
+    const wordCount = text ? text.split(/\s+/).length : 0;
+    return Math.ceil(wordCount / wordsPerMinute);
+  };
+
+  const getMockLikeCount = () => {
+    return Math.floor(Math.random() * 100) + 1; // Mock like count
   };
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error">Error: {error}</div>;
 
   const featured = blogs[0];
+
+  // Pagination logic
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredBlogs.slice(indexOfFirstPost, indexOfLastPost);
+  const totalPages = Math.ceil(filteredBlogs.length / postsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   // Raw data for top authors
   const rawAuthors = [
@@ -87,7 +214,7 @@ const BlogPage = () => {
     }
   }
 
-  // Category data from the image
+  // Category data
   const categoryData = [
     { name: 'DESIGN', count: 12, color: '#D53F8C' },
     { name: 'GRAPHIC', count: 6, color: '#6B46C1' },
@@ -95,9 +222,95 @@ const BlogPage = () => {
     { name: 'TYPOGRAPHY', count: 8, color: '#48BB78' },
   ];
 
+  // Trending posts data
+  const trendingPosts = [
+    {
+      id: 1,
+      category: 'DESIGN',
+      title: 'Designers In Residence Explores Mental Health In...',
+      date: '02/11/2020',
+      icon: '/assets/trending-icon1.jpg',
+    },
+    {
+      id: 2,
+      category: 'GRAPHIC',
+      title: 'New Trends in Graphic Design for 2025',
+      date: '01/15/2025',
+      icon: '/assets/trending-icon2.jpg',
+    },
+    {
+      id: 3,
+      category: 'ILLUSTRATOR',
+      title: 'Mastering Vector Art with Adobe Illustrator',
+      date: '12/20/2024',
+      icon: '/assets/trending-icon3.jpg',
+    },
+    {
+      id: 4,
+      category: 'TYPOGRAPHY',
+      title: 'The Art of Modern Typography',
+      date: '11/05/2024',
+      icon: '/assets/trending-icon4.jpg',
+    },
+  ];
+
   return (
     <div className="blog-page">
+      {showAuthPopup && (
+        <div className="auth-popup">
+          <div className="auth-popup-content">
+            <h3>Please Log In</h3>
+            <p>You need to be logged in to bookmark or like a post.</p>
+            <div className="auth-popup-buttons">
+              <button
+                className="auth-popup-btn"
+                onClick={() => navigate('/signin')}
+              >
+                Sign In
+              </button>
+              <button
+                className="auth-popup-btn"
+                onClick={() => navigate('/signup')}
+              >
+                Sign Up
+              </button>
+              <button
+                className="auth-popup-close"
+                onClick={() => setShowAuthPopup(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="main-content">
+        {/* Trending Posts Carousel */}
+        <div className="trending-posts-section">
+          <h2>TRENDING POSTS</h2>
+          <div className="trending-carousel">
+            {trendingPosts.map((post, index) => (
+              <motion.div
+                key={post.id}
+                className="trending-item"
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.2 }}
+              >
+                <span className="trending-number">{index + 1}</span>
+                <img src={post.icon} alt={post.title} className="trending-icon" />
+                <div className="trending-info">
+                  <span className="trending-category">{post.category}</span>
+                  <h3>{post.title}</h3>
+                  <div className="trending-meta">
+                    <span className="date">{post.date}</span>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
         {/* Design Elements */}
         <div className="design-section">
           <div className="design-card">
@@ -144,7 +357,7 @@ const BlogPage = () => {
           </div>
         </div>
 
-        {/* Filter + Search */}
+        {/* Filter + Search + Sort */}
         <div className="filter-section">
           <div className="filter-search-container">
             <span className="filter-label">Filter by:</span>
@@ -187,6 +400,11 @@ const BlogPage = () => {
                 </button>
               )}
             </div>
+            <select className="sort-select" value={sortOption} onChange={handleSortChange}>
+              <option value="newest">Sort by: Newest</option>
+              <option value="oldest">Sort by: Oldest</option>
+              <option value="title">Sort by: Title</option>
+            </select>
           </div>
         </div>
 
@@ -208,41 +426,83 @@ const BlogPage = () => {
 
         {/* Grid */}
         <div className="blog-grid">
-          {filteredBlogs.map((blog) => (
-            <motion.div
-              key={blog.id}
-              className="blog-card"
-              whileHover={{ scale: 1.02 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="card-image">
-                <img
-                  src={blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
-                  alt={blog.title}
-                  className="card-img"
-                />
-              </div>
-              <div className="card-content">
-                <h3>{blog.title}</h3>
-                <p>{blog.body?.slice(0, 150)}...</p>
-                <div className="card-tags">
-                  {(blog.tags || []).map((tag, i) => (
-                    <span key={i} className="tag">{tag}</span>
-                  ))}
+          {currentPosts.map((blog) => (
+            <Link to={`/blog/${blog.id}`} key={blog.id} className="blog-card-link">
+              <motion.div
+                className="blog-card"
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="card-image">
+                  <img
+                    src={blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
+                    alt={blog.title}
+                    className="card-img"
+                  />
                 </div>
-                <div className="card-meta">
-                  <span className="date">
-                    {new Date(blog.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                  </span>
-                  <span className="category">{blog.tags?.[0] || 'General'}</span>
+                <div className="card-content">
+                  <h3>{blog.title}</h3>
+                  <p>{blog.body?.slice(0, 150)}...</p>
+                  <div className="card-tags">
+                    {(blog.tags || []).map((tag, i) => (
+                      <span key={i} className="tag">{tag}</span>
+                    ))}
+                  </div>
+                  <div className="card-meta">
+                    <span className="date">
+                      {new Date(blog.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
+                    </span>
+                    <span className="category">{blog.tags?.[0] || 'General'}</span>
+                    <span className="reading-time">{calculateReadingTime(blog.body)} min read</span>
+                    <span className="like-count">{getMockLikeCount()} likes</span>
+                  </div>
+                  <div className="card-actions">
+                    <button
+                      className={`bookmark-btn ${bookmarks.includes(blog.id) ? 'bookmarked' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleBookmark(blog.id);
+                      }}
+                    >
+                      {bookmarks.includes(blog.id) ? '★' : '☆'}
+                    </button>
+                    <button
+                      className={`like-btn ${likes.includes(blog.id) ? 'liked' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleLike(blog.id);
+                      }}
+                    >
+                      {likes.includes(blog.id) ? '❤️' : '🤍'}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
+              </motion.div>
+            </Link>
           ))}
+        </div>
+
+        {/* Pagination */}
+        <div className="pagination">
+          <button
+            className={`page-btn ${currentPage === 1 ? 'disabled' : ''}`}
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </button>
+          <span className="page-info">Page {currentPage} of {totalPages}</span>
+          <button
+            className={`page-btn ${currentPage === totalPages ? 'disabled' : ''}`}
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            &gt;
+          </button>
         </div>
 
         {/* Top Authors */}

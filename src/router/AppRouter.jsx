@@ -26,6 +26,9 @@ import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
 import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
 import PregnancyTrackingPage from '../pages/PregnancyTrackingPage'; 
 import BlogPage from '../pages/BlogPage';
+import BlogDetailPage from '../pages/BlogDetailPage';
+import AdminAccountManagement from '../pages/admin/AdminAccountManagement';
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -60,6 +63,8 @@ const AppRoutes = () => {
         <Route path="/admin/categories" element={<BlogCategoryManagement />} />
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
+       <Route path="/admin/account-management" element={<AdminAccountManagement />} />
+
               <Route
           path="/blog"
           element={
@@ -68,7 +73,14 @@ const AppRoutes = () => {
             </MainLayout>
           }
         />
-
+ <Route
+          path="/blog/:id"
+          element={
+            <MainLayout>
+              <BlogDetailPage />
+            </MainLayout>
+          }
+        />
       </Routes>
     </ThemeProvider>
   );
