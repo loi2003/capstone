@@ -1,10 +1,81 @@
-/* Add this to your existing BlogPage.css file */
 .blog-page {
   font-family: 'Inter', sans-serif;
   color: #2d3748;
   background: #fcfcfc;
   display: flex;
-  flex-direction: row-reverse; /* Move sidebar to the right */
+  flex-direction: row-reverse;
+  position: relative;
+}
+
+.auth-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.auth-popup-content {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.auth-popup-content h3 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #2d3748;
+}
+
+.auth-popup-content p {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-bottom: 20px;
+}
+
+.auth-popup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.auth-popup-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.auth-popup-btn:hover {
+  background: #1e40af;
+}
+
+.auth-popup-close {
+  background: #e2e8f0;
+  color: #2d3748;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.auth-popup-close:hover {
+  background: #cbd5e1;
 }
 
 .main-content {
@@ -17,13 +88,14 @@
   padding: 20px;
   background: #f7fafc;
   border-left: 1px solid #e2e8f0;
-  height: auto; /* Adjusted to match filter section height */
-  max-height: calc(100vh - 40px); /* Limit height to viewport minus padding */
-  overflow-y: auto; /* Add scroll if content exceeds */
+  height: auto;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
 }
 
 .categories-section h2,
-.trending-section h2 {
+.trending-section h2,
+.trending-posts-section h2 {
   font-size: 1.2rem;
   font-weight: 600;
   color: #4a5568;
@@ -57,6 +129,18 @@
 
 .trending-section {
   margin-top: 20px;
+}
+
+.trending-posts-section {
+  padding: 20px;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.trending-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .trending-item {
@@ -168,6 +252,7 @@
   gap: 16px;
   max-width: 2000px;
   margin: 0 auto;
+  flex-wrap: wrap;
 }
 
 .filter-label {
@@ -262,6 +347,23 @@
   color: #2563eb;
 }
 
+.sort-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+  color: #374151;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sort-select:hover {
+  border-color: #2563eb;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
 .blog-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -269,6 +371,12 @@
   padding: 30px 20px;
   max-width: 2000px;
   margin: 0 auto;
+}
+
+.blog-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
 }
 
 .blog-card {
@@ -332,6 +440,118 @@
   justify-content: space-between;
   font-size: 0.75rem;
   color: #718096;
+  flex-wrap: wrap;
+}
+
+.reading-time,
+.like-count {
+  margin-left: 10px;
+}
+
+.card-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.bookmark-btn,
+.like-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.bookmark-btn:hover,
+.like-btn:hover {
+  color: #2563eb;
+}
+
+.bookmark-btn.bookmarked {
+  color: #f6e05e;
+}
+
+.like-btn.liked {
+  color: #e53e3e;
+}
+
+.share-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.share-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.share-icon {
+  width: 20px;
+  height: 20px;
+  fill: #6b7280;
+  transition: fill 0.3s ease;
+}
+
+.share-btn:hover .share-icon {
+  fill: #2563eb;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  margin: 20px auto;
+  max-width: 300px;
+}
+
+.page-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 12px 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  height: 40px;
+}
+
+.page-btn:hover:not(.disabled) {
+  background: #1e40af;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.page-btn.disabled {
+  background: #e2e8f0;
+  color: #a0aec0;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.page-info {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #2d3748;
+  background: #f7fafc;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .top-authors-section {
@@ -465,12 +685,20 @@
     min-width: 200px;
   }
 
+  .sort-select {
+    width: 100%;
+  }
+
   .design-section {
     grid-template-columns: 1fr;
   }
 
   .sidebar {
     width: 250px;
+  }
+
+  .trending-carousel {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -493,6 +721,10 @@
   }
 
   .search-container {
+    width: 100%;
+  }
+
+  .sort-select {
     width: 100%;
   }
 
@@ -534,12 +766,30 @@
 
   .sidebar {
     width: 100%;
-    max-height: none; /* Remove max-height on mobile */
+    max-height: none;
     border-left: none;
     border-top: 1px solid #e2e8f0;
   }
 
   .main-content {
     padding: 10px;
+  }
+
+  .trending-carousel {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination {
+    max-width: 100%;
+    gap: 12px;
+  }
+
+  .page-btn {
+    padding: 10px 16px;
+    min-width: 40px;
+  }
+
+  .page-info {
+    font-size: 0.9rem;
   }
 }
