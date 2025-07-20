@@ -45,22 +45,22 @@
   color: var(--white-text);
 }
 
-.card-icon {
+.overview-card-icon {
   color: var(--accent-color);
   flex-shrink: 0;
 }
 
-.overview-card.highlight .card-icon {
+.overview-card.highlight .overview-card-icon {
   color: var(--white-text);
 }
 
-.card-content h3 {
+.overview-card-content h3 {
   font-size: 1.3rem;
   font-weight: 700;
   margin-bottom: 0.25rem;
 }
 
-.card-content p {
+.overview-card-content p {
   font-size: 0.9rem;
   opacity: 0.8;
 }
