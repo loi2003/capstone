@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { addBlog, getAllCategories } from "../apis/blog-api";
 import { getCurrentUser } from "../apis/authentication-api";
-import "../styles/BlogManagement.css"; // Use AddingBlog.css if separate
+import "../styles/AddingBlog.css";
 
 const AddingBlog = () => {
   const [user, setUser] = useState(null);
@@ -143,7 +143,7 @@ const AddingBlog = () => {
     try {
       setLoading(true);
       const response = await addBlog(blogData, token);
-      console.log("Blog submission response:", response.data); // Debug: Log response
+      console.log("Blog submission response:", response.data);
       setMessage("Blog post created successfully!");
       setIsError(false);
       setFormData({
@@ -193,7 +193,7 @@ const AddingBlog = () => {
           <h1 className="blog-header-title">Add New Blog</h1>
           <button
             onClick={() => navigate("/blog-management")}
-            className="blog-action-button secondary"
+            className="blog-action-button blog-action-button--secondary"
           >
             Back to Blog Management
           </button>
@@ -291,7 +291,7 @@ const AddingBlog = () => {
               </div>
               <motion.button
                 type="submit"
-                className="blog-action-button primary"
+                className="blog-action-button blog-action-button--primary"
                 disabled={loading || !user}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

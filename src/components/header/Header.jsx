@@ -67,7 +67,7 @@ const Header = () => {
   // Hàm xử lý đăng xuất
   const handleLogout = async () => {
     if (!user?.userId) {
-      // console.error('Không tìm thấy userId để đăng xuất');
+
       localStorage.removeItem('token');
       setUser(null);
       navigate('/signin', { replace: true });
@@ -120,6 +120,8 @@ const Header = () => {
           <Link to="/consultation">Consultation</Link>
           <Link to="/community">Community</Link>
           <Link to="/donation">Donation</Link>
+          <Link to="/blog">Blog</Link>
+
           {/* Phần xác thực: Hiển thị nút Sign In hoặc user icon */}
           <div className="auth-section">
             {user ? (

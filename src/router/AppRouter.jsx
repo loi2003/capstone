@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from '../contexts/ThemeContext';
+import MainLayout from '../layouts/MainLayout'
 import HomePage from '../pages/HomePage';
 import SignIn from '../pages/authentication/SignIn';
 import SignUp from '../pages/authentication/SignUp';
@@ -24,6 +25,10 @@ import NotFound from '../pages/error/404NotFound';
 import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
 import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
 import PregnancyTrackingPage from '../pages/PregnancyTrackingPage'; 
+import BlogPage from '../pages/BlogPage';
+import BlogDetailPage from '../pages/BlogDetailPage';
+import AdminAccountManagement from '../pages/admin/AdminAccountManagement';
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -58,6 +63,24 @@ const AppRoutes = () => {
         <Route path="/admin/categories" element={<BlogCategoryManagement />} />
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
+       <Route path="/admin/account-management" element={<AdminAccountManagement />} />
+
+              <Route
+          path="/blog"
+          element={
+            <MainLayout>
+              <BlogPage />
+            </MainLayout>
+          }
+        />
+ <Route
+          path="/blog/:id"
+          element={
+            <MainLayout>
+              <BlogDetailPage />
+            </MainLayout>
+          }
+        />
       </Routes>
     </ThemeProvider>
   );

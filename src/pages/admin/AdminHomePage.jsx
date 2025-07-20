@@ -241,9 +241,9 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/admin/reports"
+              to="/admin/account-management"
               onClick={() => setIsSidebarOpen(true)}
-              title="Reports"
+              title="Account Management"
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
@@ -251,10 +251,10 @@ const AdminHomePage = () => {
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M3 3v18h18M9 13v4m6-6v6m-12-8v8"
+                  d="M12 2c-5.52 0-10 4.48-10 10s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                 />
               </svg>
-              {isSidebarOpen && <span>Reports</span>}
+              {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
           {user ? (
@@ -346,10 +346,10 @@ const AdminHomePage = () => {
                 Manage Users
               </Link>
               <Link
-                to="/admin/reports"
+                to="/admin/account-management"
                 className="admin-banner-button secondary"
               >
-                View Reports
+                Account Management
               </Link>
             </div>
           </motion.div>
@@ -396,12 +396,9 @@ const AdminHomePage = () => {
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
-              <h3>Reports</h3>
-              <p>
-                Generate and analyze detailed reports to track system
-                performance.
-              </p>
-              <Link to="/admin/reports" className="admin-feature-link">
+              <h3>Account Management</h3>
+              <p>Create accounts for Health Experts, Nutrient Specialists, and Clinics.</p>
+              <Link to="/admin/account-management" className="admin-feature-link">
                 Explore
               </Link>
             </motion.div>
