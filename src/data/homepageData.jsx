@@ -135,7 +135,7 @@ export const homepageData = {
     title: "Theo Dõi Thai Kỳ 40 Tuần",
     description: "Hành trình 40 tuần của bạn được hỗ trợ với thông tin chi tiết về sự phát triển của bé, mẹo chăm sóc sức khỏe và các cột mốc quan trọng.",
     cta: "Bắt Đầu Theo Dõi",
-    ctaLink: "/pregnancy-tracker",
+    ctaLink: "/pregnancy-tracking",
     milestones: [
       {
         week: 4,
