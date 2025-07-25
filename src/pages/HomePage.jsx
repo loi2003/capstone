@@ -211,7 +211,7 @@ const HomePage = () => {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="hero-graphic"
             >
-              {/* <svg height="300px" width="300px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xmlSpace="preserve">
+              <svg height="300px" width="300px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xmlSpace="preserve">
                 <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
                 <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
                 <g id="SVGRepo_iconCarrier">
@@ -232,7 +232,7 @@ const HomePage = () => {
                     <path id="XMLID_1311_" style={{fill: '#FFFFFF'}} d="M100,145c0,16.543-13.458,30-30,30s-30-13.457-30-30H20c0,27.57,22.43,50,50,50 s50-22.43,50-50H100z"></path>
                   </g>
                 </g>
-              </svg> */}
+              </svg>
             </motion.div>
           </div>
         </section>
