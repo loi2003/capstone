@@ -285,3 +285,35 @@ export const getBlogsByUser = async (userId, token) => {
     throw error;
   }
 };
+
+export const deleteLike = async (blogId, token) => {
+  try {
+    const response = await apiClient.delete(`/api/like/delete/${blogId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Delete like response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error deleting like:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export const deleteBookmark = async (blogId, token) => {
+  try {
+    const response = await apiClient.delete(`/api/bookmark/delete/${blogId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Delete bookmark response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error deleting bookmark:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
