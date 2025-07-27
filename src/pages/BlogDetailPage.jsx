@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getAllBlogs } from '../apis/blog-api';
+import { getAllBlogs, deleteLike, deleteBookmark } from '../apis/blog-api';
 import apiClient from '../apis/url-api';
 import '../styles/BlogDetailPage.css';
 
@@ -44,7 +44,6 @@ const BlogDetailPage = () => {
     localStorage.setItem('likes', JSON.stringify(likes));
   }, [bookmarks, likes]);
 
-  // Slideshow auto-advance
   useEffect(() => {
     if (blog?.images?.length > 1) {
       const interval = setInterval(() => {
@@ -60,17 +59,20 @@ const BlogDetailPage = () => {
       return;
     }
     try {
-      const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/plain',
-        },
-      });
-      if (response.status === 200) {
-        if (bookmarks.includes(blogId)) {
-          setBookmarks(bookmarks.filter(id => id !== blogId));
-        } else {
-          setBookmarks([...bookmarks, blogId]);
+      if (bookmarks.includes(String(blogId))) {
+        const response = await deleteBookmark(blogId, token);
+        if (response.status === 200) {
+          setBookmarks(bookmarks.filter(id => id !== String(blogId)));
+        }
+      } else {
+        const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'text/plain',
+          },
+        });
+        if (response.status === 200) {
+          setBookmarks([...bookmarks, String(blogId)]);
         }
       }
     } catch (error) {
@@ -84,17 +86,22 @@ const BlogDetailPage = () => {
       return;
     }
     try {
-      const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/plain',
-        },
-      });
-      if (response.status === 200) {
-        if (likes.includes(blogId)) {
-          setLikes(likes.filter(id => id !== blogId));
-        } else {
-          setLikes([...likes, blogId]);
+      if (likes.includes(String(blogId))) {
+        const response = await deleteLike(blogId, token);
+        if (response.status === 200) {
+          setLikes(likes.filter(id => id !== String(blogId)));
+          setBlog(prev => ({ ...prev, likeCount: (prev.likeCount || 0) - 1 }));
+        }
+      } else {
+        const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'text/plain',
+          },
+        });
+        if (response.status === 200) {
+          setLikes([...likes, String(blogId)]);
+          setBlog(prev => ({ ...prev, likeCount: (prev.likeCount || 0) + 1 }));
         }
       }
     } catch (error) {
@@ -226,19 +233,27 @@ const BlogDetailPage = () => {
           </div>
           <div className="blog-detail-actions">
             <button
-              className={`bookmark-btn ${bookmarks.includes(blog.id) ? 'bookmarked' : ''}`}
+              className={`bookmark-btn ${bookmarks.includes(String(blog.id)) ? 'bookmarked' : ''}`}
               onClick={() => toggleBookmark(blog.id)}
             >
               <svg viewBox="0 0 24 24">
-                <path d="M5 3v18l7-5 7 5V3H5zm2 2h10v13l-5-3.5-5 3.5V5z"/>
+                {bookmarks.includes(String(blog.id)) ? (
+                  <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
+                ) : (
+                  <path d="M5 3v18l7-5 7 5V3H5zm2 2h10v13l-5-3.5-5 3.5V5z"/>
+                )}
               </svg>
             </button>
             <button
-              className={`like-btn ${likes.includes(blog.id) ? 'liked' : ''}`}
+              className={`like-btn ${likes.includes(String(blog.id)) ? 'liked' : ''}`}
               onClick={() => toggleLike(blog.id)}
             >
               <svg viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                {likes.includes(String(blog.id)) ? (
+                  <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
+                ) : (
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                )}
               </svg>
             </button>
           </div>

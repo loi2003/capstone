@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getAllBlogs, getAllLikedBlogs, getAllBookmarkedBlogs } from '../apis/blog-api';
+import { getAllBlogs, getAllLikedBlogs, getAllBookmarkedBlogs, deleteLike, deleteBookmark } from '../apis/blog-api';
 import apiClient from '../apis/url-api';
 import '../styles/BlogPage.css';
 
@@ -42,8 +42,8 @@ const BlogPage = () => {
               .filter(blog => blog.status?.toLowerCase() === 'approved')
               .map(blog => ({
                 ...blog,
-                id: blog.blogId || blog.id, // Map blogId to id
-                createdAt: blog.creationDate || blog.createdAt // Map creationDate to createdAt
+                id: blog.blogId || blog.id,
+                createdAt: blog.creationDate || blog.createdAt
               }))
           : [];
         setBlogs(approvedBlogs);
@@ -51,7 +51,6 @@ const BlogPage = () => {
         console.log('Approved blogs:', approvedBlogs);
 
         if (token) {
-          // Fetch liked blogs
           const likedResponse = await getAllLikedBlogs(token);
           const likedBlogIds = Array.isArray(likedResponse.data?.data)
             ? likedResponse.data.data.map(blog => String(blog.blogId || blog.id))
@@ -59,7 +58,6 @@ const BlogPage = () => {
           setLikes(likedBlogIds);
           console.log('Liked blog IDs:', likedBlogIds);
 
-          // Fetch bookmarked blogs
           const bookmarkedResponse = await getAllBookmarkedBlogs(token);
           const bookmarkedBlogIds = Array.isArray(bookmarkedResponse.data?.data)
             ? bookmarkedResponse.data.data.map(blog => String(blog.blogId || blog.id))
@@ -173,23 +171,27 @@ const BlogPage = () => {
       return;
     }
     try {
-      const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/plain',
-        },
-      });
-      if (response.status === 200) {
-        setBookmarks(prevBookmarks => {
-          const newBookmarks = prevBookmarks.includes(String(blogId))
-            ? prevBookmarks.filter(id => id !== String(blogId))
-            : [...prevBookmarks, String(blogId)];
-          console.log('Toggled bookmark, new bookmarks:', newBookmarks);
-          return newBookmarks;
-        });
-        setActionError(null);
+      if (bookmarks.includes(String(blogId))) {
+        const response = await deleteBookmark(blogId, token);
+        if (response.status === 200) {
+          setBookmarks(prevBookmarks => prevBookmarks.filter(id => id !== String(blogId)));
+          setActionError(null);
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
       } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
+        const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'text/plain',
+          },
+        });
+        if (response.status === 200) {
+          setBookmarks(prevBookmarks => [...prevBookmarks, String(blogId)]);
+          setActionError(null);
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error('Error toggling bookmark:', error.response?.status, error.response?.data, error.message);
@@ -204,38 +206,55 @@ const BlogPage = () => {
       return;
     }
     try {
-      const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/plain',
-        },
-      });
-      if (response.status === 200) {
-        setLikes(prevLikes => {
-          const wasLiked = prevLikes.includes(String(blogId));
-          const newLikes = wasLiked
-            ? prevLikes.filter(id => id !== String(blogId))
-            : [...prevLikes, String(blogId)];
-          console.log('Toggled like, new likes:', newLikes);
-          return newLikes;
-        });
-        setBlogs(prevBlogs =>
-          prevBlogs.map(blog =>
-            String(blog.id) === String(blogId)
-              ? { ...blog, likeCount: likes.includes(String(blogId)) ? (blog.likeCount || 0) - 1 : (blog.likeCount || 0) + 1 }
-              : blog
-          )
-        );
-        setFilteredBlogs(prevFiltered =>
-          prevFiltered.map(blog =>
-            String(blog.id) === String(blogId)
-              ? { ...blog, likeCount: likes.includes(String(blogId)) ? (blog.likeCount || 0) - 1 : (blog.likeCount || 0) + 1 }
-              : blog
-          )
-        );
-        setActionError(null);
+      if (likes.includes(String(blogId))) {
+        const response = await deleteLike(blogId, token);
+        if (response.status === 200) {
+          setLikes(prevLikes => prevLikes.filter(id => id !== String(blogId)));
+          setBlogs(prevBlogs =>
+            prevBlogs.map(blog =>
+              String(blog.id) === String(blogId)
+                ? { ...blog, likeCount: (blog.likeCount || 0) - 1 }
+                : blog
+            )
+          );
+          setFilteredBlogs(prevFiltered =>
+            prevFiltered.map(blog =>
+              String(blog.id) === String(blogId)
+                ? { ...blog, likeCount: (blog.likeCount || 0) - 1 }
+                : blog
+            )
+          );
+          setActionError(null);
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
       } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
+        const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'text/plain',
+          },
+        });
+        if (response.status === 200) {
+          setLikes(prevLikes => [...prevLikes, String(blogId)]);
+          setBlogs(prevBlogs =>
+            prevBlogs.map(blog =>
+              String(blog.id) === String(blogId)
+                ? { ...blog, likeCount: (blog.likeCount || 0) + 1 }
+                : blog
+            )
+          );
+          setFilteredBlogs(prevFiltered =>
+            prevFiltered.map(blog =>
+              String(blog.id) === String(blogId)
+                ? { ...blog, likeCount: (blog.likeCount || 0) + 1 }
+                : blog
+            )
+          );
+          setActionError(null);
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
       }
     } catch (error) {
       console.error('Error toggling like:', error.response?.status, error.response?.data, error.message);
@@ -644,7 +663,11 @@ const BlogPage = () => {
                       }}
                     >
                       <svg viewBox="0 0 24 24">
-                        <path d="M5 3v18l7-5 7 5V3H5zm2 2h10v13l-5-3.5-5 3.5V5z"/>
+                        {bookmarks.includes(String(blog.id)) ? (
+                          <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
+                        ) : (
+                          <path d="M5 3v18l7-5 7 5V3H5zm2 2h10v13l-5-3.5-5 3.5V5z"/>
+                        )}
                       </svg>
                     </button>
                     <button
@@ -655,7 +678,11 @@ const BlogPage = () => {
                       }}
                     >
                       <svg viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        {likes.includes(String(blog.id)) ? (
+                          <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
+                        ) : (
+                          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                        )}
                       </svg>
                     </button>
                   </div>
