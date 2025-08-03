@@ -1,0 +1,33 @@
+/* MainLayout.css */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.main-content {
+  flex: 1;
+  width: 100%;
+  overflow-x: hidden;
+  padding-top: 80px; /* Matches default header max-height */
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    padding-top: 70px; /* Matches header max-height at 900px */
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding-top: 60px; /* Matches header max-height at 480px */
+  }
+}
+
+@media (max-width: 320px) {
+  .main-content {
+    padding-top: 50px; /* Matches header max-height at 320px */
+  }
+}
