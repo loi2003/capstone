@@ -45,6 +45,7 @@ export const login = async (data) => {
     throw error;
   }
 };
+
 export const getCurrentUser = async (token) => {
   try {
     const response = await apiClient.get(`/api/User/get-current-user`, {
@@ -65,13 +66,13 @@ export const logout = async (userId) => {
   try {
     const response = await apiClient.post(
       `/api/auth/user/logout`,
-      userId, // ✅ just pass the raw GUID (not quoted) if expecting a Guid from [FromBody]
+      userId,
       {
         headers: {
           'Content-Type': 'application/json',
           Accept: '*/*',
         },
-        withCredentials: true, // ✅ in case cookie exists
+        withCredentials: true,
       }
     );
     return response;
@@ -109,6 +110,61 @@ export const resetPassword = async (data) => {
     return response;
   } catch (error) {
     console.error("Error resetting password:", error);
+    throw error;
+  }
+};
+
+export const uploadAvatar = async (userId, file, token) => {
+  try {
+    const formData = new FormData();
+    formData.append('userId', userId);
+    formData.append('file', file);
+    
+    const response = await apiClient.post(`/api/user/upload-avatar`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Accept: "*/*",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.error("Error uploading avatar:", error);
+    throw error;
+  }
+};
+
+export const editUserProfile = async (profileData, token) => {
+  try {
+    const formData = new FormData();
+    formData.append('Id', profileData.Id);
+    formData.append('UserName', profileData.UserName);
+    formData.append('PhoneNumber', profileData.PhoneNumber);
+    formData.append('DateOfBirth', profileData.DateOfBirth);
+
+    console.log('FormData contents:');
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    const response = await apiClient.put(
+      `/api/user/edit-user-profile`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",  // Changed from application/json
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error("Update error details:", {
+      requestData: error.config?.data,
+      responseData: error.response?.data,
+      status: error.response?.status
+    });
     throw error;
   }
 };

@@ -29,9 +29,10 @@ import BlogPage from "../pages/BlogPage";
 import BlogDetailPage from "../pages/BlogDetailPage";
 import AdminAccountManagement from "../pages/admin/AdminAccountManagement";
 import NutrientCategoryManagement from "../pages/nutrientspecialist/NutrientCategoryManagement";
-import NutrientManagement from "../pages/nutrientspecialist/NutrientManagement"
+import NutrientManagement from "../pages/nutrientspecialist/NutrientManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
-
+import ProfilePage from "../pages/ProfilePage";
+import SupportPage from "../pages/SupportPage";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -69,8 +70,9 @@ const AppRoutes = () => {
         <Route path="/admin/categories" element={<BlogCategoryManagement />} />
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
-                <Route path="/nutritional-guidance" element={<NutritionalGuidance />} />
-
+        <Route path="/nutritional-guidance" element={<NutritionalGuidance />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/support" element={<SupportPage />} />
         <Route
           path="/admin/account-management"
           element={<AdminAccountManagement />}
@@ -83,7 +85,6 @@ const AppRoutes = () => {
           path="/nutrient-specialist/nutrient-management"
           element={<NutrientManagement />}
         />
-
         <Route
           path="/blog"
           element={
