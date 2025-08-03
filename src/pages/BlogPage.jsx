@@ -29,7 +29,31 @@ const BlogPage = () => {
       title: "Welcome to Our Blog Hub",
       subtitle: "Explore insights, trends, and stories that inspire.",
       cta: "Get Started",
-      ctaLink: "/start"
+      ctaLink: "/start",
+      bgColor: "linear-gradient(135deg, #4c51bf, #ed8936)", // New gradient: Indigo to Amber
+      textColor: "#ffffff",
+      svg: (
+        <svg width="320" height="320" viewBox="0 0 320 320" fill="none">
+          <path
+            d="M40 80h240v160H40V80z"
+            fill="rgba(255, 255, 255, 0.2)"
+            stroke="#ffffff"
+            strokeWidth="4"
+          />
+          <path
+            d="M60 100h200v120H60V100z"
+            fill="rgba(255, 255, 255, 0.1)"
+          />
+          <path
+            d="M70 110h180v100H70V110z"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="2"
+          />
+          <circle cx="90" cy="130" r="10" fill="#ffffff" />
+          <circle cx="230" cy="130" r="10" fill="#ffffff" />
+        </svg>
+      )
     }
   };
 
@@ -390,7 +414,7 @@ const BlogPage = () => {
   };
 
   return (
-    <div className="blog-page">
+    <div className="blog-page" style={{ marginTop: '68px' }}> {/* Adjust for Header height */}
       {showAuthPopup && (
         <div className="blog-page__auth-popup">
           <div className="blog-page__auth-popup-content">
@@ -454,19 +478,20 @@ const BlogPage = () => {
       )}
 
       {actionError && (
-        <div className="blog-page__error" style={{ position: 'fixed', top: '20px', right: '20px', background: '#e53e3e', color: '#fff', padding: '10px 20px', borderRadius: '5px', zIndex: 1000 }}>
+        <div className="blog-page__error" style={{ position: 'fixed', top: '88px', right: '20px', background: '#e53e3e', color: '#fff', padding: '10px 20px', borderRadius: '5px', zIndex: 1000 }}>
           {actionError}
         </div>
       )}
       
       <div className="blog-page__main-content">
-        <section className="blog-intro-section">
+        <section className="blog-intro-section" style={{ background: aboutpageData.hero.bgColor }}>
           <div className="blog-intro-content">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               className="blog-intro-text"
+              style={{ color: aboutpageData.hero.textColor }}
             >
               <h1 className="blog-intro-title">{aboutpageData.hero.title}</h1>
               <p className="blog-intro-subtitle">{aboutpageData.hero.subtitle}</p>
@@ -480,22 +505,7 @@ const BlogPage = () => {
               transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
               className="blog-intro-graphic"
             >
-              <svg width="320" height="320" viewBox="0 0 320 320" fill="none">
-                <circle cx="160" cy="120" r="90" fill="rgba(255, 255, 255, 0.15)" />
-                <path
-                  d="M160 120 C 190 70, 230 70, 270 120 S 230 170, 200 120 S 170 70, 130 120"
-                  stroke="#ffffff"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <circle cx="130" cy="120" r="10" fill="#ffffff" />
-                <circle cx="200" cy="120" r="10" fill="#ffffff" />
-                <circle cx="270" cy="120" r="10" fill="#ffffff" />
-                <rect x="110" y="180" width="100" height="120" rx="25" fill="rgba(255, 255, 255, 0.1)" />
-                <rect x="125" y="195" width="70" height="15" fill="rgba(255, 255, 255, 0.2)" />
-                <rect x="125" y="220" width="70" height="15" fill="rgba(255, 255, 255, 0.2)" />
-                <rect x="125" y="245" width="70" height="15" fill="rgba(255, 255, 255, 0.2)" />
-              </svg>
+              {aboutpageData.hero.svg}
             </motion.div>
           </div>
         </section>
