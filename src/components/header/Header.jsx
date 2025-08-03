@@ -16,7 +16,6 @@ const Header = () => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
-        console.log("Closed dropdown due to click outside");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -50,16 +49,13 @@ const Header = () => {
   }, []);
 
   const toggleMenu = () => {
-    console.log("Toggling menu, current isMenuOpen:", isMenuOpen);
     setIsMenuOpen((prev) => {
       const newState = !prev;
-      console.log("New isMenuOpen state:", newState);
       const navLinks = document.querySelector(".nav-links");
       if (navLinks) {
         navLinks.classList.toggle("open", newState);
       }
 
-      // Lock/unlock body scroll position
       if (newState) {
         const scrollY = window.scrollY;
         document.body.classList.add("menu-open");
@@ -75,17 +71,14 @@ const Header = () => {
 
       if (isDropdownOpen) {
         setIsDropdownOpen(false);
-        console.log("Closed dropdown on menu toggle");
       }
       return newState;
     });
   };
 
   const toggleDropdown = () => {
-    console.log("Toggling dropdown, current isDropdownOpen:", isDropdownOpen);
     setIsDropdownOpen((prev) => {
       const newState = !prev;
-      console.log("New isDropdownOpen state:", newState);
       return newState;
     });
   };
@@ -138,7 +131,7 @@ const Header = () => {
           <Link to="/blog" title="Blog">Blog</Link>
           <div className="auth-section">
             {user ? (
-              <div className="profile-section" ref={dropdownRef}>
+              <div className={`profile-section ${isDropdownOpen ? "open" : ""}`} ref={dropdownRef}>
                 <button
                   className="profile-toggle"
                   onClick={toggleDropdown}
@@ -163,6 +156,12 @@ const Header = () => {
                     <span className="profile-email" title={user.email || "Người dùng"}>
                       {user.email || "Người dùng"}
                     </span>
+                    <Link to="/profile" className="dropdown-link">
+                      Profile
+                    </Link>
+                    <Link to="/support" className="dropdown-link">
+                      Support
+                    </Link>
                     <button onClick={handleLogout} className="logout-btn">
                       Đăng xuất
                     </button>

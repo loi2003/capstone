@@ -1,15 +1,14 @@
-/* Reset default margins and paddings */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* CSS Variables (aligned with Footer) */
 :root {
   --primary-bg: #04668D;
   --accent-color: #02808F;
   --accent-hover: #003c8f;
+  --logout-hover: #d32f2f; /* Distinct red for logout button touch/click */
   --white-text: #ffffd4;
   --white: #feffe9;
   --light-bg: #e6f0fa;
@@ -25,7 +24,7 @@ body.dark-theme {
 }
 
 body.menu-open {
-  overflow: hidden; /* Prevent both vertical and horizontal scrolling */
+  overflow: hidden;
   width: 100%;
   height: 100dvh;
 }
@@ -40,7 +39,6 @@ body.menu-open {
   right: 0;
   width: 100%;
   z-index: 1000;
-  overflow: hidden; /* Prevent both vertical and horizontal overflow */
   font-family: 'Inter', sans-serif;
   max-height: 70px;
   height: 70px;
@@ -55,7 +53,6 @@ body.menu-open {
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
-  overflow: hidden; /* Prevent both vertical and horizontal overflow */
   height: 100%;
   max-height: 50px;
 }
@@ -90,8 +87,7 @@ body.menu-open {
   padding: 8px 12px;
   transition: var(--transition);
   border-radius: var(--border-radius);
-  overflow-wrap: break-word;
-  hyphens: auto;
+  white-space: nowrap;
   max-width: 20%;
 }
 
@@ -107,6 +103,7 @@ body.menu-open {
   align-items: center;
   gap: 10px;
   max-width: 35%;
+  min-width: 150px;
 }
 
 .nav-links .sign-in-btn {
@@ -123,8 +120,7 @@ body.menu-open {
   font-size: 0.95rem;
   box-shadow: var(--shadow);
   display: inline-block;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  white-space: nowrap;
 }
 
 .nav-links .sign-in-btn:hover {
@@ -134,52 +130,14 @@ body.menu-open {
   transform: scale(1.05);
 }
 
-.register-link {
-  background: var(--white);
-  color: #2e6da4;
-  border-radius: 12px;
-  padding: 6px 12px;
-  font-weight: 600;
-  text-decoration: none;
-  transition: var(--transition);
-  box-shadow: var(--shadow);
-  display: inline-block;
-  position: relative;
-  overflow-wrap: break-word;
-  hyphens: auto;
-}
-
-.register-link::after {
-  content: '';
-  position: absolute;
-  width: 0;
-  height: 2px;
-  bottom: 0;
-  left: 0;
-  background-color: #1a5a8a;
-  transition: width 0.3s ease;
-}
-
-.register-link:hover::after {
-  width: 100%;
-}
-
-.register-link:hover {
-  background: rgba(240, 244, 248, 0.7); /* Softer background */
-  color: #1a5a8a; /* Darker blue */
-}
-
 .auth-message {
   font-size: 0.7rem;
   color: var(--light-bg);
   margin: 0;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  white-space: nowrap;
   max-width: 35%;
-  white-space: normal;
   line-height: 1;
   text-align: center;
-  text-overflow: ellipsis;
 }
 
 .auth-message a {
@@ -188,6 +146,7 @@ body.menu-open {
   text-decoration: none;
   padding: 2px 4px;
   transition: var(--transition);
+  white-space: nowrap;
 }
 
 .auth-message a:hover {
@@ -231,6 +190,7 @@ body.menu-open {
   max-width: 200px;
   box-sizing: border-box;
   overflow: hidden;
+  z-index: 1010;
 }
 
 .search-bar input {
@@ -239,8 +199,7 @@ body.menu-open {
   border: none;
   border-radius: var(--border-radius);
   font-size: 0.85rem;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  white-space: nowrap;
 }
 
 .search-bar input:focus {
@@ -269,66 +228,130 @@ body.menu-open {
 
 .profile-section {
   position: relative;
+  z-index: 1003;
+  display: flex;
+  align-items: center;
+  min-width: 40px;
 }
 
 .profile-dropdown {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 8px);
   right: 0;
   background: var(--white);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
-  padding: 6px;
-  width: 100%;
-  max-width: 160px;
-  min-width: 100px;
-  max-height: 200px;
+  padding: 12px;
+  min-width: 250px;
+  max-height: 300px;
   overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 1003;
+  z-index: 1010;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+}
+
+.profile-section.open .profile-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.profile-dropdown a, .profile-dropdown .dropdown-link {
+  display: block;
+  padding: 8px 12px;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: var(--transition);
+  text-align: left;
+  border-radius: var(--border-radius);
+  background: transparent;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none; /* Remove default focus outline */
+}
+
+.profile-dropdown a:hover, .profile-dropdown .dropdown-link:hover,
+.profile-dropdown a:active, .profile-dropdown .dropdown-link:active {
+  background: var(--primary-bg);
+  color: var(--white);
+  box-shadow: var(--shadow-hover);
+  width: 100%;
+  outline: none; /* Ensure no default focus outline on touch/click */
+}
+
+.profile-email {
+  display: block;
+  padding: 8px 12px;
+  font-weight: 600;
+  color: #333;
+  text-align: left;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  line-height: 1.2;
+  border-bottom: 1px solid #eee;
+  width: 100%;
   box-sizing: border-box;
 }
 
-.profile-dropdown a, .profile-dropdown .logout-btn {
-  display: block;
-  padding: 6px;
-  color: #333;
+.logout-btn {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-decoration: none;
-  font-size: 0.85rem;
+  border-radius: var(--border-radius);
+  background: var(--accent-color);
+  color: var(--white);
+  border: none;
+  box-shadow: var(--shadow);
   transition: var(--transition);
   text-align: center;
-  overflow-wrap: break-word;
-  hyphens: auto;
+  cursor: pointer;
+  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none; /* Remove default focus outline */
 }
 
-.profile-dropdown a:hover, .profile-dropdown .logout-btn:hover {
-  background: #035474;
+.logout-btn:hover, .logout-btn:active {
+  background: var(--logout-hover);
   color: var(--white);
   box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
+  outline: none; /* Ensure no default focus outline on touch/click */
 }
 
 .language-selector {
   display: flex;
   gap: 6px;
+  padding: 8px 12px;
+  margin-top: 8px;
+  border-top: 1px solid #eee;
 }
 
 .language-selector button {
   background: none;
-  border: 1px solid var(--white);
-  color: var(--white);
+  border: 1px solid var(--primary-bg);
+  color: var(--primary-bg);
   padding: 4px 8px;
   border-radius: var(--border-radius);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: var(--transition);
-  overflow-wrap: break-word;
-  hyphens: auto;
+  white-space: nowrap;
 }
 
 .language-selector button:hover {
-  background: var(--accent-color);
-  color: var(--light-bg);
+  background: var(--primary-bg);
+  color: var(--white);
 }
 
 .menu-toggle {
@@ -382,40 +405,6 @@ body.menu-open {
   top: 0;
 }
 
-.profile-email {
-  margin-top: 6px;
-  font-weight: 700;
-  color: #333;
-  text-align: center;
-  overflow-wrap: break-word;
-  hyphens: auto;
-  max-width: 100%;
-  line-height: 1.2;
-}
-
-.logout-btn {
-  padding: 6px;
-  margin-top: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  border-radius: var(--border-radius);
-  background: #2e6da4;
-  color: #ffffff;
-  border: none;
-  box-shadow: var(--shadow);
-  transition: var(--transition);
-  width: 100%;
-  text-align: center;
-  cursor: pointer;
-}
-
-.logout-btn:hover {
-  background: #035474;
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-2px);
-}
-
 @media (max-width: 900px) {
   .header {
     padding: 12px 6px;
@@ -449,7 +438,6 @@ body.menu-open {
     left: 0;
     right: 0;
     overflow-y: auto;
-    overflow-x: hidden;
     box-shadow: var(--shadow);
     box-sizing: border-box;
     z-index: 1002;
@@ -464,6 +452,7 @@ body.menu-open {
     padding: 8px;
     max-width: 80%;
     text-align: center;
+    white-space: nowrap;
   }
 
   .auth-section {
@@ -473,41 +462,76 @@ body.menu-open {
     max-width: 100%;
   }
 
-  .sign-in-btn {
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    min-width: 70px;
-    max-width: 50%;
-  }
-
-  .register-link {
-    padding: 5px 10px;
-    font-size: 0.85rem;
-    min-width: 80px;
-    max-width: 50%;
-  }
-
-  .auth-message {
-    text-align: center;
-    font-size: 0.65rem;
-    max-width: 40%;
-  }
-
-  .search-bar {
+  .profile-section {
     width: 100%;
-    max-width: 80%;
-    margin: 0 auto;
-    right: 0;
-    padding: 6px;
+    text-align: center;
   }
 
   .profile-dropdown {
-    width: 100%;
-    max-width: 80%;
-    min-width: 0;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 220px;
+    width: auto;
+    max-width: 90%;
     margin: 0 auto;
-    right: 0;
-    max-height: 160px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-hover);
+    max-height: calc(100dvh - 90px);
+    padding: 10px;
+    gap: 6px;
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+
+  .profile-section.open .profile-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+  }
+
+  .profile-dropdown a, .profile-dropdown .dropdown-link {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .profile-dropdown a:hover, .profile-dropdown .dropdown-link:hover,
+  .profile-dropdown a:active, .profile-dropdown .dropdown-link:active {
+    background: var(--primary-bg);
+    color: var(--white);
+    box-shadow: var(--shadow-hover);
+    width: 100%;
+    outline: none;
+  }
+
+  .profile-email {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .logout-btn {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .logout-btn:hover, .logout-btn:active {
+    background: var(--logout-hover);
+    color: var(--white);
+    box-shadow: var(--shadow-hover);
+    outline: none;
   }
 }
 
@@ -521,25 +545,12 @@ body.menu-open {
     font-size: 0.9rem;
     padding: 6px;
     max-width: 85%;
+    white-space: nowrap;
   }
 
-  .sign-in-btn {
-    padding: 5px 10px;
-    font-size: 0.8rem;
-    min-width: 65px;
-    max-width: 50%;
-  }
-
-  .register-link {
-    padding: 4px 8px;
-    font-size: 0.8rem;
-    min-width: 75px;
-    max-width: 50%;
-  }
-
-  .auth-message {
-    font-size: 0.6rem;
-    max-width: 45%;
+  .profile-dropdown {
+    min-width: 200px;
+    max-width: 85%;
   }
 }
 
@@ -566,64 +577,41 @@ body.menu-open {
     font-size: 0.85rem;
     padding: 5px;
     max-width: 90%;
+    white-space: nowrap;
   }
 
-  .sign-in-btn {
-    padding: 4px 8px;
-    font-size: 0.75rem;
-    min-width: 60px;
-    max-width: 50%;
+  .profile-dropdown {
+    min-width: 180px;
+    max-width: 80%;
+    max-height: calc(100dvh - 70px);
+    padding: 8px;
+    gap: 4px;
   }
 
-  .register-link {
-    padding: 3px 6px;
-    font-size: 0.75rem;
-    min-width: 70px;
-    max-width: 50%;
+  .profile-dropdown a, .profile-dropdown .dropdown-link {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
   }
 
-  .auth-message {
-    font-size: 0.55rem;
-    max-width: 50%;
+  .profile-email {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  .search-bar {
-    padding: 5px;
-    max-width: 85%;
-  }
-
-  .search-bar input {
-    font-size: 0.75rem;
-  }
-
-  .search-bar .search-submit svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  .profile-dropdown a, .profile-dropdown .logout-btn {
-    font-size: 0.75rem;
-    padding: 4px;
-  }
-
-  .language-selector button {
-    font-size: 0.7rem;
-    padding: 2px 5px;
-  }
-
-  .menu-icon,
-  .menu-icon::before,
-  .menu-icon::after {
-    width: 16px;
-    height: 1.2px;
-  }
-
-  .menu-icon::before {
-    top: -4px;
-  }
-
-  .menu-icon::after {
-    top: 4px;
+  .logout-btn {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
   }
 }
 
@@ -650,36 +638,39 @@ body.menu-open {
     font-size: 0.8rem;
     padding: 4px;
     max-width: 95%;
-  }
-
-  .sign-in-btn {
-    padding: 3px 6px;
-    font-size: 0.7rem;
-    min-width: 55px;
-    max-width: 50%;
-  }
-
-  .register-link {
-    padding: 2px 5px;
-    font-size: 0.7rem;
-    min-width: 65px;
-    max-width: 50%;
-  }
-
-  .auth-message {
-    font-size: 0.5rem;
-    max-width: 55%;
-  }
-
-  .search-bar {
-    padding: 4px;
-  }
-
-  .search-bar input {
-    font-size: 0.7rem;
+    white-space: nowrap;
   }
 
   .profile-dropdown {
-    max-height: 140px;
+    min-width: 160px;
+    max-width: 75%;
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .profile-dropdown a, .profile-dropdown .dropdown-link {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
+  }
+
+  .profile-email {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .logout-btn {
+    font-size: 0.8rem;
+    padding: 5px 8px;
+    white-space: nowrap;
+    width: 100%;
+    box-sizing: border-box;
+    outline: none;
   }
 }
