@@ -14,6 +14,8 @@ import TermsOfService from "../pages/TermOfService";
 import ContactUs from "../pages/ContactUs";
 import AdminHomePage from "../pages/admin/AdminHomePage";
 import HealthExpertHomePage from "../pages/healthexpert/HealthExpertHomePage";
+import HealthExpertTutorial from "../pages/healthexpert/HealthExpertTutorial";
+import HealthExpertPolicy from "../pages/healthexpert/HealthExpertPolicy";
 import NutrientSpecialistHomePage from "../pages/nutrientspecialist/NutrientSpecialistHomepage";
 import ClinicHomePage from "../pages/clinic/ClinicHomePage";
 import BlogManagement from "../pages/BlogManagement";
@@ -62,7 +64,11 @@ const AppRoutes = () => {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/admin" element={<AdminHomePage />} />
+        <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
+        <Route path="/admin/policy" element={<AdminPolicyPage />} />
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
+        <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
+        <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
         <Route
           path="/nutrient-specialist"
           element={<NutrientSpecialistHomePage />}
@@ -78,8 +84,6 @@ const AppRoutes = () => {
         <Route path="/consultant" element={<ConsultantHomePage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/admin/categories" element={<BlogCategoryManagement />} />
-        <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
-        <Route path="/admin/policy" element={<AdminPolicyPage />} />
         <Route path="/nutritional-guidance" element={<NutritionalGuidance />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/support" element={<SupportPage />} />
