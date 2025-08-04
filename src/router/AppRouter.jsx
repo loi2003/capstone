@@ -25,9 +25,13 @@ import NotFound from '../pages/error/404NotFound';
 import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
 import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
 import PregnancyTrackingPage from '../pages/PregnancyTrackingPage'; 
+import DueDateCalculator from '../components/form/DueDateCalculator';
 import BlogPage from '../pages/BlogPage';
 import BlogDetailPage from '../pages/BlogDetailPage';
 import AdminAccountManagement from '../pages/admin/AdminAccountManagement';
+import JournalSection from '../components/journal/JournalSection';
+import JournalEntryDetail from '../components/journal/JournalEntryDetail';
+import JournalEntryForm from '../components/form/JournalEntryForm';
 
 
 const AppRoutes = () => {
@@ -55,7 +59,11 @@ const AppRoutes = () => {
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
+        <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
+        <Route path="/pregnancy-tracking/journal-section" element={<JournalSection />} />
+        <Route path="/pregnancy-tracking/journal-section/journal-detail" element={<JournalEntryDetail />} />
+        <Route path="/pregnancy-tracking/journal-section/journal-form" element={<JournalEntryForm />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />

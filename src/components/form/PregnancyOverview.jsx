@@ -82,7 +82,7 @@ const PregnancyOverview = ({ pregnancyData }) => {
               />
             </svg>
           </div>
-          <div className="card-content">
+          <div className="overview-card-content">
             <h3>{formatDate(pregnancyData.firstDayOfLastMenstrualPeriod)}</h3>
             <p>Last menstrual period</p>
           </div>

@@ -115,6 +115,7 @@ const Header = () => {
         {/* Menu điều hướng */}
         <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
           <Link to="/about">About</Link>
+          <Link to="/duedate-calculator">DueDate Calculator</Link>
           <Link to="/pregnancy-tracking">Pregnancy Tracking</Link>
           <Link to="/nutritional-guidance">Nutritional Guidance</Link>
           <Link to="/consultation">Consultation</Link>

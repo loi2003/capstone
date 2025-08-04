@@ -59,9 +59,9 @@ const TrackingForm = ({ onSubmit, isLoading }) => {
       }
     }
 
-    if (!formData.preWeight || formData.preWeight <= 0) {
-      newErrors.preWeight = "Please enter a valid pre-pregnancy weight"
-    }
+    // if (!formData.preWeight || formData.preWeight <= 0) {
+    //   newErrors.preWeight = "Please enter a valid pre-pregnancy weight"
+    // }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
