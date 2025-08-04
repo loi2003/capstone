@@ -154,7 +154,7 @@ const NutrientSpecialistHomePage = () => {
                 />
               </svg>
             </motion.div>
-            {isSidebarOpen && <span>Nutrient Specialist Panel</span>}
+            {isSidebarOpen && <span>Nutrient Panel</span>}
           </Link>
           <motion.button
             className="sidebar-toggle"

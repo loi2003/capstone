@@ -66,7 +66,7 @@ const AdminTutorialPage = () => {
           <li>Contact support via the Reports page for issues.</li>
         </ul>
         <p>
-          For detailed policies, visit the <Link to="/admin/policy">Admin Policy</Link> page.
+          For detailed policies, visit the <Link to="/health-expert/policy">Admin Policy</Link> page.
         </p>
       </motion.section>
     </motion.div>

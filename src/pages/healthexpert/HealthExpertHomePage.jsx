@@ -177,7 +177,7 @@ const HealthExpertHomePage = () => {
                 />
               </svg>
             </motion.div>
-            {isSidebarOpen && <span>Health Expert Panel</span>}
+            {isSidebarOpen && <span>Health Panel</span>}
           </Link>
           <motion.button
             className="sidebar-toggle"
@@ -210,9 +210,9 @@ const HealthExpertHomePage = () => {
         >
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/health-expert/dashboard"
+              to="/health-expert/tutorial"
               onClick={() => setIsSidebarOpen(true)}
-              title="Dashboard"
+              title="Tutorial"
             >
               <svg
                 width="24"
@@ -222,20 +222,22 @@ const HealthExpertHomePage = () => {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
+                  d="M12 3v18m9-9H3"
                   fill="var(--health-expert-color1)"
                   stroke="var(--health-expert-text)"
                   strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Dashboard Overview</span>}
+              {isSidebarOpen && <span>Tutorial</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/health-expert/consultations"
+              to="/health-expert/policy"
               onClick={() => setIsSidebarOpen(true)}
-              title="Consultations"
+              title="Policy"
             >
               <svg
                 width="24"
@@ -245,36 +247,13 @@ const HealthExpertHomePage = () => {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16.5V18c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2v.5"
                   fill="var(--health-expert-color2)"
                   stroke="var(--health-expert-text)"
                   strokeWidth="1.5"
                 />
               </svg>
-              {isSidebarOpen && <span>Consultations</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link
-              to="/health-expert/support"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Support"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
-                  fill="var(--health-expert-color3)"
-                  stroke="var(--health-expert-text)"
-                  strokeWidth="1.5"
-                />
-              </svg>
-              {isSidebarOpen && <span>Support</span>}
+              {isSidebarOpen && <span>Policy</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
@@ -388,21 +367,20 @@ const HealthExpertHomePage = () => {
               Health Expert Dashboard
             </h1>
             <p className="health-expert-banner-subtitle">
-              Manage consultations, provide health advice, and update your
-              profile with ease.
+              Access tutorials, review policies, and manage your profile with ease.
             </p>
             <div className="health-expert-banner-buttons">
               <Link
-                to="/health-expert/consultations"
+                to="/health-expert/tutorial"
                 className="health-expert-banner-button primary"
               >
-                View Consultations
+                View Tutorial
               </Link>
               <Link
-                to="/health-expert/support"
+                to="/health-expert/policy"
                 className="health-expert-banner-button secondary"
               >
-                Provide Support
+                View Policy
               </Link>
             </div>
           </motion.div>
@@ -436,20 +414,19 @@ const HealthExpertHomePage = () => {
         >
           <h2 className="health-expert-features-title">Health Expert Tools</h2>
           <p className="health-expert-features-description">
-            Access essential tools to manage your consultations and support
-            users efficiently.
+            Access essential tools to learn through tutorials and understand policies.
           </p>
           <div className="health-expert-features-grid">
             <motion.div
               variants={cardVariants}
               className="health-expert-feature-card"
             >
-              <h3>Consultations</h3>
+              <h3>Tutorial</h3>
               <p>
-                View and manage assigned consultations, update health advice.
+                Explore guides and resources to effectively use the platform.
               </p>
               <Link
-                to="/health-expert/consultations"
+                to="/health-expert/tutorial"
                 className="health-expert-feature-link"
               >
                 Explore
@@ -459,13 +436,12 @@ const HealthExpertHomePage = () => {
               variants={cardVariants}
               className="health-expert-feature-card"
             >
-              <h3>Support</h3>
+              <h3>Policy</h3>
               <p>
-                Handle user support requests and provide timely health
-                solutions.
+                Review platform policies and guidelines for health experts.
               </p>
               <Link
-                to="/health-expert/support"
+                to="/health-expert/policy"
                 className="health-expert-feature-link"
               >
                 Explore
