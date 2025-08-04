@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getAllBlogs } from '../apis/blog-api';
+import { getAllBlogs, deleteLike, deleteBookmark } from '../apis/blog-api';
 import apiClient from '../apis/url-api';
 import '../styles/BlogDetailPage.css';
 
 const BlogDetailPage = () => {
   const { id } = useParams();
   const [blog, setBlog] = useState(null);
+  const [allBlogs, setAllBlogs] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [bookmarks, setBookmarks] = useState(() => JSON.parse(localStorage.getItem('bookmarks')) || []);
@@ -19,24 +21,17 @@ const BlogDetailPage = () => {
   useEffect(() => {
     const fetchBlog = async () => {
       try {
-        // Optionally, use getBlogById if available (uncomment if implemented)
-        // const response = await getBlogById(id, token);
-        // setBlog(response.data?.data);
-        
-        // Current implementation using getAllBlogs
         const response = await getAllBlogs(token);
-        console.log('API Response:', response.data); // Debug: Log API response
         const data = Array.isArray(response.data?.data) ? response.data.data : [];
-        console.log('Blog Data:', data); // Debug: Log blog data
-        console.log('Searching for Blog ID:', id); // Debug: Log requested ID
         const selectedBlog = data.find(blog => blog.id.toString() === id.toString());
         if (!selectedBlog) {
           throw new Error('Blog not found');
         }
         setBlog(selectedBlog);
+        setAllBlogs(data.filter(b => b.id !== selectedBlog.id && b.status?.toLowerCase() === 'approved'));
         setLoading(false);
       } catch (err) {
-        console.error('Fetch Error:', err.message, err.response?.data); // Debug: Log error details
+        console.error('Fetch Error:', err.message, err.response?.data);
         setError(err.message);
         setLoading(false);
       }
@@ -49,23 +44,35 @@ const BlogDetailPage = () => {
     localStorage.setItem('likes', JSON.stringify(likes));
   }, [bookmarks, likes]);
 
+  useEffect(() => {
+    if (blog?.images?.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex(prev => (prev + 1) % blog.images.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [blog]);
+
   const toggleBookmark = async (blogId) => {
     if (!token) {
       setShowAuthPopup(true);
       return;
     }
     try {
-      const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/plain',
-        },
-      });
-      if (response.status === 200) {
-        if (bookmarks.includes(blogId)) {
-          setBookmarks(bookmarks.filter(id => id !== blogId));
-        } else {
-          setBookmarks([...bookmarks, blogId]);
+      if (bookmarks.includes(String(blogId))) {
+        const response = await deleteBookmark(blogId, token);
+        if (response.status === 200) {
+          setBookmarks(bookmarks.filter(id => id !== String(blogId)));
+        }
+      } else {
+        const response = await apiClient.post(`/api/bookmark/toggle/${blogId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'text/plain',
+          },
+        });
+        if (response.status === 200) {
+          setBookmarks([...bookmarks, String(blogId)]);
         }
       }
     } catch (error) {
@@ -79,17 +86,22 @@ const BlogDetailPage = () => {
       return;
     }
     try {
-      const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: 'text/plain',
-        },
-      });
-      if (response.status === 200) {
-        if (likes.includes(blogId)) {
-          setLikes(likes.filter(id => id !== blogId));
-        } else {
-          setLikes([...likes, blogId]);
+      if (likes.includes(String(blogId))) {
+        const response = await deleteLike(blogId, token);
+        if (response.status === 200) {
+          setLikes(likes.filter(id => id !== String(blogId)));
+          setBlog(prev => ({ ...prev, likeCount: (prev.likeCount || 0) - 1 }));
+        }
+      } else {
+        const response = await apiClient.post(`/api/like/toggle/${blogId}`, null, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'text/plain',
+          },
+        });
+        if (response.status === 200) {
+          setLikes([...likes, String(blogId)]);
+          setBlog(prev => ({ ...prev, likeCount: (prev.likeCount || 0) + 1 }));
         }
       }
     } catch (error) {
@@ -97,35 +109,28 @@ const BlogDetailPage = () => {
     }
   };
 
-  const shareBlog = (platform) => {
-    const url = encodeURIComponent(window.location.href);
-    const text = encodeURIComponent(blog?.title || 'Check out this blog!');
-    let shareUrl;
-    switch (platform) {
-      case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
-        break;
-      case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        break;
-      case 'linkedin':
-        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${text}`;
-        break;
-      default:
-        return;
-    }
-    window.open(shareUrl, '_blank', 'noopener,noreferrer');
-  };
-
   const calculateReadingTime = (text) => {
-    const wordsPerMinute = 200;
     const wordCount = text ? text.split(/\s+/).length : 0;
+    if (wordCount < 50) return 1;
+    if (wordCount < 500) return 10;
+    const wordsPerMinute = 200;
     return Math.ceil(wordCount / wordsPerMinute);
   };
 
-  const getMockLikeCount = () => {
-    return Math.floor(Math.random() * 100) + 1; // Mock like count
+  const handleThumbnailClick = (index) => {
+    setCurrentImageIndex(index);
   };
+
+  const getRelatedBlogs = () => {
+    if (!blog?.tags || blog.tags.length === 0) return [];
+    const related = allBlogs
+      .filter(b => b.tags?.some(tag => blog.tags.includes(tag)))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3);
+    return related;
+  };
+
+  const relatedBlogs = getRelatedBlogs();
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error || !blog) {
@@ -133,7 +138,7 @@ const BlogDetailPage = () => {
       <div className="error-container">
         <h2>Blog Not Found</h2>
         <p>{error || 'The blog you are looking for does not exist.'}</p>
-        <Link to="/blog" className="back-link">Back to Blogs</Link>
+        <Link to="/blog" className="back-link">←</Link>
       </div>
     );
   }
@@ -169,18 +174,34 @@ const BlogDetailPage = () => {
         </div>
       )}
       <div className="blog-detail-container">
-        <Link to="/blog" className="back-link">← Back to Blogs</Link>
+        <Link to="/blog" className="back-link">←</Link>
         <motion.div
           className="blog-detail-content"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <img
-            src={blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
-            alt={blog.title}
-            className="blog-detail-image"
-          />
+          <div className="blog-detail-image-container">
+            <img
+              src={blog.images?.[currentImageIndex]?.fileUrl || '/assets/placeholder.jpg'}
+              alt={blog.title}
+              className={`blog-detail-image ${currentImageIndex !== null ? 'active' : ''}`}
+              key={currentImageIndex}
+            />
+          </div>
+          {blog.images?.length > 1 && (
+            <div className="image-thumbnails">
+              {blog.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image.fileUrl || '/assets/placeholder.jpg'}
+                  alt={`Thumbnail ${index + 1}`}
+                  className={`thumbnail-image ${currentImageIndex === index ? 'active' : ''}`}
+                  onClick={() => handleThumbnailClick(index)}
+                />
+              ))}
+            </div>
+          )}
           <div className="blog-detail-meta">
             <span className="category">{blog.tags?.[0] || 'General'}</span>
             <span className="date">
@@ -191,7 +212,7 @@ const BlogDetailPage = () => {
               })}
             </span>
             <span className="reading-time">{calculateReadingTime(blog.body)} min read</span>
-            <span className="like-count">{getMockLikeCount()} likes</span>
+            <span className="like-count">{blog.likeCount || 0} likes</span>
           </div>
           <h1 className="blog-detail-title">{blog.title}</h1>
           <div className="blog-detail-tags">
@@ -206,41 +227,67 @@ const BlogDetailPage = () => {
               style={{ backgroundImage: `url('/assets/author${(parseInt(id) % 6) + 1}.jpg')` }}
             ></div>
             <div className="author-info">
-              <span className="author-name">By {blog.author || 'Unknown Author'}</span>
+              <span className="author-name">By {blog.createdByUser?.userName || 'Unknown Author'}</span>
               <span className="author-bio">Published on {new Date(blog.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
           <div className="blog-detail-actions">
             <button
-              className={`bookmark-btn ${bookmarks.includes(blog.id) ? 'bookmarked' : ''}`}
+              className={`bookmark-btn ${bookmarks.includes(String(blog.id)) ? 'bookmarked' : ''}`}
               onClick={() => toggleBookmark(blog.id)}
             >
-              {bookmarks.includes(blog.id) ? '★' : '☆'}
+              <svg viewBox="0 0 24 24">
+                {bookmarks.includes(String(blog.id)) ? (
+                  <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
+                ) : (
+                  <path d="M5 3v18l7-5 7 5V3H5zm2 2h10v13l-5-3.5-5 3.5V5z"/>
+                )}
+              </svg>
             </button>
             <button
-              className={`like-btn ${likes.includes(blog.id) ? 'liked' : ''}`}
+              className={`like-btn ${likes.includes(String(blog.id)) ? 'liked' : ''}`}
               onClick={() => toggleLike(blog.id)}
             >
-              {likes.includes(blog.id) ? '❤️' : '🤍'}
+              <svg viewBox="0 0 24 24">
+                {likes.includes(String(blog.id)) ? (
+                  <path d="M6 18L18 6M6 6l12 12" stroke="currentColor" strokeWidth="2"/>
+                ) : (
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                )}
+              </svg>
             </button>
-            <div className="share-buttons">
-              <button className="share-btn" onClick={() => shareBlog('twitter')}>
-                <svg className="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22.46 6c-.77.35-1.6.58-2.46.69a4.3 4.3 0 001.88-2.38 8.64 8.64 0 01-2.73 1.05A4.3 4.3 0 0016 4c-2.36 0-4.3 1.92-4.3 4.29 0 .34.04.67.11 1-3.57-.18-6.74-1.89-8.86-4.5a4.3 4.3 0 001.33 5.73 4.25 4.25 0 01-1.95-.54v.05c0 2.07 1.47 3.8 3.42 4.2a4.3 4.3 0 01-1.94.07c.55 1.72 2.14 2.97 4.02 3a8.61 8.61 0 01-5.33 1.83c-.35 0-.69-.02-1.03-.06 1.91 1.23 4.18 1.94 6.62 1.94 7.94 0 12.29-6.58 12.29-12.29 0-.19 0-.37-.01-.56.84-.61 1.57-1.36 2.14-2.22z" />
-                </svg>
-              </button>
-              <button className="share-btn" onClick={() => shareBlog('facebook')}>
-                <svg className="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.99 3.66 9.13 8.44 9.88v-6.98h-2.54v-2.9h2.54v-2.21c0-2.51 1.49-3.89 3.78-3.89 1.09 0 2.23.19 2.23.19v2.47h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.9h-2.33v6.98C18.34 21.13 22 16.99 22 12z" />
-                </svg>
-              </button>
-              <button className="share-btn" onClick={() => shareBlog('linkedin')}>
-                <svg className="share-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.13 1.45-2.13 2.94v5.67H9.35V9.02h3.42v1.56h.05c.48-.91 1.65-1.87 3.39-1.87 3.62 0 4.29 2.39 4.29 5.49v6.25zM5.34 7.46c-1.14 0-2.06-.93-2.06-2.06 0-1.14.92-2.06 2.06-2.06s2.06.92 2.06 2.06c0 1.13-.92 2.06-2.06 2.06zm1.78 13h-3.56V9.02h3.56v11.43zM22 0H2C.9 0 0 .9 0 2v20c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V2c0-1.1-.9-2-2-2z" />
-                </svg>
-              </button>
-            </div>
           </div>
+          {relatedBlogs.length > 0 && (
+            <div className="related-blogs-section">
+              <h2>Related Blogs</h2>
+              <div className="related-blogs-grid">
+                {relatedBlogs.map(relatedBlog => (
+                  <Link
+                    to={`/blog/${relatedBlog.id}`}
+                    key={relatedBlog.id}
+                    className="related-blog-card"
+                  >
+                    <img
+                      src={relatedBlog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
+                      alt={relatedBlog.title}
+                      className="related-blog-image"
+                    />
+                    <div className="related-blog-info">
+                      <span className="related-blog-category">{relatedBlog.tags?.[0] || 'General'}</span>
+                      <h3>{relatedBlog.title}</h3>
+                      <span className="related-blog-date">
+                        {new Date(relatedBlog.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

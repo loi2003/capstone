@@ -1,4 +1,5 @@
 import apiClient from './url-api';
+
 export const createCategory = async (userId, categoryName, blogCategoryTag, token) => {
   try {
     const formData = new FormData();
@@ -105,7 +106,6 @@ export const addBlog = async (blogData, token) => {
 
 export const editBlog = async (formData, token) => {
   try {
-    // Validate required fields
     const requiredFields = ['Id', 'CategoryId', 'Title', 'Body'];
     for (const field of requiredFields) {
       if (!formData.get(field)) {
@@ -113,29 +113,22 @@ export const editBlog = async (formData, token) => {
       }
     }
 
-    // Extract tags from FormData, default to empty array
     const tags = formData.getAll('Tags') || [];
-    // Clear existing Tags entries to avoid duplicates
     for (const key of formData.keys()) {
       if (key.startsWith('Tags[')) {
         formData.delete(key);
       }
     }
-    // Re-append tags to ensure correct formatting
     tags.forEach((tag, index) => formData.append(`Tags[${index}]`, tag.trim()));
 
-    // Extract images from FormData, default to empty array
     const images = formData.getAll('Images') || [];
-    // Clear existing Images entries to avoid duplicates
     for (const key of formData.keys()) {
       if (key === 'Images') {
         formData.delete(key);
       }
     }
-    // Re-append images
     images.forEach((image, index) => formData.append(`Images`, image));
 
-    // Debug: Log FormData contents
     console.log('editBlog FormData contents:');
     for (const [key, value] of formData.entries()) {
       console.log(`${key}: ${value instanceof File ? value.name : value}`);
@@ -172,6 +165,38 @@ export const getAllBlogs = async (token) => {
   }
 };
 
+export const getAllLikedBlogs = async (token) => {
+  try {
+    const response = await apiClient.get('/api/like/view-all-liked-blogs', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Get all liked blogs response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error fetching liked blogs:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export const getAllBookmarkedBlogs = async (token) => {
+  try {
+    const response = await apiClient.get('/api/bookmark/view-all-bookmarked-blogs', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Get all bookmarked blogs response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error fetching bookmarked blogs:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
 export const deleteBlog = async (blogId, token) => {
   try {
     const response = await apiClient.delete(`/api/blog/delete-blog?blogId=${blogId}`, {
@@ -190,7 +215,6 @@ export const deleteBlog = async (blogId, token) => {
 
 export const approveBlog = async (blogId, approvedByUserId, token, blogCategoryTag, userRoleId) => {
   try {
-    // Authorization check based on category tag and user role
     if (userRoleId === '3' && blogCategoryTag !== 'Health') {
       throw new Error('Health Experts can only approve blogs with Health category tag.');
     }
@@ -218,7 +242,6 @@ export const approveBlog = async (blogId, approvedByUserId, token, blogCategoryT
 
 export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, token, blogCategoryTag, userRoleId) => {
   try {
-    // Authorization check based on category tag and user role
     if (userRoleId === '3' && blogCategoryTag !== 'Health') {
       throw new Error('Health Experts can only reject blogs with Health category tag.');
     }
@@ -243,6 +266,7 @@ export const rejectBlog = async (blogId, approvedByUserId, rejectionReason, toke
     throw error;
   }
 };
+
 export const getBlogsByUser = async (userId, token) => {
   try {
     const response = await apiClient.get('/api/blog/view-blogs-from-user', {
@@ -258,6 +282,38 @@ export const getBlogsByUser = async (userId, token) => {
     return response;
   } catch (error) {
     console.error('Error fetching user blogs:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export const deleteLike = async (blogId, token) => {
+  try {
+    const response = await apiClient.delete(`/api/like/delete/${blogId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Delete like response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error deleting like:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
+    throw error;
+  }
+};
+
+export const deleteBookmark = async (blogId, token) => {
+  try {
+    const response = await apiClient.delete(`/api/bookmark/delete/${blogId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'text/plain',
+      },
+    });
+    console.log('Delete bookmark response:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error deleting bookmark:', error.response?.data?.message || error.message, error.response?.status, error.response?.data);
     throw error;
   }
 };

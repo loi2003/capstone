@@ -28,6 +28,7 @@ const BlogManagement = () => {
   const [showRejectModal, setShowRejectModal] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showFullBody, setShowFullBody] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(null);
   const blogsPerPage = 6;
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);
@@ -424,6 +425,14 @@ const BlogManagement = () => {
     }
   };
 
+  const handleViewBlog = (blog) => {
+    setShowViewModal(blog);
+  };
+
+  const closeViewModal = () => {
+    setShowViewModal(null);
+  };
+
   const filteredBlogs = (showPersonalBlogs ? personalBlogs : blogs).filter((blog) => {
     const matchesTitle = blog.title
       .toLowerCase()
@@ -691,7 +700,7 @@ const BlogManagement = () => {
               className={`blog-action-button ${showPersonalBlogs ? 'active' : ''}`}
               onClick={handleShowPersonalBlogs}
               whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              whileTap={{ scale: 0.95}}
               aria-label="Show personal blogs"
             >
               Personal Blogs
@@ -753,9 +762,7 @@ const BlogManagement = () => {
               <div className="blog-table-header">
                 <span>Title</span>
                 <span>Category</span>
-                <span>Body</span>
                 <span>Status</span>
-                <span>Images</span>
                 <span>Actions</span>
               </div>
               {currentBlogs.map((blog) => (
@@ -768,21 +775,6 @@ const BlogManagement = () => {
                 >
                   <span>{blog.title}</span>
                   <span>{blog.categoryName || "Uncategorized"}</span>
-                  <span>
-                    {truncateBody(blog.body)}
-                    {blog.body && blog.body.length > 100 && (
-                      <motion.button
-                        className="blog-action-button view-more"
-                        onClick={() => handleViewFullBody(blog)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label={`View full body of ${blog.title}`}
-                        style={{ marginLeft: '10px', fontSize: '12px', padding: '2px 8px' }}
-                      >
-                        View More
-                      </motion.button>
-                    )}
-                  </span>
                   <span>
                     <motion.span
                       className="status-dot"
@@ -801,36 +793,27 @@ const BlogManagement = () => {
                       }}
                     />
                   </span>
-                  <span className="blog-images">
-                    {blog.images?.length > 0 ? (
-                      blog.images.map((image, index) => (
-                        <img
-                          key={index}
-                          src={image.fileUrl || ""}
-                          alt={image.fileName || "Blog image"}
-                          className="blog-image"
-                          onClick={() =>
-                            openImageModal(image, index, blog.images)
-                          }
-                          onError={() =>
-                            console.error(
-                              `Failed to load image: ${image.fileUrl}`
-                            )
-                          }
-                          role="button"
-                          tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === " ") {
-                              openImageModal(image, index, blog.images);
-                            }
-                          }}
-                        />
-                      ))
-                    ) : (
-                      <span className="text-gray-500">No images</span>
-                    )}
-                  </span>
                   <span className="blog-actions">
+                    <motion.button
+                      className="blog-action-button view"
+                      onClick={() => handleViewBlog(blog)}
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                      aria-label={`View blog ${blog.title}`}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                          fill="currentColor"
+                        />
+                      </svg>
+                    </motion.button>
                     <motion.button
                       className="blog-action-button edit"
                       onClick={() => handleEditBlog(blog)}
@@ -970,7 +953,6 @@ const BlogManagement = () => {
                   <span>Title</span>
                   <span>Category</span>
                   <span>Status</span>
-                  <span>Images</span>
                   <span>Actions</span>
                 </div>
                 {approvalBlogs.map((blog) => (
@@ -1001,36 +983,27 @@ const BlogManagement = () => {
                         }}
                       />
                     </span>
-                    <span className="blog-images">
-                      {blog.images?.length > 0 ? (
-                        blog.images.map((image, index) => (
-                          <img
-                            key={index}
-                            src={image.fileUrl || ""}
-                            alt={image.fileName || "Blog image"}
-                            className="blog-image"
-                            onClick={() =>
-                              openImageModal(image, index, blog.images)
-                            }
-                            onError={() =>
-                              console.error(
-                                `Failed to load image: ${image.fileUrl}`
-                              )
-                            }
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                openImageModal(image, index, blog.images);
-                              }
-                            }}
-                          />
-                        ))
-                      ) : (
-                        <span className="text-gray-500">No images</span>
-                      )}
-                    </span>
                     <span className="blog-actions">
+                      <motion.button
+                        className="blog-action-button view"
+                        onClick={() => handleViewBlog(blog)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        aria-label={`View blog ${blog.title}`}
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </motion.button>
                       <motion.button
                         className="blog-action-button approve"
                         onClick={() => handleApproveBlog(blog.id)}
@@ -1154,14 +1127,6 @@ const BlogManagement = () => {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
               >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={() => setEditBlogData(null)}
-                  aria-label="Close edit modal"
-                  disabled={isSubmitting}
-                >
-                  ×
-                </button>
                 <form className="blog-form-section" onSubmit={handleEditSubmit}>
                   <h2 className="blog-form-title">Edit Blog</h2>
                   {error && (
@@ -1470,7 +1435,7 @@ const BlogManagement = () => {
               className="blog-image-modal"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0}}
               transition={{ duration: 0.3 }}
             >
               <motion.div
@@ -1530,7 +1495,7 @@ const BlogManagement = () => {
                       className="blog-cancel-button"
                       onClick={() => setShowRejectModal(null)}
                       whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      whileTap={{ scale: 0.95}}
                       aria-label="Cancel reject"
                     >
                       <svg
@@ -1551,6 +1516,81 @@ const BlogManagement = () => {
                       </svg>
                       Cancel
                     </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+          {showViewModal && (
+            <motion.div
+              className="blog-image-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <motion.div
+                className="blog-image-modal-content"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
+              >
+                <button
+                  className="blog-image-modal-close"
+                  onClick={closeViewModal}
+                  aria-label="Close view modal"
+                >
+                  ×
+                </button>
+                <div className="view-content">
+                  <h2 className="blog-form-title">{showViewModal.title}</h2>
+                  <p><strong>Category:</strong> {showViewModal.categoryName || "Uncategorized"}</p>
+                  <p><strong>Body:</strong> {showViewModal.body || "No content"}</p>
+                  <p><strong>Status:</strong>
+                    <motion.span
+                      className="status-dot"
+                      title={showViewModal.status || "Pending"}
+                      style={{
+                        backgroundColor:
+                          showViewModal.status?.toLowerCase() === "approved"
+                            ? "#34C759"
+                            : showViewModal.status?.toLowerCase() === "rejected"
+                            ? "#FF3B30"
+                            : "#FBC107",
+                      }}
+                      whileHover={{
+                        scale: 1.2,
+                        boxShadow: "0 0 8px rgba(0,0,0,0.2)",
+                      }}
+                    />
+                  </p>
+                  <div className="input-group">
+                    <label>Images</label>
+                    <div className="blog-images">
+                      {showViewModal.images?.length > 0 ? (
+                        showViewModal.images.map((image, index) => (
+                          <img
+                            key={index}
+                            src={image.fileUrl || ""}
+                            alt={image.fileName || "Blog image"}
+                            className="blog-image"
+                            onClick={() => openImageModal(image, index, showViewModal.images)}
+                            onError={() => console.error(`Failed to load image: ${image.fileUrl}`)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                openImageModal(image, index, showViewModal.images);
+                              }
+                            }}
+                          />
+                        ))
+                      ) : (
+                        <span className="text-gray-500">No images</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </motion.div>

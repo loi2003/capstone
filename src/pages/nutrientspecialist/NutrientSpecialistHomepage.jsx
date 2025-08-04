@@ -185,78 +185,7 @@ const NutrientSpecialistHomePage = () => {
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link
-              to="/nutrient-specialist/dashboard"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Dashboard Overview"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Leaf icon for dashboard"
-              >
-                <path
-                  d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
-                  fill="var(--nutrient-specialist-primary)"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                />
-              </svg>
-              {isSidebarOpen && <span>Dashboard Overview</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link
-              to="/nutrient-specialist/reports"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Reports"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Document icon for reports"
-              >
-                <path
-                  d="M6 2h12a2 2 0 012 2v16a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2zm1 4h10v2H7V6zm0 4h10v2H7v-2zm0 4h7v2H7v-2z"
-                  fill="var(--nutrient-specialist-secondary)"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                />
-              </svg>
-              {isSidebarOpen && <span>Reports</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link
-              to="/nutrient-specialist/settings"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Settings"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Gear icon for settings"
-              >
-                <path
-                  d="M12 8a4 4 0 100 8 4 4 0 000-8zm0 6a2 2 0 110-4 2 2 0 010 4zm0-10a8 8 0 00-7.2 11.6l-1.6 1.2A10 10 0 012 12c0-5.5 4.5-10 10-10s10 4.5 10 10a10 10 0 01-1.2 4.8l-1.6-1.2A8 8 0 0012 4z"
-                  fill="var(--nutrient-specialist-accent)"
-                  stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="1.5"
-                />
-              </svg>
-              {isSidebarOpen && <span>Settings</span>}
-            </Link>
-          </motion.div>
+
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
               to="/blog-management"
@@ -284,9 +213,10 @@ const NutrientSpecialistHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <button
-              className="sidebar-action-button"
-              title="Create Consultation"
+            <Link
+              to="/nutrient-specialist/nutrient-category-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient Category Management"
             >
               <svg
                 width="24"
@@ -294,19 +224,44 @@ const NutrientSpecialistHomePage = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                aria-label="Plus icon for create consultation"
+                aria-label="Category icon for nutrient category management"
               >
                 <path
-                  d="M12 5v14m-7-7h14"
+                  d="M3 3h6v6H3V3zm0 12h6v6H3v-6zm12 0h6v6h-6v-6zm0-12h6v6h-6V3z"
+                  fill="var(--nutrient-specialist-secondary)"
+                  stroke="var(--nutrient-specialist-white)"
+                  strokeWidth="1.5"
+                />
+              </svg>
+              {isSidebarOpen && <span>Nutrient Category Management</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/nutrient-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="List icon for nutrient management"
+              >
+                <path
+                  d="M4 6h16M4 12h16M4 18h16"
                   stroke="var(--nutrient-specialist-white)"
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Create Consultation</span>}
-            </button>
+              {isSidebarOpen && <span>Nutrient Management</span>}
+            </Link>
           </motion.div>
+
           {user ? (
             <>
               <motion.div
