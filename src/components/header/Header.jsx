@@ -125,10 +125,13 @@ const Header = () => {
         </button>
         <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
           <Link to="/about" title="About Us">About</Link>
+          <Link to="/duedate-calculator">DueDate Calculator</Link>
           <Link to="/pregnancy-tracking" title="Pregnancy Tracking">Pregnancy</Link>
           <Link to="/nutritional-guidance" title="Nutritional Guidance">Nutrition</Link>
           <Link to="/consultation" title="Consultation">Consultation</Link>
           <Link to="/blog" title="Blog">Blog</Link>
+
+          {/* Phần xác thực: Hiển thị nút Sign In hoặc user icon */}
           <div className="auth-section">
             {user ? (
               <div className={`profile-section ${isDropdownOpen ? "open" : ""}`} ref={dropdownRef}>

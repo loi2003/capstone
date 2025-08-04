@@ -37,14 +37,14 @@ const PregnancyOverview = ({ pregnancyData }) => {
               />
             </svg>
           </div>
-          <div className="card-content">
+          <div className="overview-card-content">
             <h3>Week {pregnancyData.currentGestationalAgeInWeeks}</h3>
             <p>Current pregnancy week</p>
           </div>
         </div>
 
         <div className="overview-card">
-          <div className="card-icon" style={{ color: trimesterInfo.color }}>
+          <div className="overview-card-icon" style={{ color: trimesterInfo.color }}>
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9M15 11.5C15.8 11.5 16.5 12.2 16.5 13S15.8 14.5 15 14.5 13.5 13.8 13.5 13 14.2 11.5 15 11.5M5 12C5.8 12 6.5 12.7 6.5 13.5S5.8 15 5 15 3.5 14.3 3.5 13.5 4.2 12 5 12Z"
@@ -52,14 +52,14 @@ const PregnancyOverview = ({ pregnancyData }) => {
               />
             </svg>
           </div>
-          <div className="card-content">
+          <div className="overview-card-content">
             <h3>{trimesterInfo.name}</h3>
             <p>{trimesterInfo.weeks}</p>
           </div>
         </div>
 
         <div className="overview-card">
-          <div className="card-icon">
+          <div className="overview-card-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path
                 d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
@@ -67,14 +67,14 @@ const PregnancyOverview = ({ pregnancyData }) => {
               />
             </svg>
           </div>
-          <div className="card-content">
+          <div className="overview-card-content">
             <h3>{formatDate(pregnancyData.estimatedDueDate)}</h3>
             <p>Estimated due date</p>
           </div>
         </div>
 
         <div className="overview-card">
-          <div className="card-icon">
+          <div className="overview-card-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
@@ -82,7 +82,7 @@ const PregnancyOverview = ({ pregnancyData }) => {
               />
             </svg>
           </div>
-          <div className="card-content">
+          <div className="overview-card-content">
             <h3>{formatDate(pregnancyData.firstDayOfLastMenstrualPeriod)}</h3>
             <p>Last menstrual period</p>
           </div>

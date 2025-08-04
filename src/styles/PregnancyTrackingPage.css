@@ -1,6 +1,20 @@
+/* Theme color settings */
+:root {
+  --color-main: #067dad;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
+}
 .pregnancy-tracking-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--light-bg) 0%, var(--co-5) 100%);
   display: flex;
   flex-direction: column;
 }

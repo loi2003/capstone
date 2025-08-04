@@ -1,0 +1,183 @@
+:root {
+  --color-main: #067dad;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f0f3be;
+}
+.journal-entry-form {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--light-text, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  font-family: var(--font-inter, "Inter", sans-serif);
+  color: var(--dark-text, #333333);
+}
+
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.form-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.form-content {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.form-section {
+  background: var(--color-general, #f9f9f9);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--co-5, #dfe4ea);
+}
+
+.form-section label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: var(--dark-text, #333333);
+}
+
+.form-section textarea,
+.form-section input[type="text"],
+.form-section select,
+.form-section input[type="number"] {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--color-general, #e0e0e0);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: var(--light-text, #ffffff);
+  transition: all 0.3s ease;
+}
+
+.form-section textarea:focus,
+.form-section input[type="text"]:focus,
+.form-section select:focus,
+.form-section input[type="number"]:focus {
+  outline: none;
+  border-color: var(--color-accent, #fe6b6a);
+  box-shadow: 0 0 5px rgba(254, 107, 106, 0.3);
+}
+
+.form-section textarea.error,
+.form-section input[type="text"].error,
+.form-section select.error,
+.form-section input[type="number"].error {
+  border-color: #e74c3c;
+}
+
+.form-section textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.form-section input[type="file"] {
+  padding: 0.5rem;
+}
+
+.image-preview {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preview-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--co-5, #dfe4ea);
+}
+
+.image-preview span {
+  font-size: 0.9rem;
+  color: var(--color-text, #666666);
+  margin-left: 0.5rem;
+}
+
+.submit-btn,
+.cancel-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--color-main, #067dad), var(--color-secondary, #038474));
+  color: var(--light-text, #ffffff);
+  border: none;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: var(--color-general, #f9f9f9);
+  color: var(--dark-text, #333333);
+  border: 1px solid var(--color-general, #e0e0e0);
+  margin-top: 1rem;
+}
+
+.cancel-btn:hover {
+  background: var(--co-5, #dfe4ea);
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+  .journal-entry-form {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .form-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .form-content {
+    grid-template-columns: 1fr;
+  }
+
+  .image-preview {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .preview-image {
+    width: 80px;
+    height: 80px;
+  }
+}
