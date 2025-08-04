@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAllNutrientCategories, getNutrientCategoryById, createNutrientCategory } from '../../apis/nutriet-api';
+import { getAllNutrientCategories, getNutrientCategoryById, createNutrientCategory, updateNutrientCategory } from '../../apis/nutriet-api';
 import '../../styles/NutrientCategoryManagement.css';
 
 // SVG Icons
@@ -10,24 +10,21 @@ const BackIcon = () => (
   </svg>
 );
 
-const AddIcon = () => (
+const SearchIcon = () => (
   <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-  </svg>
-);
-
-const CategoryIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7h18M3 12h18M3 17h18" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 );
 
 const NutrientCategoryManagement = () => {
   const [categories, setCategories] = useState([]);
+  const [filteredCategories, setFilteredCategories] = useState([]);
   const [newCategory, setNewCategory] = useState({ name: '', description: '' });
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
   const navigate = useNavigate();
 
   // Fetch all categories
@@ -36,6 +33,7 @@ const NutrientCategoryManagement = () => {
     try {
       const data = await getAllNutrientCategories();
       setCategories(data);
+      setFilteredCategories(data);
       setError('');
     } catch (err) {
       setError('Failed to fetch categories');
@@ -50,6 +48,8 @@ const NutrientCategoryManagement = () => {
     try {
       const data = await getNutrientCategoryById(id);
       setSelectedCategory(data);
+      setNewCategory({ name: data.name, description: data.description });
+      setIsEditing(true);
       setError('');
     } catch (err) {
       setError('Failed to fetch category');
@@ -77,10 +77,53 @@ const NutrientCategoryManagement = () => {
     }
   };
 
+  // Update category
+  const updateCategory = async () => {
+    if (!newCategory.name.trim()) {
+      setError('Category name is required');
+      return;
+    }
+    setLoading(true);
+    try {
+      await updateNutrientCategory({
+        nutrientCategoryId: selectedCategory.id,
+        name: newCategory.name,
+        description: newCategory.description
+      });
+      setNewCategory({ name: '', description: '' });
+      setSelectedCategory(null);
+      setIsEditing(false);
+      fetchCategories();
+      setError('');
+    } catch (err) {
+      setError('Failed to update category');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewCategory({ ...newCategory, [name]: value });
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    const filtered = categories.filter(category =>
+      category.name.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredCategories(filtered);
+  };
+
+  // Cancel edit
+  const cancelEdit = () => {
+    setIsEditing(false);
+    setSelectedCategory(null);
+    setNewCategory({ name: '', description: '' });
+    setError('');
   };
 
   // Load categories on mount
@@ -96,18 +139,15 @@ const NutrientCategoryManagement = () => {
           className="back-button"
         >
           <BackIcon />
-          Back to Nutrient Specialist
         </button>
         <h1>
-          <CategoryIcon />
           Baby Nutrient Categories
         </h1>
 
-        {/* Create Category Form */}
+        {/* Create/Update Category Form */}
         <div className="form-section">
           <h2>
-            <AddIcon />
-            Add New Category
+            {isEditing ? 'Edit Category' : 'Add New Category'}
           </h2>
           <div className="form-group">
             <input
@@ -126,54 +166,62 @@ const NutrientCategoryManagement = () => {
               className="textarea-field"
               rows="4"
             />
-            <button
-              onClick={createCategory}
-              disabled={loading}
-              className="submit-button"
-            >
-              <AddIcon />
-              {loading ? 'Creating...' : 'Create Category'}
-            </button>
+            <div className="button-group">
+              <button
+                onClick={isEditing ? updateCategory : createCategory}
+                disabled={loading}
+                className="submit-button"
+              >
+                {loading ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Category' : 'Create Category')}
+              </button>
+              {isEditing && (
+                <button
+                  onClick={cancelEdit}
+                  disabled={loading}
+                  className="cancel-button"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
             {error && <p className="error-message">{error}</p>}
           </div>
         </div>
 
-        {/* Category List */}
+        {/* Category List with Search */}
         <div className="list-section">
           <h2>
-            <CategoryIcon />
             All Categories
           </h2>
+          <div className="search-section">
+            <SearchIcon />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearch}
+              placeholder="Search categories..."
+              className="input-field search-input"
+            />
+          </div>
           {loading && <p className="loading-message">Loading...</p>}
-          <div className="category-grid">
-            {categories.map((category) => (
+          <div className="category-list">
+            {filteredCategories.map((category) => (
               <div
                 key={category.id}
-                className="category-card"
+                className="category-item"
                 onClick={() => fetchCategoryById(category.id)}
               >
-                <CategoryIcon />
-                <h3>{category.name}</h3>
+                <div className="category-header">
+                  <h3>{category.name}</h3>
+                </div>
                 <p>{category.description || 'No description'}</p>
               </div>
             ))}
+            {filteredCategories.length === 0 && !loading && (
+              <p className="no-results">No categories found</p>
+            )}
           </div>
         </div>
-
-        {/* Selected Category Details */}
-        {selectedCategory && (
-          <div className="details-section">
-            <h2>
-              <CategoryIcon />
-              Category Details
-            </h2>
-            <div className="category-details">
-              <CategoryIcon />
-              <h3>{selectedCategory.name}</h3>
-              <p>{selectedCategory.description || 'No description'}</p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
