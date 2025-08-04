@@ -1,14 +1,17 @@
-/* :root {
-  --primary-bg: #2c3e50;
-  --accent-color: #e91e63;
-  --light-bg: #f5f6fa;
-  --white: #ffffff;
-  --co-5: #dfe4ea;
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --shadow-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
-  --transition: all 0.3s ease;
-  --border-radius: 8px;
-} */
+:root {
+  --color-main: #067dad;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f0f3be;
+}
 
 .due-date-calculator {
   max-width: 500px;

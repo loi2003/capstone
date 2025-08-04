@@ -1,3 +1,17 @@
+:root {
+  --color-main: #067dad;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f0f3be;
+}
 .journal-entry-form {
   max-width: 800px;
   margin: 2rem auto;

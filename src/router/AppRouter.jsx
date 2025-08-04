@@ -25,48 +25,19 @@ import NotFound from "../pages/error/404NotFound";
 import AdminTutorialPage from "../pages/admin/AdminTutorialPage";
 import AdminPolicyPage from "../pages/admin/AdminPolicyPage";
 import PregnancyTrackingPage from "../pages/PregnancyTrackingPage";
+import DueDateCalculator from "../components/form/DueDateCalculator";
 import BlogPage from "../pages/BlogPage";
 import BlogDetailPage from "../pages/BlogDetailPage";
 import AdminAccountManagement from "../pages/admin/AdminAccountManagement";
+import JournalSection from "../components/journal/JournalSection";
+import JournalEntryDetail from "../components/journal/JournalEntryDetail";
+import JournalEntryForm from "../components/form/JournalEntryForm";
 import NutrientCategoryManagement from "../pages/nutrientspecialist/NutrientCategoryManagement";
 import NutrientManagement from "../pages/nutrientspecialist/NutrientManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
-import React, { useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider } from '../contexts/ThemeContext';
-import MainLayout from '../layouts/MainLayout'
-import HomePage from '../pages/HomePage';
-import SignIn from '../pages/authentication/SignIn';
-import SignUp from '../pages/authentication/SignUp';
-import AboutPage from '../pages/AboutPage';
-import ConsultationPage from '../pages/ConsultationPage';
-import CommunityPage from '../pages/CommunityPage';
-import DonationPage from '../pages/DonationPage';
-import PrivacyPolicy from '../pages/PrivacyPolicy';
-import TermsOfService from '../pages/TermOfService';
-import ContactUs from '../pages/ContactUs';
-import AdminHomePage from '../pages/admin/AdminHomePage';
-import HealthExpertHomePage from '../pages/healthexpert/HealthExpertHomePage';
-import NutrientSpecialistHomePage from '../pages/nutrientspecialist/NutrientSpecialistHomepage';
-import ClinicHomePage from '../pages/clinic/ClinicHomePage';
-import BlogManagement from '../pages/BlogManagement';
-import AddingBlog from '../pages/AddingBlog';
-import ConsultantHomePage from '../pages/consultant/ConsultantHomePage';
-import ForgotPassword from '../pages/ForgotPassword';
-import BlogCategoryManagement from '../pages/admin/BlogCategoryManagement';
-import NotFound from '../pages/error/404NotFound';
-import AdminTutorialPage from '../pages/admin/AdminTutorialPage';
-import AdminPolicyPage from '../pages/admin/AdminPolicyPage';
-import PregnancyTrackingPage from '../pages/PregnancyTrackingPage'; 
-import DueDateCalculator from '../components/form/DueDateCalculator';
-import BlogPage from '../pages/BlogPage';
-import BlogDetailPage from '../pages/BlogDetailPage';
-import AdminAccountManagement from '../pages/admin/AdminAccountManagement';
-import JournalSection from '../components/journal/JournalSection';
-import JournalEntryDetail from '../components/journal/JournalEntryDetail';
-import JournalEntryForm from '../components/form/JournalEntryForm';
+
 
 
 const AppRoutes = () => {
