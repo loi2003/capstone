@@ -5,7 +5,7 @@ import Chart from 'chart.js/auto';
 import { getAllNutrientCategories, getNutrientCategoryById, createNutrientCategory, updateNutrientCategory, getAllNutrients } from '../../apis/nutriet-api';
 import '../../styles/NutrientCategoryManagement.css';
 
-// SVG Icons
+// SVG Icons (unchanged)
 const BackIcon = () => (
   <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -48,12 +48,12 @@ const ErrorIcon = () => (
   </svg>
 );
 
-// Notification Component
+// Notification Component (unchanged)
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       document.dispatchEvent(new CustomEvent('closeNotification'));
-    }, 5000); // Auto-dismiss after 5 seconds
+    }, 5000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -96,7 +96,6 @@ const NutrientCategoryManagement = () => {
   // Show notification
   const showNotification = (message, type) => {
     setNotification({ message, type });
-    // Listen for close event
     const closeListener = () => {
       setNotification(null);
       document.removeEventListener('closeNotification', closeListener);
@@ -110,19 +109,22 @@ const NutrientCategoryManagement = () => {
     try {
       const [categoriesData, nutrientsData] = await Promise.all([
         getAllNutrientCategories(),
-        getAllNutrients()
+        getAllNutrients(),
       ]);
-      // Map nutrients to categories to count nutrients per category
+      console.log('Categories Data:', categoriesData);
+      console.log('Nutrients Data:', nutrientsData);
       const enrichedCategories = categoriesData.map(category => ({
         ...category,
-        nutrientCount: nutrientsData.filter(nutrient => nutrient.categoryId === category.id).length
+        nutrientCount: nutrientsData.filter(nutrient => nutrient.categoryId === category.id).length,
       }));
+      console.log('Enriched Categories:', enrichedCategories);
       setCategories(enrichedCategories);
       setFilteredCategories(enrichedCategories);
       setNutrients(nutrientsData);
-      setCurrentPage(1); // Reset to first page
+      setCurrentPage(1);
     } catch (err) {
-      showNotification('Failed to fetch data', 'error');
+      console.error('Failed to fetch data:', err.response?.data || err.message);
+      showNotification(`Failed to fetch data: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -133,11 +135,13 @@ const NutrientCategoryManagement = () => {
     setLoading(true);
     try {
       const data = await getNutrientCategoryById(id);
+      console.log('Category by ID:', data);
       setSelectedCategory(data);
       setNewCategory({ name: data.name, description: data.description });
       setIsEditing(true);
     } catch (err) {
-      showNotification('Failed to fetch category', 'error');
+      console.error('Failed to fetch category:', err.response?.data || err.message);
+      showNotification(`Failed to fetch category: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -156,7 +160,8 @@ const NutrientCategoryManagement = () => {
       await fetchCategoriesAndNutrients();
       showNotification('Category created successfully', 'success');
     } catch (err) {
-      showNotification('Failed to create category', 'error');
+      console.error('Failed to create category:', err.response?.data || err.message);
+      showNotification(`Failed to create category: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -173,7 +178,7 @@ const NutrientCategoryManagement = () => {
       await updateNutrientCategory({
         nutrientCategoryId: selectedCategory.id,
         name: newCategory.name,
-        description: newCategory.description
+        description: newCategory.description,
       });
       setNewCategory({ name: '', description: '' });
       setSelectedCategory(null);
@@ -181,7 +186,8 @@ const NutrientCategoryManagement = () => {
       await fetchCategoriesAndNutrients();
       showNotification('Category updated successfully', 'success');
     } catch (err) {
-      showNotification('Failed to update category', 'error');
+      console.error('Failed to update category:', err.response?.data || err.message);
+      showNotification(`Failed to update category: ${err.message}`, 'error');
     } finally {
       setLoading(false);
     }
@@ -198,10 +204,11 @@ const NutrientCategoryManagement = () => {
     const term = e.target.value;
     setSearchTerm(term);
     const filtered = categories.filter(category =>
-      category.name.toLowerCase().includes(term.toLowerCase())
+      category.name?.toLowerCase().includes(term.toLowerCase())
     );
+    console.log('Filtered Categories:', filtered);
     setFilteredCategories(filtered);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
   };
 
   // Cancel edit
@@ -241,7 +248,7 @@ const NutrientCategoryManagement = () => {
 
   // Update chart
   useEffect(() => {
-    if (chartRef.current) {
+    if (chartRef.current && categories.length > 0) {
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
       }
@@ -263,7 +270,7 @@ const NutrientCategoryManagement = () => {
             y: { 
               beginAtZero: true, 
               title: { display: true, text: 'Number of Nutrients' },
-              ticks: { stepSize: 1 } // Ensure integer ticks
+              ticks: { stepSize: 1 },
             },
             x: { title: { display: true, text: 'Categories' } },
           },
@@ -272,9 +279,9 @@ const NutrientCategoryManagement = () => {
             tooltip: { enabled: true },
           },
           animation: {
-            duration: 1000, // Smooth initial render
-            easing: 'easeOutQuart'
-          }
+            duration: 1000,
+            easing: 'easeOutQuart',
+          },
         },
       });
     }
@@ -302,7 +309,7 @@ const NutrientCategoryManagement = () => {
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         <div className="sidebar-header">
-          {isSidebarOpen && <h2>Baby Nutrient Categories</h2>}
+          <h2>Baby Nutrient Categories</h2>
           <motion.button
             onClick={toggleSidebar}
             className="sidebar-toggle"

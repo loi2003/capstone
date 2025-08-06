@@ -87,19 +87,6 @@
   color: var(--text-color);
 }
 
-.nutrient-category-management .notification-close {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-color);
-  padding: 0.25rem;
-}
-
-.nutrient-category-management .notification-close .icon {
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
 /* Dark theme */
 body.dark-theme .nutrient-category-management {
   background: #1a3c34;
@@ -155,10 +142,6 @@ body.dark-theme .nutrient-category-management .notification.error .notification-
   stroke: #ff6b6b;
 }
 
-body.dark-theme .nutrient-category-management .notification-close .icon {
-  stroke: #ffffff;
-}
-
 /* Sidebar */
 .nutrient-category-management .sidebar {
   width: 20rem;
@@ -179,23 +162,26 @@ body.dark-theme .nutrient-category-management .notification-close .icon {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid var(--accent-color);
-  min-height: 4rem; /* Ensure consistent height */
+  min-height: 4rem;
 }
 
 .nutrient-category-management .sidebar-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 500;
   color: var(--primary-color);
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .nutrient-category-management .sidebar.closed .sidebar-header h2 {
-  display: none;
+  font-size: 0.9rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin: 0.5rem 0;
+  transform: rotate(180deg);
 }
 
 .nutrient-category-management .sidebar-toggle {
@@ -558,7 +544,11 @@ body.dark-theme .nutrient-category-management .notification-close .icon {
   }
 
   .nutrient-category-management .sidebar-header h2 {
-    display: none;
+    font-size: 0.9rem;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    margin: 0.5rem 0;
+    transform: rotate(180deg);
   }
 
   .nutrient-category-management .search-section {
@@ -611,8 +601,21 @@ body.dark-theme .nutrient-category-management .notification-close .icon {
   }
 
   .nutrient-category-management .sidebar-header {
-    justify-content: flex-end;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
     min-height: 4rem;
+  }
+
+  .nutrient-category-management .sidebar-header h2 {
+    font-size: 1.2rem;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .nutrient-category-management .sidebar.closed .sidebar-header h2 {
+    font-size: 1.1rem;
+    writing-mode: horizontal-tb;
+    transform: none;
   }
 
   .nutrient-category-management .sidebar.closed .category-list,
