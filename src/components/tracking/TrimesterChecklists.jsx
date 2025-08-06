@@ -1,47 +1,60 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import "./TrimesterChecklists.css"
+import { useEffect, useState } from "react";
+import "./TrimesterChecklists.css";
+import { getAllCustomChecklistsByGrowthData } from "../../apis/custom-checklist-api";
+import { getAllChecklistProgressForGrowthData } from "../../apis/template-checklist-api";
 
-const TrimesterChecklists = ({ pregnancyData }) => {
-  const [activeTab, setActiveTab] = useState("second")
-  const [checkedItems, setCheckedItems] = useState(["anatomy-scan", "childbirth-classes"])
+const TrimesterChecklists = ({ growthDataId, token }) => {
+  const [activeTab, setActiveTab] = useState("second");
+  const [templateChecklists, setTemplateChecklists] = useState([]);
+  const [customChecklists, setCustomChecklists] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const checklists = {
-    first: [
-      { id: "prenatal-vitamins", label: "Start taking prenatal vitamins" },
-      { id: "first-appointment", label: "Schedule first prenatal appointment" },
-      { id: "lifestyle-changes", label: "Make healthy lifestyle changes" },
-      { id: "insurance-check", label: "Check insurance coverage" },
-    ],
-    second: [
-      { id: "anatomy-scan", label: "Schedule anatomy scan ultrasound" },
-      { id: "childbirth-classes", label: "Start researching childbirth classes" },
-      { id: "glucose-test", label: "Schedule glucose screening test" },
-      { id: "nursery-planning", label: "Start planning nursery" },
-      { id: "baby-registry", label: "Create baby registry" },
-      { id: "pediatrician-research", label: "Research pediatricians" },
-    ],
-    third: [
-      { id: "hospital-bag", label: "Pack hospital bag" },
-      { id: "birth-plan", label: "Create birth plan" },
-      { id: "car-seat", label: "Install car seat" },
-      { id: "maternity-leave", label: "Arrange maternity leave" },
-      { id: "newborn-essentials", label: "Stock up on newborn essentials" },
-    ],
-  }
+  const fetchData = async () => {
+    if (!growthDataId || !token) return;
+
+    setLoading(true);
+    try {
+      const [templateRes, customRes] = await Promise.all([
+        getAllChecklistProgressForGrowthData(growthDataId, token),
+        getAllCustomChecklistsByGrowthData(growthDataId, token),
+      ]);
+
+      setTemplateChecklists(templateRes.data?.data || []);
+      setCustomChecklists(customRes.data?.data || []);
+    } catch (error) {
+      console.error("Failed to fetch checklists:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [growthDataId, token]);
 
   const handleItemToggle = (itemId) => {
-    setCheckedItems((prev) => (prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]))
-  }
+    const updated = templateChecklists.map((item) =>
+      item.id === itemId ? { ...item, isCompleted: !item.isCompleted } : item
+    );
+    setTemplateChecklists(updated);
+  };
 
   const getTabLabel = (tab) => {
     const labels = {
       first: "First Trimester",
       second: "Second Trimester",
       third: "Third Trimester",
-    }
-    return labels[tab]
+    };
+    return labels[tab];
+  };
+
+  const filterChecklistsByTrimester = (checklists, trimester) =>
+    checklists.filter((item) => item.trimester === trimester);
+
+  if (!growthDataId || !token) {
+    return <p>Missing tracking information. Please try again later.</p>;
   }
 
   return (
@@ -49,7 +62,7 @@ const TrimesterChecklists = ({ pregnancyData }) => {
       <h3>Trimester Checklists</h3>
 
       <div className="checklist-tabs">
-        {Object.keys(checklists).map((tab) => (
+        {["first", "second", "third"].map((tab) => (
           <button
             key={tab}
             className={`tab-btn ${activeTab === tab ? "active" : ""}`}
@@ -61,19 +74,45 @@ const TrimesterChecklists = ({ pregnancyData }) => {
       </div>
 
       <div className="checklist-content">
-        <div className="checklist-items">
-          {checklists[activeTab].map((item) => (
-            <label key={item.id} className="checklist-item">
-              <input
-                type="checkbox"
-                checked={checkedItems.includes(item.id)}
-                onChange={() => handleItemToggle(item.id)}
-              />
-              <span className="checkmark"></span>
-              <span className="item-label">{item.label}</span>
-            </label>
-          ))}
-        </div>
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          <>
+            <div className="checklist-section">
+              <h4 className="section-header">Things you will experience in the future! </h4>
+              <div className="checklist-items">
+                {filterChecklistsByTrimester(templateChecklists, tabToNumber(activeTab)).map((item) => (
+                  <label key={item.id} className="checklist-item">
+                    <input
+                      type="checkbox"
+                      checked={item.isCompleted}
+                      onChange={() => handleItemToggle(item.id)}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="item-label">{item.taskName}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="checklist-section">
+              <h4 className="section-header">Your Custom Checklists</h4>
+              <div className="checklist-items">
+                {filterChecklistsByTrimester(customChecklists, tabToNumber(activeTab)).map((item) => (
+                  <label key={item.id} className="checklist-item">
+                    <input
+                      type="checkbox"
+                      checked={item.isCompleted}
+                      onChange={() => handleItemToggle(item.id)}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="item-label">{item.taskName}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         <button className="add-custom-task-btn">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -83,7 +122,20 @@ const TrimesterChecklists = ({ pregnancyData }) => {
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TrimesterChecklists
+export default TrimesterChecklists;
+
+const tabToNumber = (tab) => {
+  switch (tab) {
+    case "first":
+      return 1;
+    case "second":
+      return 2;
+    case "third":
+      return 3;
+    default:
+      return 0;
+  }
+};

@@ -14,22 +14,24 @@
 }
 
 .section-header h3 {
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
   font-size: 1.3rem;
   font-weight: 700;
 }
 
 .view-history-btn {
-  background: none;
-  border: none;
-  color: var(--accent-color);
+  width: 200px;
+  background: var(--nguyen-primary-bg);
+  border-radius: var(--border-radius-md);
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
 }
 
 .view-history-btn:hover {
-  color: var(--primary-bg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  color: white;
 }
 
 .mood-section {
@@ -37,7 +39,7 @@
 }
 
 .mood-section h4 {
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -53,6 +55,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  color: var(--nguyen-primary-bg);
   padding: 1rem;
   border: 2px solid var(--light-bg);
   background: var(--white);
@@ -63,27 +66,50 @@
 }
 
 .mood-btn:hover {
-  border-color: var(--accent-color);
+  /* border-color: var(--nguyen-accent-color); */
+  background: #04668D;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.mood-btn:hover .mood-emoji,
+.mood-btn:hover .mood-label {
+  color: white;
 }
 
 .mood-btn.selected {
-  border-color: var(--primary-bg);
+  border-color: var(--nguyen-primary-bg);
   background: var(--light-bg);
 }
+.mood-btn.selected:hover {
+  border-color: var(--nguyen-primary-bg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+.mood-btn.selected:hover {
+  border-color: var(--nguyen-primary-bg);
+  background: #04668D;
+}
+
+
 
 .mood-emoji {
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
+.mood-emoji img {
+  width: 40px;
+  height: 40px;
+}
 
 .mood-label {
   font-size: 0.8rem;
-  color: var(--accent-color);
+    color: #038474;
   font-weight: 600;
 }
 
 .symptoms-section h4 {
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -105,7 +131,7 @@
   cursor: pointer;
   transition: var(--transition);
   font-size: 0.9rem;
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
 }
 
 .symptom-checkbox:hover {
@@ -119,15 +145,15 @@
 .checkmark {
   width: 20px;
   height: 20px;
-  border: 2px solid var(--accent-color);
+  border: 2px solid var(--nguyen-accent-color);
   border-radius: 4px;
   position: relative;
   transition: var(--transition);
 }
 
 .symptom-checkbox input[type="checkbox"]:checked + .checkmark {
-  background: var(--primary-bg);
-  border-color: var(--primary-bg);
+  background: var(--nguyen-primary-bg);
+  border-color: var(--nguyen-primary-bg);
 }
 
 .symptom-checkbox input[type="checkbox"]:checked + .checkmark::after {
@@ -148,8 +174,8 @@
   gap: 0.5rem;
   padding: 0.75rem 1rem;
   background: none;
-  border: 2px dashed var(--accent-color);
-  color: var(--accent-color);
+  border: 2px dashed var(--nguyen-accent-color);
+  color: var(--nguyen-accent-color);
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
@@ -158,8 +184,8 @@
 
 .add-custom-btn:hover {
   background: var(--light-bg);
-  border-color: var(--primary-bg);
-  color: var(--primary-bg);
+  border-color: var(--nguyen-primary-bg);
+  color: var(--nguyen-primary-bg);
 }
 
 @media (max-width: 768px) {

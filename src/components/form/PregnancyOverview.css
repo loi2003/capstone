@@ -8,13 +8,16 @@
 }
 
 .overview-header h2 {
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
   font-size: 2rem;
   margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .overview-header p {
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
   font-size: 1.1rem;
 }
 
@@ -41,12 +44,12 @@
 }
 
 .overview-card.highlight {
-  background: linear-gradient(135deg, var(--primary-bg), var(--accent-color));
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808F);
   color: var(--white-text);
 }
 
 .overview-card-icon {
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
   flex-shrink: 0;
 }
 

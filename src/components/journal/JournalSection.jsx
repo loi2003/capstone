@@ -102,7 +102,7 @@ const JournalSection = ({ journalEntries, growthDataId, growthData, onError }) =
             </button>
           </Link>
         </div>
-        {errors.submit && <span className="error-message">{errors.submit}</span>}
+        {/* {errors.submit && <span className="error-message">{errors.submit}</span>} */}
       </div>
     )
   }
@@ -130,11 +130,11 @@ const JournalSection = ({ journalEntries, growthDataId, growthData, onError }) =
               </div>
               <div className="entry-actions">
                 <Link to={`/pregnancy-tracking/journal-entry?growthDataId=${growthDataId}&entryId=${entry.id}`}>
-                  <button className="edit-btn" disabled={!token}>
+                  <button className="journal-edit-btn" disabled={!token}>
                     <img src={editIcon} alt="Edit" className="journal-icon" />
                   </button>
                 </Link>
-                <button className="delete-btn" onClick={() => handleDelete(entry.id)} disabled={!token}>
+                <button className="journal-delete-btn" onClick={() => handleDelete(entry.id)} disabled={!token}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                     <path
                       d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
@@ -142,7 +142,7 @@ const JournalSection = ({ journalEntries, growthDataId, growthData, onError }) =
                     />
                   </svg>
                 </button>
-                <button className="view-btn" onClick={() => handleViewDetails(entry.id)} disabled={!token}>
+                <button className="journal-view-btn" onClick={() => handleViewDetails(entry.id)} disabled={!token}>
                   <img src={viewIcon} alt="View" className="journal-icon" />
                 </button>
               </div>
@@ -207,7 +207,7 @@ const JournalSection = ({ journalEntries, growthDataId, growthData, onError }) =
           </div>
         ))}
       </div>
-      {errors.submit && <span className="error-message">{errors.submit}</span>}
+      {/* {errors.submit && <span className="error-message">{errors.submit}</span>} */}
     </div>
   )
 }

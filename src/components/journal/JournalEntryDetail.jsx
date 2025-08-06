@@ -28,7 +28,7 @@ const JournalEntryDetail = () => {
     <div className="journal-entry-detail">
       <div className="detail-header">
         <h2>Journal Entry Details</h2>
-        <button className="back-btn" onClick={() => navigate(`/pregnancy-tracking?growthDataId=${growthDataId}`)}>
+        <button className="back-btn" onClick={() => navigate(`/pregnancy-tracking?growthDataId=${growthDataId}&journalinfo=true`)}>
           Back
         </button>
       </div>

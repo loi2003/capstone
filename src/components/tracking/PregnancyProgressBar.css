@@ -1,3 +1,8 @@
+:root {
+  --nguyen-primary-bg: #04668D;
+  --white-text: #fafafa;
+  --nguyen-accent-color: #038474;
+}
 .pregnancy-progress-bar {
   background: var(--white);
   border-radius: var(--border-radius);
@@ -10,6 +15,12 @@
   margin-bottom: 1.5rem;
 }
 
+.week-range {
+  font-size: 0.85rem;
+  color: var(--nguyen-accent-color);
+  margin-top: 0.5rem;
+}
+
 .progress-info {
   display: flex;
   justify-content: space-between;
@@ -19,12 +30,12 @@
 .current-week {
   font-size: 1.2rem;
   font-weight: 700;
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
 }
 
 .weeks-remaining {
   font-size: 0.9rem;
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
   font-weight: 600;
 }
 
@@ -37,7 +48,7 @@
   justify-content: space-between;
   margin-bottom: 0.5rem;
   font-size: 0.8rem;
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
 }
 
 .progress-bar {
@@ -51,7 +62,7 @@
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--primary-bg), var(--accent-color));
+  background: linear-gradient(90deg, var(--nguyen-primary-bg), var(--nguyen-accent-color));
   border-radius: 4px;
   transition: width 0.3s ease;
 }
@@ -61,7 +72,7 @@
   top: -2px;
   width: 12px;
   height: 12px;
-  background: var(--primary-bg);
+  background: var(--nguyen-primary-bg);
   border-radius: 50%;
   transform: translateX(-50%);
   border: 2px solid var(--white);
@@ -72,7 +83,7 @@
   display: flex;
   justify-content: space-between;
   font-size: 0.75rem;
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
 }
 
 .week-calendar {
@@ -106,7 +117,7 @@
 }
 
 .week-item.current {
-  background: var(--primary-bg);
+  background: var(--nguyen-primary-bg);
   color: var(--white-text);
 }
 
@@ -120,6 +131,28 @@
   font-size: 1.1rem;
   font-weight: 700;
 }
+
+.back-to-current-btn {
+  background: #04668D;
+  color: var(--white);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background 0.3s ease;
+}
+
+.back-to-current-btn:hover {
+  background: white;
+  /* transform: translateY(-2px); */
+  box-shadow: var(--shadow-hover);
+  /* border-bottom: 3px solid #067DAD; */
+  color: #035a7a;
+}
+
 
 @media (max-width: 768px) {
   .pregnancy-progress-bar {

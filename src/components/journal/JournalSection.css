@@ -1,4 +1,5 @@
 :root {
+  --nguyen-primary-bg: #04668D;
   --color-main: #067dad;
   --color-secondary: #038474;
   --color-accent: #fe6b6a;
@@ -29,7 +30,7 @@
 }
 
 .journal-section {
-  background: var(--light-text);
+  background: #F5F7FA;
   border-radius: var(--border-radius-lg);
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
@@ -89,9 +90,13 @@
 }
 
 .add-entry-btn {
+  width: 200px;
   display: inline-flex;
+  flex-direction: column;
   background-color: #02808f;
   align-items: center;
+  text-align: center;
+  margin-top: 1rem;
   gap: var(--spacing-xs);
   padding: var(--spacing-sm) var(--spacing-lg);
   border: none;
@@ -173,7 +178,7 @@
 }
 
 .journal-entry {
-  background: var(--light-text);
+  background: #F5F7FA;
   border: 1px solid rgba(6, 125, 173, 0.1);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-lg);
@@ -256,23 +261,40 @@
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
 }
-
-.edit-btn:hover:not(:disabled) {
-  background: var(--color-main);
+.journal-edit-btn {
+  background: none;
+}
+.journal-view-btn {
+  background: none;
+}
+.journal-delete-btn {
+  background: none;
+}
+.journal-edit-btn:hover {
+  /* background: var(--color-main); */
   color: var(--light-text);
-  border-color: var(--color-main);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  background: none;
+  /* border-color: var(--color-main); */
 }
 
-.view-btn:hover:not(:disabled) {
-  background: var(--color-secondary);
+.journal-view-btn:hover:not(:disabled) {
+  /* background: var(--color-secondary); */
+  background: none;
   color: var(--light-text);
-  border-color: var(--color-secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  /* border-color: var(--color-secondary); */
 }
 
-.delete-btn:hover:not(:disabled) {
-  background: var(--color-accent);
+.journal-delete-btn:hover:not(:disabled) {
+  /* background: var(--color-accent); */
+  background: none;
   color: var(--light-text);
-  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  /* border-color: var(--color-accent); */
 }
 
 .action-btn:disabled {
@@ -326,7 +348,7 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  background: var(--light-text);
+  background: #F0F4F8;
   padding: var(--spacing-md);
   border-radius: var(--border-radius-sm);
   border: 1px solid rgba(6, 125, 173, 0.1);
