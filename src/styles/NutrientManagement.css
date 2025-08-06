@@ -1,271 +1,735 @@
-.nutrient-mgmt-container {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+/* Base styles */
+.nutrient-management {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 2rem 1rem;
-  font-family: 'Comic Sans MS', 'Arial', sans-serif;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  color: #1a3c34;
+  position: relative;
 }
 
-.nutrient-mgmt-inner-container {
-  max-width: 1000px;
-  width: 100%;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  padding: 2rem;
+/* Scoped variables */
+.nutrient-management {
+  --primary-color: #2e7d32;
+  --secondary-color: #4caf50;
+  --accent-color: #a5d6a7;
+  --background-light: #e8f5e9;
+  --background-white: #ffffff;
+  --text-color: #1a3c34;
+  --error-color: #d32f2f;
+  --success-color: #2e7d32;
+  --shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+  --shadow-hover: 0 6px 16px rgba(46, 125, 50, 0.2);
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* Notification styles */
+.nutrient-management .notification {
+  position: fixed;
+  top: 5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  max-width: 24rem;
+  background: var(--background-white);
+  border-left: 4px solid;
+  color: var(--text-color);
+}
+
+.nutrient-management .notification.success {
+  border-left-color: var(--success-color);
+}
+
+.nutrient-management .notification.error {
+  border-left-color: var(--error-color);
+}
+
+.nutrient-management .notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nutrient-management .notification-icon .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke: var(--text-color);
+}
+
+.nutrient-management .notification.success .notification-icon .icon {
+  stroke: var(--success-color);
+}
+
+.nutrient-management .notification.error .notification-icon .icon {
+  stroke: var(--error-color);
+}
+
+.nutrient-management .notification-content {
+  flex: 1;
+}
+
+.nutrient-management .notification-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.nutrient-management .notification-content p {
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0;
+  color: var(--text-color);
+}
+
+/* Dark theme */
+body.dark-theme .nutrient-management {
+  background: #1a3c34;
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-management .sidebar,
+body.dark-theme .nutrient-management .main-panel,
+body.dark-theme .nutrient-management .nutrient-details {
+  background: #2e4b47;
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-management .sidebar h2,
+body.dark-theme .nutrient-management .main-panel h1,
+body.dark-theme .nutrient-management .main-panel h2,
+body.dark-theme .nutrient-management .nutrient-item h3,
+body.dark-theme .nutrient-management .notification-content h4,
+body.dark-theme .nutrient-management .notification-content p,
+body.dark-theme .nutrient-management .nutrient-details h3,
+body.dark-theme .nutrient-management .nutrient-details p {
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-management .nutrient-item p,
+body.dark-theme .nutrient-management .no-results,
+body.dark-theme .nutrient-management .loading-message {
+  color: #e0f2e9;
+}
+
+body.dark-theme .nutrient-management .search-input,
+body.dark-theme .nutrient-management .input-field,
+body.dark-theme .nutrient-management .textarea-field {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-management .search-input:focus,
+body.dark-theme .nutrient-management .input-field:focus,
+body.dark-theme .nutrient-management .textarea-field:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+body.dark-theme .nutrient-management .notification {
+  background: #2e4b47;
+}
+
+body.dark-theme .nutrient-management .notification.success .notification-icon .icon {
+  stroke: var(--success-color);
+}
+
+body.dark-theme .nutrient-management .notification.error .notification-icon .icon {
+  stroke: #ff6b6b;
+}
+
+/* Sidebar */
+.nutrient-management .sidebar {
+  width: 20rem;
+  background: var(--background-white);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition);
   position: relative;
+  overflow: hidden;
+  z-index: 100;
+}
+
+.nutrient-management .sidebar.closed {
+  width: 4rem;
+}
+
+.nutrient-management .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--accent-color);
+  min-height: 4rem;
+}
+
+.nutrient-management .sidebar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nutrient-management .sidebar.closed .sidebar-header h2 {
+  display: none;
+}
+
+.nutrient-management .sidebar-toggle {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nutrient-management .sidebar-toggle .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.nutrient-management .search-section {
+  position: relative;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.nutrient-management .sidebar.closed .search-section {
+  display: none;
+}
+
+.nutrient-management .search-section .icon {
+  position: absolute;
+  left: 1.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: var(--text-color);
+}
+
+.nutrient-management .search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--background-white);
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+.nutrient-management .search-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.nutrient-management .nutrient-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.5rem;
+}
+
+.nutrient-management .nutrient-item {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+  text-align: left;
   overflow: hidden;
 }
 
-.nutrient-mgmt-back-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #ffd54f;
-  color: #333;
-  border: none;
-  border-radius: 25px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.3s ease, background 0.3s ease;
-  margin-bottom: 1.5rem;
-}
-
-.nutrient-mgmt-back-button:hover {
-  background: #ffc107;
-  transform: scale(1.05);
-}
-
-.nutrient-mgmt-icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  stroke: #333;
-}
-
-.nutrient-mgmt-container h1 {
-  font-size: 2.2rem;
-  color: #1976d2;
-  text-align: center;
-  margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.nutrient-mgmt-container h2 {
-  font-size: 1.6rem;
-  color: #7b1fa2;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.nutrient-mgmt-form-section, .nutrient-mgmt-list-section, .nutrient-mgmt-details-section {
-  margin-bottom: 2.5rem;
-  padding: 1.5rem;
-  background: #e8eaf6;
-  border-radius: 15px;
-}
-
-.nutrient-mgmt-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.nutrient-mgmt-input-field, .nutrient-mgmt-textarea-field {
+.nutrient-management .sidebar.closed .nutrient-item {
   padding: 0.75rem;
-  border: 2px solid #64b5f6;
-  border-radius: 10px;
-  font-size: 1rem;
-  background: #ffffff;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.nutrient-mgmt-search-input {
-  padding-left: 2.5rem;
-}
-
-.nutrient-mgmt-input-field:focus, .nutrient-mgmt-textarea-field:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 8px rgba(25, 118, 210, 0.3);
-}
-
-.nutrient-mgmt-textarea-field {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.nutrient-mgmt-submit-button {
+  text-align: center;
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: #1976d2;
-  color: #fff;
-  border: none;
-  border-radius: 25px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: transform 0.3s ease, background 0.3s ease;
+  align-items: center;
 }
 
-.nutrient-mgmt-submit-button:hover {
-  background: #1565c0;
-  transform: scale(1.05);
+.nutrient-management .nutrient-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
 }
 
-.nutrient-mgmt-submit-button:disabled {
-  background: #cccccc;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.nutrient-mgmt-error-message {
-  color: #d81b60;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
-.nutrient-mgmt-loading-message {
-  color: #757575;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.nutrient-mgmt-search-section {
-  position: relative;
-  margin-bottom: 1.5rem;
-}
-
-.nutrient-mgmt-search-section .nutrient-mgmt-icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.nutrient-mgmt-nutrient-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.nutrient-mgmt-nutrient-item {
-  padding: 1rem;
-  background: #e3f2fd;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.nutrient-mgmt-nutrient-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.nutrient-mgmt-nutrient-header {
+.nutrient-management .nutrient-item .nutrient-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.nutrient-mgmt-nutrient-item h3 {
-  font-size: 1.2rem;
-  color: #1976d2;
-  margin: 0.5rem 0;
+.nutrient-management .nutrient-item h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin: 0 0 0.5rem;
 }
 
-.nutrient-mgmt-nutrient-unit {
+.nutrient-management .sidebar.closed .nutrient-item h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.nutrient-management .nutrient-item .nutrient-unit {
   font-size: 0.9rem;
-  color: #7b1fa2;
+  color: var(--primary-color);
   font-weight: bold;
 }
 
-.nutrient-mgmt-nutrient-item p {
+.nutrient-management .nutrient-item p {
   font-size: 0.9rem;
-  color: #616161;
+  color: var(--text-color);
+  margin: 0;
 }
 
-.nutrient-mgmt-nutrient-image {
+.nutrient-management .sidebar.closed .nutrient-item p,
+.nutrient-management .sidebar.closed .nutrient-item .nutrient-unit,
+.nutrient-management .sidebar.closed .nutrient-item img {
+  display: none;
+}
+
+.nutrient-management .nutrient-image {
   max-width: 100px;
   max-height: 100px;
   object-fit: cover;
-  border-radius: 10px;
+  border-radius: var(--border-radius);
   margin-top: 0.5rem;
 }
 
-.nutrient-mgmt-nutrient-details {
+.nutrient-management .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 1rem;
-  background: #e3f2fd;
-  border-radius: 15px;
+  gap: 0.5rem;
+}
+
+.nutrient-management .sidebar.closed .pagination {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nutrient-management .pagination-button {
+  background: var(--secondary-color);
+  color: var(--background-white);
+  border: none;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nutrient-management .pagination-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.nutrient-management .pagination-button .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.nutrient-management .pagination-info {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.nutrient-management .sidebar.closed .pagination-info {
+  font-size: 0.8rem;
+}
+
+/* Main Content */
+.nutrient-management .main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: hidden;
+}
+
+.nutrient-management .main-panel {
+  max-width: 64rem;
+  margin: 0 auto;
+  background: var(--background-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.nutrient-management .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.nutrient-management .panel-header h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.nutrient-management .back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--background-white);
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.nutrient-management .back-button:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
+}
+
+.nutrient-management .back-button:active {
+  transform: scale(0.95);
+}
+
+.nutrient-management .back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.3);
+}
+
+.nutrient-management .back-button .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: var(--background-white);
+}
+
+/* Form Section */
+.nutrient-management .form-section {
+  padding: 1rem 0;
+}
+
+.nutrient-management .form-section h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.nutrient-management .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nutrient-management .form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+}
+
+.nutrient-management .input-field,
+.nutrient-management .textarea-field,
+.nutrient-management .form-group select {
+  padding: 0.75rem;
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--background-white);
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+.nutrient-management .form-group select {
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="%231a3c34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.75rem top 50%;
+  background-size: 1.25rem;
+  cursor: pointer;
+}
+
+body.dark-theme .nutrient-management .form-group select {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="none" stroke="%23ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>');
+}
+
+.nutrient-management .input-field:focus,
+.nutrient-management .textarea-field:focus,
+.nutrient-management .form-group select:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.nutrient-management .textarea-field {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.nutrient-management .submit-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius);
+  background: var(--secondary-color);
+  color: var(--background-white);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+}
+
+.nutrient-management .submit-button:hover {
+  background: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.nutrient-management .submit-button:disabled {
+  background: #cccccc;
+  color: #adb5bd;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Details Section */
+.nutrient-management .details-section {
+  padding: 1rem 0;
+}
+
+.nutrient-management .details-section h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.nutrient-management .nutrient-details {
+  padding: 1rem;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.nutrient-mgmt-nutrient-details h3 {
+.nutrient-management .nutrient-details h3 {
   font-size: 1.2rem;
-  color: #1976d2;
+  font-weight: 500;
+  color: var(--primary-color);
   margin: 0.5rem 0;
 }
 
-.nutrient-mgmt-nutrient-details p {
+.nutrient-management .nutrient-details p {
   font-size: 0.9rem;
-  color: #616161;
+  color: var(--text-color);
 }
 
-.nutrient-mgmt-no-results {
+/* Loading and No Results */
+.nutrient-management .loading-message,
+.nutrient-management .no-results {
   text-align: center;
-  color: #757575;
-  font-size: 1rem;
+  color: var(--text-color);
+  font-size: 0.95rem;
+  padding: 1rem;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .nutrient-mgmt-inner-container {
+  .nutrient-management {
+    flex-direction: column;
+    position: relative;
+  }
+
+  .nutrient-management .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transition: none;
+    z-index: 100;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .nutrient-management .sidebar.closed {
+    height: 4rem;
+  }
+
+  .nutrient-management .sidebar-header {
+    justify-content: flex-end;
+    background: var(--background-white);
+  }
+
+  .nutrient-management .sidebar-header h2 {
+    display: block;
+  }
+
+  .nutrient-management .search-section {
+    display: flex;
+    padding: 0.5rem 1rem;
+  }
+
+  .nutrient-management .nutrient-list {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
+    padding: 0.5rem;
+  }
+
+  .nutrient-management .nutrient-item {
+    width: 100%;
+    max-width: 300px;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .nutrient-management .nutrient-item h3 {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .nutrient-management .nutrient-item p,
+  .nutrient-management .nutrient-item .nutrient-unit,
+  .nutrient-management .nutrient-item img {
+    display: block;
+    white-space: normal;
+  }
+
+  .nutrient-management .pagination {
+    flex-direction: row;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .nutrient-management .pagination-info {
+    font-size: 0.9rem;
+  }
+
+  .nutrient-management .main-content {
+    margin-left: 0;
+    padding: 1rem;
+    margin-top: 4rem;
+  }
+
+  .nutrient-management .main-panel {
     padding: 1.5rem;
   }
 
-  .nutrient-mgmt-container h1 {
-    font-size: 1.8rem;
+  .nutrient-management .panel-header h1 {
+    font-size: 2rem;
   }
 
-  .nutrient-mgmt-container h2 {
+  .nutrient-management .form-section h2,
+  .nutrient-management .details-section h2 {
     font-size: 1.4rem;
   }
 
-  .nutrient-mgmt-nutrient-list {
-    grid-template-columns: 1fr;
+  .nutrient-management .form-group {
+    align-items: stretch;
+  }
+
+  .nutrient-management .submit-button {
+    width: 100%;
+  }
+
+  .nutrient-management .notification {
+    top: 5rem;
+    right: 0.5rem;
+    max-width: 90%;
+  }
+}
+
+@media (min-width: 769px) {
+  .nutrient-management {
+    flex-direction: row;
+  }
+
+  .nutrient-management .sidebar {
+    height: 100vh;
+  }
+
+  .nutrient-management .main-content {
+    margin-top: 0;
   }
 }
 
 @media (max-width: 480px) {
-  .nutrient-mgmt-back-button, .nutrient-mgmt-submit-button {
-    width: 100%;
+  .nutrient-management .main-panel {
+    padding: 1rem;
+  }
+
+  .nutrient-management .panel-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .nutrient-management .form-section h2,
+  .nutrient-management .details-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .nutrient-management .input-field,
+  .nutrient-management .textarea-field,
+  .nutrient-management .form-group select {
     font-size: 0.9rem;
   }
 
-  .nutrient-mgmt-input-field, .nutrient-mgmt-textarea-field {
+  .nutrient-management .back-button,
+  .nutrient-management .submit-button {
     font-size: 0.9rem;
+    padding: 0.6rem 1rem;
   }
 
-  .nutrient-mgmt-nutrient-item, .nutrient-mgmt-nutrient-details {
-    padding: 0.75rem;
+  .nutrient-management .nutrient-details h3 {
+    font-size: 1.1rem;
   }
 
-  .nutrient-mgmt-nutrient-image {
+  .nutrient-management .nutrient-image {
     max-width: 80px;
     max-height: 80px;
+  }
+
+  .nutrient-management .pagination-info {
+    font-size: 0.8rem;
+  }
+
+  .nutrient-management .notification {
+    top: 4.5rem;
+    right: 0.5rem;
+    max-width: 90%;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .nutrient-management .notification-content h4 {
+    font-size: 0.9rem;
+  }
+
+  .nutrient-management .notification-content p {
+    font-size: 0.8rem;
   }
 }

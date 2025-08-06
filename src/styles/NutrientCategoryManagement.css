@@ -1,256 +1,702 @@
+/* Base styles */
 .nutrient-category-management {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #e8f5e9 0%, #fce4ec 100%);
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 2rem 1rem;
-  font-family: 'Comic Sans MS', 'Arial', sans-serif;
+  min-height: 100vh;
+  background-color: #f3f4f6;
+  color: #1a3c34;
+  position: relative; /* For positioning notifications */
 }
 
-.container {
-  max-width: 1000px;
-  width: 100%;
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-  padding: 2rem;
+/* Scoped variables */
+.nutrient-category-management {
+  --primary-color: #2e7d32;
+  --secondary-color: #4caf50;
+  --accent-color: #a5d6a7;
+  --background-light: #e8f5e9;
+  --background-white: #ffffff;
+  --text-color: #1a3c34;
+  --error-color: #d32f2f;
+  --success-color: #2e7d32;
+  --shadow: 0 4px 12px rgba(46, 125, 50, 0.15);
+  --shadow-hover: 0 6px 16px rgba(46, 125, 50, 0.2);
+  --border-radius: 8px;
+  --transition: all 0.3s ease;
+}
+
+/* Notification styles */
+.nutrient-category-management .notification {
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  z-index: 1000;
+  max-width: 24rem;
+  background: var(--background-white);
+  border-left: 4px solid;
+  color: var(--text-color);
+}
+
+.nutrient-category-management .notification.success {
+  border-left-color: var(--success-color);
+}
+
+.nutrient-category-management .notification.error {
+  border-left-color: var(--error-color);
+}
+
+.nutrient-category-management .notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nutrient-category-management .notification-icon .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  stroke: var(--text-color);
+}
+
+.nutrient-category-management .notification.success .notification-icon .icon {
+  stroke: var(--success-color);
+}
+
+.nutrient-category-management .notification.error .notification-icon .icon {
+  stroke: var(--error-color);
+}
+
+.nutrient-category-management .notification-content {
+  flex: 1;
+}
+
+.nutrient-category-management .notification-content h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+}
+
+.nutrient-category-management .notification-content p {
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0;
+  color: var(--text-color);
+}
+
+.nutrient-category-management .notification-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
+  padding: 0.25rem;
+}
+
+.nutrient-category-management .notification-close .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Dark theme */
+body.dark-theme .nutrient-category-management {
+  background: #1a3c34;
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-category-management .sidebar,
+body.dark-theme .nutrient-category-management .main-panel,
+body.dark-theme .nutrient-category-management .chart-container {
+  background: #2e4b47;
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-category-management .sidebar h2,
+body.dark-theme .nutrient-category-management .main-panel h1,
+body.dark-theme .nutrient-category-management .main-panel h2,
+body.dark-theme .nutrient-category-management .category-item h3,
+body.dark-theme .nutrient-category-management .notification-content h4,
+body.dark-theme .nutrient-category-management .notification-content p {
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-category-management .category-item p,
+body.dark-theme .nutrient-category-management .no-results,
+body.dark-theme .nutrient-category-management .loading-message {
+  color: #e0f2e9;
+}
+
+body.dark-theme .nutrient-category-management .search-input,
+body.dark-theme .nutrient-category-management .input-field,
+body.dark-theme .nutrient-category-management .textarea-field {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+body.dark-theme .nutrient-category-management .search-input:focus,
+body.dark-theme .nutrient-category-management .input-field:focus,
+body.dark-theme .nutrient-category-management .textarea-field:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+body.dark-theme .nutrient-category-management .notification {
+  background: #2e4b47;
+}
+
+body.dark-theme .nutrient-category-management .notification.success .notification-icon .icon {
+  stroke: var(--success-color);
+}
+
+body.dark-theme .nutrient-category-management .notification.error .notification-icon .icon {
+  stroke: #ff6b6b;
+}
+
+body.dark-theme .nutrient-category-management .notification-close .icon {
+  stroke: #ffffff;
+}
+
+/* Sidebar */
+.nutrient-category-management .sidebar {
+  width: 20rem;
+  background: var(--background-white);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--transition);
   position: relative;
   overflow: hidden;
 }
 
-.back-button {
+.nutrient-category-management .sidebar.closed {
+  width: 4rem;
+}
+
+.nutrient-category-management .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--accent-color);
+  min-height: 4rem; /* Ensure consistent height */
+}
+
+.nutrient-category-management .sidebar-header h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nutrient-category-management .sidebar.closed .sidebar-header h2 {
+  display: none;
+}
+
+.nutrient-category-management .sidebar-toggle {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nutrient-category-management .sidebar-toggle .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.nutrient-category-management .search-section {
+  position: relative;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+.nutrient-category-management .sidebar.closed .search-section {
+  display: none;
+}
+
+.nutrient-category-management .search-section .icon {
+  position: absolute;
+  left: 1.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: var(--text-color);
+}
+
+.nutrient-category-management .search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--background-white);
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+.nutrient-category-management .search-input:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.nutrient-category-management .category-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0.5rem;
+}
+
+.nutrient-category-management .category-item {
+  padding: 1rem;
+  margin: 0.5rem 0;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nutrient-category-management .sidebar.closed .category-item {
+  padding: 0.75rem;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nutrient-category-management .category-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-hover);
+}
+
+.nutrient-category-management .category-item h3 {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin: 0 0 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nutrient-category-management .sidebar.closed .category-item h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.nutrient-category-management .category-item p {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nutrient-category-management .sidebar.closed .category-item p {
+  display: none;
+}
+
+.nutrient-category-management .pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  gap: 0.5rem;
+}
+
+.nutrient-category-management .sidebar.closed .pagination {
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.nutrient-category-management .pagination-button {
+  background: var(--secondary-color);
+  color: var(--background-white);
+  border: none;
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nutrient-category-management .pagination-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.nutrient-category-management .pagination-button .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.nutrient-category-management .pagination-info {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  text-align: center;
+}
+
+.nutrient-category-management .sidebar.closed .pagination-info {
+  font-size: 0.8rem;
+}
+
+/* Main Content */
+.nutrient-category-management .main-content {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: hidden;
+}
+
+.nutrient-category-management .main-panel {
+  max-width: 64rem;
+  margin: 0 auto;
+  background: var(--background-white);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 2rem;
+}
+
+.nutrient-category-management .panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.nutrient-category-management .panel-header h1 {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.nutrient-category-management .back-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #ffca28;
-  color: #333;
+  font-size: 0.95rem;
+  font-weight: 500;
   border: none;
-  border-radius: 25px;
-  font-size: 1rem;
+  border-radius: var(--border-radius);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: var(--background-white);
   cursor: pointer;
-  transition: transform 0.3s ease, background 0.3s ease;
-  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
 }
 
-.back-button:hover {
-  background: #ffb300;
-  transform: scale(1.05);
+.nutrient-category-management .back-button:hover {
+  background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-2px);
 }
 
-.icon {
-  width: 1.5rem;
-  height: 1.5rem;
-  stroke: #333;
+.nutrient-category-management .back-button:active {
+  transform: scale(0.95);
 }
 
-h1 {
-  font-size: 2.2rem;
-  color: #388e3c;
-  text-align: center;
+.nutrient-category-management .back-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.3);
+}
+
+.nutrient-category-management .back-button .icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: var(--background-white);
+}
+
+/* Chart Section */
+.nutrient-category-management .chart-section {
   margin-bottom: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
 }
 
-h2 {
-  font-size: 1.6rem;
-  color: #d81b60;
+.nutrient-category-management .chart-section h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
   margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.form-section, .list-section {
-  margin-bottom: 2.5rem;
-  padding: 1.5rem;
-  background: #f3e5f5;
-  border-radius: 15px;
+.nutrient-category-management .chart-container {
+  background: var(--background-light);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
 }
 
-.form-group {
+/* Form Section */
+.nutrient-category-management .form-section {
+  padding: 1rem 0;
+}
+
+.nutrient-category-management .form-section h2 {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.nutrient-category-management .form-group {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.button-group {
+.nutrient-category-management .form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-bottom: 0.25rem;
+}
+
+.nutrient-category-management .input-field,
+.nutrient-category-management .textarea-field {
+  padding: 0.75rem;
+  border: 1px solid var(--accent-color);
+  border-radius: var(--border-radius);
+  font-size: 0.95rem;
+  background: var(--background-white);
+  color: var(--text-color);
+  transition: var(--transition);
+}
+
+.nutrient-category-management .input-field:focus,
+.nutrient-category-management .textarea-field:focus {
+  outline: none;
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+}
+
+.nutrient-category-management .textarea-field {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.nutrient-category-management .button-group {
   display: flex;
   gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
 }
 
-.input-field, .textarea-field {
-  padding: 0.75rem;
-  border: 2px solid #81c784;
-  border-radius: 10px;
-  font-size: 1rem;
-  background: #ffffff;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.search-input {
-  padding-left: 2.5rem;
-}
-
-.input-field:focus, .textarea-field:focus {
-  outline: none;
-  border-color: #388e3c;
-  box-shadow: 0 0 8px rgba(56, 142, 60, 0.3);
-}
-
-.textarea-field {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.submit-button, .cancel-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+.nutrient-category-management .submit-button,
+.nutrient-category-management .cancel-button {
   padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
   border: none;
-  border-radius: 25px;
-  font-size: 1rem;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: transform 0.3s ease, background 0.3s ease;
+  transition: var(--transition);
+  box-shadow: var(--shadow);
 }
 
-.submit-button {
-  background: #388e3c;
-  color: #fff;
+.nutrient-category-management .submit-button {
+  background: var(--secondary-color);
+  color: var(--background-white);
 }
 
-.cancel-button {
-  background: #d32f2f;
-  color: #fff;
+.nutrient-category-management .cancel-button {
+  background: var(--error-color);
+  color: var(--background-white);
 }
 
-.submit-button:hover, .cancel-button:hover {
-  transform: scale(1.05);
+.nutrient-category-management .submit-button:hover,
+.nutrient-category-management .cancel-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
-.submit-button:hover {
-  background: #2e7d32;
+.nutrient-category-management .submit-button:hover {
+  background: var(--primary-color);
 }
 
-.cancel-button:hover {
+.nutrient-category-management .cancel-button:hover {
   background: #b71c1c;
 }
 
-.submit-button:disabled, .cancel-button:disabled {
+.nutrient-category-management .submit-button:disabled,
+.nutrient-category-management .cancel-button:disabled {
   background: #cccccc;
+  color: #adb5bd;
   cursor: not-allowed;
   transform: none;
 }
 
-.error-message {
-  color: #d32f2f;
-  font-size: 0.9rem;
+.nutrient-category-management .loading-message,
+.nutrient-category-management .no-results {
   text-align: center;
-}
-
-.loading-message {
-  color: #757575;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.search-section {
-  position: relative;
-  margin-bottom: 1.5rem;
-}
-
-.search-section .icon {
-  position: absolute;
-  left: 0.75rem;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.category-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.category-item {
+  color: var(--text-color);
+  font-size: 0.95rem;
   padding: 1rem;
-  background: #e8f5e9;
-  border-radius: 15px;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.category-item:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-}
-
-.category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.category-item h3 {
-  font-size: 1.2rem;
-  color: #388e3c;
-  margin: 0.5rem 0;
-}
-
-.category-item p {
-  font-size: 0.9rem;
-  color: #616161;
-}
-
-.no-results {
-  text-align: center;
-  color: #757575;
-  font-size: 1rem;
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .nutrient-category-management .sidebar {
+    width: 4rem;
+  }
+
+  .nutrient-category-management .sidebar-header h2 {
+    display: none;
+  }
+
+  .nutrient-category-management .search-section {
+    display: none;
+  }
+
+  .nutrient-category-management .category-item {
+    padding: 0.75rem;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .nutrient-category-management .category-item h3 {
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .nutrient-category-management .category-item p {
+    display: none;
+  }
+
+  .nutrient-category-management .pagination {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .nutrient-category-management .notification {
+    top: 0.5rem;
+    right: 0.5rem;
+    max-width: 90%;
+  }
+}
+
 @media (max-width: 768px) {
-  .container {
-    padding: 1.5rem;
-  }
-
-  h1 {
-    font-size: 1.8rem;
-  }
-
-  h2 {
-    font-size: 1.4rem;
-  }
-
-  .button-group {
+  .nutrient-category-management {
     flex-direction: column;
   }
 
-  .submit-button, .cancel-button {
+  .nutrient-category-management .sidebar {
     width: 100%;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  .nutrient-category-management .sidebar.closed {
+    width: 100%;
+    max-height: 4rem;
+  }
+
+  .nutrient-category-management .sidebar-header {
+    justify-content: flex-end;
+    min-height: 4rem;
+  }
+
+  .nutrient-category-management .sidebar.closed .category-list,
+  .nutrient-category-management .sidebar.closed .pagination {
+    display: none;
+  }
+
+  .nutrient-category-management .main-content {
+    padding: 1rem;
+  }
+
+  .nutrient-category-management .main-panel {
+    padding: 1.5rem;
+  }
+
+  .nutrient-category-management .panel-header h1 {
+    font-size: 2rem;
+  }
+
+  .nutrient-category-management .chart-section h2,
+  .nutrient-category-management .form-section h2 {
+    font-size: 1.4rem;
+  }
+
+  .nutrient-category-management .button-group {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .nutrient-category-management .submit-button,
+  .nutrient-category-management .cancel-button {
+    width: 100%;
+  }
+
+  .nutrient-category-management .notification {
+    top: 0.5rem;
+    right: 0.5rem;
+    max-width: 90%;
   }
 }
 
 @media (max-width: 480px) {
-  .back-button, .submit-button, .cancel-button {
-    width: 100%;
+  .nutrient-category-management .main-panel {
+    padding: 1rem;
+  }
+
+  .nutrient-category-management .panel-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .nutrient-category-management .chart-section h2,
+  .nutrient-category-management .form-section h2 {
+    font-size: 1.2rem;
+  }
+
+  .nutrient-category-management .input-field,
+  .nutrient-category-management .textarea-field {
     font-size: 0.9rem;
   }
 
-  .input-field, .textarea-field {
+  .nutrient-category-management .back-button,
+  .nutrient-category-management .submit-button,
+  .nutrient-category-management .cancel-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .nutrient-category-management .pagination-info {
+    font-size: 0.8rem;
+  }
+
+  .nutrient-category-management .notification {
+    top: 0.5rem;
+    right: 0.5rem;
+    max-width: 90%;
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .nutrient-category-management .notification-content h4 {
     font-size: 0.9rem;
   }
 
-  .category-item {
-    padding: 0.75rem;
+  .nutrient-category-management .notification-content p {
+    font-size: 0.8rem;
   }
 }
