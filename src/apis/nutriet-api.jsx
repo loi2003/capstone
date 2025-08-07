@@ -176,3 +176,98 @@ export const updateNutrient = async (nutrientData) => {
     throw error;
   }
 };
+
+export const getAllFoodCategories = async () => {
+  try {
+    const response = await apiClient.get(`/api/food-category/view-all-foods-category`, {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all food categories:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getFoodCategoryById = async (categoryId) => {
+  try {
+    const response = await apiClient.get(`/api/food-category/view-food-category-by-id`, {
+      params: {
+        id: categoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching food category by ID:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getFoodCategoryWithFoodsById = async (categoryId) => {
+  try {
+    const response = await apiClient.get(`/api/food-category/view-food-category-by-id-with-foods`, {
+      params: {
+        id: categoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching food category with foods by ID:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createFoodCategory = async (categoryData) => {
+  try {
+    const response = await apiClient.post(
+      `/api/food-category/add-food-category`,
+      {
+        name: categoryData.name,
+        description: categoryData.description,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating food category:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const updateFoodCategory = async (categoryData) => {
+  try {
+    if (!categoryData.id || categoryData.id === '') {
+      throw new Error('FoodCategory Id is null or empty');
+    }
+    const response = await apiClient.put(
+      `/api/food-category/update-food-category`,
+      {
+        id: categoryData.id,
+        name: categoryData.name,
+        description: categoryData.description,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating food category:", error.response?.data || error.message);
+    throw error;
+  }
+};

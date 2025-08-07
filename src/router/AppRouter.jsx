@@ -36,11 +36,11 @@ import JournalEntryDetail from "../components/journal/JournalEntryDetail";
 import JournalEntryForm from "../components/form/JournalEntryForm";
 import NutrientCategoryManagement from "../pages/nutrientspecialist/NutrientCategoryManagement";
 import NutrientManagement from "../pages/nutrientspecialist/NutrientManagement";
+import FoodCategoryManagement from "../pages/nutrientspecialist/FoodCategoryManagement";
+import FoodManagement from "../pages/nutrientspecialist/FoodManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
-
-
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -67,7 +67,10 @@ const AppRoutes = () => {
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
-        <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
+        <Route
+          path="/health-expert/tutorial"
+          element={<HealthExpertTutorial />}
+        />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
         <Route
           path="/nutrient-specialist"
@@ -76,9 +79,18 @@ const AppRoutes = () => {
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
-        <Route path="/pregnancy-tracking/journal-section" element={<JournalSection />} />
-        <Route path="/pregnancy-tracking/journal-section/journal-detail" element={<JournalEntryDetail />} />
-        <Route path="/pregnancy-tracking/journal-section/journal-form" element={<JournalEntryForm />} />
+        <Route
+          path="/pregnancy-tracking/journal-section"
+          element={<JournalSection />}
+        />
+        <Route
+          path="/pregnancy-tracking/journal-section/journal-detail"
+          element={<JournalEntryDetail />}
+        />
+        <Route
+          path="/pregnancy-tracking/journal-section/journal-form"
+          element={<JournalEntryForm />}
+        />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
@@ -98,6 +110,14 @@ const AppRoutes = () => {
         <Route
           path="/nutrient-specialist/nutrient-management"
           element={<NutrientManagement />}
+        />
+        <Route
+          path="/nutrient-specialist/food-category-management"
+          element={<FoodCategoryManagement />}
+        />
+        <Route
+          path="/nutrient-specialist/food-management"
+          element={<FoodManagement />}
         />
         <Route
           path="/blog"
