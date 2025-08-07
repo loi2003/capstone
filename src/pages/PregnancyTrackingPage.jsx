@@ -1,109 +1,196 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import Header from "../components/header/Header"
-import Footer from "../components/footer/Footer"
-import TrackingForm from "../components/form/TrackingForm"
-import PregnancyOverview from "../components/form/PregnancyOverview"
-import PregnancyProgressBar from "../components/tracking/WeeklyProgessBar"
-import JournalSection from "../components/journal/JournalSection"
-import BabyDevelopment from "../components/tracking/BabyDevelopment"
-import UpcomingAppointments from "../components/tracking/UpcomingAppointments"
-import SymptomsAndMood from "../components/tracking/SymptomsAndMood"
-import TrimesterChecklists from "../components/tracking/TrimesterChecklists"
-import { getGrowthDataFromUser, createGrowthDataProfile } from "../apis/growthdata-api"
-import { getCurrentUser } from "../apis/authentication-api"
-import "../styles/PregnancyTrackingPage.css"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Header from "../components/header/Header";
+import Footer from "../components/footer/Footer";
+import TrackingForm from "../components/form/TrackingForm";
+import PregnancyOverview from "../components/form/PregnancyOverview";
+import PregnancyProgressBar from "../components/tracking/WeeklyProgessBar";
+import JournalSection from "../components/journal/JournalSection";
+import BabyDevelopment from "../components/tracking/BabyDevelopment";
+import UpcomingAppointments from "../components/tracking/UpcomingAppointments";
+import SymptomsAndMood from "../components/tracking/SymptomsAndMood";
+import TrimesterChecklists from "../components/tracking/TrimesterChecklists";
+import {
+  getGrowthDataFromUser,
+  createGrowthDataProfile,
+  getCurrentWeekGrowthData,
+} from "../apis/growthdata-api";
+import { createBasicBioMetric } from "../apis/basic-bio-metric-api";
+import { getCurrentUser } from "../apis/authentication-api";
+import weightIcon from "../assets/icons/weight-hanging-svgrepo-com.svg";
+import calculatorIcon from "../assets/icons/calculator-svgrepo-com.svg";
+import heartRateIcon from "../assets/icons/heart-pulse-2-svgrepo-com.svg";
+import { useSearchParams } from "react-router-dom";
+import "../styles/PregnancyTrackingPage.css";
 
 const PregnancyTrackingPage = () => {
-  const [user, setUser] = useState(null)
-  const [pregnancyData, setPregnancyData] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isCreating, setIsCreating] = useState(false)
-  const [error, setError] = useState(null)
-  const [activeTab, setActiveTab] = useState("weekly")
-  const [openJournalModal, setOpenJournalModal] = useState(false)
-  const navigate = useNavigate()
+  const [selectedWeek, setSelectedWeek] = useState(null);
+
+  const [user, setUser] = useState(null);
+  const [pregnancyData, setPregnancyData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreating, setIsCreating] = useState(false);
+  const [error, setError] = useState(null);
+
+  const [searchParams] = useSearchParams();
+  const tabFromURL =
+    (searchParams.get("weeklyinfo") && "weekly") ||
+    (searchParams.get("checkupsinfo") && "checkups") ||
+    (searchParams.get("consultinfo") && "offlineconsultation") ||
+    (searchParams.get("nutritioninfo") && "nutrition") ||
+    (searchParams.get("journalinfo") && "journal") ||
+    "weekly"; // default
+
+  const [activeTab, setActiveTab] = useState(tabFromURL);
+
+  const [openJournalModal, setOpenJournalModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    initializePage()
-  }, [])
+    initializePage();
+  }, []);
 
   useEffect(() => {
     if (activeTab === "journal") {
-      setOpenJournalModal(false) // Reset modal state when switching to journal tab
+      setOpenJournalModal(false);
     }
-  }, [activeTab])
+  }, [activeTab]);
 
   const initializePage = async () => {
     try {
-      const token = localStorage.getItem("token")
+      const token = localStorage.getItem("token");
       if (!token) {
-        setError("Please sign in to access pregnancy tracking")
-        navigate("/duedate-calculator")
-        return
+        setError("Please sign in to access pregnancy tracking");
+        navigate("/duedate-calculator");
+        return;
       }
 
-      const res = await getCurrentUser(token)
-      const userData = res?.data?.data
+      const res = await getCurrentUser(token);
+      const userData = res?.data?.data;
 
       if (!userData || userData.roleId !== 2 || !userData.id) {
-        setError("Access denied or user ID missing.")
-        setIsLoading(false)
-        return
+        setError("Access denied or user ID missing.");
+        setIsLoading(false);
+        return;
       }
 
-      setUser(userData)
-      localStorage.setItem("userId", userData.id)
+      setUser(userData);
+      localStorage.setItem("userId", userData.id);
 
-      const { data: pregRes } = await getGrowthDataFromUser(userData.id, token)
+      const currentDate = new Date().toISOString().split("T")[0];
+      const { data: pregRes } = await getCurrentWeekGrowthData(
+        userData.id,
+        currentDate,
+        token
+      );
 
       if (pregRes?.error === 0 && pregRes?.data) {
-        setPregnancyData(pregRes.data)
+        setPregnancyData(pregRes.data);
+        setSelectedWeek(pregRes.data.currentGestationalAgeInWeeks);
       } else {
-        setPregnancyData(null)
+        setPregnancyData(null);
       }
     } catch (err) {
-      console.error("Error initializing page:", err)
-      setError("Failed to load page. Please try again.")
+      console.error("Error initializing page:", err);
+      setError("Failed to load page. Please try again.");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleCreateProfile = async (formData) => {
-    setIsCreating(true)
-    setError(null)
+    setIsCreating(true);
+    setError(null);
 
     try {
-      const token = localStorage.getItem("token")
-      if (!formData?.userId) {
-        setError("User ID is missing. Cannot create growth data profile.")
-        return
+      const token = localStorage.getItem("token");
+      const { userId, firstDayOfLastMenstrualPeriod, preWeight, preHeight } =
+        formData;
+
+      if (!userId) {
+        setError("User ID is missing. Cannot create growth data profile.");
+        return;
       }
 
-      await createGrowthDataProfile(formData, token)
+      // Step 1: Create GrowthData
+      const growthDataRes = await createGrowthDataProfile(
+        {
+          userId,
+          firstDayOfLastMenstrualPeriod,
+          preWeight,
+        },
+        token
+      );
 
-      const { data: pregRes } = await getGrowthDataFromUser(formData.userId, token)
+      if (growthDataRes?.data?.error !== 0) {
+        setError(
+          growthDataRes?.data?.message || "Failed to create pregnancy profile."
+        );
+        return;
+      }
+
+      let growthDataId = null;
+
+      if (growthDataRes?.data?.data?.id) {
+        growthDataId = growthDataRes.data.data.id;
+      } else {
+        // fallback: fetch growth data manually
+        const currentDate = new Date().toISOString().split("T")[0];
+        const { data: fallbackRes } = await getCurrentWeekGrowthData(
+          userId,
+          currentDate,
+          token
+        );
+        if (fallbackRes?.error === 0 && fallbackRes?.data?.id) {
+          growthDataId = fallbackRes.data.id;
+        } else {
+          setError("Could not retrieve newly created growth data profile.");
+          return;
+        }
+      }
+
+      // Step 2: Create BBM
+      await createBasicBioMetric(
+        {
+          GrowthDataId: growthDataId,
+          WeightKg: preWeight,
+          HeightCm: preHeight,
+        },
+        token
+      );
+
+      // Step 3: Fetch updated pregnancy data
+      const currentDate = new Date().toISOString().split("T")[0];
+      const { data: pregRes } = await getCurrentWeekGrowthData(
+        userId,
+        currentDate,
+        token
+      );
 
       if (pregRes?.error === 0 && pregRes?.data) {
-        setPregnancyData(pregRes.data)
+        setPregnancyData(pregRes.data);
       } else {
-        setError(pregRes?.message || "Failed to fetch updated growth data")
+        setError(pregRes?.message || "Failed to fetch updated pregnancy data");
       }
     } catch (err) {
-      console.error("Error creating profile:", err)
-      setError(err?.response?.data?.message || "Failed to create pregnancy profile. Please try again.")
+      console.error("Error creating profile and biometric:", err);
+      setError(
+        err?.response?.data?.message ||
+          "Something went wrong. Please try again."
+      );
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleAddJournal = () => {
-    setOpenJournalModal(true)
-  }
+    setOpenJournalModal(true);
+  };
 
   const hasValidPregnancyData =
-    pregnancyData && !!pregnancyData.firstDayOfLastMenstrualPeriod && !!pregnancyData.estimatedDueDate
+    pregnancyData &&
+    !!pregnancyData.firstDayOfLastMenstrualPeriod &&
+    !!pregnancyData.estimatedDueDate;
 
   if (isLoading) {
     return (
@@ -117,7 +204,7 @@ const PregnancyTrackingPage = () => {
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -143,67 +230,96 @@ const PregnancyTrackingPage = () => {
         </main>
         <Footer />
       </div>
-    )
+    );
   }
 
   return (
     <div className="pregnancy-tracking-page">
       <Header />
       <main className="main-content">
-        <div className="container">
+        <div className="pregnancy-tracking-container">
           {!hasValidPregnancyData ? (
-            <div className="welcome-section">
-              <div className="welcome-header">
+            <div className="tracking-welcome-section">
+              <div className="tracking-welcome-header">
                 <h1>Welcome to Pregnancy Tracking</h1>
-                <p>Start your beautiful journey of motherhood with personalized tracking and insights</p>
+                <p>
+                  Start your beautiful journey of motherhood with personalized
+                  tracking and insights
+                </p>
               </div>
-              <TrackingForm onSubmit={handleCreateProfile} isLoading={isCreating} user={user} />
+              <TrackingForm
+                onSubmit={handleCreateProfile}
+                isLoading={isCreating}
+                user={user}
+              />
             </div>
           ) : (
             <div className="tracking-dashboard">
-              <div className="dashboard-header">
-                <h1>Pregnancy Tracker</h1>
-                {/* <button className="add-journal-btn" onClick={handleAddJournal}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                  Add Journal Entry
-                </button> */}
-              </div>
-
               <div className="nav-tabs">
-                <button
-                  className={`tab ${activeTab === "weekly" ? "active" : ""}`}
-                  onClick={() => setActiveTab("weekly")}
-                >
-                  Weekly Info
-                </button>
-                <button
-                  className={`tab ${activeTab === "checkups" ? "active" : ""}`}
-                  onClick={() => setActiveTab("checkups")}
-                >
-                  Checkup Reminders
-                </button>
-                <button
-                  className={`tab ${activeTab === "journal" ? "active" : ""}`}
-                  onClick={() => setActiveTab("journal")}
-                >
-                  Journal Entries
-                </button>
+                {[
+                  {
+                    key: "weekly",
+                    label: "Weekly Info",
+                    queryKey: "weeklyinfo",
+                  },
+                  {
+                    key: "checkups",
+                    label: "Checkup Reminders",
+                    queryKey: "checkupsinfo",
+                  },
+                  {
+                    key: "offlineconsultation",
+                    label: "Offline Consultation",
+                    queryKey: "consultinfo",
+                  },
+                  {
+                    key: "nutrition",
+                    label: "Nutrition Tips",
+                    queryKey: "nutritioninfo",
+                  },
+                  {
+                    key: "journal",
+                    label: "Journal Entries",
+                    queryKey: "journalinfo",
+                  },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    className={`tab ${activeTab === tab.key ? "active" : ""}`}
+                    onClick={() => {
+                      setActiveTab(tab.key);
+                      navigate(
+                        `?growthDataId=${pregnancyData?.id}&${tab.queryKey}=true`
+                      );
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
               </div>
 
               {activeTab === "weekly" && (
                 <div className="tab-content">
                   <PregnancyOverview pregnancyData={pregnancyData} />
-                  <PregnancyProgressBar pregnancyData={pregnancyData} />
+                  <PregnancyProgressBar
+                    pregnancyData={pregnancyData}
+                    selectedWeek={selectedWeek}
+                    setSelectedWeek={setSelectedWeek}
+                  />
                   <div className="dashboard-grid">
                     <div className="left-column">
-                      <BabyDevelopment pregnancyData={pregnancyData} />
+                      <BabyDevelopment
+                        pregnancyData={pregnancyData}
+                        selectedWeek={selectedWeek}
+                      />
                       <SymptomsAndMood pregnancyData={pregnancyData} />
                     </div>
                     <div className="right-column">
                       <UpcomingAppointments />
-                      <TrimesterChecklists pregnancyData={pregnancyData} />
+                      <TrimesterChecklists
+                        growthDataId={pregnancyData?.id}
+                        token={localStorage.getItem("token")}
+                      />
                     </div>
                   </div>
                   {pregnancyData.basicBioMetric && (
@@ -215,18 +331,36 @@ const PregnancyTrackingPage = () => {
                       <div className="biometric-cards">
                         {pregnancyData.basicBioMetric.weightKg > 0 && (
                           <div className="biometric-card">
-                            <div className="metric-icon">⚖️</div>
+                            <div className="metric-icon">
+                              <img
+                                src={weightIcon}
+                                alt="Weight"
+                                className="bbm-icon"
+                              />
+                            </div>
                             <div className="metric-info">
-                              <span className="metric-value">{pregnancyData.basicBioMetric.weightKg} kg</span>
-                              <span className="metric-label">Current Weight</span>
+                              <span className="metric-value">
+                                {pregnancyData.basicBioMetric.weightKg} Kg
+                              </span>
+                              <span className="metric-label">
+                                Current Weight
+                              </span>
                             </div>
                           </div>
                         )}
                         {pregnancyData.basicBioMetric.bmi > 0 && (
                           <div className="biometric-card">
-                            <div className="metric-icon">📊</div>
+                            <div className="metric-icon">
+                              <img
+                                src={calculatorIcon}
+                                alt="BMI"
+                                className="bbm-icon"
+                              />
+                            </div>
                             <div className="metric-info">
-                              <span className="metric-value">{pregnancyData.basicBioMetric.bmi.toFixed(1)}</span>
+                              <span className="metric-value">
+                                {pregnancyData.basicBioMetric.bmi.toFixed(1)}
+                              </span>
                               <span className="metric-label">BMI</span>
                             </div>
                           </div>
@@ -234,12 +368,21 @@ const PregnancyTrackingPage = () => {
                         {(pregnancyData.basicBioMetric.systolicBP > 0 ||
                           pregnancyData.basicBioMetric.diastolicBP > 0) && (
                           <div className="biometric-card">
-                            <div className="metric-icon">❤️</div>
+                            <div className="metric-icon">
+                              <img
+                                src={heartRateIcon}
+                                alt="Heart Rate"
+                                className="bbm-icon"
+                              />
+                            </div>
                             <div className="metric-info">
                               <span className="metric-value">
-                                {pregnancyData.basicBioMetric.systolicBP}/{pregnancyData.basicBioMetric.diastolicBP}
+                                {pregnancyData.basicBioMetric.systolicBP}/
+                                {pregnancyData.basicBioMetric.diastolicBP} mmHg
                               </span>
-                              <span className="metric-label">Blood Pressure</span>
+                              <span className="metric-label">
+                                Blood Pressure
+                              </span>
                             </div>
                           </div>
                         )}
@@ -248,7 +391,7 @@ const PregnancyTrackingPage = () => {
                   )}
                 </div>
               )}
-              {activeTab === "checkups" && (
+              {activeTab === "offlineconsultation" && (
                 <div className="tab-content">
                   <UpcomingAppointments expanded={true} />
                 </div>
@@ -269,7 +412,7 @@ const PregnancyTrackingPage = () => {
       </main>
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default PregnancyTrackingPage
+export default PregnancyTrackingPage;

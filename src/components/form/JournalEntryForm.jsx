@@ -153,7 +153,7 @@ const JournalEntryForm = ({ onError }) => {
       throw new Error(response.data?.message || "Failed to submit journal entry");
     }
 
-    navigate(`/pregnancy-tracking/journal-section?growthDataId=${growthDataId}`);
+    navigate(`/pregnancy-tracking?growthDataId=${growthDataId}&journalinfo=true`);
   } catch (error) {
     console.error("Error submitting journal entry:", error);
     const errorMessage = error.response?.data?.message || "Failed to submit journal entry";
@@ -165,11 +165,11 @@ const JournalEntryForm = ({ onError }) => {
 
   return (
     <div className="journal-entry-form">
-      <div className="form-header">
+      <div className="entry-form-header">
         <h3>{entryId ? "Edit Journal Entry" : "Add Journal Entry"}</h3>
       </div>
-      <div className="form-content">
-        <div className="form-section">
+      <div className="entry-form-content">
+        <div className="entry-form-section">
           <label htmlFor="currentWeek">Current Week *</label>
           <input
             type="number"
@@ -183,7 +183,7 @@ const JournalEntryForm = ({ onError }) => {
           />
           {errors.CurrentWeek && <span className="error-message">{errors.CurrentWeek}</span>}
         </div>
-        <div className="form-section">
+        <div className="entry-form-section">
           <label htmlFor="note">Note *</label>
           <textarea
             id="note"
@@ -194,7 +194,7 @@ const JournalEntryForm = ({ onError }) => {
           />
           {errors.Note && <span className="error-message">{errors.Note}</span>}
         </div>
-        <div className="form-section">
+        <div className="entry-form-section">
           <label htmlFor="currentWeight">Current Weight (kg)</label>
           <input
             type="number"
@@ -210,7 +210,7 @@ const JournalEntryForm = ({ onError }) => {
           />
           {errors.CurrentWeight && <span className="error-message">{errors.CurrentWeight}</span>}
         </div>
-        <div className="form-section">
+        <div className="entry-form-section">
           <label htmlFor="moodNotes">Mood & Feelings</label>
           <select
             id="moodNotes"
@@ -220,15 +220,16 @@ const JournalEntryForm = ({ onError }) => {
             placeholder="Optional"
           >
             <option value="">Select Mood</option>
-            <option value="1">Normal</option>
-            <option value="2">Neutral</option>
-            <option value="3">Happy</option>
-            <option value="4">Sad</option>
-            <option value="5">Angry</option>
-            <option value="6">Excited</option>
+            <option value="1">Sad</option>
+            <option value="2">Terrible</option>
+            <option value="3">Neutral</option>
+            <option value="4">Normal</option>
+            <option value="5">Happy</option>
+            <option value="6">Anxious</option>
+            <option value="7">Excited</option>
           </select>
         </div>
-        <div className="form-section">
+        <div className="entry-form-section">
           <label htmlFor="symptomNames">Symptoms (comma-separated)</label>
           <input
             type="text"
@@ -239,7 +240,7 @@ const JournalEntryForm = ({ onError }) => {
             placeholder="e.g., nausea, fatigue"
           />
         </div>
-        <div className="form-section">
+        <div className="entry-form-section">
           <label htmlFor="relatedImages">Related Images</label>
           <input
             type="file"
@@ -258,7 +259,7 @@ const JournalEntryForm = ({ onError }) => {
             </div>
           )}
         </div>
-        <div className="form-section">
+        <div className="entry-form-section">
           <label htmlFor="ultraSoundImages">Ultrasound Images</label>
           <input
             type="file"
@@ -278,11 +279,11 @@ const JournalEntryForm = ({ onError }) => {
           )}
         </div>
       </div>
-      <div className="form-actions">
-        <button className="submit-btn" onClick={handleSubmit} disabled={!token}>
+      <div className="entry-form-actions">
+        <button className="entry-submit-btn" onClick={handleSubmit} disabled={!token}>
           {entryId ? "Update" : "Add New Entry"}
         </button>
-        <button className="cancel-btn" onClick={() => navigate(`/pregnancy-tracking?growthDataId=${growthDataId}`)}>
+        <button className="entry-cancel-btn" onClick={() => navigate(`/pregnancy-tracking?growthDataId=${growthDataId}&journalinfo=true`)}>
           Cancel
         </button>
       </div>

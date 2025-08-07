@@ -24,9 +24,12 @@
   padding: 2rem 0;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
+.pregnancy-tracking-container {
+  max-width: 1500px;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
   padding: 0 1rem;
 }
 
@@ -45,7 +48,7 @@
   width: 32px;
   height: 32px;
   border: 3px solid var(--light-bg);
-  border-top: 3px solid var(--accent-color);
+  border-top: 3px solid var(--nguyen-accent-color);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -68,13 +71,13 @@
 
 .loading-container p,
 .error-container p {
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
   font-size: 1.1rem;
 }
 
 /* Error States */
 .error-container h2 {
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
   margin-bottom: 1rem;
 }
 
@@ -83,7 +86,7 @@
 }
 
 .retry-btn {
-  background: linear-gradient(135deg, var(--primary-bg), var(--accent-color));
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808F);
   color: var(--white-text);
   border: none;
   padding: 0.75rem 1.5rem;
@@ -100,25 +103,29 @@
 }
 
 /* Welcome Section */
-.welcome-section {
-  text-align: center;
+.tracking-welcome-section {
+  justify-content: center;
+  align-items: center;
   max-width: 800px;
   margin: 0 auto;
+  padding: 2rem;
 }
 
-.welcome-header {
+.tracking-welcome-header {
   margin-bottom: 3rem;
+  text-align: center;
 }
 
-.welcome-header h1 {
-  color: var(--primary-bg);
+.tracking-welcome-header h1 {
+  color: var(--nguyen-primary-bg);
+  
   font-size: 2.5rem;
   margin-bottom: 1rem;
   font-weight: 700;
 }
 
-.welcome-header p {
-  color: var(--accent-color);
+.tracking-welcome-header p {
+  color: var(--nguyen-accent-color);
   font-size: 1.2rem;
   line-height: 1.6;
 }
@@ -172,13 +179,74 @@
 .metric-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--primary-bg);
+  color: var(--nguyen-primary-bg);
 }
 
 .metric-label {
   font-size: 0.9rem;
-  color: var(--accent-color);
+  color: var(--nguyen-accent-color);
 }
+.nav-tabs {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  background: var(--color-main);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.tab {
+  flex: 1;
+  padding: 1rem 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  background-color: transparent;
+  color: var(--light-text);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.tab:hover {
+  background-color: white;
+  color: #067DAD;
+  /* transform: translateY(-2px);
+  box-shadow: var(--shadow-hover); */
+}
+
+.tab.active {
+  background-color: var(--white);
+  color: var(--color-main);
+  font-weight: 700;
+  border-bottom: 3px solid #067DAD;
+}
+
+.tab.active:hover {
+  background-color: var(--color-main);
+  color: var(--white);
+  font-weight: 700;
+  border-bottom: 3px solid white;
+}
+
+.bbm-icon {
+  width: 36px;
+  height: 36px;
+}
+
+.mood-selector {
+  flex-wrap: nowrap;
+}
+
+@media (max-width: 600px) {
+  .tab {
+    font-size: 0.9rem;
+    padding: 0.75rem 0;
+  }
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -198,7 +266,7 @@
     grid-template-columns: 1fr;
   }
 
-  .container {
+  .pregnancy-tracking-container {
     padding: 0 0.5rem;
   }
 }

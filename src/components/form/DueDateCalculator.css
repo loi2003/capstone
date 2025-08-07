@@ -23,7 +23,7 @@
   font-family: 'Arial', sans-serif;
 }
 
-.back-btn {
+.due-date-back-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -38,10 +38,10 @@
   margin-bottom: 1.5rem;
 }
 
-.back-btn:hover {
-  background: var(--primary-bg);
-  color: var(--white);
+.due-date-back-btn:hover {
   transform: translateY(-2px);
+  background: #0056B3;
+  color: white;
   box-shadow: var(--shadow-hover);
 }
 
@@ -49,40 +49,43 @@
   stroke: currentColor;
 }
 
-.form-header {
+.due-date-form-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.form-header svg {
+.due-date-form-header svg {
   margin: 0 auto 1rem;
 }
 
-.form-header h2 {
+.due-date-form-header h2 {
   color: var(--primary-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
-.form-header p {
-  color: var(--accent-color);
+.due-date-form-header p {
+  /* color: var(--accent-color); */
   font-size: 1.1rem;
   line-height: 1.5;
 }
 
-.form-group {
+.due-date-form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.due-date-form-group label {
   display: block;
   font-size: 1rem;
-  color: var(--primary-bg);
+  /* color: var(--primary-bg); */
   margin-bottom: 0.5rem;
 }
 
-.form-group input {
+.due-date-form-group input {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid var(--light-bg);
@@ -91,12 +94,12 @@
   transition: var(--transition);
 }
 
-.form-group input:focus {
+.due-date-form-group input:focus {
   outline: none;
   border-color: var(--accent-color);
 }
 
-.form-group input.error {
+.due-date-form-group input.error {
   border-color: #e74c3c;
 }
 
@@ -109,7 +112,8 @@
 
 .calculate-btn {
   width: 100%;
-  background: linear-gradient(135deg, var(--primary-bg), var(--accent-color));
+  /* background: linear-gradient(135deg, var(--primary-bg), var(--accent-color)); */
+  background: #02808f;
   color: var(--white);
   border: none;
   padding: 0.75rem;
@@ -199,7 +203,7 @@
     font-size: 1.5rem;
   }
 
-  .back-btn {
+  .due-date-back-btn {
     font-size: 0.9rem;
     padding: 0.5rem 0.75rem;
   }

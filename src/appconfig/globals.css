@@ -7,13 +7,15 @@
   --color-text: #848785;
   --light-text: #faf9f5;
   --dark-text: #013f50;
+  --nguyen-primary-bg: #04668D;
+  --white-text: #fafafa;
+  --nguyen-accent-color: #038474;
   --co-1: #04668D;
   --co-2: #02808F;
   --co-3: #00A996;
   --co-4: #03C39A;
   --co-5: #F0F3BE;
 }
-
 /* Layout Utilities */
 .center-all {
   display: flex;
@@ -27,6 +29,11 @@
   height: 100vh;
   top: 0;
   left: 0;
+}
+
+.hover-transition {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
 }
 
 /* Backgrounds */
