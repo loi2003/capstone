@@ -3,10 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { login, getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
-import googleLogo from '/images/g-logo.png'
+import googleLogo from "/images/g-logo.png";
 import "../../styles/SignIn.css";
-// import { googleLogout, useGoogleLogin } from '@react-oauth/google';
-
 
 // Hàm giải mã token JWT
 const decodeJWT = (token) => {
@@ -49,18 +47,18 @@ const SignIn = () => {
     const newErrors = { email: "", password: "", server: "" };
 
     if (!email) {
-      newErrors.email = "Vui lòng nhập email";
+      newErrors.email = "Please enter your email";
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email không hợp lệ";
+      newErrors.email = "Invalid email format";
       isValid = false;
     }
 
     if (!password) {
-      newErrors.password = "Vui lòng nhập mật khẩu";
+      newErrors.password = "Please enter your password";
       isValid = false;
     } else if (password.length < 6) {
-      newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+      newErrors.password = "Password must be at least 6 characters";
       isValid = false;
     }
 
@@ -100,7 +98,7 @@ const SignIn = () => {
         loginResponse.data.data?.accessToken ||
         loginResponse.data.data?.auth_token ||
         loginResponse.data.user?.token ||
-        loginResponse.data.user?.jwt ;
+        loginResponse.data.user?.jwt;
 
       if (token) {
         localStorage.setItem("token", token);
@@ -168,7 +166,7 @@ const SignIn = () => {
 
       localStorage.removeItem("userRole");
 
-      setSuccessMessage("Đăng nhập thành công!");
+      setSuccessMessage("Login successful!");
       setTimeout(() => {
         switch (roleId) {
           case 1:
@@ -207,8 +205,7 @@ const SignIn = () => {
         error.response?.status === 401 ||
         error.message.includes("invalid")
           ? "Invalid email or account does not exist."
-          : error.message ||
-            "Đăng nhập thất bại. Vui lòng kiểm tra email hoặc mật khẩu.";
+          : error.message || "Login failed. Please check your email or password.";
       setErrors({
         ...errors,
         server: errorMessage,
@@ -217,104 +214,90 @@ const SignIn = () => {
   };
 
   const handleGoogleLogin = async () => {
-  try {
-    const google = window.google;
-    if (!google || !google.accounts || !google.accounts.id) {
-      setErrors({ ...errors, server: "Google API chưa được tải." });
-      return;
-    }
+    try {
+      const google = window.google;
+      if (!google || !google.accounts || !google.accounts.id) {
+        setErrors({ ...errors, server: "Google API chưa được tải." });
+        return;
+      }
 
-    google.accounts.id.initialize({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      callback: async (googleResponse) => {
-        try {
-          console.log("Google Response:", googleResponse);
-          const idToken = googleResponse.credential;
-          console.log("ID Token:", idToken);
+      google.accounts.id.initialize({
+        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        callback: async (googleResponse) => {
+          try {
+            console.log("Google Response:", googleResponse);
+            const idToken = googleResponse.credential;
+            console.log("ID Token:", idToken);
 
-          // Register user via Google Signup API
-          await apiClient.post("/api/auth/google-signup", {
-            idToken: idToken,
-          });
+            // Register user via Google Signup API
+            await apiClient.post("/api/auth/google-signup", {
+              idToken: idToken,
+            });
 
-          // Login user via Google Login API
-          const loginResponse = await apiClient.post("/api/auth/google-login", {
-            idToken: idToken,
-          });
+            // Login user via Google Login API
+            const loginResponse = await apiClient.post(
+              "/api/auth/google-login",
+              {
+                idToken: idToken,
+              }
+            );
 
-          // Attempt all fallback paths
-          const token =
-          loginResponse.data?.token ||
-          loginResponse.data?.data?.token ||
-          loginResponse.data?.accessToken ||
-          loginResponse.data?.data?.accessToken ||
-          loginResponse.token;
-          if (!token) throw new Error("Không nhận được token từ máy chủ.");
+            // Attempt all fallback paths
+            const token =
+              loginResponse.data?.token ||
+              loginResponse.data?.data?.token ||
+              loginResponse.data?.accessToken ||
+              loginResponse.data?.data?.accessToken ||
+              loginResponse.token;
+            if (!token) throw new Error("Không nhận được token từ máy chủ.");
 
-          localStorage.setItem("token", token);
-          apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+            localStorage.setItem("token", token);
+            apiClient.defaults.headers.common[
+              "Authorization"
+            ] = `Bearer ${token}`;
 
-          const decoded = decodeJWT(token);
-          const role =
-            decoded?.[
-              "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-            ];
+            const decoded = decodeJWT(token);
+            const role =
+              decoded?.[
+                "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+              ];
 
-          if (role !== "User") {
-            localStorage.removeItem("token");
+            if (role !== "User") {
+              localStorage.removeItem("token");
+              setErrors({
+                ...errors,
+                server:
+                  "Google chỉ hỗ trợ đăng nhập với tài khoản người dùng thường (User).",
+              });
+              return;
+            }
+
+            setSuccessMessage("Google login successful!");
+            setTimeout(() => navigate("/", { replace: true }), 1500);
+          } catch (err) {
+            console.error("Lỗi đăng nhập Google:", err);
             setErrors({
               ...errors,
-              server: "Google chỉ hỗ trợ đăng nhập với tài khoản người dùng thường (User).",
+              server:
+                err.response?.data?.message ||
+                "Error authenticating with Google. Please try again.",
             });
-            return;
           }
+        },
+      });
 
-          setSuccessMessage("Đăng nhập bằng Google thành công!");
-          setTimeout(() => navigate("/", { replace: true }), 1500);
-        } catch (err) {
-          console.error("Lỗi đăng nhập Google:", err);
-          setErrors({
-            ...errors,
-            server:
-              err.response?.data?.message ||
-              "Lỗi khi xác thực với Google. Vui lòng thử lại.",
-          });
-        }
-      },
-    });
-
-    google.accounts.id.prompt(); // show login popup
-  } catch (err) {
-    console.error("Google login setup error:", err);
-    setErrors({
-      ...errors,
-      server: "Lỗi khi khởi tạo đăng nhập Google.",
-    });
-  }
-};
-
-
-
+      google.accounts.id.prompt(); // show login popup
+    } catch (err) {
+      console.error("Google login setup error:", err);
+      setErrors({
+        ...errors,
+        server: "Error initializing Google login.",
+      });
+    }
+  };
 
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
-  };
-
-  const logoVariants = {
-    animate: {
-      scale: [1, 1.08, 1],
-      transition: {
-        duration: 1.8,
-        ease: "easeInOut",
-        repeat: Infinity,
-        repeatType: "loop",
-      },
-    },
-    hover: {
-      scale: 1.15,
-      filter: "brightness(1.15)",
-      transition: { duration: 0.3 },
-    },
   };
 
   const formVariants = {
@@ -346,39 +329,49 @@ const SignIn = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="signin-branding"
         >
-          <Link to="/" className="signin-logo">
-            <motion.svg
-              variants={logoVariants}
-              animate="animate"
-              whileHover="hover"
-              width="120"
-              height="120"
-              viewBox="0 0 512 512"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g>
-                <path
-                  d="M413.342,120.063l27.982,6.995l-31.704-19.021c7.64,0.581,24.425,0.44,35.109-10.246 c14.189-14.187,9.786-39.138,9.786-39.138s-24.463-4.893-39.14,9.783c-12.056,12.057-10.908,30.705-10.114,36.984l-88.707-53.226 C313.796,22.997,283.988,0,247.593,0c-36.191,0-65.874,22.74-68.914,51.704c-0.165,1.053-0.104,9.295,0.198,11.441 c3.494,31.607,26.468,59.616,48.756,86.772c7.549,9.197,15.177,18.497,22.008,27.871c-25.121-4.865-55.331-4.431-86.754,2.449 C88.231,196.583,34.998,243.12,43.99,284.179c7.763,35.462,59.406,55.238,121.438,49.441v59.155c-4.239,3.8-6.919,9.3-6.919,15.44 s2.682,11.64,6.919,15.44V512h83.027l-55.351-27.676v-60.668c4.239-3.8,6.919-9.3,6.919-15.44s-2.682-11.64-6.919-15.44v-63.351 c0.779-0.162,1.56-0.324,2.34-0.494c66.88-14.643,116.556-53.516,119.719-90.973c0.138-0.97,0.235-1.955,0.235-2.965 c0-43.581-29.58-79.617-55.677-111.414c-2.88-3.508-5.734-6.988-8.519-10.436c20.315-0.854,38.303-8.885,50.281-21.045 l100.334,25.084c-14.703,24.748-57.359,100.103-57.359,141.336c0,34.391,27.878,62.27,62.27,62.27 c34.391,0,62.27-27.879,62.27-62.27C468.999,218.776,429.371,147.336,413.342,120.063z M261.431,68.245 c-5.732,0-10.378-4.645-10.378-10.378s4.645-10.378,10.378-10.378c5.732,0,10.378,4.645,10.378,10.378 S267.161,68.245,261.431,68.245z"
-                  fill="var(--text-primary)"
-                  stroke="var(--white)"
-                  strokeWidth="12"
-                  style={{
-                    filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
-                  }}
-                />
-              </g>
-            </motion.svg>
-          </Link>
+       <Link to="/" className="signin-logo">
+  <svg
+    width="120"
+    height="120"
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Soft glowing circle (optional) */}
+    <circle cx="32" cy="32" r="30" fill="rgba(255, 255, 255, 0.1)" />
+    
+    {/* Baby's face */}
+    <circle cx="32" cy="32" r="20" fill="#FFD6E7" stroke="white" strokeWidth="1.5" />
+    
+    {/* Eyes */}
+    <circle cx="26" cy="28" r="3" fill="#333" />
+    <circle cx="38" cy="28" r="3" fill="#333" />
+    
+    {/* Blush marks */}
+    <circle cx="22" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
+    <circle cx="42" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
+    
+    {/* Smile */}
+    <path d="M26 38 Q32 42 38 38" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
+    
+    {/* Cute baby hair swirl */}
+    <path d="M32 12 Q34 8 36 12" stroke="#333" strokeWidth="1.5" fill="none" />
+    
+    {/* Optional: Pacifier or baby bottle (uncomment to use) */}
+    {/*
+    <circle cx="20" cy="45" r="4" fill="white" stroke="#333" strokeWidth="1" />
+    <circle cx="20" cy="45" r="2" fill="#FF6B8B" />
+    */}
+  </svg>
+</Link>
           <div className="signin-branding-text">
-            <h1 className="signin-title">Chào Mừng Bạn Đến Với Cộng Đồng</h1>
+            <h1 className="signin-title">Welcome to the Community</h1>
             <p className="signin-description">
-              Đăng nhập để theo dõi hành trình thai kỳ, nhận tư vấn sức khỏe
-              chuyên nghiệp và kết nối với cộng đồng các bà mẹ.
+              Log in to track your pregnancy journey, receive professional
+              health advice, and connect with a community of mothers.
             </p>
             <p className="signin-quote">
-              "Hành trình làm mẹ trở nên dễ dàng hơn với sự hỗ trợ từ chúng
-              tôi!"
+              "Making the journey of motherhood easier with our support!"
             </p>
           </div>
         </motion.div>
@@ -389,7 +382,7 @@ const SignIn = () => {
           animate="animate"
           className="signin-form-container"
         >
-          <h2 className="signin-form-title">Đăng Nhập</h2>
+          <h2 className="signin-form-title">Sign In</h2>
           <form onSubmit={handleSubmit} className="signin-form">
             <div className="signin-input-group">
               <label htmlFor="email" className="signin-label">
@@ -398,7 +391,7 @@ const SignIn = () => {
               <input
                 id="email"
                 type="email"
-                placeholder="Nhập email của bạn"
+                placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`signin-input ${
@@ -409,13 +402,13 @@ const SignIn = () => {
             </div>
             <div className="signin-input-group">
               <label htmlFor="password" className="signin-label">
-                Mật khẩu
+                Password
               </label>
               <div className="password-wrapper">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Nhập mật khẩu của bạn"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className={`signin-input ${
@@ -452,15 +445,15 @@ const SignIn = () => {
               )}
             </div>
             <button type="submit" className="signin-button">
-              Đăng Nhập
+              Sign In
             </button>
             <div className="signin-divider">
-              <span>hoặc</span>
+              <span>or</span>
             </div>
             <button className="google-login-btn" onClick={handleGoogleLogin}>
-          <img src={googleLogo} alt="Google Logo" className="google-logo" />
-          Sign In With Google
-        </button>
+              <img src={googleLogo} alt="Google Logo" className="google-logo" />
+              Sign In With Google
+            </button>
           </form>
           {(errors.server || successMessage) && (
             <motion.div
@@ -509,13 +502,13 @@ const SignIn = () => {
           <div className="signin-links">
             <p>
               <Link to="/forgot-password" className="signin-link">
-                Quên mật khẩu?
+                Forgot Password?
               </Link>
             </p>
             <p>
-              Chưa có tài khoản?{" "}
+              Don't have an account?{" "}
               <Link to="/signup" className="signin-link">
-                Tạo tài khoản mới
+                Create a new account
               </Link>
             </p>
           </div>

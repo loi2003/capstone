@@ -41,10 +41,10 @@ const ForgotPassword = () => {
     const newErrors = { email: '', server: '' };
 
     if (!email) {
-      newErrors.email = 'Vui lòng nhập email';
+      newErrors.email = 'Please enter your email';
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = 'Invalid email format';
       isValid = false;
     }
 
@@ -57,33 +57,33 @@ const ForgotPassword = () => {
     const newErrors = { otp: '', newPassword: '', confirmPassword: '', server: '' };
 
     if (!otp) {
-      newErrors.otp = 'Vui lòng nhập mã OTP';
+      newErrors.otp = 'Please enter the OTP code';
       isValid = false;
     }
 
     if (!newPassword) {
-      newErrors.newPassword = 'Vui lòng nhập mật khẩu mới';
+      newErrors.newPassword = 'Please enter a new password';
       isValid = false;
     } else {
       if (newPassword.length < 8) {
-        newErrors.newPassword = 'Mật khẩu phải có ít nhất 8 ký tự';
+        newErrors.newPassword = 'Password must be at least 8 characters';
         isValid = false;
       }
       if (!/[A-Z]/.test(newPassword)) {
-        newErrors.newPassword = 'Mật khẩu phải chứa ít nhất một chữ cái in hoa';
+        newErrors.newPassword = 'Password must contain at least one uppercase letter';
         isValid = false;
       }
       if (!/[@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
-        newErrors.newPassword = 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt';
+        newErrors.newPassword = 'Password must contain at least one special character';
         isValid = false;
       }
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
+      newErrors.confirmPassword = 'Please confirm your password';
       isValid = false;
     } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+      newErrors.confirmPassword = 'Passwords do not match';
       isValid = false;
     }
 
@@ -100,7 +100,7 @@ const ForgotPassword = () => {
 
     try {
       await forgotPassword(email);
-      setSuccessMessage('Mã OTP đã được gửi đến email của bạn!');
+      setSuccessMessage('OTP code has been sent to your email!');
       setStep(2);
     } catch (error) {
       console.error('Lỗi khi gửi OTP:', error);
@@ -122,7 +122,7 @@ const ForgotPassword = () => {
     try {
       console.log('Sending reset password request:', { token: otp, newPassword });
       await resetPassword({ token: otp, newPassword });
-      setSuccessMessage('Đặt lại mật khẩu thành công! Đang chuyển hướng đến đăng nhập...');
+      setSuccessMessage('Password reset successful! Redirecting to sign-in...');
     } catch (error) {
       console.error('Lỗi khi đặt lại mật khẩu:', error);
       const errorMessage = error.response?.data?.error || error.response?.data?.message || JSON.stringify(error.response?.data) || 'Đặt lại mật khẩu thất bại. Vui lòng kiểm tra OTP hoặc thử lại.';
@@ -175,31 +175,46 @@ const ForgotPassword = () => {
           className="forgot-password-branding"
         >
           <Link to="/" className="forgot-password-logo">
-            <motion.svg
-              variants={logoVariants}
-              animate="animate"
-              whileHover="hover"
-              width="120"
-              height="120"
-              viewBox="0 0 512 512"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M413.342,120.063l27.982,6.995l-31.704-19.021c7.64,0.581,24.425,0.44,35.109-10.246 c14.189-14.187,9.786-39.138,9.786-39.138s-24.463-4.893-39.14,9.783c-12.056,12.057-10.908,30.705-10.114,36.984l-88.707-53.226 C313.796,22.997,283.988,0,247.593,0c-36.191,0-65.874,22.74-68.914,51.704c-0.165,1.053-0.104,9.295,0.198,11.441 c3.494,31.607,26.468,59.616,48.756,86.772c7.549,9.197,15.177,18.497,22.008,27.871c-25.121-4.865-55.331-4.431-86.754,2.449 C88.231,196.583,34.998,243.12,43.99,284.179c7.763,35.462,59.406,55.238,121.438,49.441v59.155c-4.239,3.8-6.919,9.3-6.919,15.44 s2.682,11.64,6.919,15.44V512h83.027l-55.351-27.676v-60.668c4.239-3.8,6.919-9.3,6.919-15.44s-2.682-11.64-6.919-15.44v-63.351 c0.779-0.162,1.56-0.324,2.34-0.494c66.88-14.643,116.556-53.516,119.719-90.973c0.138-0.97,0.235-1.955,0.235-2.965 c0-43.581-29.58-79.617-55.677-111.414c-2.88-3.508-5.734-6.988-8.519-10.436c20.315-0.854,38.303-8.885,50.281-21.045 l100.334,25.084c-14.703,24.748-57.359,100.103-57.359,141.336c0,34.391,27.878,62.27,62.27,62.27 c34.391,0,62.27-27.879,62.27-62.27C468.999,218.776,429.371,147.336,413.342,120.063z M261.431,68.245 c-5.732,0-10.378-4.645-10.378-10.378s4.645-10.378,10.378-10.378c5.732,0,10.378,4.645,10.378,10.378 S267.161,68.245,261.431,68.245z"
-                fill="var(--text-primary)"
-                stroke="var(--white)"
-                strokeWidth="12"
-                style={{ filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))' }}
-              />
-            </motion.svg>
+          <svg
+    width="120"
+    height="120"
+    viewBox="0 0 64 64"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Soft glowing circle (optional) */}
+    <circle cx="32" cy="32" r="30" fill="rgba(255, 255, 255, 0.1)" />
+    
+    {/* Baby's face */}
+    <circle cx="32" cy="32" r="20" fill="#FFD6E7" stroke="white" strokeWidth="1.5" />
+    
+    {/* Eyes */}
+    <circle cx="26" cy="28" r="3" fill="#333" />
+    <circle cx="38" cy="28" r="3" fill="#333" />
+    
+    {/* Blush marks */}
+    <circle cx="22" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
+    <circle cx="42" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
+    
+    {/* Smile */}
+    <path d="M26 38 Q32 42 38 38" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
+    
+    {/* Cute baby hair swirl */}
+    <path d="M32 12 Q34 8 36 12" stroke="#333" strokeWidth="1.5" fill="none" />
+    
+    {/* Optional: Pacifier or baby bottle (uncomment to use) */}
+    
+    <circle cx="20" cy="45" r="4" fill="white" stroke="#333" strokeWidth="1" />
+    <circle cx="20" cy="45" r="2" fill="#FF6B8B" />
+   
+  </svg>
           </Link>
           <div className="forgot-password-branding-text">
-            <h1 className="forgot-password-title">Khôi Phục Mật Khẩu</h1>
+            <h1 className="forgot-password-title">Reset Your Password</h1>
             <p className="forgot-password-description">
-              Nhập email của bạn để nhận mã OTP, sau đó đặt lại mật khẩu của bạn một cách an toàn.
+              Enter your email to receive an OTP code, then securely reset your password.
             </p>
-            <p className="forgot-password-quote">"Chúng tôi giúp bạn lấy lại quyền truy cập nhanh chóng và dễ dàng!"</p>
+            <p className="forgot-password-quote">"We help you regain access quickly and easily!"</p>
           </div>
         </motion.div>
 
@@ -210,7 +225,7 @@ const ForgotPassword = () => {
           className="forgot-password-form-container"
         >
           <h2 className="forgot-password-form-title">
-            {step === 1 ? 'Gửi Mã OTP' : 'Đặt Lại Mật Khẩu'}
+            {step === 1 ? 'Send OTP Code' : 'Reset Password'}
           </h2>
           <div className="forgot-password-form">
             {step === 1 ? (
@@ -220,7 +235,7 @@ const ForgotPassword = () => {
                   <input
                     id="email"
                     type="email"
-                    placeholder="Nhập email của bạn"
+                    placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={`forgot-password-input ${errors.email ? 'forgot-password-input-error' : ''}`}
@@ -228,17 +243,17 @@ const ForgotPassword = () => {
                   {errors.email && <p className="forgot-password-error">{errors.email}</p>}
                 </div>
                 <button onClick={handleSendOtp} className="forgot-password-button">
-                  Gửi Mã OTP
+                  Send OTP Code
                 </button>
               </>
             ) : (
               <>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="otp" className="forgot-password-label">Mã OTP</label>
+                  <label htmlFor="otp" className="forgot-password-label">OTP Code</label>
                   <input
                     id="otp"
                     type="text"
-                    placeholder="Nhập mã OTP"
+                    placeholder="Enter OTP code"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className={`forgot-password-input ${errors.otp ? 'forgot-password-input-error' : ''}`}
@@ -246,12 +261,12 @@ const ForgotPassword = () => {
                   {errors.otp && <p className="forgot-password-error">{errors.otp}</p>}
                 </div>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="newPassword" className="forgot-password-label">Mật Khẩu Mới</label>
+                  <label htmlFor="newPassword" className="forgot-password-label">New Password</label>
                   <div className="password-wrapper">
                     <input
                       id="newPassword"
                       type={showPassword ? 'text' : 'password'}
-                      placeholder="Nhập mật khẩu mới"
+                      placeholder="Enter new password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                       className={`forgot-password-input ${errors.newPassword ? 'forgot-password-input-error' : ''}`}
@@ -281,11 +296,11 @@ const ForgotPassword = () => {
                   {errors.newPassword && <p className="forgot-password-error">{errors.newPassword}</p>}
                 </div>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="confirmPassword" className="forgot-password-label">Xác Nhận Mật Khẩu</label>
+                  <label htmlFor="confirmPassword" className="forgot-password-label">Confirm Password</label>
                   <input
                     id="confirmPassword"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Xác nhận mật khẩu mới"
+                    placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     className={`forgot-password-input ${errors.confirmPassword ? 'forgot-password-input-error' : ''}`}
@@ -293,7 +308,7 @@ const ForgotPassword = () => {
                   {errors.confirmPassword && <p className="forgot-password-error">{errors.confirmPassword}</p>}
                 </div>
                 <button onClick={handleResetPassword} className="forgot-password-button">
-                  Đặt Lại Mật Khẩu
+                  Reset Password
                 </button>
               </>
             )}
@@ -320,20 +335,14 @@ const ForgotPassword = () => {
               <p className="notification-message">{errors.server || successMessage}</p>
             </motion.div>
           )}
-          {/* <div className="forgot-password-links">
+          <div className="forgot-password-links">
             <p>
-              Đã có tài khoản?{' '}
+              Remember your password?{' '}
               <Link to="/signin" className="forgot-password-link">
-                Đăng nhập
+                Sign in
               </Link>
             </p>
-            <p>
-              Chưa có tài khoản?{' '}
-              <Link to="/signup" className="forgot-password-link">
-                Tạo tài khoản mới
-              </Link>
-            </p>
-          </div> */}
+          </div>
         </motion.div>
       </div>
     </section>
