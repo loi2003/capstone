@@ -211,28 +211,7 @@ const HomePage = () => {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="hero-graphic"
             >
-              {/* <svg height="300px" width="300px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330" xmlSpace="preserve">
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g>
-                <g id="SVGRepo_iconCarrier">
-                  <g id="XMLID_1299_">
-                    <circle id="XMLID_1300_" style={{fill: '#6B9FFF'}} cx="270" cy="255" r="60"></circle>
-                    <circle id="XMLID_1301_" style={{fill: '#FF9CC6'}} cx="220" cy="255" r="60"></circle>
-                    <path id="XMLID_1302_" style={{fill: '#FFD7A8'}} d="M220,195c-33.137,0-60,26.863-60,60s26.863,60,60,60"></path>
-                    <circle id="XMLID_1303_" style={{fill: '#34C759'}} cx="170" cy="255" r="60"></circle>
-                    <circle id="XMLID_1304_" style={{fill: '#6B9FFF'}} cx="120" cy="245" r="60"></circle>
-                    <path id="XMLID_1305_" style={{fill: '#FF9CC6'}} d="M120,185c-33.137,0-60,26.863-60,60s26.863,60,60,60"></path>
-                    <path id="XMLID_1306_" style={{fill: '#FFD7A8'}} d="M121.134,17.153C105.75,11,88.291,18.483,82.138,33.866 c-4.123,10.308-2.117,21.543,4.28,29.689L73.782,95.146l13.927,5.57l13.928,5.571l12.636-31.59 c10.25-1.488,19.451-8.24,23.574-18.548C143.999,40.767,136.517,23.307,121.134,17.153z"></path>
-                    <circle id="XMLID_27_" style={{fill: '#333333'}} cx="109.992" cy="45.008" r="10"></circle>
-                    <path id="XMLID_1307_" style={{fill: '#34C759'}} d="M53.582,63.555c6.396-8.146,8.403-19.381,4.28-29.689 C51.708,18.483,34.249,11,18.866,17.153S-4,40.767,2.154,56.15c4.123,10.308,13.324,17.06,23.574,18.548l12.636,31.59l13.928-5.571 l13.927-5.57L53.582,63.555z"></path>
-                    <circle id="XMLID_25_" style={{fill: '#333333'}} cx="30.008" cy="45.008" r="10"></circle>
-                    <circle id="XMLID_1308_" style={{fill: '#FF9CC6'}} cx="80" cy="205" r="60"></circle>
-                    <circle id="XMLID_1309_" style={{fill: '#FFD7A8'}} cx="70" cy="145" r="70"></circle>
-                    <path id="XMLID_1310_" style={{fill: '#6B9FFF'}} d="M70,215c-38.66,0-70-31.341-70-70c0-38.66,31.34-70,70-70"></path>
-                    <path id="XMLID_1311_" style={{fill: '#FFFFFF'}} d="M100,145c0,16.543-13.458,30-30,30s-30-13.457-30-30H20c0,27.57,22.43,50,50,50 s50-22.43,50-50H100z"></path>
-                  </g>
-                </g>
-              </svg> */}
+            
             </motion.div>
           </div>
         </section>
