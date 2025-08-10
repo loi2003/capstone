@@ -45,186 +45,7 @@ const SignUp = () => {
     }
   }, [errors.server, successMessage]);
 
-  // Real-time validation for username
-  const validateUsername = (value) => {
-    if (!value) {
-      return "Vui lòng nhập tên người dùng";
-    } else if (value.length < 3) {
-      return "Tên người dùng phải có ít nhất 3 ký tự";
-    }
-    return "";
-  };
-
-  // Real-time validation for email
-  const validateEmail = (value) => {
-    if (!value) {
-      return "Vui lòng nhập email";
-    } else if (!/\S+@\S+\.\S+/.test(value)) {
-      return "Email không hợp lệ";
-    }
-    return "";
-  };
-
-  // Real-time validation for phoneNo
-  const validatePhoneNo = (value) => {
-    if (value && !/^\d{10,15}$/.test(value)) {
-      return "Số điện thoại không hợp lệ";
-    }
-    return "";
-  };
-
-  // Real-time validation for password
-  const validatePassword = (value) => {
-    if (!value) {
-      return "Vui lòng nhập mật khẩu";
-    } else if (value.length < 6) {
-      return "Mật khẩu phải có ít nhất 6 ký tự";
-    }
-    return "";
-  };
-
-  // Real-time validation for confirmPassword
-  const validateConfirmPassword = (value, password) => {
-    if (!value) {
-      return "Vui lòng nhập lại mật khẩu";
-    } else if (value !== password) {
-      return "Mật khẩu nhập lại không khớp";
-    }
-    return "";
-  };
-
-  // Handle input changes with real-time validation
-  const handleUsernameChange = (e) => {
-    const value = e.target.value;
-    setUsername(value);
-    setErrors({ ...errors, username: validateUsername(value) });
-  };
-
-  const handleEmailChange = (e) => {
-    const value = e.target.value;
-    setEmail(value);
-    setErrors({ ...errors, email: validateEmail(value) });
-  };
-
-  const handlePhoneNoChange = (e) => {
-    const value = e.target.value;
-    setPhoneNo(value);
-    setErrors({ ...errors, phoneNo: validatePhoneNo(value) });
-  };
-
-  const handlePasswordChange = (e) => {
-    const value = e.target.value;
-    setPassword(value);
-    setErrors({
-      ...errors,
-      password: validatePassword(value),
-      confirmPassword: validateConfirmPassword(confirmPassword, value),
-    });
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    const value = e.target.value;
-    setConfirmPassword(value);
-    setErrors({
-      ...errors,
-      confirmPassword: validateConfirmPassword(value, password),
-    });
-  };
-
-  const validateForm = () => {
-    let isValid = true;
-    const newErrors = {
-      username: validateUsername(username),
-      email: validateEmail(email),
-      phoneNo: validatePhoneNo(phoneNo),
-      password: validatePassword(password),
-      confirmPassword: validateConfirmPassword(confirmPassword, password),
-      otp: "",
-      server: "",
-    };
-
-    if (
-      newErrors.username ||
-      newErrors.email ||
-      newErrors.phoneNo ||
-      newErrors.password ||
-      newErrors.confirmPassword
-    ) {
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setErrors({ ...errors, server: "" });
-    setSuccessMessage("");
-
-    if (!validateForm()) return;
-
-    // Clear all field-specific errors on successful validation
-    setErrors({
-      username: "",
-      email: "",
-      phoneNo: "",
-      password: "",
-      confirmPassword: "",
-      otp: "",
-      server: "",
-    });
-
-    const formData = new FormData();
-    formData.append("UserName", username);
-    formData.append("Email", email);
-    formData.append("PhoneNo", phoneNo || "");
-    formData.append("PasswordHash", password);
-
-    try {
-      const response = await register(formData);
-      setSuccessMessage(
-        "Đăng ký thành công! Vui lòng nhập OTP được gửi đến email của bạn."
-      );
-      setShowOtpForm(true);
-      setTimer(120);
-    } catch (error) {
-      setErrors({
-        ...errors,
-        server: error.response?.data?.message || "Có lỗi xảy ra khi đăng ký",
-      });
-    }
-  };
-
-  const handleOtpSubmit = async (e) => {
-    e.preventDefault();
-    setErrors({ ...errors, otp: "", server: "" });
-    setSuccessMessage("");
-
-    if (!otp || otp.length !== 6) {
-      setErrors({ ...errors, otp: "Vui lòng nhập OTP 6 chữ số" });
-      return;
-    }
-
-    try {
-      const response = await verifyOtp({ email, otp });
-      setSuccessMessage(
-        "Xác minh OTP thành công! Tài khoản của bạn đã được kích hoạt."
-      );
-      setShowOtpForm(false);
-      setOtp("");
-      setTimer(0);
-      setTimeout(() => {
-        navigate("/signin");
-      }, 2000);
-    } catch (error) {
-      setErrors({
-        ...errors,
-        otp: error.response?.data?.message || "OTP không hợp lệ",
-      });
-    }
-  };
-
+  // Timer effect for OTP
   useEffect(() => {
     let interval;
     if (showOtpForm && timer > 0) {
@@ -235,7 +56,7 @@ const SignUp = () => {
             setShowOtpForm(false);
             setErrors({
               ...errors,
-              server: "OTP đã hết hạn. Vui lòng đăng ký lại.",
+              server: "OTP has expired. Please register again.",
             });
             return 0;
           }
@@ -246,14 +67,112 @@ const SignUp = () => {
     return () => clearInterval(interval);
   }, [showOtpForm, timer]);
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
+  // Validation functions
+  const validateUsername = (value) => {
+    if (!value) return "Please enter your username";
+    if (value.length < 3) return "Username must be at least 3 characters";
+    return "";
   };
 
-  const toggleShowConfirmPassword = () => {
-    setShowConfirmPassword(!showConfirmPassword);
+  const validateEmail = (value) => {
+    if (!value) return "Please enter your email";
+    if (!/\S+@\S+\.\S+/.test(value)) return "Invalid email address";
+    return "";
   };
 
+  const validatePhoneNo = (value) => {
+    if (value && !/^\d{10,15}$/.test(value)) return "Invalid phone number";
+    return "";
+  };
+
+  const validatePassword = (value) => {
+    if (!value) return "Please enter a password";
+    if (value.length < 6) return "Password must be at least 6 characters";
+    return "";
+  };
+
+  const validateConfirmPassword = (value, password) => {
+    if (!value) return "Please confirm your password";
+    if (value !== password) return "Passwords don't match";
+    return "";
+  };
+
+  // Validate entire form on submit
+  const validateForm = () => {
+    const newErrors = {
+      username: validateUsername(username),
+      email: validateEmail(email),
+      phoneNo: validatePhoneNo(phoneNo),
+      password: validatePassword(password),
+      confirmPassword: validateConfirmPassword(confirmPassword, password),
+      otp: "",
+      server: "",
+    };
+
+    setErrors(newErrors);
+    return !Object.values(newErrors).some((error) => error);
+  };
+
+  // Form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({ ...errors, server: "" });
+    setSuccessMessage("");
+
+    if (!validateForm()) return;
+
+    const formData = new FormData();
+    formData.append("UserName", username);
+    formData.append("Email", email);
+    formData.append("PhoneNo", phoneNo || "");
+    formData.append("PasswordHash", password);
+
+    try {
+      const response = await register(formData);
+      setSuccessMessage(
+        "Registration successful! Please enter the OTP sent to your email."
+      );
+      setShowOtpForm(true);
+      setTimer(120);
+    } catch (error) {
+      setErrors({
+        ...errors,
+        server: error.response?.data?.message || "Registration failed. Please try again.",
+      });
+    }
+  };
+
+  // OTP submission
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setErrors({ ...errors, otp: "", server: "" });
+    setSuccessMessage("");
+
+    if (!otp || otp.length !== 6) {
+      setErrors({ ...errors, otp: "Please enter a 6-digit OTP" });
+      return;
+    }
+
+    try {
+      const response = await verifyOtp({ email, otp });
+      setSuccessMessage(
+        "OTP verification successful! Your account has been activated."
+      );
+      setShowOtpForm(false);
+      setOtp("");
+      setTimer(0);
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
+    } catch (error) {
+      setErrors({
+        ...errors,
+        otp: error.response?.data?.message || "Invalid OTP",
+      });
+    }
+  };
+
+  // Animation variants
   const logoVariants = {
     animate: {
       scale: [1, 1.08, 1],
@@ -309,44 +228,70 @@ const SignUp = () => {
           animate="animate"
           className="signup-branding"
         >
-          <Link to="/" className="signup-logo">
-            <motion.svg
-              variants={logoVariants}
-              animate="animate"
-              whileHover="hover"
-              width="120"
-              height="120"
-              viewBox="0 0 512 512"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              xmlSpace="preserve"
-            >
-              <g>
-                <path
-                  d="M365.557,248.556c23.518-24.742,37.837-57.488,37.837-93.404c0-17.906-3.562-35.022-10.044-50.753 c19.569-8.208,33.317-27.546,33.317-50.095C426.666,24.312,402.354,0,372.363,0c-21.616,0-40.279,12.631-49.019,30.914 C303.158,21.073,280.264,15.515,256,15.515s-47.16,5.558-67.347,15.399C179.913,12.631,161.250,0,139.636,0 c-29.991,0-54.303,24.312-54.303,54.303c0,22.55,13.746,41.888,33.317,50.095c-6.484,15.731-10.044,32.847-10.044,50.753 c0,35.916,14.319,68.662,37.837,93.404c-41.235,39.013-107.441,101.769-91.749,164.532c7.255,29.023,26.186,40.513,46.223,41.554 c1.423-37.140,28.627-66.763,61.992-66.763c34.275,0,62.061,31.258,62.061,69.818c0,21.938-9.002,41.503-23.068,54.303 c24.213,0,51.259,0,54.098,0c5.964,0,31.342,0,54.098,0c-14.068-12.800-23.068-32.365-23.068-54.303 c0-38.560,27.784-69.818,62.061-69.818c33.364,0,60.568,29.622,61.992,66.760c20.036-1.041,38.968-12.530,46.224-41.551 C472.996,350.324,406.793,287.569,365.557,248.556z M133.948,76.845c-10.099-2.540-17.585-11.655-17.585-22.542 c0-12.853,10.420-23.273,23.273-23.273c10.539,0,19.431,7.011,22.295,16.620C151.218,56.073,141.785,65.904,133.948,76.845z M318.060,143.515c6.428,0,11.636,5.210,11.636,11.636c0,6.426-5.208,11.636-11.636-11.636s-11.636-5.210-11.636-11.636 C306.424,148.725,311.632,143.515,318.060,143.515z M193.939,143.515c6.428,0,11.636,5.210,11.636,11.636 c0,6.426-5.208,11.636-11.636,11.636s-11.636-5.210-11.636-11.636C182.303,148.725,187.511,143.515,193.939,143.515z M256,294.788 c-51.413,0-93.091-27.785-93.091-62.061s41.678-62.061,93.091-62.061s93.091,27.785,93.091,62.061S307.412,294.788,256,294.788z M350.068,47.652c2.863-9.610,11.756-16.621,22.295-16.621c12.853,0,23.273,10.420,23.273,23.273 c0,10.887-7.486,20.002-17.585,22.544C370.214,65.905,360.781,56.073,350.068,47.652z"
-                  fill="#ff9cbb"
-                  stroke="#ffffff"
-                  strokeWidth="12"
-                  style={{
-                    filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
-                  }}
-                />
-                <circle cx="161.931" cy="461.576" r="27.152" fill="#ff9cbb" />
-                <circle cx="350.052" cy="461.576" r="27.152" fill="#ff9cbb" />
-                <path
-                  d="M256,201.697c-17.138,0-31.030,1.806-31.030,15.515c0,13.709,13.892,31.030,31.030,31.030s31.030-17.321,31.030-31.030 C287.030,203.503,273.138,201.697,256,201.697z"
-                  fill="#ff9cbb"
-                />
-              </g>
-            </motion.svg>
-          </Link>
+  <Link to="/" className="signup-logo">
+  <svg
+    width="120"
+    height="120"
+    viewBox="0 0 512 512"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlSpace="preserve"
+  >
+    <g>
+      <path
+        d="M365.557,248.556c23.518-24.742,37.837-57.488,37.837-93.404c0-17.906-3.562-35.022-10.044-50.753 
+           c19.569-8.208,33.317-27.546,33.317-50.095C426.666,24.312,402.354,0,372.363,0
+           c-21.616,0-40.279,12.631-49.019,30.914C303.158,21.073,280.264,15.515,256,15.515
+           s-47.16,5.558-67.347,15.399C179.913,12.631,161.250,0,139.636,0
+           c-29.991,0-54.303,24.312-54.303,54.303c0,22.55,13.746,41.888,33.317,50.095
+           c-6.484,15.731-10.044,32.847-10.044,50.753c0,35.916,14.319,68.662,37.837,93.404
+           c-41.235,39.013-107.441,101.769-91.749,164.532c7.255,29.023,26.186,40.513,46.223,41.554
+           c1.423-37.140,28.627-66.763,61.992-66.763c34.275,0,62.061,31.258,62.061,69.818
+           c0,21.938-9.002,41.503-23.068,54.303c24.213,0,51.259,0,54.098,0c5.964,0,31.342,0,54.098,0
+           c-14.068-12.800-23.068-32.365-23.068-54.303c0-38.560,27.784-69.818,62.061-69.818
+           c33.364,0,60.568,29.622,61.992,66.760c20.036-1.041,38.968-12.530,46.224-41.551
+           C472.996,350.324,406.793,287.569,365.557,248.556z 
+           M133.948,76.845c-10.099-2.540-17.585-11.655-17.585-22.542
+           c0-12.853,10.420-23.273,23.273-23.273c10.539,0,19.431,7.011,22.295,16.620
+           C151.218,56.073,141.785,65.904,133.948,76.845z 
+           M318.060,143.515c6.428,0,11.636,5.210,11.636,11.636
+           c0,6.426-5.208,11.636-11.636,11.636s-11.636-5.210-11.636-11.636
+           C306.424,148.725,311.632,143.515,318.060,143.515z 
+           M193.939,143.515c6.428,0,11.636,5.210,11.636,11.636
+           c0,6.426-5.208,11.636-11.636,11.636s-11.636-5.210-11.636-11.636
+           C182.303,148.725,187.511,143.515,193.939,143.515z 
+           M256,294.788c-51.413,0-93.091-27.785-93.091-62.061
+           s41.678-62.061,93.091-62.061s93.091,27.785,93.091,62.061
+           S307.412,294.788,256,294.788z 
+           M350.068,47.652c2.863-9.610,11.756-16.621,22.295-16.621
+           c12.853,0,23.273,10.420,23.273,23.273c0,10.887-7.486,20.002-17.585,22.544
+           C370.214,65.905,360.781,56.073,350.068,47.652z"
+        fill="#ff9cbb"
+        stroke="#ffffff"
+        strokeWidth="12"
+        style={{
+          filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))",
+        }}
+      />
+      <circle cx="161.931" cy="461.576" r="27.152" fill="#ff9cbb" />
+      <circle cx="350.052" cy="461.576" r="27.152" fill="#ff9cbb" />
+      <path
+        d="M256,201.697c-17.138,0-31.030,1.806-31.030,15.515
+           c0,13.709,13.892,31.030,31.030,31.030s31.030-17.321,31.030-31.030
+           C287.030,203.503,273.138,201.697,256,201.697z"
+        fill="#ff9cbb"
+      />
+    </g>
+  </svg>
+</Link>
+
           <div className="signup-branding-text">
-            <h1 className="signup-title">Tạo Tài Khoản Mới</h1>
+            <h1 className="signup-title">Create a New Account</h1>
             <p className="signup-description">
-              Đăng ký để bắt đầu hành trình thai kỳ, nhận tư vấn sức khỏe chuyên
-              nghiệp và kết nối với cộng đồng các bà mẹ.
+              Register to begin your pregnancy journey, receive professional health advice, 
+              and connect with a community of mothers.
             </p>
-            <p className="signup-quote">"Hành trình làm mẹ bắt đầu từ đây!"</p>
+            <p className="signup-quote">"Your motherhood journey starts here!"</p>
           </div>
         </motion.div>
 
@@ -357,19 +302,19 @@ const SignUp = () => {
           className="signup-form-container"
         >
           <h2 className="signup-form-title">
-            {showOtpForm ? "Xác Minh OTP" : "Đăng Ký"}
+            {showOtpForm ? "Verify OTP" : "Sign Up"}
           </h2>
           <div className="signup-form">
             {showOtpForm ? (
               <>
                 <div className="signup-input-group">
                   <label htmlFor="otp" className="signup-label">
-                    Mã OTP
+                    OTP Code
                   </label>
                   <input
                     id="otp"
                     type="text"
-                    placeholder="Nhập mã OTP 6 chữ số"
+                    placeholder="Enter 6-digit OTP"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className={`signup-input ${
@@ -380,25 +325,25 @@ const SignUp = () => {
                   {errors.otp && <p className="signup-error">{errors.otp}</p>}
                 </div>
                 <p className="signup-timer">
-                  Thời gian còn lại: {Math.floor(timer / 60)}:
+                  Time remaining: {Math.floor(timer / 60)}:
                   {(timer % 60).toString().padStart(2, "0")}
                 </p>
                 <button onClick={handleOtpSubmit} className="signup-button">
-                  Xác Minh OTP
+                  Verify OTP
                 </button>
               </>
             ) : (
               <>
                 <div className="signup-input-group">
                   <label htmlFor="username" className="signup-label">
-                    Tên người dùng
+                    Username
                   </label>
                   <input
                     id="username"
                     type="text"
-                    placeholder="Nhập tên người dùng"
+                    placeholder="Enter your username"
                     value={username}
-                    onChange={handleUsernameChange}
+                    onChange={(e) => setUsername(e.target.value)}
                     className={`signup-input ${
                       errors.username ? "signup-input-error" : ""
                     }`}
@@ -414,9 +359,9 @@ const SignUp = () => {
                   <input
                     id="email"
                     type="email"
-                    placeholder="Nhập email của bạn"
+                    placeholder="Enter your email"
                     value={email}
-                    onChange={handleEmailChange}
+                    onChange={(e) => setEmail(e.target.value)}
                     className={`signup-input ${
                       errors.email ? "signup-input-error" : ""
                     }`}
@@ -427,14 +372,14 @@ const SignUp = () => {
                 </div>
                 <div className="signup-input-group">
                   <label htmlFor="phoneNo" className="signup-label">
-                    Số điện thoại (Tùy chọn)
+                    Phone Number (Optional)
                   </label>
                   <input
                     id="phoneNo"
                     type="text"
-                    placeholder="Nhập số điện thoại"
+                    placeholder="Enter phone number"
                     value={phoneNo}
-                    onChange={handlePhoneNoChange}
+                    onChange={(e) => setPhoneNo(e.target.value)}
                     className={`signup-input ${
                       errors.phoneNo ? "signup-input-error" : ""
                     }`}
@@ -445,21 +390,21 @@ const SignUp = () => {
                 </div>
                 <div className="signup-input-group">
                   <label htmlFor="password" className="signup-label">
-                    Mật khẩu
+                    Password
                   </label>
                   <div className="password-wrapper">
                     <input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="Nhập mật khẩu của bạn"
+                      placeholder="Enter your password"
                       value={password}
-                      onChange={handlePasswordChange}
+                      onChange={(e) => setPassword(e.target.value)}
                       className={`signup-input ${
                         errors.password ? "signup-input-error" : ""
                       }`}
                     />
                     <span
-                      onClick={toggleShowPassword}
+                      onClick={() => setShowPassword(!showPassword)}
                       className="password-toggle-icon"
                     >
                       <svg
@@ -489,21 +434,21 @@ const SignUp = () => {
                 </div>
                 <div className="signup-input-group">
                   <label htmlFor="confirmPassword" className="signup-label">
-                    Nhập lại mật khẩu
+                    Confirm Password
                   </label>
                   <div className="password-wrapper">
                     <input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="Nhập lại mật khẩu"
+                      placeholder="Confirm your password"
                       value={confirmPassword}
-                      onChange={handleConfirmPasswordChange}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       className={`signup-input ${
                         errors.confirmPassword ? "signup-input-error" : ""
                       }`}
                     />
                     <span
-                      onClick={toggleShowConfirmPassword}
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       className="password-toggle-icon"
                     >
                       <svg
@@ -532,7 +477,7 @@ const SignUp = () => {
                   )}
                 </div>
                 <button onClick={handleSubmit} className="signup-button">
-                  Đăng Ký
+                  Sign Up
                 </button>
               </>
             )}
@@ -582,9 +527,9 @@ const SignUp = () => {
             )}
             <div className="signup-links">
               <p>
-                Đã có tài khoản?{" "}
+                Already have an account?{" "}
                 <Link to="/signin" className="signup-link">
-                  Đăng nhập
+                  Sign In
                 </Link>
               </p>
             </div>

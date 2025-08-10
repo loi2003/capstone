@@ -185,7 +185,6 @@ const NutrientSpecialistHomePage = () => {
           animate="animate"
           variants={containerVariants}
         >
-
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
               to="/blog-management"
@@ -261,7 +260,55 @@ const NutrientSpecialistHomePage = () => {
               {isSidebarOpen && <span>Nutrient Management</span>}
             </Link>
           </motion.div>
-
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/food-category-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Food Category Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Category icon for food category management"
+              >
+                <path
+                  d="M3 3h6v6H3V3zm0 12h6v6H3v-6zm12 0h6v6h-6v-6zm0-12h6v6h-6V3z"
+                  fill="var(--nutrient-specialist-secondary)"
+                  stroke="var(--nutrient-specialist-white)"
+                  strokeWidth="1.5"
+                />
+              </svg>
+              {isSidebarOpen && <span>Food Category Management</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/food-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Food Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="List icon for food management"
+              >
+                <path
+                  d="M4 6h16M4 12h16M4 18h16"
+                  stroke="var(--nutrient-specialist-white)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Food Management</span>}
+            </Link>
+          </motion.div>
           {user ? (
             <>
               <motion.div
