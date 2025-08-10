@@ -312,7 +312,7 @@ const PregnancyTrackingPage = () => {
                         pregnancyData={pregnancyData}
                         selectedWeek={selectedWeek}
                       />
-                      <SymptomsAndMood pregnancyData={pregnancyData} />
+                      {/* <SymptomsAndMood pregnancyData={pregnancyData} /> */}
                     </div>
                     <div className="right-column">
                       <UpcomingAppointments />
