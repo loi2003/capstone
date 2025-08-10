@@ -24,37 +24,25 @@ const BlogPage = () => {
   const postsPerPage = 6;
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
+
+  // Define placeholder images for fallback
+  const placeholderImages = [
+    'src/assets/parenting-in-pictures.svg',
+    'src/assets/due-date-calculator.svg',
+    'src/assets/find-a-health-service.svg',
+    'src/assets/parenting-in-pictures.svg',
+  ];
+
+  // Select random placeholder image
+  const getRandomPlaceholder = () => {
+    const randomIndex = Math.floor(Math.random() * placeholderImages.length);
+    return placeholderImages[randomIndex];
+  };
+
   const aboutpageData = {
     hero: {
-      title: "Welcome to Our Blog Hub",
-      subtitle: "Explore insights, trends, and stories that inspire.",
-      cta: "Get Started",
-      ctaLink: "/start",
-      bgColor: "linear-gradient(135deg, #4c51bf, #ed8936)", // New gradient: Indigo to Amber
-      textColor: "#ffffff",
-      svg: (
-        <svg width="320" height="320" viewBox="0 0 320 320" fill="none">
-          <path
-            d="M40 80h240v160H40V80z"
-            fill="rgba(255, 255, 255, 0.2)"
-            stroke="#ffffff"
-            strokeWidth="4"
-          />
-          <path
-            d="M60 100h200v120H60V100z"
-            fill="rgba(255, 255, 255, 0.1)"
-          />
-          <path
-            d="M70 110h180v100H70V110z"
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth="2"
-          />
-          <circle cx="90" cy="130" r="10" fill="#ffffff" />
-          <circle cx="230" cy="130" r="10" fill="#ffffff" />
-        </svg>
-      )
-    }
+      image: 'src/assets/tpm_nov24_feature_pregnancy_1-intro.jpg' || getRandomPlaceholder(),
+    },
   };
 
   useEffect(() => {
@@ -287,26 +275,6 @@ const BlogPage = () => {
     }
   };
 
-  const shareBlog = (platform, blog) => {
-    const url = encodeURIComponent(window.location.href + `/blog/${blog.id}`);
-    const text = encodeURIComponent(blog.title);
-    let shareUrl;
-    switch (platform) {
-      case 'twitter':
-        shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
-        break;
-      case 'facebook':
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-        break;
-      case 'linkedin':
-        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${text}`;
-        break;
-      default:
-        return;
-    }
-    window.open(shareUrl, '_blank', 'noopener,noreferrer');
-  };
-
   const calculateReadingTime = (text) => {
     const wordCount = text ? text.split(/\s+/).length : 0;
     if (wordCount < 50) return 1;
@@ -373,14 +341,14 @@ const BlogPage = () => {
     .slice(0, 4)
     .map(blog => ({
       id: String(blog.id),
-      category: blog.tags?.[0] || 'General',
+      category: blog.tags?.[0] || '',
       title: blog.title,
       date: new Date(blog.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       }),
-      icon: blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg',
+      icon: blog.images?.[0]?.fileUrl || getRandomPlaceholder(),
     }));
 
   const popularPosts = blogs
@@ -389,13 +357,13 @@ const BlogPage = () => {
     .map(blog => ({
       id: String(blog.id),
       title: blog.title,
-      image: blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg',
+      image: blog.images?.[0]?.fileUrl || getRandomPlaceholder(),
       date: new Date(blog.createdAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
       }),
-      category: blog.tags?.[0] || 'General',
+      category: blog.tags?.[0] || '',
       likeCount: blog.likeCount || 0,
     }));
 
@@ -414,7 +382,7 @@ const BlogPage = () => {
   };
 
   return (
-    <div className="blog-page" style={{ marginTop: '68px' }}> {/* Adjust for Header height */}
+    <div className="blog-page" style={{ marginTop: '68px' }}>
       {showAuthPopup && (
         <div className="blog-page__auth-popup">
           <div className="blog-page__auth-popup-content">
@@ -448,7 +416,7 @@ const BlogPage = () => {
                   onClick={() => handleBookmarkClick(blog.id)}
                 >
                   <img
-                    src={blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
+                    src={blog.images?.[0]?.fileUrl || getRandomPlaceholder()}
                     alt={blog.title}
                     className="blog-page__bookmark-image"
                   />
@@ -482,31 +450,19 @@ const BlogPage = () => {
           {actionError}
         </div>
       )}
-      
+
       <div className="blog-page__main-content">
-        <section className="blog-intro-section" style={{ background: aboutpageData.hero.bgColor }}>
-          <div className="blog-intro-content">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="blog-intro-text"
-              style={{ color: aboutpageData.hero.textColor }}
-            >
-              <h1 className="blog-intro-title">{aboutpageData.hero.title}</h1>
-              <p className="blog-intro-subtitle">{aboutpageData.hero.subtitle}</p>
-              <Link to={aboutpageData.hero.ctaLink} className="blog-intro-button">
-                {aboutpageData.hero.cta}
-              </Link>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
-              className="blog-intro-graphic"
-            >
-              {aboutpageData.hero.svg}
-            </motion.div>
+        <section className="blog-intro-section" style={{ backgroundImage: `url(${aboutpageData.hero.image})` }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            className="blog-intro-overlay"
+          ></motion.div>
+          <div className="blog-intro-tags">
+            {categories.filter(cat => cat !== 'All').map((tag, index) => (
+              <span key={index} className="blog-intro-tag">{tag}</span>
+            ))}
           </div>
         </section>
 
@@ -514,23 +470,24 @@ const BlogPage = () => {
           <h2>RECENT POSTS</h2>
           <div className="blog-page__recent-carousel">
             {recentPosts.map((post, index) => (
-              <motion.div
-                key={post.id}
-                className="blog-page__recent-item"
-                initial={{ opacity: 0, x: 50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.2 }}
-              >
-                <span className="blog-page__recent-number">{index + 1}</span>
-                <img src={post.icon} alt={post.title} className="blog-page__recent-icon" />
-                <div className="blog-page__recent-info">
-                  <span className="blog-page__recent-category">{post.category}</span>
-                  <h3>{post.title}</h3>
-                  <div className="blog-page__recent-meta">
-                    <span className="blog-page__date">{post.date}</span>
+              <Link to={`/blog/${post.id}`} key={post.id} className="blog-page__recent-item-link">
+                <motion.div
+                  className="blog-page__recent-item"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.2 }}
+                >
+                  <span className="blog-page__recent-number">{index + 1}</span>
+                  <img src={post.icon} alt={post.title} className="blog-page__recent-icon" />
+                  <div className="blog-page__recent-info">
+                    <span className="blog-page__recent-category">{post.category}</span>
+                    <h3>{post.title}</h3>
+                    <div className="blog-page__recent-meta">
+                      <span className="blog-page__date">{post.date}</span>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </Link>
             ))}
           </div>
         </div>
@@ -617,14 +574,13 @@ const BlogPage = () => {
         {filteredBlogs[0] && (
           <div className="blog-page__header-banner">
             <img
-              src={filteredBlogs[0].images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
+              src={filteredBlogs[0].images?.[0]?.fileUrl || getRandomPlaceholder()}
               alt={filteredBlogs[0].title}
               className="blog-page__banner-image"
             />
             <div className="blog-page__banner-content">
               <span className="blog-page__banner-tag">Latest</span>
               <h1>{filteredBlogs[0].title}</h1>
-              <p>Before you make your first purchase...</p>
             </div>
           </div>
         )}
@@ -639,7 +595,7 @@ const BlogPage = () => {
               >
                 <div className="blog-page__card-image">
                   <img
-                    src={blog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
+                    src={blog.images?.[0]?.fileUrl || getRandomPlaceholder()}
                     alt={blog.title}
                     className="blog-page__card-img"
                   />
@@ -660,7 +616,7 @@ const BlogPage = () => {
                         day: 'numeric',
                       })}
                     </span>
-                    <span className="blog-page__category">{blog.tags?.[0] || 'General'}</span>
+                    <span className="blog-page__category">{blog.tags?.[0] || ''}</span>
                     <span className="blog-page__reading-time">{calculateReadingTime(blog.body)} min read</span>
                     <span className="blog-page__like-count">{blog.likeCount || 0} likes</span>
                   </div>
@@ -725,7 +681,7 @@ const BlogPage = () => {
           <div className="blog-page__author-gallery">
             {topAuthors.map((author, index) => (
               <div key={index} className="blog-page__author-card">
-                <div className="blog-page__author-image" style={{ backgroundImage: `url(${author.imageUrl || '/assets/placeholder.jpg'})` }}></div>
+                <div className="blog-page__author-image" style={{ backgroundImage: `url(${author.imageUrl || getRandomPlaceholder()})` }}></div>
                 <div className="blog-page__author-info">
                   <span className="blog-page__author-name">{author.author}</span>
                   <span className="blog-page__author-count">{author.postCount} blogs, {author.totalLikes} likes</span>

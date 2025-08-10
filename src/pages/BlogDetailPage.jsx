@@ -3,6 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { getAllBlogs, deleteLike, deleteBookmark } from '../apis/blog-api';
 import apiClient from '../apis/url-api';
+import parentingInPictures from '../assets/parenting-in-pictures.svg';
+import dueDateCalculator from '../assets/due-date-calculator.svg';
+import findAHealthService from '../assets/find-a-health-service.svg';
 import '../styles/BlogDetailPage.css';
 
 const BlogDetailPage = () => {
@@ -18,6 +21,21 @@ const BlogDetailPage = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
+  // Define placeholder images for fallback
+  const placeholderImages = [
+    parentingInPictures,
+    dueDateCalculator,
+    findAHealthService,
+    parentingInPictures,
+  ];
+
+  // Select random placeholder image
+  const getRandomPlaceholder = () => {
+    const randomIndex = Math.floor(Math.random() * placeholderImages.length);
+    console.log('Selected placeholder:', placeholderImages[randomIndex]); // Debugging
+    return placeholderImages[randomIndex];
+  };
+
   useEffect(() => {
     const fetchBlog = async () => {
       try {
@@ -27,6 +45,8 @@ const BlogDetailPage = () => {
         if (!selectedBlog) {
           throw new Error('Blog not found');
         }
+        // Ensure images is an array, even if empty
+        selectedBlog.images = Array.isArray(selectedBlog.images) ? selectedBlog.images : [];
         setBlog(selectedBlog);
         setAllBlogs(data.filter(b => b.id !== selectedBlog.id && b.status?.toLowerCase() === 'approved'));
         setLoading(false);
@@ -183,10 +203,9 @@ const BlogDetailPage = () => {
         >
           <div className="blog-detail-image-container">
             <img
-              src={blog.images?.[currentImageIndex]?.fileUrl || '/assets/placeholder.jpg'}
+              src={blog.images?.length > 0 ? blog.images[currentImageIndex]?.fileUrl : getRandomPlaceholder()}
               alt={blog.title}
-              className={`blog-detail-image ${currentImageIndex !== null ? 'active' : ''}`}
-              key={currentImageIndex}
+              className="blog-detail-image"
             />
           </div>
           {blog.images?.length > 1 && (
@@ -194,7 +213,7 @@ const BlogDetailPage = () => {
               {blog.images.map((image, index) => (
                 <img
                   key={index}
-                  src={image.fileUrl || '/assets/placeholder.jpg'}
+                  src={image.fileUrl || getRandomPlaceholder()}
                   alt={`Thumbnail ${index + 1}`}
                   className={`thumbnail-image ${currentImageIndex === index ? 'active' : ''}`}
                   onClick={() => handleThumbnailClick(index)}
@@ -268,7 +287,7 @@ const BlogDetailPage = () => {
                     className="related-blog-card"
                   >
                     <img
-                      src={relatedBlog.images?.[0]?.fileUrl || '/assets/placeholder.jpg'}
+                      src={relatedBlog.images?.length > 0 ? relatedBlog.images[0]?.fileUrl : getRandomPlaceholder()}
                       alt={relatedBlog.title}
                       className="related-blog-image"
                     />

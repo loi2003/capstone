@@ -36,10 +36,14 @@
 /* Header */
 .category-header {
   display: flex;
-  justify-content: center;
   align-items: center;
   position: relative;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding-left: 3rem; /* Add padding to accommodate back button */
+  width: 100%;
+  max-width: 1200px; /* Match content max-width for alignment */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .category-management-title {
@@ -53,7 +57,8 @@
 .category-back-button {
   position: absolute;
   left: 0;
-  top: 0;
+  top: 50%; /* Center vertically relative to header */
+  transform: translateY(-50%); /* Adjust for vertical centering */
   width: 40px;
   height: 40px;
   border: none;
@@ -78,11 +83,11 @@
 .category-back-button:hover {
   background: var(--accent-dark);
   box-shadow: var(--shadow-hover);
-  transform: scale(1.1);
+  transform: translateY(-50%) scale(1.1); /* Maintain vertical centering on hover */
 }
 
 .category-back-button:active {
-  transform: scale(0.95);
+  transform: translateY(-50%) scale(0.95); /* Maintain vertical centering on click */
 }
 
 .category-back-button:focus {
@@ -400,7 +405,7 @@
 
 .category-table-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr; /* Adjusted for Tag column */
   padding: 0.75rem;
   background: #f8f9fa;
   border-radius: 8px;
@@ -411,7 +416,7 @@
 
 .category-table-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr; /* Adjusted for Tag column */
   padding: 0.75rem;
   align-items: center;
   border-bottom: 1px solid #e0e0e6;
@@ -588,6 +593,15 @@
   padding: 2rem;
 }
 
+/* Input group select */
+.input-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 /* Responsive design */
 @media (min-width: 768px) {
   .category-content {
@@ -620,7 +634,7 @@
   }
 
   .category-header {
-    position: relative;
+    padding-left: 2.5rem; /* Slightly reduce padding for smaller screens */
   }
 
   .category-management-title {
@@ -646,7 +660,7 @@
 
   .category-table-header,
   .category-table-row {
-    grid-template-columns: 2fr 1fr 1.5fr;
+    grid-template-columns: 2fr 1fr 1fr 1.5fr;
     font-size: 0.85rem;
   }
 
@@ -712,6 +726,10 @@
 @media (max-width: 480px) {
   .category-management-title {
     font-size: 1.5rem;
+  }
+
+  .category-header {
+    padding-left: 2rem; /* Further reduce padding for very small screens */
   }
 
   .category-stats-title,
@@ -806,19 +824,4 @@
   .form-group.toggle-group {
     min-width: 90px;
   }
-}
-.category-table-header,
-.category-table-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr; /* Adjusted for new Tag column */
-  align-items: center;
-  padding: 10px;
-}
-
-.input-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
 }
