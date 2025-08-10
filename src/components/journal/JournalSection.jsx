@@ -135,7 +135,7 @@ const JournalSection = ({
               className="info-message"
               style={{ color: "var(--color-text)", marginTop: "1rem" }}
             >
-              🎉 You've already documented all weeks up to Week {currentWeek}.
+              You've already documented all weeks up to Week {currentWeek}.
             </p>
           )}
         </div>
@@ -206,12 +206,13 @@ const JournalSection = ({
               </div>
               <div className="entry-actions">
                 <Link
-                  to={`/pregnancy-tracking/journal-entry?growthDataId=${growthDataId}&entryId=${entry.id}`}
+                  to={`/pregnancy-tracking/journal-section/edit-journal-form?growthDataId=${growthDataId}&entryId=${entry.id}`}
                 >
                   <button className="journal-edit-btn" disabled={!token}>
                     <img src={editIcon} alt="Edit" className="journal-icon" />
                   </button>
                 </Link>
+
                 <button
                   className="journal-delete-btn"
                   onClick={() => handleDelete(entry.id)}

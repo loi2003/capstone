@@ -20,6 +20,26 @@
   font-size: 1.5rem;
   font-weight: 700;
 }
+.header-entry-cancel-btn {
+  padding: 1rem 1.5rem;
+  width: 200px;
+  background: var(--color-general, #f9f9f9);
+  color: var(--dark-text, #333333);
+  border: 2px dashed #04668d;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.header-entry-cancel-btn:hover {
+  background: #04668d;
+  border: 2px solid #04668d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  color: white;
+}
 
 .entry-form-content {
   display: grid;

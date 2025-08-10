@@ -51,35 +51,45 @@ const JournalEntryForm = ({ onError }) => {
       const response = await getJournalById(entryId, token);
       if (response.data?.error === 0 && response.data?.data) {
         const entry = response.data.data;
+
         setFormData({
           Id: entry.id || "",
           CurrentWeek: entry.currentWeek || "",
           Note: entry.note || "",
-          CurrentWeight: entry.currentWeight || "",
-          MoodNotes: entry.mood || "",
-          SymptomNames: entry.symptomNames || [],
+          CurrentWeight: entry.currentWeight || null,
+          MoodNotes: entry.moodNotes || entry.mood || "",
+          SymptomIds:
+            entry.symptoms?.map((s) => s.id) || entry.symptomIds || [],
+          SymptomNames:
+            entry.symptoms?.map((s) => s.name) || entry.symptomNames || [],
           RelatedImages: entry.relatedImages || [],
           UltraSoundImages: entry.ultraSoundImages || [],
         });
+
         setImagePreviews({
-          RelatedImages: entry.relatedImages?.map((img) => img.url || "") || [],
+          RelatedImages:
+            entry.relatedImages?.map(
+              (img) => (typeof img === "string" ? img : img.url) || ""
+            ) || [],
           UltraSoundImages:
-            entry.ultraSoundImages?.map((img) => img.url || "") || [],
+            entry.ultraSoundImages?.map(
+              (img) => (typeof img === "string" ? img : img.url) || ""
+            ) || [],
         });
       } else {
-        setErrors({
-          submit: response.data?.message || "Failed to fetch journal entry",
-        });
-        onError?.(response.data?.message || "Failed to fetch journal entry");
+        const msg = response.data?.message || "Failed to fetch journal entry";
+        setErrors({ submit: msg });
+        onError?.(msg);
       }
     } catch (error) {
       console.error("Failed to fetch journal entry:", error);
-      const errorMessage =
+      const msg =
         error.response?.data?.message || "Failed to fetch journal entry";
-      setErrors({ submit: errorMessage });
-      onError?.(errorMessage);
+      setErrors({ submit: msg });
+      onError?.(msg);
     }
   };
+
   const fetchAvailableWeeks = async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -108,7 +118,9 @@ const JournalEntryForm = ({ onError }) => {
       setAvailableWeeks(weeks);
 
       // Preselect the latest available week
-      setFormData((prev) => ({ ...prev, CurrentWeek: weeks.at(-1) || "" }));
+      if (!entryId) {
+        setFormData((prev) => ({ ...prev, CurrentWeek: weeks.at(-1) || "" }));
+      }
     } catch (err) {
       console.error("Failed to fetch week availability", err);
     }
@@ -234,6 +246,16 @@ const JournalEntryForm = ({ onError }) => {
     <div className="journal-entry-form">
       <div className="entry-form-header">
         <h3>{entryId ? "Edit Journal Entry" : "Add Journal Entry"}</h3>
+        <button
+          className="header-entry-cancel-btn"
+          onClick={() =>
+            navigate(
+              `/pregnancy-tracking?growthDataId=${growthDataId}&journalinfo=true`
+            )
+          }
+        >
+          Back
+        </button>
       </div>
       <div className="entry-form-content">
         <div className="entry-form-section">
@@ -283,7 +305,7 @@ const JournalEntryForm = ({ onError }) => {
             type="number"
             id="currentWeight"
             name="CurrentWeight"
-            value={formData.CurrentWeight}
+            value={formData.CurrentWeight || ""}
             onChange={handleChange}
             min="30"
             max="200"
@@ -363,7 +385,15 @@ const JournalEntryForm = ({ onError }) => {
         </div>
 
         <div className="entry-form-section">
-          <label htmlFor="bloodSugarLevelMgDl">Blood Sugar Level (mg/dL)</label>
+          <label htmlFor="bloodSugarLevelMgDl">
+            Blood Sugar Level (mg/dL)
+            <span
+              className="entry-info-tooltip"
+              title="Blood sugar level is typically between 70-130 mg/dL before meals"
+            >
+              ⓘ
+            </span>
+          </label>
           <input
             type="number"
             id="bloodSugarLevelMgDl"
@@ -372,7 +402,7 @@ const JournalEntryForm = ({ onError }) => {
             onChange={handleChange}
             min="30"
             max="500"
-            placeholder="Bloofd sugar level is typically between 70-130 mg/dL before meals"
+            placeholder="Optional - Enter if you've checked recently."
           />
         </div>
         {/* <div className="entry-form-section"> */}
@@ -381,7 +411,7 @@ const JournalEntryForm = ({ onError }) => {
           onMoodChange={(mood) =>
             setFormData((prev) => ({ ...prev, MoodNotes: mood }))
           }
-          selectedSymptoms={formData.SymptomIds} // pass ids to component
+          selectedSymptoms={formData.SymptomIds}
           onSymptomsChange={(ids, names) =>
             setFormData((prev) => ({
               ...prev,
@@ -392,6 +422,7 @@ const JournalEntryForm = ({ onError }) => {
           userId={localStorage.getItem("userId")}
           token={token}
         />
+
         {/* </div> */}
 
         <div className="entry-form-section">
