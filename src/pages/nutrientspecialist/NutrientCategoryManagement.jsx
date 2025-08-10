@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Chart from 'chart.js/auto';
-import { getAllNutrientCategories, getNutrientCategoryById, createNutrientCategory, updateNutrientCategory, getAllNutrients } from '../../apis/nutriet-api';
+import { getAllNutrientCategories, getNutrientCategoryById, createNutrientCategory, updateNutrientCategory, deleteNutrientCategory, getAllNutrients } from '../../apis/nutriet-api';
 import '../../styles/NutrientCategoryManagement.css';
 
 // SVG Icons (unchanged)
@@ -153,7 +153,7 @@ const NutrientCategoryManagement = () => {
     if (window.confirm('Are you sure you want to delete this category?')) {
       setLoading(true);
       try {
-        await deleteNutrientCategory(id); // Assumes this function exists in nutrient-api
+        await deleteNutrientCategory(id);
         await fetchCategoriesAndNutrients();
         showNotification('Category deleted successfully', 'success');
       } catch (err) {
@@ -546,7 +546,7 @@ const NutrientCategoryManagement = () => {
                       className="pagination-button prev nutrient-specialist-button secondary"
                       whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
                       whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
-                      aria-label="Previous page!...page"
+                      aria-label="Previous page"
                     >
                       Previous
                     </motion.button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAllFoodCategories, getFoodCategoryById, createFoodCategory, updateFoodCategory } from '../../apis/nutriet-api';
+import { getAllFoodCategories, getFoodCategoryById, createFoodCategory, updateFoodCategory, deleteFoodCategory } from '../../apis/nutriet-api';
 import { getCurrentUser } from '../../apis/authentication-api';
 import '../../styles/FoodCategoryManagement.css';
 
@@ -11,8 +11,6 @@ const SearchIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 );
-
-
 
 const LoaderIcon = () => (
   <svg className="icon loader" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -37,7 +35,6 @@ const Notification = ({ message, type }) => {
       exit={{ x: '100%', opacity: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-    
       <div className="notification-content">
         <h4>{type === 'success' ? 'Success' : 'Error'}</h4>
         <p>{message}</p>
@@ -104,28 +101,77 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
+const fetchCategoryById = async (id) => {
+  if (!id) {
+    showNotification('Invalid category ID', 'error');
+    return;
+  }
 
-  // Fetch food category by ID
-  const fetchCategoryById = async (id) => {
-    setLoading(true);
-    try {
-      const data = await getFoodCategoryById(id);
-      setSelectedCategory(data);
-      setNewCategory({
-        name: data.name,
-        description: data.description || '',
-      });
-      setIsEditing(true);
-    } catch (err) {
-      showNotification(`Failed to fetch category details: ${err.message}`, 'error');
-    } finally {
-      setLoading(false);
+  setLoading(true);
+  try {
+    const response = await getFoodCategoryById(id);
+    
+    // Debug logging
+    console.log('API Response:', response);
+    
+    // Handle different response structures
+    let categoryData;
+    if (response.data) {
+      // Case 1: Response has data property
+      if (response.data.data) {
+        // Nested data structure (response.data.data)
+        categoryData = response.data.data;
+      } else {
+        // Flat data structure (response.data)
+        categoryData = response.data;
+      }
+    } else {
+      // Case 2: Response is the data itself
+      categoryData = response;
     }
-  };
+
+    // Validate required fields
+    if (!categoryData || !categoryData.id || !categoryData.name) {
+      throw new Error('Invalid category data structure received from server');
+    }
+
+    // Set the selected category
+    setSelectedCategory({
+      id: categoryData.id,
+      name: categoryData.name,
+      description: categoryData.description || '',
+    });
+    
+    // Populate the form
+    setNewCategory({
+      name: categoryData.name,
+      description: categoryData.description || '',
+    });
+    
+    setIsEditing(true);
+  } catch (err) {
+    console.error('Error fetching category:', {
+      error: err,
+      response: err.response,
+      data: err.response?.data
+    });
+    
+    const errorMessage = err.response?.data?.message || 
+                        err.response?.data?.title || 
+                        err.message || 
+                        'Failed to fetch category details';
+    
+    showNotification(errorMessage, 'error');
+    setSelectedCategory(null);
+    setIsEditing(false);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Create new food category
   const createCategoryHandler = async () => {
-    if (!newCategory.name.trim()) {
+    if (!newCategory.name || typeof newCategory.name !== 'string' || !newCategory.name.trim()) {
       showNotification('Category name is required', 'error');
       return;
     }
@@ -145,25 +191,46 @@ const FoodCategoryManagement = () => {
 
   // Update food category
   const updateCategoryHandler = async () => {
-    if (!newCategory.name.trim()) {
-      showNotification('Category name is required', 'error');
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateFoodCategory({ ...newCategory, id: selectedCategory.id });
+  if (!newCategory.name?.trim()) {
+    showNotification('Category name is required and must be a valid string', 'error');
+    return;
+  }
+  if (!selectedCategory?.id) {
+    showNotification('No category selected for update', 'error');
+    return;
+  }
+
+  setLoading(true);
+  try {
+    const categoryData = {
+      id: selectedCategory.id,
+      name: newCategory.name.trim(),
+      description: newCategory.description?.trim() || '',
+    };
+
+    console.log('Updating food category with data:', categoryData);
+    
+    // Make sure to await the API call and handle the response properly
+    const response = await updateFoodCategory(categoryData);
+    
+    // Check if the update was successful
+    if (response && response.data) {
       setNewCategory({ name: '', description: '' });
       setSelectedCategory(null);
       setIsEditing(false);
       await fetchData();
       showNotification('Food category updated successfully', 'success');
-    } catch (err) {
-      showNotification(`Failed to update category: ${err.message}`, 'error');
-    } finally {
-      setLoading(false);
+    } else {
+      throw new Error('Update failed - no response data');
     }
-  };
-
+  } catch (err) {
+    const errorMessage = err.response?.data?.message || err.message || 'Unknown error occurred';
+    console.error('Update error:', errorMessage);
+    showNotification(`Failed to update category: ${errorMessage}`, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
   // Delete food category
   const deleteCategoryHandler = async (id) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
@@ -306,8 +373,6 @@ const FoodCategoryManagement = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </div>
-      
-         
           <div className="sidebar-nav-item active">
             <Link to="/nutrient-specialist/food-category-management" title="Food Categories">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-label="Food icon">
@@ -316,7 +381,7 @@ const FoodCategoryManagement = () => {
               {isSidebarOpen && <span>Food Categories</span>}
             </Link>
           </div>
-           <div className="sidebar-nav-item">
+          <div className="sidebar-nav-item">
             <Link to="/nutrient-specialist/food-management" title="Food Management">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-label="List icon">
                 <path d="M4 6h16M4 12h16M4 18h16" stroke="var(--nutrient-specialist-white)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
