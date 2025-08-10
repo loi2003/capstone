@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAllNutrients, getNutrientWithDetailsById, createNutrient, updateNutrient, getAllNutrientCategories } from '../../apis/nutriet-api';
+import { getAllNutrients, getNutrientWithDetailsById, createNutrient, deleteNutrient, getAllNutrientCategories } from '../../apis/nutriet-api'
 import '../../styles/NutrientManagement.css';
-
 
 const LoaderIcon = () => (
   <svg className="icon loader" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -28,7 +27,6 @@ const Notification = ({ message, type }) => {
       exit={{ x: '100%', opacity: 0 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-     
       <div className="notification-content">
         <h4>{type === 'success' ? 'Success' : 'Error'}</h4>
         <p>{message}</p>

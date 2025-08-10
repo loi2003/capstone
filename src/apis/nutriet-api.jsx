@@ -76,6 +76,23 @@ export const updateNutrientCategory = async (categoryData) => {
   }
 };
 
+export const deleteNutrientCategory = async (nutrientCategoryId) => {
+  try {
+    const response = await apiClient.delete(`/api/NutrientCategory/delete-nutrient-by-id`, {
+      params: {
+        nutrientCategoryId: nutrientCategoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting nutrient category:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const getAllNutrients = async () => {
   try {
     const response = await apiClient.get(`/api/nutrient/view-all-nutrients`, {
@@ -130,7 +147,7 @@ export const createNutrient = async (nutrientData) => {
     formData.append('Name', nutrientData.name);
     formData.append('Description', nutrientData.description || '');
     if (nutrientData.imageUrl) {
-      formData.append('ImageUrl', nutrientData.imageUrl); // Assuming imageUrl is a File object
+      formData.append('ImageUrl', nutrientData.imageUrl);
     }
     formData.append('Unit', nutrientData.unit);
     formData.append('CategoryId', nutrientData.categoryId);
@@ -157,7 +174,7 @@ export const updateNutrient = async (nutrientData) => {
     formData.append('Name', nutrientData.name);
     formData.append('Description', nutrientData.description || '');
     if (nutrientData.imageUrl) {
-      formData.append('ImageUrl', nutrientData.imageUrl); // Assuming imageUrl is a File object
+      formData.append('ImageUrl', nutrientData.imageUrl);
     }
     formData.append('Unit', nutrientData.unit);
     formData.append('CategoryId', nutrientData.categoryId);
@@ -173,6 +190,23 @@ export const updateNutrient = async (nutrientData) => {
     return response.data;
   } catch (error) {
     console.error('Error updating nutrient:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteNutrient = async (nutrientId) => {
+  try {
+    const response = await apiClient.delete(`/api/nutrient/delete-nutrient-by-id`, {
+      params: {
+        nutrientId: nutrientId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting nutrient:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -268,6 +302,22 @@ export const updateFoodCategory = async (categoryData) => {
     return response.data;
   } catch (error) {
     console.error("Error updating food category:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const deleteFoodCategory = async (foodCategoryId) => {
+  try {
+    const response = await apiClient.delete(`/api/food-category/delete-food-category-by-id`, {
+      params: {
+        foodCategoryId: foodCategoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting food category:", error.response?.data || error.message);
     throw error;
   }
 };
