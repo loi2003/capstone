@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getAllNutrients, getNutrientWithDetailsById, createNutrient, deleteNutrient, getAllNutrientCategories } from '../../apis/nutriet-api'
+import { getAllNutrients, getNutrientWithDetailsById, createNutrient, deleteNutrient, updateNutrient, getAllNutrientCategories, updateNutrientImage } from '../../apis/nutriet-api';
 import '../../styles/NutrientManagement.css';
 
 const LoaderIcon = () => (
@@ -38,7 +38,7 @@ const Notification = ({ message, type }) => {
 const NutrientManagement = () => {
   const [nutrients, setNutrients] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [newNutrient, setNewNutrient] = useState({ name: '', description: '', imageUrl: null, unit: '', categoryId: '' });
+  const [newNutrient, setNewNutrient] = useState({ name: '', description: '', imageUrl: null, categoryId: '' });
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -64,6 +64,8 @@ const NutrientManagement = () => {
         getAllNutrients(),
         getAllNutrientCategories(),
       ]);
+      console.log('Fetched nutrients:', nutrientsData);
+      console.log('Fetched categories:', categoriesData);
       setNutrients(nutrientsData);
       setCategories(categoriesData);
     } catch (err) {
@@ -75,15 +77,16 @@ const NutrientManagement = () => {
 
   // Fetch nutrient by ID with details
   const fetchNutrientById = async (id) => {
+    console.log('Fetching nutrient with ID:', id);
     setLoading(true);
     try {
       const data = await getNutrientWithDetailsById(id);
+      console.log('Fetched nutrient data:', data);
       setSelectedNutrient(data);
       setNewNutrient({
         name: data.name,
         description: data.description || '',
         imageUrl: null,
-        unit: data.unit,
         categoryId: data.categoryId,
       });
       setIsEditing(true);
@@ -100,18 +103,15 @@ const NutrientManagement = () => {
       showNotification('Nutrient name is required', 'error');
       return;
     }
-    if (!newNutrient.unit.trim()) {
-      showNotification('Unit is required', 'error');
-      return;
-    }
     if (!newNutrient.categoryId) {
       showNotification('Please select a category', 'error');
       return;
     }
     setLoading(true);
     try {
+      console.log('Creating nutrient with data:', newNutrient);
       await createNutrient(newNutrient);
-      setNewNutrient({ name: '', description: '', imageUrl: null, unit: '', categoryId: '' });
+      setNewNutrient({ name: '', description: '', imageUrl: null, categoryId: '' });
       setIsEditing(false);
       await fetchData();
       showNotification('Nutrient created successfully', 'success');
@@ -128,18 +128,15 @@ const NutrientManagement = () => {
       showNotification('Nutrient name is required', 'error');
       return;
     }
-    if (!newNutrient.unit.trim()) {
-      showNotification('Unit is required', 'error');
-      return;
-    }
-    if (!newNutrient.categoryId) {
-      showNotification('Please select a category', 'error');
-      return;
-    }
     setLoading(true);
     try {
-      await updateNutrient({ ...newNutrient, nutrientId: selectedNutrient.id });
-      setNewNutrient({ name: '', description: '', imageUrl: null, unit: '', categoryId: '' });
+      console.log('Updating nutrient with ID:', selectedNutrient.id, 'and data:', newNutrient);
+      await updateNutrient({ nutrientId: selectedNutrient.id, name: newNutrient.name, description: newNutrient.description });
+      if (newNutrient.imageUrl) {
+        console.log('Updating nutrient image for ID:', selectedNutrient.id);
+        await updateNutrientImage(selectedNutrient.id, newNutrient.imageUrl);
+      }
+      setNewNutrient({ name: '', description: '', imageUrl: null, categoryId: '' });
       setSelectedNutrient(null);
       setIsEditing(false);
       await fetchData();
@@ -156,10 +153,11 @@ const NutrientManagement = () => {
     if (!window.confirm('Are you sure you want to delete this nutrient?')) return;
     setLoading(true);
     try {
+      console.log('Deleting nutrient with ID:', id);
       await deleteNutrient(id);
       setSelectedNutrient(null);
       setIsEditing(false);
-      setNewNutrient({ name: '', description: '', imageUrl: null, unit: '', categoryId: '' });
+      setNewNutrient({ name: '', description: '', imageUrl: null, categoryId: '' });
       await fetchData();
       showNotification('Nutrient deleted successfully', 'success');
     } catch (err) {
@@ -171,7 +169,7 @@ const NutrientManagement = () => {
 
   // Cancel edit
   const cancelEdit = () => {
-    setNewNutrient({ name: '', description: '', imageUrl: null, unit: '', categoryId: '' });
+    setNewNutrient({ name: '', description: '', imageUrl: null, categoryId: '' });
     setSelectedNutrient(null);
     setIsEditing(false);
   };
@@ -348,17 +346,6 @@ const NutrientManagement = () => {
                   className="input-field"
                   aria-label="Nutrient image file"
                 />
-                <label htmlFor="nutrient-unit">Unit</label>
-                <input
-                  id="nutrient-unit"
-                  type="text"
-                  name="unit"
-                  value={newNutrient.unit}
-                  onChange={handleInputChange}
-                  placeholder="e.g., mg, IU"
-                  className="input-field"
-                  aria-label="Nutrient unit"
-                />
                 <label htmlFor="nutrient-categoryId">Category</label>
                 <select
                   id="nutrient-categoryId"
@@ -367,7 +354,7 @@ const NutrientManagement = () => {
                   onChange={handleInputChange}
                   className="input-field"
                   aria-label="Nutrient category"
-                  disabled={categories.length === 0}
+                  disabled={categories.length === 0 || isEditing}
                 >
                   <option value="" disabled>Select a category</option>
                   {categories.map(category => (
@@ -444,7 +431,6 @@ const NutrientManagement = () => {
                       {nutrient.description || 'No description provided'}
                     </p>
                     <div className="card-meta">
-                      <span className="unit">{nutrient.unit}</span>
                       {nutrient.imageUrl && (
                         <div className="image-preview">
                           <img src={nutrient.imageUrl} alt={nutrient.name} />

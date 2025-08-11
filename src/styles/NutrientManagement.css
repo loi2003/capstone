@@ -420,7 +420,7 @@
 
 .nutrient-management .nutrient-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
   width: 100%;
@@ -479,10 +479,9 @@
 
 .nutrient-management .card-meta {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
   gap: 0.5rem;
 }
 
@@ -493,8 +492,10 @@
 }
 
 .nutrient-management .image-preview {
-  width: 50px;
-  height: 50px;
+  width: 250px;
+  height: 150px;
+  max-width: calc(100% - 2rem);
+  max-height: calc(100% - 2rem);
   border-radius: var(--nutrient-specialist-border-radius);
   overflow: hidden;
   flex-shrink: 0;
@@ -614,11 +615,18 @@
   }
 
   .nutrient-management .nutrient-grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   }
 
   .nutrient-management .management-container {
     padding: 1rem;
+  }
+
+  .nutrient-management .image-preview {
+    width: 220px;
+    height: 120px;
+    max-width: calc(100% - 1.5rem);
+    max-height: calc(100% - 1.5rem);
   }
 }
 
@@ -678,6 +686,13 @@
   .nutrient-management .nutrient-specialist-button {
     max-width: 100%;
   }
+
+  .nutrient-management .image-preview {
+    width: 200px;
+    height: 100px;
+    max-width: calc(100% - 1rem);
+    max-height: calc(100% - 1rem);
+  }
 }
 
 @media (max-width: 480px) {
@@ -696,8 +711,8 @@
   }
 
   .nutrient-management .nutrient-specialist-content.sidebar-open {
-    margin-left: min(180px, 25vw);
     width: calc(100% - min(180px, 25vw));
+    margin-left: min(180px, 25vw);
   }
 
   .nutrient-management .sidebar-header {
@@ -784,5 +799,12 @@
 
   .nutrient-management .notification-content p {
     font-size: 0.8rem;
+  }
+
+  .nutrient-management .image-preview {
+    width: 180px;
+    height: 80px;
+    max-width: calc(100% - 1rem);
+    max-height: calc(100% - 1rem);
   }
 }

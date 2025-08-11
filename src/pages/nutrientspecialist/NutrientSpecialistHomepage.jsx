@@ -119,9 +119,7 @@ const NutrientSpecialistHomePage = () => {
   return (
     <div className="nutrient-specialist-homepage">
       <motion.aside
-        className={`nutrient-specialist-sidebar ${
-          isSidebarOpen ? "open" : "closed"
-        }`}
+        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
@@ -169,11 +167,7 @@ const NutrientSpecialistHomePage = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d={
-                  isSidebarOpen
-                    ? "M13 18L7 12L13 6M18 18L12 12L18 6"
-                    : "M6 18L12 12L6 6M11 18L17 12L11 6"
-                }
+                d={isSidebarOpen ? "M13 18L7 12L13 6M18 18L12 12L18 6" : "M6 18L12 12L6 6M11 18L17 12L11 6"}
               />
             </svg>
           </motion.button>
@@ -307,6 +301,31 @@ const NutrientSpecialistHomePage = () => {
                 />
               </svg>
               {isSidebarOpen && <span>Food Management</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/age-group-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Age Group Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="List icon for age group management"
+              >
+                <path
+                  d="M4 6h16M4 12h16M4 18h16"
+                  stroke="var(--nutrient-specialist-white)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Age Group Management</span>}
             </Link>
           </motion.div>
           {user ? (
