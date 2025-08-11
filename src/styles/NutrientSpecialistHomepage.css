@@ -126,7 +126,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   max-width: 100%;
 }
 
-.nutrient-specialist-homepage .logo-text {
+.nutrient-specialist-homepage .logo span {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--nutrient-specialist-white);
@@ -137,7 +137,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   max-width: 180px;
 }
 
-.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo-text {
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo span {
   display: none;
 }
 
@@ -145,13 +145,13 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   display: inline-flex;
 }
 
-.nutrient-specialist-homepage .logo-svg {
+.nutrient-specialist-homepage .logo-svg-container svg {
   width: 40px;
   height: 40px;
   min-width: 40px;
 }
 
-.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo-svg {
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo-svg-container svg {
   width: 32px;
   height: 32px;
   min-width: 32px;
@@ -182,14 +182,9 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   border-color: var(--nutrient-specialist-primary);
 }
 
-.nutrient-specialist-homepage .sidebar-toggle svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
-}
-
 .nutrient-specialist-homepage .sidebar-toggle svg path {
   stroke: var(--nutrient-specialist-white);
+  fill: none;
 }
 
 .nutrient-specialist-homepage .sidebar-toggle:hover svg path,
@@ -350,28 +345,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
 
 .nutrient-specialist-homepage .logout-button:hover svg path,
 .nutrient-specialist-homepage .logout-button:focus svg path {
-  stroke: var(--nutrient-specialist-white);
-}
-
-.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logout-button span {
-  display: none;
-}
-
-/* Sidebar action button */
-.nutrient-specialist-homepage .sidebar-action-button {
-  background: var(--nutrient-specialist-highlight);
-  color: var(--nutrient-specialist-primary);
-  margin-top: 1rem;
-}
-
-.nutrient-specialist-homepage .sidebar-action-button:hover,
-.nutrient-specialist-homepage .sidebar-action-button:focus {
-  background: var(--nutrient-specialist-secondary);
-  color: var(--nutrient-specialist-white);
-}
-
-.nutrient-specialist-homepage .sidebar-action-button:hover svg path,
-.nutrient-specialist-homepage .sidebar-action-button:focus svg path {
   stroke: var(--nutrient-specialist-white);
 }
 
@@ -621,7 +594,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
     gap: 1rem;
   }
 
-  .nutrient-specialist-homepage .logo-text {
+  .nutrient-specialist-homepage .logo span {
     font-size: 1.125rem;
     max-width: 160px;
   }
@@ -660,18 +633,18 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
     gap: 0.5rem;
   }
 
-  .nutrient-specialist-homepage .logo-text {
+  .nutrient-specialist-homepage .logo span {
     font-size: 1rem;
     max-width: 120px;
   }
 
-  .nutrient-specialist-homepage .logo-svg {
+  .nutrient-specialist-homepage .logo-svg-container svg {
     width: 32px;
     height: 32px;
     min-width: 32px;
   }
 
-  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo-svg {
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo-svg-container svg {
     width: 28px;
     height: 28px;
     min-width: 28px;
