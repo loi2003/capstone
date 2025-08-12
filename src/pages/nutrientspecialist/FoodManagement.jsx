@@ -41,7 +41,7 @@ const LoaderIcon = () => (
   </svg>
 );
 
-// Reuse the same Notification component
+// Notification component
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -66,6 +66,54 @@ const Notification = ({ message, type }) => {
   );
 };
 
+// Food Details Modal Component
+const FoodDetailsModal = ({ food, category, onClose }) => {
+  return (
+    <motion.div
+      className="food-details-modal"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <motion.div
+        className="modal-content"
+        initial={{ scale: 0.8, y: 50 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.8, y: 50 }}
+        transition={{ duration: 0.3 }}
+      >
+        <div className="modal-header">
+          <h2>{food.name}</h2>
+          <button className="modal-close-button" onClick={onClose} aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div className="modal-body">
+          {food.imageUrl && (
+            <div className="modal-image">
+              <img src={food.imageUrl} alt={food.name} />
+            </div>
+          )}
+          <p><strong>Description:</strong> {food.description || "No description provided"}</p>
+          <p><strong>Category:</strong> {category ? category.name : "Uncategorized"}</p>
+          <p><strong>Pregnancy Safe:</strong> {food.pregnancySafe ? "Yes" : "No"}</p>
+          {food.safetyNote && (
+            <p><strong>Safety Note:</strong> {food.safetyNote}</p>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const FoodManagement = () => {
   const [user, setUser] = useState(null);
   const [foods, setFoods] = useState([]);
@@ -86,6 +134,8 @@ const FoodManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFoodForModal, setSelectedFoodForModal] = useState(null);
   const foodsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -165,7 +215,7 @@ const FoodManagement = () => {
         pregnancySafe: foodData?.pregnancySafe || false,
         foodCategoryId: foodData?.foodCategoryId || "",
         safetyNote: foodData?.safetyNote || "",
-        image: foodData?.image || null
+        imageUrl: foodData?.imageUrl || null
       };
 
       if (!normalizedData.id || !normalizedData.name) {
@@ -179,7 +229,7 @@ const FoodManagement = () => {
         pregnancySafe: normalizedData.pregnancySafe,
         foodCategoryId: normalizedData.foodCategoryId,
         safetyNote: normalizedData.safetyNote,
-        image: normalizedData.image
+        image: normalizedData.imageUrl
       });
       setIsEditing(true);
     } catch (err) {
@@ -201,6 +251,18 @@ const FoodManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle View All click
+  const handleViewAll = (food) => {
+    setSelectedFoodForModal(food);
+    setShowModal(true);
+  };
+
+  // Close Modal
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedFoodForModal(null);
   };
 
   const createFoodHandler = async () => {
@@ -432,6 +494,13 @@ const FoodManagement = () => {
             type={notification.type}
           />
         )}
+        {showModal && selectedFoodForModal && (
+          <FoodDetailsModal
+            food={selectedFoodForModal}
+            category={foodCategories.find(cat => cat.id === selectedFoodForModal.foodCategoryId)}
+            onClose={closeModal}
+          />
+        )}
       </AnimatePresence>
 
       {/* Sidebar */}
@@ -623,6 +692,7 @@ const FoodManagement = () => {
                   onChange={handleInputChange}
                   className="input-field"
                   aria-label="Food category"
+                  disabled={isEditing}
                 >
                   <option value="">Select a category</option>
                   {foodCategories.map(category => (
@@ -775,14 +845,17 @@ const FoodManagement = () => {
                             <strong>Safety Note:</strong> {food.safetyNote}
                           </p>
                         )}
-                        <div className="card-meta">
-                          {food.image && (
-                            <div className="image-preview">
-                              <img src={food.image} alt={food.name} />
-                            </div>
-                          )}
-                        </div>
+                      
                         <div className="card-actions">
+                          <motion.button
+                            onClick={() => handleViewAll(food)}
+                            className="view-button nutrient-specialist-button tertiary"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            aria-label="View food details"
+                          >
+                            View All
+                          </motion.button>
                           <motion.button
                             onClick={() => fetchFoodById(food.id)}
                             className="edit-button nutrient-specialist-button primary"

@@ -483,10 +483,8 @@ export const getAllAgeGroups = async () => {
 
 export const getAgeGroupById = async (ageGroupId) => {
   try {
-    const response = await apiClient.get(`/api/AgeGroup/view-age-group-by-id`, {
-      params: {
-        ageGroupId: ageGroupId,
-      },
+    const response = await apiClient.get(`/api/AgeGroup/view-age-group-by-id?ageGroupId=${ageGroupId}`, {
+ 
       headers: {
         "Accept": "application/json",
       },
@@ -526,7 +524,6 @@ export const createAgeGroup = async (ageGroupData) => {
     throw error;
   }
 };
-
 export const updateAgeGroup = async (ageGroupData) => {
   try {
     if (!ageGroupData.ageGroupId || ageGroupData.ageGroupId === '') {
@@ -555,10 +552,7 @@ export const updateAgeGroup = async (ageGroupData) => {
 
 export const deleteAgeGroup = async (ageGroupId) => {
   try {
-    const response = await apiClient.delete(`/api/AgeGroup/delete-age-group-by-id`, {
-      params: {
-        ageGroupId: ageGroupId,
-      },
+    const response = await apiClient.delete(`/api/AgeGroup/delete-age-group-by-id?ageGroupId=${ageGroupId}`, {
       headers: {
         "Accept": "application/json",
       },
