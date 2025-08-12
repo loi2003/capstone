@@ -438,6 +438,19 @@
   transform: translateY(-2px);
 }
 
+.food-management .nutrient-specialist-button.tertiary {
+  background: var(--blue-accent);
+  color: var(--blue-primary);
+  border: none;
+}
+
+.food-management .nutrient-specialist-button.tertiary:hover:not(:disabled) {
+  background: var(--blue-secondary);
+  color: var(--blue-white);
+  transform: translateY(-2px);
+  box-shadow: var(--blue-shadow-hover);
+}
+
 .food-management .nutrient-specialist-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -564,6 +577,138 @@
 }
 
 .food-management .image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Modal styles */
+.food-management .food-details-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.food-management .modal-content {
+  background: var(--blue-white);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--blue-accent);
+}
+
+.food-management.dark-theme .modal-content {
+  background: #1e2a44;
+  border-color: #3a5a9a;
+  color: var(--blue-white);
+}
+
+.food-management .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--blue-accent);
+}
+
+.food-management.dark-theme .modal-header {
+  border-bottom-color: #3a5a9a;
+}
+
+.food-management .modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--blue-primary);
+}
+
+.food-management.dark-theme .modal-header h2 {
+  color: var(--blue-white);
+}
+
+.food-management .modal-close-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--blue-transition);
+}
+
+.food-management .modal-close-button:hover {
+  transform: scale(1.2);
+}
+
+.food-management .modal-close-button svg {
+  width: 24px;
+  height: 24px;
+  stroke: var(--blue-text);
+  stroke-width: 2;
+}
+
+.food-management.dark-theme .modal-close-button svg {
+  stroke: var(--blue-white);
+}
+
+.food-management .modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.food-management .modal-body p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--blue-text);
+}
+
+.food-management.dark-theme .modal-body p {
+  color: #d6e9ff;
+}
+
+.food-management .modal-body p strong {
+  font-weight: 600;
+  color: var(--blue-primary);
+}
+
+.food-management.dark-theme .modal-body p strong {
+  color: var(--blue-accent);
+}
+
+.food-management .modal-image {
+  width: 250px;
+  height: 250px;
+  max-width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.food-management.dark-theme .modal-image {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.food-management .modal-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -770,6 +915,24 @@
     max-width: calc(100% - 1rem);
     max-height: calc(100% - 1rem);
   }
+
+  .food-management .modal-content {
+    max-width: 90%;
+    padding: 1.5rem;
+  }
+
+  .food-management .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .food-management .modal-body p {
+    font-size: 0.9rem;
+  }
+
+  .food-management .modal-image {
+    width: 180px;
+    height: 180px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -886,5 +1049,28 @@
     height: 80px;
     max-width: calc(100% - 1rem);
     max-height: calc(100% - 1rem);
+  }
+
+  .food-management .modal-content {
+    max-width: 95%;
+    padding: 1rem;
+  }
+
+  .food-management .modal-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .food-management .modal-body p {
+    font-size: 0.85rem;
+  }
+
+  .food-management .modal-image {
+    width: 140px;
+    height: 140px;
+  }
+
+  .food-management .modal-close-button svg {
+    width: 20px;
+    height: 20px;
   }
 }
