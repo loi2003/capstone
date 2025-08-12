@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  getAllNutrients,
-  getNutrientWithDetailsById,
-  createNutrient,
-  deleteNutrient,
-  updateNutrient,
-  getAllNutrientCategories,
-  updateNutrientImage,
+  getAllDishes,
+  getDishById,
+  createDish,
+  updateDish,
+  deleteDish,
+  getAllFoods,
 } from "../../apis/nutriet-api";
 import "../../styles/NutrientManagement.css";
 
@@ -28,7 +27,6 @@ const LoaderIcon = () => (
   </svg>
 );
 
-// Notification Component
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -53,23 +51,20 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const NutrientManagement = () => {
-  const [nutrients, setNutrients] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [newNutrient, setNewNutrient] = useState({
+const DishManagement = () => {
+  const [dishes, setDishes] = useState([]);
+  const [foods, setFoods] = useState([]);
+  const [newDish, setNewDish] = useState({
     name: "",
-    description: "",
-    imageUrl: null,
-    categoryId: "",
+    foodList: [],
   });
-  const [selectedNutrient, setSelectedNutrient] = useState(null);
+  const [selectedDish, setSelectedDish] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const navigate = useNavigate();
 
-  // Show notification
   const showNotification = (message, type) => {
     setNotification({ message, type });
     const closeListener = () => {
@@ -79,18 +74,17 @@ const NutrientManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  // Fetch all nutrients and categories
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [nutrientsData, categoriesData] = await Promise.all([
-        getAllNutrients(),
-        getAllNutrientCategories(),
+      const [dishesData, foodsData] = await Promise.all([
+        getAllDishes(),
+        getAllFoods(),
       ]);
-      console.log("Fetched nutrients:", nutrientsData);
-      console.log("Fetched categories:", categoriesData);
-      setNutrients(nutrientsData);
-      setCategories(categoriesData);
+      console.log("Fetched dishes:", dishesData);
+      console.log("Fetched foods:", foodsData);
+      setDishes(dishesData);
+      setFoods(foodsData);
     } catch (err) {
       showNotification(`Failed to fetch data: ${err.message}`, "error");
     } finally {
@@ -98,156 +92,141 @@ const NutrientManagement = () => {
     }
   };
 
-  // Fetch nutrient by ID with details
-  const fetchNutrientById = async (id) => {
-    console.log("Fetching nutrient with ID:", id);
+  const fetchDishById = async (id) => {
+    console.log("Fetching dish with ID:", id);
     setLoading(true);
     try {
-      const data = await getNutrientWithDetailsById(id);
-      console.log("Fetched nutrient data:", data);
-      setSelectedNutrient(data);
-      setNewNutrient({
-        name: data.name,
-        description: data.description || "",
-        imageUrl: null,
-        categoryId: data.categoryId,
+      const data = await getDishById(id);
+      console.log("Fetched dish data:", data);
+      setSelectedDish(data);
+      setNewDish({
+        name: data.name || "",
+        foodList: data.foodList.map(food => food.id) || [],
       });
       setIsEditing(true);
     } catch (err) {
-      showNotification(
-        `Failed to fetch nutrient details: ${err.message}`,
-        "error"
-      );
+      showNotification(`Failed to fetch dish details: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Create new nutrient
-  const createNutrientHandler = async () => {
-    if (!newNutrient.name.trim()) {
-      showNotification("Nutrient name is required", "error");
+  const createDishHandler = async () => {
+    if (!newDish.name.trim()) {
+      showNotification("Dish name is required", "error");
       return;
     }
-    if (!newNutrient.categoryId) {
-      showNotification("Please select a category", "error");
+    if (newDish.foodList.length === 0) {
+      showNotification("Please select at least one food", "error");
       return;
     }
     setLoading(true);
     try {
-      console.log("Creating nutrient with data:", newNutrient);
-      await createNutrient(newNutrient);
-      setNewNutrient({
+      console.log("Creating dish with data:", newDish);
+      await createDish({
+        name: newDish.name,
+        foodList: newDish.foodList,
+      });
+      setNewDish({
         name: "",
-        description: "",
-        imageUrl: null,
-        categoryId: "",
+        foodList: [],
       });
       setIsEditing(false);
       await fetchData();
-      showNotification("Nutrient created successfully", "success");
+      showNotification("Dish created successfully", "success");
     } catch (err) {
-      showNotification(`Failed to create nutrient: ${err.message}`, "error");
+      showNotification(`Failed to create dish: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Update nutrient
-  const updateNutrientHandler = async () => {
-    if (!newNutrient.name.trim()) {
-      showNotification("Nutrient name is required", "error");
+  const updateDishHandler = async () => {
+    if (!newDish.name.trim()) {
+      showNotification("Dish name is required", "error");
+      return;
+    }
+    if (newDish.foodList.length === 0) {
+      showNotification("Please select at least one food", "error");
       return;
     }
     setLoading(true);
     try {
-      console.log(
-        "Updating nutrient with ID:",
-        selectedNutrient.id,
-        "and data:",
-        newNutrient
-      );
-      await updateNutrient({
-        nutrientId: selectedNutrient.id,
-        name: newNutrient.name,
-        description: newNutrient.description,
+      console.log("Updating dish with ID:", selectedDish.id);
+      await updateDish({
+        dishID: selectedDish.id,
+        name: newDish.name,
+        foodList: newDish.foodList,
       });
-      if (newNutrient.imageUrl) {
-        console.log("Updating nutrient image for ID:", selectedNutrient.id);
-        await updateNutrientImage(selectedNutrient.id, newNutrient.imageUrl);
-      }
-      setNewNutrient({
+      setNewDish({
         name: "",
-        description: "",
-        imageUrl: null,
-        categoryId: "",
+        foodList: [],
       });
-      setSelectedNutrient(null);
+      setSelectedDish(null);
       setIsEditing(false);
       await fetchData();
-      showNotification("Nutrient updated successfully", "success");
+      showNotification("Dish updated successfully", "success");
     } catch (err) {
-      showNotification(`Failed to update nutrient: ${err.message}`, "error");
+      showNotification(`Failed to update dish: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Delete nutrient
-  const deleteNutrientHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this nutrient?"))
-      return;
+  const deleteDishHandler = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this dish?")) return;
     setLoading(true);
     try {
-      console.log("Deleting nutrient with ID:", id);
-      await deleteNutrient(id);
-      setSelectedNutrient(null);
+      console.log("Deleting dish with ID:", id);
+      await deleteDish(id);
+      setSelectedDish(null);
       setIsEditing(false);
-      setNewNutrient({
+      setNewDish({
         name: "",
-        description: "",
-        imageUrl: null,
-        categoryId: "",
+        foodList: [],
       });
       await fetchData();
-      showNotification("Nutrient deleted successfully", "success");
+      showNotification("Dish deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete nutrient: ${err.message}`, "error");
+      showNotification(`Failed to delete dish: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Cancel edit
   const cancelEdit = () => {
-    setNewNutrient({
+    setNewDish({
       name: "",
-      description: "",
-      imageUrl: null,
-      categoryId: "",
+      foodList: [],
     });
-    setSelectedNutrient(null);
+    setSelectedDish(null);
     setIsEditing(false);
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewNutrient({ ...newNutrient, [name]: value });
+    setNewDish({ ...newDish, [name]: value });
   };
 
-  // Handle file input change
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setNewNutrient({ ...newNutrient, imageUrl: file || null });
+  const handleFoodSelect = (foodId) => {
+    setNewDish(prev => {
+      const currentFoods = [...prev.foodList];
+      const index = currentFoods.indexOf(foodId);
+      
+      if (index > -1) {
+        currentFoods.splice(index, 1);
+      } else {
+        currentFoods.push(foodId);
+      }
+      
+      return { ...prev, foodList: currentFoods };
+    });
   };
 
-  // Toggle sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Handle window resize to toggle sidebar
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth > 768);
@@ -256,12 +235,10 @@ const NutrientManagement = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Initialize data
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Sidebar animation variants
   const sidebarVariants = {
     open: {
       width: "min(260px, 25vw)",
@@ -284,7 +261,6 @@ const NutrientManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
@@ -367,7 +343,7 @@ const NutrientManagement = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                aria-label="Folder icon for nutrient category management"
+                aria-label="Folder icon"
               >
                 <path
                   d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
@@ -381,7 +357,7 @@ const NutrientManagement = () => {
               {isSidebarOpen && <span>Nutrient Category Management</span>}
             </Link>
           </div>
-          <div className="sidebar-nav-item active">
+          <div className="sidebar-nav-item">
             <Link
               to="/nutrient-specialist/nutrient-management"
               onClick={() => setIsSidebarOpen(true)}
@@ -393,7 +369,7 @@ const NutrientManagement = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                aria-label="Sprout icon for nutrient management"
+                aria-label="Sprout icon"
               >
                 <path
                   d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
@@ -407,10 +383,35 @@ const NutrientManagement = () => {
               {isSidebarOpen && <span>Nutrient Management</span>}
             </Link>
           </div>
+          <div className="sidebar-nav-item active">
+            <Link
+              to="/nutrient-specialist/dish-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Dish Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Dish icon"
+              >
+                <path
+                  d="M12 3v10m0 0c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm-7 8h14a2 2 0 012 2v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1a2 2 0 012-2z"
+                  stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Dish Management</span>}
+            </Link>
+          </div>
         </nav>
       </motion.aside>
 
-      {/* Main Content */}
       <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
@@ -421,87 +422,63 @@ const NutrientManagement = () => {
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Manage Nutrients</h1>
-            <p>Create, edit, and manage nutrients for your baby's nutrition</p>
+            <h1>Manage Dishes</h1>
+            <p>Create, edit, and manage dishes composed of multiple foods</p>
           </div>
         </div>
 
         <div className="management-container">
-          {/* Form Section */}
           <div className="form-section">
             <div className="section-header">
-              <h2>{isEditing ? "Edit Nutrient" : "Add New Nutrient"}</h2>
+              <h2>{isEditing ? "Edit Dish" : "Add New Dish"}</h2>
             </div>
-            {categories.length === 0 && (
+            {foods.length === 0 && (
               <p className="no-results">
-                No categories available. Please add a category first.
+                No foods available. Please add foods first.
               </p>
             )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="nutrient-name">Nutrient Name</label>
+                <label htmlFor="dish-name">Dish Name</label>
                 <input
-                  id="nutrient-name"
+                  id="dish-name"
                   type="text"
                   name="name"
-                  value={newNutrient.name}
+                  value={newDish.name}
                   onChange={handleInputChange}
-                  placeholder="e.g., Vitamin D"
+                  placeholder="e.g., Vegetable Puree"
                   className="input-field"
-                  aria-label="Nutrient name"
+                  aria-label="Dish name"
                 />
-                <label htmlFor="nutrient-description">Description</label>
-                <textarea
-                  id="nutrient-description"
-                  name="description"
-                  value={newNutrient.description}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Supports bone growth"
-                  className="textarea-field"
-                  rows="4"
-                  aria-label="Nutrient description"
-                />
-                <label htmlFor="nutrient-imageUrl">Image File</label>
-                <input
-                  id="nutrient-imageUrl"
-                  type="file"
-                  name="imageUrl"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="input-field"
-                  aria-label="Nutrient image file"
-                />
-                <label htmlFor="nutrient-categoryId">Category</label>
-                <select
-                  id="nutrient-categoryId"
-                  name="categoryId"
-                  value={newNutrient.categoryId}
-                  onChange={handleInputChange}
-                  className="input-field"
-                  aria-label="Nutrient category"
-                  disabled={categories.length === 0 || isEditing}
-                >
-                  <option value="" disabled>
-                    Select a category
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
+                <label htmlFor="food-selection">Select Foods</label>
+                <div className="food-selection-container">
+                  {foods.map(food => (
+                    <motion.div
+                      key={food.id}
+                      className={`food-item ${
+                        newDish.foodList.includes(food.id) ? "selected" : ""
+                      }`}
+                      onClick={() => handleFoodSelect(food.id)}
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <span className="food-name">{food.name}</span>
+                      {newDish.foodList.includes(food.id) && (
+                        <span className="checkmark">✓</span>
+                      )}
+                    </motion.div>
                   ))}
-                </select>
+                </div>
                 <div className="button-group">
                   <motion.button
-                    onClick={
-                      isEditing ? updateNutrientHandler : createNutrientHandler
-                    }
-                    disabled={loading || categories.length === 0}
+                    onClick={isEditing ? updateDishHandler : createDishHandler}
+                    disabled={loading || foods.length === 0}
                     className="submit-button nutrient-specialist-button primary"
                     whileHover={{
-                      scale: loading || categories.length === 0 ? 1 : 1.05,
+                      scale: loading || foods.length === 0 ? 1 : 1.05,
                     }}
                     whileTap={{
-                      scale: loading || categories.length === 0 ? 1 : 0.95,
+                      scale: loading || foods.length === 0 ? 1 : 0.95,
                     }}
                   >
                     {loading
@@ -509,8 +486,8 @@ const NutrientManagement = () => {
                         ? "Updating..."
                         : "Creating..."
                       : isEditing
-                      ? "Update Nutrient"
-                      : "Create Nutrient"}
+                      ? "Update Dish"
+                      : "Create Dish"}
                   </motion.button>
                   {isEditing && (
                     <motion.button
@@ -528,21 +505,19 @@ const NutrientManagement = () => {
             </div>
           </div>
 
-          {/* Nutrient List Section */}
           <div className="nutrient-list-section">
             <div className="section-header">
-              <h2>Nutrient List</h2>
+              <h2>Dish List</h2>
               <div className="nutrient-count">
-                {nutrients.length}{" "}
-                {nutrients.length === 1 ? "nutrient" : "nutrients"} found
+                {dishes.length} {dishes.length === 1 ? "dish" : "dishes"} found
               </div>
             </div>
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
-                <p>Loading nutrients...</p>
+                <p>Loading dishes...</p>
               </div>
-            ) : nutrients.length === 0 ? (
+            ) : dishes.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -558,14 +533,14 @@ const NutrientManagement = () => {
                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <h3>No nutrients found</h3>
-                <p>Create your first nutrient to get started</p>
+                <h3>No dishes found</h3>
+                <p>Create your first dish to get started</p>
               </div>
             ) : (
               <div className="nutrient-grid">
-                {nutrients.map((nutrient) => (
+                {dishes.map(dish => (
                   <motion.div
-                    key={nutrient.id}
+                    key={dish.id}
                     className="nutrient-card"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -573,39 +548,34 @@ const NutrientManagement = () => {
                     whileHover={{ y: -5 }}
                   >
                     <div className="card-header">
-                      <h3>{nutrient.name}</h3>
-                      <div className="category-badge">
-                        {categories.find(
-                          (cat) => cat.id === nutrient.categoryId
-                        )?.name || "Unknown"}
-                      </div>
+                      <h3>{dish.name || "Unnamed Dish"}</h3>
                     </div>
-                    <p className="card-description">
-                      {nutrient.description || "No description provided"}
-                    </p>
-                    <div className="card-meta">
-                      {nutrient.imageUrl && (
-                        <div className="image-preview">
-                          <img src={nutrient.imageUrl} alt={nutrient.name} />
-                        </div>
-                      )}
+                    <div className="food-list">
+                      <h4>Foods:</h4>
+                      <ul>
+                        {dish.foodList && dish.foodList.length > 0 ? (
+                          dish.foodList.map(food => (
+                            <li key={food.id}>{food.name}</li>
+                          ))
+                        ) : (
+                          <li>No foods in this dish</li>
+                        )}
+                      </ul>
                     </div>
                     <div className="card-actions">
                       <motion.button
-                        onClick={() => fetchNutrientById(nutrient.id)}
+                        onClick={() => fetchDishById(dish.id)}
                         className="edit-button nutrient-specialist-button primary"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        aria-label={`Edit ${nutrient.name}`}
                       >
                         <span>Edit</span>
                       </motion.button>
                       <motion.button
-                        onClick={() => deleteNutrientHandler(nutrient.id)}
+                        onClick={() => deleteDishHandler(dish.id)}
                         className="delete-button nutrient-specialist-button secondary"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        aria-label={`Delete ${nutrient.name}`}
                       >
                         <span>Delete</span>
                       </motion.button>
@@ -621,4 +591,4 @@ const NutrientManagement = () => {
   );
 };
 
-export default NutrientManagement;
+export default DishManagement;

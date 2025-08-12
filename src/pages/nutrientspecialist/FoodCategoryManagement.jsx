@@ -123,7 +123,7 @@ const FoodCategoryManagement = () => {
     }
   };
   const fetchCategoryById = async (id) => {
-    console.log(id)
+    console.log(id);
     if (!id) {
       showNotification("Invalid category ID", "error");
       return;
@@ -186,44 +186,49 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
-const createCategoryHandler = async () => {
-  if (
-    !newCategory.name ||
-    typeof newCategory.name !== "string" ||
-    !newCategory.name.trim()
-  ) {
-    showNotification("Category name is required", "error");
-    return;
-  }
-
-  setLoading(true);
-  try {
-    // Refresh categories to ensure no duplicates
-    await fetchData();
-    const trimmedName = newCategory.name.trim();
-    const isDuplicate = foodCategories.some(
-      (category) =>
-        category.name === trimmedName ||
-        category.name.toLowerCase() === trimmedName.toLowerCase()
-    );
-    if (isDuplicate) {
-      showNotification("Category name already exists", "error");
+  const createCategoryHandler = async () => {
+    if (
+      !newCategory.name ||
+      typeof newCategory.name !== "string" ||
+      !newCategory.name.trim()
+    ) {
+      showNotification("Category name is required", "error");
       return;
     }
 
-    await createFoodCategory({ name: trimmedName, description: newCategory.description?.trim() || "" });
-    setNewCategory({ name: "", description: "" });
-    setIsEditing(false);
-    await fetchData();
-    showNotification("Food category created successfully", "success");
-  } catch (err) {
-    const errorMessage =
-      err.response?.data?.message || err.message || "Failed to create category";
-    showNotification(`Failed to create category: ${errorMessage}`, "error");
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    try {
+      // Refresh categories to ensure no duplicates
+      await fetchData();
+      const trimmedName = newCategory.name.trim();
+      const isDuplicate = foodCategories.some(
+        (category) =>
+          category.name === trimmedName ||
+          category.name.toLowerCase() === trimmedName.toLowerCase()
+      );
+      if (isDuplicate) {
+        showNotification("Category name already exists", "error");
+        return;
+      }
+
+      await createFoodCategory({
+        name: trimmedName,
+        description: newCategory.description?.trim() || "",
+      });
+      setNewCategory({ name: "", description: "" });
+      setIsEditing(false);
+      await fetchData();
+      showNotification("Food category created successfully", "success");
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to create category";
+      showNotification(`Failed to create category: ${errorMessage}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const updateCategoryHandler = async () => {
     if (!newCategory.name?.trim()) {
@@ -436,29 +441,33 @@ const createCategoryHandler = async () => {
           <div className="sidebar-nav-item active">
             <Link
               to="/nutrient-specialist/food-category-management"
-              title="Food Categories"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Food Category Management"
             >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="Food icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Folder icon for food category management"
               >
                 <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                  fill="var(--nutrient-specialist-secondary)"
                   stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Food Categories</span>}
+              {isSidebarOpen && <span>Food Category Management</span>}
             </Link>
           </div>
           <div className="sidebar-nav-item">
             <Link
               to="/nutrient-specialist/food-management"
+              onClick={() => setIsSidebarOpen(true)}
               title="Food Management"
             >
               <svg
@@ -466,12 +475,14 @@ const createCategoryHandler = async () => {
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="List icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Apple icon for food management"
               >
                 <path
-                  d="M4 6h16M4 12h16M4 18h16"
+                  d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
+                  fill="var(--nutrient-specialist-accent)"
                   stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />

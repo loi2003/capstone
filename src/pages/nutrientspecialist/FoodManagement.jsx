@@ -8,7 +8,7 @@ import {
   updateFood,
   updateFoodImage,
   deleteFood,
-  getAllFoodCategories
+  getAllFoodCategories,
 } from "../../apis/nutriet-api";
 import { getCurrentUser } from "../../apis/authentication-api";
 import "../../styles/FoodManagement.css";
@@ -85,8 +85,18 @@ const FoodDetailsModal = ({ food, category, onClose }) => {
       >
         <div className="modal-header">
           <h2>{food.name}</h2>
-          <button className="modal-close-button" onClick={onClose} aria-label="Close modal">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <button
+            className="modal-close-button"
+            onClick={onClose}
+            aria-label="Close modal"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -102,11 +112,21 @@ const FoodDetailsModal = ({ food, category, onClose }) => {
               <img src={food.imageUrl} alt={food.name} />
             </div>
           )}
-          <p><strong>Description:</strong> {food.description || "No description provided"}</p>
-          <p><strong>Category:</strong> {category ? category.name : "Uncategorized"}</p>
-          <p><strong>Pregnancy Safe:</strong> {food.pregnancySafe ? "Yes" : "No"}</p>
+          <p>
+            <strong>Description:</strong>{" "}
+            {food.description || "No description provided"}
+          </p>
+          <p>
+            <strong>Category:</strong>{" "}
+            {category ? category.name : "Uncategorized"}
+          </p>
+          <p>
+            <strong>Pregnancy Safe:</strong> {food.pregnancySafe ? "Yes" : "No"}
+          </p>
           {food.safetyNote && (
-            <p><strong>Safety Note:</strong> {food.safetyNote}</p>
+            <p>
+              <strong>Safety Note:</strong> {food.safetyNote}
+            </p>
           )}
         </div>
       </motion.div>
@@ -119,13 +139,13 @@ const FoodManagement = () => {
   const [foods, setFoods] = useState([]);
   const [filteredFoods, setFilteredFoods] = useState([]);
   const [foodCategories, setFoodCategories] = useState([]);
-  const [newFood, setNewFood] = useState({ 
-    name: "", 
-    description: "", 
-    pregnancySafe: false, 
-    foodCategoryId: "", 
-    safetyNote: "", 
-    image: null 
+  const [newFood, setNewFood] = useState({
+    name: "",
+    description: "",
+    pregnancySafe: false,
+    foodCategoryId: "",
+    safetyNote: "",
+    image: null,
   });
   const [selectedFood, setSelectedFood] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -161,7 +181,7 @@ const FoodManagement = () => {
       const [userResponse, foodsData, categoriesData] = await Promise.all([
         getCurrentUser(token),
         getAllFoods(),
-        getAllFoodCategories()
+        getAllFoodCategories(),
       ]);
       const userData = userResponse.data?.data || userResponse.data;
       if (userData && Number(userData.roleId) === 4) {
@@ -205,7 +225,9 @@ const FoodManagement = () => {
       }
 
       if (!foodData) {
-        throw new Error("No data received from server (possible food not found)");
+        throw new Error(
+          "No data received from server (possible food not found)"
+        );
       }
 
       const normalizedData = {
@@ -215,7 +237,7 @@ const FoodManagement = () => {
         pregnancySafe: foodData?.pregnancySafe || false,
         foodCategoryId: foodData?.foodCategoryId || "",
         safetyNote: foodData?.safetyNote || "",
-        imageUrl: foodData?.imageUrl || null
+        imageUrl: foodData?.imageUrl || null,
       };
 
       if (!normalizedData.id || !normalizedData.name) {
@@ -229,7 +251,7 @@ const FoodManagement = () => {
         pregnancySafe: normalizedData.pregnancySafe,
         foodCategoryId: normalizedData.foodCategoryId,
         safetyNote: normalizedData.safetyNote,
-        image: normalizedData.imageUrl
+        image: normalizedData.imageUrl,
       });
       setIsEditing(true);
     } catch (err) {
@@ -266,7 +288,11 @@ const FoodManagement = () => {
   };
 
   const createFoodHandler = async () => {
-    if (!newFood.name || typeof newFood.name !== "string" || !newFood.name.trim()) {
+    if (
+      !newFood.name ||
+      typeof newFood.name !== "string" ||
+      !newFood.name.trim()
+    ) {
       showNotification("Food name is required", "error");
       return;
     }
@@ -291,21 +317,21 @@ const FoodManagement = () => {
         return;
       }
 
-      await createFood({ 
-        name: trimmedName, 
-        description: newFood.description?.trim() || "", 
+      await createFood({
+        name: trimmedName,
+        description: newFood.description?.trim() || "",
         pregnancySafe: newFood.pregnancySafe,
         foodCategoryId: newFood.foodCategoryId,
         safetyNote: newFood.safetyNote?.trim() || "",
-        image: newFood.image
+        image: newFood.image,
       });
-      setNewFood({ 
-        name: "", 
-        description: "", 
-        pregnancySafe: false, 
-        foodCategoryId: "", 
-        safetyNote: "", 
-        image: null 
+      setNewFood({
+        name: "",
+        description: "",
+        pregnancySafe: false,
+        foodCategoryId: "",
+        safetyNote: "",
+        image: null,
       });
       setIsEditing(false);
       await fetchData();
@@ -337,7 +363,7 @@ const FoodManagement = () => {
         name: newFood.name.trim(),
         description: newFood.description?.trim() || "",
         pregnancySafe: newFood.pregnancySafe,
-        safetyNote: newFood.safetyNote?.trim() || ""
+        safetyNote: newFood.safetyNote?.trim() || "",
       });
 
       if (!foodUpdateResponse) {
@@ -355,13 +381,13 @@ const FoodManagement = () => {
         `Food ${imageUpdated ? "and image " : ""}updated successfully`,
         "success"
       );
-      setNewFood({ 
-        name: "", 
-        description: "", 
-        pregnancySafe: false, 
-        foodCategoryId: "", 
-        safetyNote: "", 
-        image: null 
+      setNewFood({
+        name: "",
+        description: "",
+        pregnancySafe: false,
+        foodCategoryId: "",
+        safetyNote: "",
+        image: null,
       });
       setSelectedFood(null);
       setIsEditing(false);
@@ -394,9 +420,9 @@ const FoodManagement = () => {
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setNewFood({ 
-      ...newFood, 
-      [name]: type === 'checkbox' ? checked : value 
+    setNewFood({
+      ...newFood,
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
@@ -421,13 +447,13 @@ const FoodManagement = () => {
 
   // Cancel edit
   const cancelEdit = () => {
-    setNewFood({ 
-      name: "", 
-      description: "", 
-      pregnancySafe: false, 
-      foodCategoryId: "", 
-      safetyNote: "", 
-      image: null 
+    setNewFood({
+      name: "",
+      description: "",
+      pregnancySafe: false,
+      foodCategoryId: "",
+      safetyNote: "",
+      image: null,
     });
     setSelectedFood(null);
     setIsEditing(false);
@@ -441,10 +467,7 @@ const FoodManagement = () => {
   // Pagination
   const indexOfLastFood = currentPage * foodsPerPage;
   const indexOfFirstFood = indexOfLastFood - foodsPerPage;
-  const currentFoods = filteredFoods.slice(
-    indexOfFirstFood,
-    indexOfLastFood
-  );
+  const currentFoods = filteredFoods.slice(indexOfFirstFood, indexOfLastFood);
   const totalPages = Math.ceil(filteredFoods.length / foodsPerPage);
 
   const handlePrevPage = () => {
@@ -497,7 +520,9 @@ const FoodManagement = () => {
         {showModal && selectedFoodForModal && (
           <FoodDetailsModal
             food={selectedFoodForModal}
-            category={foodCategories.find(cat => cat.id === selectedFoodForModal.foodCategoryId)}
+            category={foodCategories.find(
+              (cat) => cat.id === selectedFoodForModal.foodCategoryId
+            )}
             onClose={closeModal}
           />
         )}
@@ -577,29 +602,33 @@ const FoodManagement = () => {
           <div className="sidebar-nav-item">
             <Link
               to="/nutrient-specialist/food-category-management"
-              title="Food Categories"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Food Category Management"
             >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="Food icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Folder icon for food category management"
               >
                 <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                  fill="var(--nutrient-specialist-secondary)"
                   stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Food Categories</span>}
+              {isSidebarOpen && <span>Food Category Management</span>}
             </Link>
           </div>
           <div className="sidebar-nav-item active">
             <Link
               to="/nutrient-specialist/food-management"
+              onClick={() => setIsSidebarOpen(true)}
               title="Food Management"
             >
               <svg
@@ -607,12 +636,14 @@ const FoodManagement = () => {
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="List icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Apple icon for food management"
               >
                 <path
-                  d="M4 6h16M4 12h16M4 18h16"
+                  d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
+                  fill="var(--nutrient-specialist-accent)"
                   stroke="var(--nutrient-specialist-white)"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
@@ -636,7 +667,8 @@ const FoodManagement = () => {
           <div className="header-content">
             <h1>Food Management</h1>
             <p>
-              Create, edit, and manage food items and their nutritional information
+              Create, edit, and manage food items and their nutritional
+              information
             </p>
           </div>
         </div>
@@ -671,7 +703,7 @@ const FoodManagement = () => {
                   className="input-field"
                   aria-label="Food name"
                 />
-                
+
                 <label htmlFor="food-description">Description</label>
                 <textarea
                   id="food-description"
@@ -683,7 +715,7 @@ const FoodManagement = () => {
                   rows="4"
                   aria-label="Food description"
                 />
-                
+
                 <label htmlFor="food-category">Food Category</label>
                 <select
                   id="food-category"
@@ -695,13 +727,13 @@ const FoodManagement = () => {
                   disabled={isEditing}
                 >
                   <option value="">Select a category</option>
-                  {foodCategories.map(category => (
+                  {foodCategories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
                   ))}
                 </select>
-                
+
                 <div className="checkbox-group">
                   <input
                     id="pregnancy-safe"
@@ -713,7 +745,7 @@ const FoodManagement = () => {
                   />
                   <label htmlFor="pregnancy-safe">Pregnancy Safe</label>
                 </div>
-                
+
                 <label htmlFor="safety-note">Safety Note</label>
                 <textarea
                   id="safety-note"
@@ -725,7 +757,7 @@ const FoodManagement = () => {
                   rows="2"
                   aria-label="Safety note"
                 />
-                
+
                 <label htmlFor="food-image">Image</label>
                 <input
                   id="food-image"
@@ -736,7 +768,7 @@ const FoodManagement = () => {
                   accept="image/*"
                   aria-label="Food image"
                 />
-                
+
                 <div className="button-group">
                   <motion.button
                     onClick={isEditing ? updateFoodHandler : createFoodHandler}
@@ -775,8 +807,7 @@ const FoodManagement = () => {
               <h2>All Foods</h2>
               <div className="category-count">
                 {filteredFoods.length}{" "}
-                {filteredFoods.length === 1 ? "food" : "foods"}{" "}
-                found
+                {filteredFoods.length === 1 ? "food" : "foods"} found
               </div>
             </div>
             {loading ? (
@@ -818,7 +849,9 @@ const FoodManagement = () => {
               <>
                 <div className="category-grid">
                   {currentFoods.map((food) => {
-                    const category = foodCategories.find(cat => cat.id === food.foodCategoryId);
+                    const category = foodCategories.find(
+                      (cat) => cat.id === food.foodCategoryId
+                    );
                     return (
                       <motion.div
                         key={food.id}
@@ -830,22 +863,28 @@ const FoodManagement = () => {
                       >
                         <div className="card-header">
                           <h3>{food.name}</h3>
-                          <span className={`pregnancy-tag ${food.pregnancySafe ? 'safe' : 'unsafe'}`}>
-                            {food.pregnancySafe ? 'Pregnancy Safe' : 'Not Pregnancy Safe'}
+                          <span
+                            className={`pregnancy-tag ${
+                              food.pregnancySafe ? "safe" : "unsafe"
+                            }`}
+                          >
+                            {food.pregnancySafe
+                              ? "Pregnancy Safe"
+                              : "Not Pregnancy Safe"}
                           </span>
                         </div>
                         <p className="card-description">
                           {food.description || "No description provided"}
                         </p>
                         <p className="card-category">
-                          Category: {category ? category.name : 'Uncategorized'}
+                          Category: {category ? category.name : "Uncategorized"}
                         </p>
                         {food.safetyNote && (
                           <p className="card-safety">
                             <strong>Safety Note:</strong> {food.safetyNote}
                           </p>
                         )}
-                      
+
                         <div className="card-actions">
                           <motion.button
                             onClick={() => handleViewAll(food)}

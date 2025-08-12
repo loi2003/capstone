@@ -466,7 +466,6 @@ export const deleteFood = async (foodId) => {
   }
 };
 
-// Age Group APIs
 export const getAllAgeGroups = async () => {
   try {
     const response = await apiClient.get(`/api/AgeGroup/view-all-age-groups`, {
@@ -560,6 +559,93 @@ export const deleteAgeGroup = async (ageGroupId) => {
     return response.data;
   } catch (error) {
     console.error("Error deleting age group:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAllDishes = async () => {
+  try {
+    const response = await apiClient.get(`/api/Dish`, {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all dishes:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getDishById = async (dishId) => {
+  try {
+    const response = await apiClient.get(`/api/Dish/${dishId}`, {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching dish by ID:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createDish = async (dishData) => {
+  try {
+    const response = await apiClient.post(
+      `/api/Dish/CreateDish`,
+      {
+        foodList: dishData.foodList,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error creating dish:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateDish = async (dishData) => {
+  try {
+    if (!dishData.dishID || dishData.dishID === '') {
+      throw new Error('Dish ID is null or empty');
+    }
+    const response = await apiClient.put(
+      `/api/Dish/update-dish`,
+      {
+        dishID: dishData.dishID,
+        foodList: dishData.foodList,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating dish:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteDish = async (dishId) => {
+  try {
+    const response = await apiClient.delete(`/api/Dish/${dishId}`, {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting dish:", error.response?.data || error.message);
     throw error;
   }
 };
