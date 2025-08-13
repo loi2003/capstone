@@ -589,13 +589,17 @@ export const getDishById = async (dishId) => {
     throw error;
   }
 };
-
 export const createDish = async (dishData) => {
   try {
     const response = await apiClient.post(
       `/api/Dish/CreateDish`,
       {
-        foodList: dishData.foodList,
+        name: dishData.name,
+        foodList: dishData.foodList.map(food => ({
+          foodId: food.foodId,
+          unit: food.unit,
+          amount: food.amount,
+        })),
       },
       {
         headers: {
@@ -620,7 +624,12 @@ export const updateDish = async (dishData) => {
       `/api/Dish/update-dish`,
       {
         dishID: dishData.dishID,
-        foodList: dishData.foodList,
+        name: dishData.name,
+        foodList: dishData.foodList.map(food => ({
+          foodId: food.foodId,
+          unit: food.unit,
+          amount: food.amount,
+        })),
       },
       {
         headers: {
@@ -635,7 +644,6 @@ export const updateDish = async (dishData) => {
     throw error;
   }
 };
-
 export const deleteDish = async (dishId) => {
   try {
     const response = await apiClient.delete(`/api/Dish/${dishId}`, {
