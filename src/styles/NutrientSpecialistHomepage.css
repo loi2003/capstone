@@ -1,11 +1,9 @@
-/* Reset default styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Base styles */
 .nutrient-specialist-homepage {
   font-family: 'Roboto', sans-serif;
   background-color: var(--nutrient-specialist-light-bg);
@@ -14,23 +12,21 @@
   line-height: 1.6;
 }
 
-/* Color variables */
 :root {
-  --nutrient-specialist-primary: #2e7d32; /* Deep green */
-  --nutrient-specialist-secondary: #4caf50; /* Vibrant green */
-  --nutrient-specialist-accent: #a5d6a7; /* Light green */
-  --nutrient-specialist-highlight: #ffca28; /* Yellow */
-  --nutrient-specialist-light-bg: #e8f5e9; /* Pale green */
+  --nutrient-specialist-primary: #2e7d32;
+  --nutrient-specialist-secondary: #4caf50;
+  --nutrient-specialist-accent: #a5d6a7;
+  --nutrient-specialist-highlight: #ffca28;
+  --nutrient-specialist-light-bg: #e8f5e9;
   --nutrient-specialist-white: #ffffff;
-  --nutrient-specialist-text: #1a3c34; /* Dark green-gray */
-  --nutrient-specialist-logout: #d32f2f; /* Red for logout */
+  --nutrient-specialist-text: #1a3c34;
+  --nutrient-specialist-logout: #d32f2f;
   --nutrient-specialist-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
   --nutrient-specialist-shadow-hover: 0 8px 24px rgba(46, 125, 50, 0.15);
   --nutrient-specialist-border-radius: 8px;
   --nutrient-specialist-transition: all 0.3s ease;
 }
 
-/* Dark theme */
 body.dark-theme {
   background: #1a3c34;
   color: var(--nutrient-specialist-white);
@@ -68,7 +64,8 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-feature-card 
   color: #e0f2e9;
 }
 
-body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-info {
+body.dark-theme .nutrient-specialist-homepage .nut Visual Studio Code
+nutrient-specialist-profile-info {
   background: rgba(255, 255, 255, 0.1);
 }
 
@@ -76,7 +73,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   color: var(--nutrient-specialist-white);
 }
 
-/* Sidebar styles */
 .nutrient-specialist-homepage .nutrient-specialist-sidebar {
   background: linear-gradient(180deg, var(--nutrient-specialist-primary), var(--nutrient-specialist-accent));
   color: var(--nutrient-specialist-white);
@@ -89,19 +85,17 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   transition: var(--nutrient-specialist-transition);
   overflow-x: hidden;
   overflow-y: auto;
-  max-width: 260px;
+  max-width: 280px;
 }
 
-/* Sidebar widths */
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.open {
-  width: 260px;
+  width: 280px;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed {
   width: 60px;
 }
 
-/* Sidebar header */
 .nutrient-specialist-homepage .sidebar-header {
   display: flex;
   justify-content: space-between;
@@ -117,7 +111,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   gap: 0.75rem;
 }
 
-/* Logo styling */
 .nutrient-specialist-homepage .logo {
   display: flex;
   align-items: center;
@@ -134,7 +127,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 180px;
+  max-width: 200px;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .logo span {
@@ -157,7 +150,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   min-width: 32px;
 }
 
-/* Sidebar toggle button */
 .nutrient-specialist-homepage .sidebar-toggle {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--nutrient-specialist-white);
@@ -192,7 +184,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   stroke: var(--nutrient-specialist-primary);
 }
 
-/* Sidebar navigation */
 .nutrient-specialist-homepage .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -233,9 +224,8 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   gap: 0.75rem;
   width: 100%;
   max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .sidebar-nav a,
@@ -268,7 +258,130 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   fill: var(--nutrient-specialist-white);
 }
 
-/* Profile section */
+.nutrient-specialist-homepage .nutrient-dropdown,
+.nutrient-specialist-homepage .food-dropdown {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-item,
+.nutrient-specialist-homepage .food-dropdown-item {
+  padding-left: 2rem;
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown-item,
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown-item {
+  padding-left: 0;
+  justify-content: center;
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-item a,
+.nutrient-specialist-homepage .food-dropdown-item a {
+  color: var(--nutrient-specialist-white);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown-item a,
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown-item a {
+  padding: 0.75rem 0;
+  justify-content: center;
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-item a svg,
+.nutrient-specialist-homepage .food-dropdown-item a svg {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown-item a span,
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown-item a span {
+  display: none;
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-item a:hover,
+.nutrient-specialist-homepage .food-dropdown-item a:hover {
+  background: var(--nutrient-specialist-secondary);
+  transform: translateY(-2px);
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-item a:hover svg path,
+.nutrient-specialist-homepage .food-dropdown-item a:hover svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-white);
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-toggle,
+.nutrient-specialist-homepage .food-dropdown-toggle {
+  display: flex;
+  color: var(--nutrient-specialist-white);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  padding: 0.75rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown-toggle,
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown-toggle {
+  display: none;
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-toggle svg:not(.dropdown-icon),
+.nutrient-specialist-homepage .food-dropdown-toggle svg:not(.dropdown-icon) {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-toggle .dropdown-icon,
+.nutrient-specialist-homepage .food-dropdown-toggle .dropdown-icon {
+  width: 16px;
+  height: 16px;
+  min-width: 16px;
+  margin-left: auto;
+  transition: transform var(--nutrient-specialist-transition);
+}
+
+.nutrient-specialist-homepage .nutrient-dropdown-toggle .dropdown-icon.open,
+.nutrient-specialist-homepage .food-dropdown-toggle .dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown,
+.nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown {
+  display: block;
+  height: auto;
+  opacity: 1;
+}
+
 .nutrient-specialist-homepage .nutrient-specialist-profile-section {
   margin-top: 1rem;
 }
@@ -285,10 +398,10 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   font-weight: 600;
   width: 100%;
   max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  word-wrap: break-word;
   position: relative;
+  text-decoration: none;
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info {
@@ -310,7 +423,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   text-decoration: underline;
 }
 
-/* Logout button */
 .nutrient-specialist-homepage .logout-button {
   background: rgba(211, 47, 47, 0.1);
   color: var(--nutrient-specialist-logout);
@@ -348,10 +460,9 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   stroke: var(--nutrient-specialist-white);
 }
 
-/* Main content */
 .nutrient-specialist-homepage .nutrient-specialist-content {
   flex: 1;
-  margin-left: 260px;
+  margin-left: 280px;
   padding: 2rem;
   transition: margin-left var(--nutrient-specialist-transition);
   background: var(--nutrient-specialist-light-bg);
@@ -361,7 +472,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   margin-left: 60px;
 }
 
-/* Banner section */
 .nutrient-specialist-homepage .nutrient-specialist-banner {
   background: linear-gradient(135deg, var(--nutrient-specialist-light-bg), var(--nutrient-specialist-accent));
   padding: 3rem;
@@ -440,7 +550,6 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   filter: drop-shadow(0 4px 12px rgba(46, 125, 50, 0.2));
 }
 
-/* Features section */
 .nutrient-specialist-homepage .nutrient-specialist-features {
   max-width: 1200px;
   margin: 3rem auto;
@@ -516,14 +625,13 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   box-shadow: var(--nutrient-specialist-shadow);
 }
 
-/* Responsive design */
 @media (max-width: 1024px) {
   .nutrient-specialist-homepage .nutrient-specialist-sidebar {
-    max-width: 220px;
+    max-width: 240px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.open {
-    width: 220px;
+    width: 240px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed {
@@ -531,7 +639,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-content {
-    margin-left: 220px;
+    margin-left: 240px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed + .nutrient-specialist-content {
@@ -548,16 +656,20 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
     width: 180px;
     height: 180px;
   }
+
+  .nutrient-specialist-homepage .logo span {
+    max-width: 160px;
+  }
 }
 
 @media (max-width: 768px) {
   .nutrient-specialist-homepage .nutrient-specialist-sidebar {
-    max-width: 200px;
+    max-width: 220px;
     padding: 1rem 0;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.open {
-    width: 200px;
+    width: 220px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed {
@@ -565,7 +677,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-content {
-    margin-left: 200px;
+    margin-left: 220px;
     padding: 1.5rem;
   }
 
@@ -596,18 +708,35 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
 
   .nutrient-specialist-homepage .logo span {
     font-size: 1.125rem;
-    max-width: 160px;
+    max-width: 140px;
+  }
+
+  .nutrient-specialist-homepage .nutrient-dropdown-item,
+  .nutrient-specialist-homepage .food-dropdown-item {
+    padding-left: 1.5rem;
+  }
+
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown-item,
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown-item {
+    padding-left: 0;
+  }
+
+  .nutrient-specialist-homepage .nutrient-dropdown-item a svg,
+  .nutrient-specialist-homepage .food-dropdown-item a svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
   }
 }
 
 @media (max-width: 480px) {
   .nutrient-specialist-homepage .nutrient-specialist-sidebar {
-    max-width: 180px;
+    max-width: 200px;
     padding: 0.75rem 0;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.open {
-    width: 180px;
+    width: 200px;
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed {
@@ -615,7 +744,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   }
 
   .nutrient-specialist-homepage .nutrient-specialist-content {
-    margin-left: 180px;
+    margin-left: 200px;
     padding: 1rem;
   }
 
@@ -696,6 +825,8 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
 
   .nutrient-specialist-homepage .nutrient-specialist-profile-email {
     font-size: 0.95rem;
+    white-space: normal;
+    word-wrap: break-word;
   }
 
   .nutrient-specialist-homepage .logout-button {
@@ -762,5 +893,22 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   .nutrient-specialist-homepage .nutrient-specialist-feature-link {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .nutrient-specialist-homepage .nutrient-dropdown-item,
+  .nutrient-specialist-homepage .food-dropdown-item {
+    padding-left: 1rem;
+  }
+
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .nutrient-dropdown-item,
+  .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .food-dropdown-item {
+    padding-left: 0;
+  }
+
+  .nutrient-specialist-homepage .nutrient-dropdown-item a svg,
+  .nutrient-specialist-homepage .food-dropdown-item a svg {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
   }
 }
