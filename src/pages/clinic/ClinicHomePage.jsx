@@ -41,23 +41,16 @@ const ClinicHomePage = () => {
   };
 
   const handleLogout = async () => {
-    if (!user?.userId) {
+    if (!window.confirm("Are you sure you want to sign out?")) return;
+    try {
+      if (user?.userId) await logout(user.userId);
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    } finally {
       localStorage.removeItem("token");
       setUser(null);
+      setIsSidebarOpen(true);
       navigate("/signin", { replace: true });
-      return;
-    }
-    if (window.confirm("Are you sure you want to sign out?")) {
-      try {
-        await logout(user.userId);
-      } catch (error) {
-        console.error("Error logging out:", error.message);
-      } finally {
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsSidebarOpen(true);
-        navigate("/signin", { replace: true });
-      }
     }
   };
 
@@ -98,7 +91,7 @@ const ClinicHomePage = () => {
 
   const sidebarVariants = {
     open: {
-      width: "250px",
+      width: "280px",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
@@ -137,8 +130,8 @@ const ClinicHomePage = () => {
               className="logo-svg-container"
             >
               <svg
-                width="48"
-                height="48"
+                width="40"
+                height="40"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -156,7 +149,6 @@ const ClinicHomePage = () => {
             </motion.div>
             {isSidebarOpen && <span className="logo-text">Clinic Panel</span>}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -380,6 +372,7 @@ const ClinicHomePage = () => {
                   className="logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
+                  title="Sign Out"
                 >
                   <svg
                     width="24"
@@ -396,12 +389,15 @@ const ClinicHomePage = () => {
                       d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                     />
                   </svg>
-                  {isSidebarOpen && <span>Đăng Xuất</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -422,7 +418,7 @@ const ClinicHomePage = () => {
                     d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                   />
                 </svg>
-                {isSidebarOpen && <span>Đăng Nhập</span>}
+                {isSidebarOpen && <span>Sign In</span>}
               </Link>
             </motion.div>
           )}
@@ -436,23 +432,22 @@ const ClinicHomePage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="clinic-banner-title">Welcome to Clinic Dashboard</h1>
+            <h1 className="clinic-banner-title">Clinic Dashboard</h1>
             <p className="clinic-banner-subtitle">
-              Streamline your clinic operations with tools to manage
-              appointments, patients, and support.
+              Optimize your clinic's operations with powerful tools for managing appointments, patient records, and support services, ensuring seamless healthcare delivery.
             </p>
             <div className="clinic-banner-buttons">
               <Link
                 to="/clinic/schedule"
                 className="clinic-banner-button primary"
               >
-                View Schedule
+                Manage Schedule
               </Link>
               <Link
-                to="/clinic/support"
+                to="/clinic/patients"
                 className="clinic-banner-button secondary"
               >
-                Contact Support
+                View Patients
               </Link>
             </div>
           </motion.div>
@@ -485,28 +480,28 @@ const ClinicHomePage = () => {
           initial="initial"
           animate="animate"
         >
-          <h2 className="clinic-features-title">Clinic Management Tools</h2>
+          <h2 className="clinic-features-title">Core Clinic Management Tools</h2>
           <p className="clinic-features-description">
-            Access essential tools to manage your clinic efficiently.
+            Utilize a comprehensive set of tools designed to streamline appointment scheduling, patient management, and support services for efficient clinic operations.
           </p>
           <div className="clinic-features-grid">
             <motion.div variants={cardVariants} className="clinic-feature-card">
-              <h3>Schedule</h3>
-              <p>Manage and view clinic appointment schedules.</p>
+              <h3>Appointment Scheduling</h3>
+              <p>Efficiently manage and organize clinic appointments to optimize your schedule and enhance patient care.</p>
               <Link to="/clinic/schedule" className="clinic-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="clinic-feature-card">
-              <h3>Patients</h3>
-              <p>Access and update patient records securely.</p>
+              <h3>Patient Management</h3>
+              <p>Securely access, update, and manage patient records to ensure accurate and up-to-date medical information.</p>
               <Link to="/clinic/patients" className="clinic-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="clinic-feature-card">
-              <h3>Support</h3>
-              <p>Contact support for assistance with clinic operations.</p>
+              <h3>Support Services</h3>
+              <p>Access dedicated support to resolve operational challenges and maintain smooth clinic functionality.</p>
               <Link to="/clinic/support" className="clinic-feature-link">
                 Explore
               </Link>

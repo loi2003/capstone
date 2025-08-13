@@ -9,7 +9,7 @@ import {
   deleteDish,
   getAllFoods,
 } from "../../apis/nutriet-api";
-import "../../styles/NutrientManagement.css";
+import "../../styles/DishManagement.css";
 
 const LoaderIcon = () => (
   <svg
@@ -56,7 +56,7 @@ const DishManagement = () => {
   const [foods, setFoods] = useState([]);
   const [newDish, setNewDish] = useState({
     name: "",
-    foodList: [],
+    foodList: [], // Now stores objects with { foodId, unit, amount }
   });
   const [selectedDish, setSelectedDish] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -101,7 +101,11 @@ const DishManagement = () => {
       setSelectedDish(data);
       setNewDish({
         name: data.name || "",
-        foodList: data.foodList.map(food => food.id) || [],
+        foodList: data.foodList.map(food => ({
+          foodId: food.id,
+          unit: food.unit || "grams",
+          amount: food.amount || 0,
+        })) || [],
       });
       setIsEditing(true);
     } catch (err) {
@@ -118,6 +122,10 @@ const DishManagement = () => {
     }
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
+      return;
+    }
+    if (newDish.foodList.some(food => !food.unit || food.amount <= 0)) {
+      showNotification("Please provide valid unit and amount for all selected foods", "error");
       return;
     }
     setLoading(true);
@@ -148,6 +156,10 @@ const DishManagement = () => {
     }
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
+      return;
+    }
+    if (newDish.foodList.some(food => !food.unit || food.amount <= 0)) {
+      showNotification("Please provide valid unit and amount for all selected foods", "error");
       return;
     }
     setLoading(true);
@@ -211,16 +223,25 @@ const DishManagement = () => {
   const handleFoodSelect = (foodId) => {
     setNewDish(prev => {
       const currentFoods = [...prev.foodList];
-      const index = currentFoods.indexOf(foodId);
-      
+      const index = currentFoods.findIndex(food => food.foodId === foodId);
+
       if (index > -1) {
         currentFoods.splice(index, 1);
       } else {
-        currentFoods.push(foodId);
+        currentFoods.push({ foodId, unit: "grams", amount: 1 });
       }
-      
+
       return { ...prev, foodList: currentFoods };
     });
+  };
+
+  const handleFoodDetailChange = (foodId, field, value) => {
+    setNewDish(prev => ({
+      ...prev,
+      foodList: prev.foodList.map(food =>
+        food.foodId === foodId ? { ...food, [field]: value } : food
+      ),
+    }));
   };
 
   const toggleSidebar = () => {
@@ -241,17 +262,17 @@ const DishManagement = () => {
 
   const sidebarVariants = {
     open: {
-      width: "min(260px, 25vw)",
+      width: "min(320px, 30vw)", // Increased width for consistency
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: "min(60px, 15vw)",
+      width: "min(80px, 20vw)", // Increased width for consistency
       transition: { duration: 0.3, ease: "easeIn" },
     },
   };
 
   return (
-    <div className="nutrient-management">
+    <div className="dish-management">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -456,19 +477,49 @@ const DishManagement = () => {
                     <motion.div
                       key={food.id}
                       className={`food-item ${
-                        newDish.foodList.includes(food.id) ? "selected" : ""
+                        newDish.foodList.some(f => f.foodId === food.id) ? "selected" : ""
                       }`}
                       onClick={() => handleFoodSelect(food.id)}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className="food-name">{food.name}</span>
-                      {newDish.foodList.includes(food.id) && (
+                      {newDish.foodList.some(f => f.foodId === food.id) && (
                         <span className="checkmark">✓</span>
                       )}
                     </motion.div>
                   ))}
                 </div>
+                {newDish.foodList.length > 0 && (
+                  <div className="food-details-container">
+                    <h4>Food Details</h4>
+                    {newDish.foodList.map(food => (
+                      <div key={food.foodId} className="food-detail-item">
+                        <span>{foods.find(f => f.id === food.foodId)?.name}</span>
+                        <div className="food-detail-inputs">
+                          <select
+                            value={food.unit}
+                            onChange={e => handleFoodDetailChange(food.foodId, "unit", e.target.value)}
+                            className="input-field"
+                          >
+                            <option value="grams">Grams</option>
+                            <option value="cups">Cups</option>
+                            <option value="tablespoons">Tablespoons</option>
+                            <option value="teaspoons">Teaspoons</option>
+                          </select>
+                          <input
+                            type="number"
+                            value={food.amount}
+                            onChange={e => handleFoodDetailChange(food.foodId, "amount", parseFloat(e.target.value))}
+                            placeholder="Amount"
+                            className="input-field"
+                            min="0"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="button-group">
                   <motion.button
                     onClick={isEditing ? updateDishHandler : createDishHandler}
@@ -555,7 +606,9 @@ const DishManagement = () => {
                       <ul>
                         {dish.foodList && dish.foodList.length > 0 ? (
                           dish.foodList.map(food => (
-                            <li key={food.id}>{food.name}</li>
+                            <li key={food.id}>
+                              {food.name} ({food.amount} {food.unit})
+                            </li>
                           ))
                         ) : (
                           <li>No foods in this dish</li>
