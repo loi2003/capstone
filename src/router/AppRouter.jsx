@@ -43,6 +43,7 @@ import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
 import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
+import DishManagement from "../pages/nutrientspecialist/DishManagement";
 
 const AppRoutes = () => {
   const location = useLocation();
