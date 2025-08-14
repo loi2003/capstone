@@ -86,14 +86,14 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
           >
             {isUrgent ? "Book Urgently" : "Schedule Consultation"}
           </button>
-          {!isUrgent && (
+          {/* {!isUrgent && (
             <button
               className="outside-btn"
               onClick={() => handleBookOutside(reminder)}
             >
               Book Outside
             </button>
-          )}
+          )} */}
         </div>
       </div>
     );

@@ -329,41 +329,7 @@ const SignIn = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="signin-branding"
         >
-       <Link to="/" className="signin-logo">
-  <svg
-    width="120"
-    height="120"
-    viewBox="0 0 64 64"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    {/* Soft glowing circle (optional) */}
-    <circle cx="32" cy="32" r="30" fill="rgba(255, 255, 255, 0.1)" />
-    
-    {/* Baby's face */}
-    <circle cx="32" cy="32" r="20" fill="#FFD6E7" stroke="white" strokeWidth="1.5" />
-    
-    {/* Eyes */}
-    <circle cx="26" cy="28" r="3" fill="#333" />
-    <circle cx="38" cy="28" r="3" fill="#333" />
-    
-    {/* Blush marks */}
-    <circle cx="22" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
-    <circle cx="42" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
-    
-    {/* Smile */}
-    <path d="M26 38 Q32 42 38 38" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
-    
-    {/* Cute baby hair swirl */}
-    <path d="M32 12 Q34 8 36 12" stroke="#333" strokeWidth="1.5" fill="none" />
-    
-    {/* Optional: Pacifier or baby bottle (uncomment to use) */}
-    {/*
-    <circle cx="20" cy="45" r="4" fill="white" stroke="#333" strokeWidth="1" />
-    <circle cx="20" cy="45" r="2" fill="#FF6B8B" />
-    */}
-  </svg>
-</Link>
+       
           <div className="signin-branding-text">
             <h1 className="signin-title">Welcome to the Community</h1>
             <p className="signin-description">
@@ -382,6 +348,9 @@ const SignIn = () => {
           animate="animate"
           className="signin-form-container"
         >
+          <Link to="/" className="signin-logo">
+       <img src="/public/images/nestly.png" alt="Logo" />
+</Link>
           <h2 className="signin-form-title">Sign In</h2>
           <form onSubmit={handleSubmit} className="signin-form">
             <div className="signin-input-group">

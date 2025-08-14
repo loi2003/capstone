@@ -113,6 +113,7 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="logo">
+          <img src="/public/images/IMG_4602.png" alt="Logo" className="web-logo"/>
           NestlyCare
         </Link>
         <button
