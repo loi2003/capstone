@@ -1521,81 +1521,130 @@ const BlogManagement = () => {
               </motion.div>
             </motion.div>
           )}
-          {showViewModal && (
-            <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={closeViewModal}
-                  aria-label="Close view modal"
-                >
-                  ×
-                </button>
-                <div className="view-content">
-                  <h2 className="blog-form-title">{showViewModal.title}</h2>
-                  <p><strong>Category:</strong> {showViewModal.categoryName || "Uncategorized"}</p>
-                  <p><strong>Body:</strong> {showViewModal.body || "No content"}</p>
-                  <p><strong>Status:</strong>
-                    <motion.span
-                      className="status-dot"
-                      title={showViewModal.status || "Pending"}
-                      style={{
-                        backgroundColor:
-                          showViewModal.status?.toLowerCase() === "approved"
-                            ? "#34C759"
-                            : showViewModal.status?.toLowerCase() === "rejected"
-                            ? "#FF3B30"
-                            : "#FBC107",
-                      }}
-                      whileHover={{
-                        scale: 1.2,
-                        boxShadow: "0 0 8px rgba(0,0,0,0.2)",
-                      }}
+        {showViewModal && (
+  <motion.div
+    className="blog-view-modal"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.3 }}
+  >
+    <motion.div
+      className="blog-view-modal-content"
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9, y: 20 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      <div className="blog-view-modal-header">
+        <h2 className="blog-view-modal-title">{showViewModal.title}</h2>
+        <button
+          className="blog-view-modal-close"
+          onClick={closeViewModal}
+          aria-label="Close view modal"
+        >
+          ×
+        </button>
+      </div>
+      
+      <div className="blog-view-modal-body">
+        <div className="blog-view-content">
+          <div className="blog-view-meta">
+            <div className="blog-view-meta-item">
+              <span className="blog-view-meta-label">Category</span>
+              <span className="blog-view-meta-value">
+                {showViewModal.categoryName || "Uncategorized"}
+              </span>
+            </div>
+            <div className="blog-view-meta-item">
+              <span className="blog-view-meta-label">Status</span>
+              <span className={`blog-view-status-badge ${showViewModal.status?.toLowerCase() || 'pending'}`}>
+                <span className="status-dot" style={{
+                  backgroundColor: showViewModal.status?.toLowerCase() === "approved" ? "#48bb78" :
+                                  showViewModal.status?.toLowerCase() === "rejected" ? "#f56565" : "#ed8936"
+                }} />
+                {showViewModal.status || "Pending"}
+              </span>
+            </div>
+            {showViewModal.tags && showViewModal.tags.length > 0 && (
+              <div className="blog-view-meta-item" style={{ gridColumn: '1 / -1' }}>
+                <span className="blog-view-meta-label">Tags</span>
+                <div className="blog-view-tags">
+                  {showViewModal.tags.map((tag, index) => (
+                    <span key={index} className="blog-view-tag">
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="blog-view-body-section">
+            <h3 className="blog-view-section-title">Content</h3>
+            <div className="blog-view-body-content">
+              {showViewModal.body || "No content available"}
+            </div>
+          </div>
+
+          <div className="blog-view-images-section">
+            <h3 className="blog-view-section-title">Images</h3>
+            {showViewModal.images?.length > 0 ? (
+              <div className="blog-view-images-grid">
+                {showViewModal.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className="blog-view-image-wrapper"
+                    onClick={() => openImageModal(image, index, showViewModal.images)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        openImageModal(image, index, showViewModal.images);
+                      }
+                    }}
+                  >
+                    <img
+                      src={image.fileUrl || ""}
+                      alt={image.fileName || `Blog image ${index + 1}`}
+                      className="blog-view-image"
+                      onError={() => console.error(`Failed to load image: ${image.fileUrl}`)}
                     />
-                  </p>
-                  <div className="input-group">
-                    <label>Images</label>
-                    <div className="blog-images">
-                      {showViewModal.images?.length > 0 ? (
-                        showViewModal.images.map((image, index) => (
-                          <img
-                            key={index}
-                            src={image.fileUrl || ""}
-                            alt={image.fileName || "Blog image"}
-                            className="blog-image"
-                            onClick={() => openImageModal(image, index, showViewModal.images)}
-                            onError={() => console.error(`Failed to load image: ${image.fileUrl}`)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                openImageModal(image, index, showViewModal.images);
-                              }
-                            }}
-                          />
-                        ))
-                      ) : (
-                        <span className="text-gray-500">No images</span>
-                      )}
+                    <div className="blog-view-image-overlay">
+                      <svg 
+                        className="blog-view-zoom-icon" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                        width="48"
+                        height="48"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
+                ))}
+              </div>
+            ) : (
+              <div className="blog-view-no-images">
+                <svg 
+                  width="64" 
+                  height="64" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                  style={{ marginBottom: '1rem', opacity: 0.5 }}
+                >
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+                <div>No images available for this blog post</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  </motion.div>
+)}
           {showFullBody && (
             <motion.div
               className="blog-image-modal"

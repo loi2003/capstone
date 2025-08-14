@@ -466,6 +466,73 @@ export const deleteFood = async (foodId) => {
   }
 };
 
+export const updateFoodNutrient = async (nutrientData) => {
+  try {
+    const response = await apiClient.put(
+      `/api/food/update-food-nutrient`,
+      {
+        foodId: nutrientData.foodId,
+        nutrientId: nutrientData.nutrientId,
+        nutrientEquivalent: nutrientData.nutrientEquivalent,
+        unit: nutrientData.unit,
+        amountPerUnit: nutrientData.amountPerUnit,
+        totalWeight: nutrientData.totalWeight,
+        foodEquivalent: nutrientData.foodEquivalent,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error updating food nutrient:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const addNutrientsToFood = async (data) => {
+  try {
+    const response = await apiClient.put(
+      `/api/food/add-nutrients-to-food`,
+      {
+        foodId: data.foodId,
+        nutrients: data.nutrients,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error adding nutrients to food:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteFoodNutrient = async (foodId, nutrientId) => {
+  try {
+    const response = await apiClient.delete(`/api/food/delete-food-nutrient-by-foodId-nutrientId`, {
+      params: {
+        FoodId: foodId,
+        NutrientId: nutrientId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting food nutrient:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const getAllAgeGroups = async () => {
   try {
     const response = await apiClient.get(`/api/AgeGroup/view-all-age-groups`, {

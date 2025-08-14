@@ -43,7 +43,9 @@ import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
+import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
 
+NutrientInFoodManagement
 const AppRoutes = () => {
   const location = useLocation();
 
@@ -93,6 +95,7 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/food-management" element={<FoodManagement />} />
         <Route path="/nutrient-specialist/age-group-management" element={<AgeGroupManagement />} />
         <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
+        <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route
           path="/blog"
           element={
