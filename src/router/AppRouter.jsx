@@ -38,6 +38,7 @@ import NutrientCategoryManagement from "../pages/nutrientspecialist/NutrientCate
 import NutrientManagement from "../pages/nutrientspecialist/NutrientManagement";
 import FoodCategoryManagement from "../pages/nutrientspecialist/FoodCategoryManagement";
 import FoodManagement from "../pages/nutrientspecialist/FoodManagement";
+import AgeGroupManagement from "../pages/nutrientspecialist/AgeGroupManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
@@ -68,15 +69,9 @@ const AppRoutes = () => {
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
-        <Route
-          path="/health-expert/tutorial"
-          element={<HealthExpertTutorial />}
-        />
+        <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
-        <Route
-          path="/nutrient-specialist"
-          element={<NutrientSpecialistHomePage />}
-        />
+        <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
@@ -104,26 +99,13 @@ const AppRoutes = () => {
         <Route path="/nutritional-guidance" element={<NutritionalGuidance />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/support" element={<SupportPage />} />
-        <Route
-          path="/admin/account-management"
-          element={<AdminAccountManagement />}
-        />
-        <Route
-          path="/nutrient-specialist/nutrient-category-management"
-          element={<NutrientCategoryManagement />}
-        />
-        <Route
-          path="/nutrient-specialist/nutrient-management"
-          element={<NutrientManagement />}
-        />
-        <Route
-          path="/nutrient-specialist/food-category-management"
-          element={<FoodCategoryManagement />}
-        />
-        <Route
-          path="/nutrient-specialist/food-management"
-          element={<FoodManagement />}
-        />
+        <Route path="/admin/account-management" element={<AdminAccountManagement />} />
+        <Route path="/nutrient-specialist/nutrient-category-management" element={<NutrientCategoryManagement />} />
+        <Route path="/nutrient-specialist/nutrient-management" element={<NutrientManagement />} />
+        <Route path="/nutrient-specialist/food-category-management" element={<FoodCategoryManagement />} />
+        <Route path="/nutrient-specialist/food-management" element={<FoodManagement />} />
+        <Route path="/nutrient-specialist/age-group-management" element={<AgeGroupManagement />} />
+        <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
         <Route
           path="/blog"
           element={
