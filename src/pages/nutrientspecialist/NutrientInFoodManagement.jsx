@@ -1,14 +1,14 @@
+
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  getAllNutrients,
   getAllFoods,
-  updateFoodNutrient,
   addNutrientsToFood,
   deleteFoodNutrient,
-  getAllNutrients,
 } from "../../apis/nutriet-api";
-import "../../styles/NutrientManagement.css";
+import "../../styles/NutrientInFoodManagement.css";
 
 const LoaderIcon = () => (
   <svg
@@ -51,14 +51,10 @@ const Notification = ({ message, type }) => {
 };
 
 const NutrientInFoodManagement = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [user, setUser] = useState(null);
-  const [foods, setFoods] = useState([]);
   const [nutrients, setNutrients] = useState([]);
-  const [associations, setAssociations] = useState([]);
-  const [selectedAssociation, setSelectedAssociation] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [newData, setNewData] = useState({
+  const [foods, setFoods] = useState([]);
+  const [foodNutrients, setFoodNutrients] = useState([]);
+  const [newFoodNutrient, setNewFoodNutrient] = useState({
     foodId: "",
     nutrientId: "",
     nutrientEquivalent: "",
@@ -69,8 +65,8 @@ const NutrientInFoodManagement = () => {
   });
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
@@ -81,64 +77,75 @@ const NutrientInFoodManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  const validateForm = () => {
-    if (!newData.foodId || !newData.nutrientId) {
-      showNotification("Food and Nutrient are required", "error");
-      return false;
-    }
-    if (!newData.unit || !newData.amountPerUnit || !newData.totalWeight) {
-      showNotification("Unit, Amount Per Unit, and Total Weight are required", "error");
-      return false;
-    }
-    if (isNaN(newData.nutrientEquivalent) || isNaN(newData.amountPerUnit) || isNaN(newData.totalWeight)) {
-      showNotification("Numeric fields must contain valid numbers", "error");
-      return false;
-    }
-    return true;
-  };
-
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [foodsData, nutrientsData] = await Promise.all([
-        getAllFoods(),
+      const [nutrientsData, foodsData] = await Promise.all([
         getAllNutrients(),
+        getAllFoods(),
       ]);
-      setFoods(foodsData.data || []);
-      setNutrients(nutrientsData.data || []);
-      const flatAssociations = (foodsData.data || []).flatMap((food) =>
-        (food.foodNutrients || []).map((n) => ({
-          ...n,
-          foodId: food.id,
-          foodName: food.name,
-          nutrientName: nutrientsData.data.find(nutrient => nutrient.id === n.nutrientId)?.name || n.nutrientId
-        }))
-      );
-      setAssociations(flatAssociations);
+      console.log("Fetched nutrients:", nutrientsData);
+      console.log("Fetched foods:", foodsData);
+
+      const nutrientMap = new Map(nutrientsData.map(n => [n.id, n.name]));
+      const foodNutrientData = [];
+      foodsData.forEach(food => {
+        food.foodNutrients.forEach(fn => {
+          foodNutrientData.push({
+            id: `${food.id}-${fn.nutrientId}`,
+            nutrientId: fn.nutrientId,
+            nutrientName: nutrientMap.get(fn.nutrientId) || "Unknown",
+            foodId: food.id,
+            foodName: food.name,
+            nutrientEquivalent: fn.nutrientEquivalent,
+            unit: fn.unit,
+            amountPerUnit: fn.amountPerUnit,
+            totalWeight: fn.totalWeight,
+            foodEquivalent: fn.foodEquivalent,
+          });
+        });
+      });
+
+      setNutrients(nutrientsData);
+      setFoods(foodsData);
+      setFoodNutrients(foodNutrientData);
     } catch (err) {
+      console.error("Fetch data error:", err.response?.data || err.message);
       showNotification(`Failed to fetch data: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const createAssociationHandler = async () => {
-    if (!validateForm()) return;
+  const addFoodNutrientHandler = async () => {
+    const { foodId, nutrientId, nutrientEquivalent, unit, amountPerUnit, totalWeight, foodEquivalent } = newFoodNutrient;
     
+    // Validate all fields
+    if (!foodId || !nutrientId || !unit || !foodEquivalent) {
+      showNotification("All fields are required", "error");
+      return;
+    }
+    if (!nutrientEquivalent || !amountPerUnit || !totalWeight) {
+      showNotification("Please enter valid numbers for equivalent, amount, and weight", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      await addNutrientsToFood({
-        foodId: newData.foodId,
+      const payload = {
+        foodId,
         nutrients: [{
-          nutrientId: newData.nutrientId,
-          nutrientEquivalent: parseFloat(newData.nutrientEquivalent) || 0,
-          unit: newData.unit,
-          amountPerUnit: parseFloat(newData.amountPerUnit),
-          totalWeight: parseFloat(newData.totalWeight),
-          foodEquivalent: newData.foodEquivalent,
+          nutrientId,
+          nutrientEquivalent: Number(nutrientEquivalent),
+          unit,
+          amountPerUnit: Number(amountPerUnit),
+          totalWeight: Number(totalWeight),
+          foodEquivalent,
         }],
-      });
-      setNewData({
+      };
+      console.log("Adding nutrient to food with data:", payload);
+      await addNutrientsToFood(payload);
+      setNewFoodNutrient({
         foodId: "",
         nutrientId: "",
         nutrientEquivalent: "",
@@ -147,93 +154,36 @@ const NutrientInFoodManagement = () => {
         totalWeight: "",
         foodEquivalent: "",
       });
-      setIsEditing(false);
       await fetchData();
-      showNotification("Association created successfully", "success");
+      showNotification("Nutrient added to food successfully", "success");
     } catch (err) {
-      showNotification(`Failed to create association: ${err.message}`, "error");
+      console.error("Add nutrient error:", err.response?.data || err.message);
+      showNotification(`Failed to add nutrient to food: ${err.response?.data?.message || err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const updateAssociationHandler = async () => {
-    if (!validateForm()) return;
-
-    setLoading(true);
-    try {
-      await updateFoodNutrient({
-        foodId: selectedAssociation.foodId,
-        nutrientId: selectedAssociation.nutrientId,
-        nutrientEquivalent: parseFloat(newData.nutrientEquivalent) || 0,
-        unit: newData.unit,
-        amountPerUnit: parseFloat(newData.amountPerUnit),
-        totalWeight: parseFloat(newData.totalWeight),
-        foodEquivalent: newData.foodEquivalent,
-      });
-      setNewData({
-        foodId: "",
-        nutrientId: "",
-        nutrientEquivalent: "",
-        unit: "",
-        amountPerUnit: "",
-        totalWeight: "",
-        foodEquivalent: "",
-      });
-      setSelectedAssociation(null);
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Association updated successfully", "success");
-    } catch (err) {
-      showNotification(`Failed to update association: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteAssociationHandler = async (foodId, nutrientId) => {
-    if (!window.confirm("Are you sure you want to delete this association?"))
+  const deleteFoodNutrientHandler = async (foodId, nutrientId) => {
+    if (!window.confirm("Are you sure you want to delete this nutrient-food association?"))
       return;
     setLoading(true);
     try {
+      console.log("Deleting nutrient-food association:", { FoodId: foodId, NutrientId: nutrientId });
       await deleteFoodNutrient(foodId, nutrientId);
-      setSelectedAssociation(null);
-      setIsEditing(false);
-      setNewData({
-        foodId: "",
-        nutrientId: "",
-        nutrientEquivalent: "",
-        unit: "",
-        amountPerUnit: "",
-        totalWeight: "",
-        foodEquivalent: "",
-      });
       await fetchData();
-      showNotification("Association deleted successfully", "success");
+      showNotification("Nutrient-food association deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete association: ${err.message}`, "error");
+      console.error("Delete association error:", err.response?.data || err.message);
+      showNotification(`Failed to delete association: ${err.response?.data?.message || err.message}`, "error");
     } finally {
       setLoading(false);
     }
-  };
-
-  const cancelEdit = () => {
-    setNewData({
-      foodId: "",
-      nutrientId: "",
-      nutrientEquivalent: "",
-      unit: "",
-      amountPerUnit: "",
-      totalWeight: "",
-      foodEquivalent: "",
-    });
-    setSelectedAssociation(null);
-    setIsEditing(false);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewData({ ...newData, [name]: value });
+    setNewFoodNutrient({ ...newFoodNutrient, [name]: value });
   };
 
   const toggleSidebar = () => {
@@ -264,7 +214,7 @@ const NutrientInFoodManagement = () => {
   };
 
   return (
-    <div className="nutrient-management">
+    <div className="nutrient-in-food-management">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -275,9 +225,7 @@ const NutrientInFoodManagement = () => {
       </AnimatePresence>
 
       <motion.aside
-        className={`nutrient-specialist-sidebar ${
-          isSidebarOpen ? "open" : "closed"
-        }`}
+        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
@@ -346,15 +294,17 @@ const NutrientInFoodManagement = () => {
           </div>
           <div className="sidebar-nav-item">
             <Link
-              to="/nutrient-specialist/food-category-management"
-              title="Food Category Management"
+              to="/nutrient-specialist/nutrient-category-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient Category Management"
             >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="Folder icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Folder icon for nutrient category management"
               >
                 <path
                   d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
@@ -365,36 +315,39 @@ const NutrientInFoodManagement = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Food Category Management</span>}
+              {isSidebarOpen && <span>Nutrient Category Management</span>}
             </Link>
           </div>
           <div className="sidebar-nav-item">
             <Link
-              to="/nutrient-specialist/food-management"
-              title="Food Management"
+              to="/nutrient-specialist/nutrient-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient Management"
             >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="Apple icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Sprout icon for nutrient management"
               >
                 <path
-                  d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
-                  fill="var(--nutrient-specialist-accent)"
+                  d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
                   stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
                   strokeWidth="1.5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Food Management</span>}
+              {isSidebarOpen && <span>Nutrient Management</span>}
             </Link>
           </div>
           <div className="sidebar-nav-item active">
             <Link
               to="/nutrient-specialist/nutrient-in-food-management"
+              onClick={() => setIsSidebarOpen(true)}
               title="Nutrient in Food Management"
             >
               <svg
@@ -402,10 +355,11 @@ const NutrientInFoodManagement = () => {
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
-                aria-label="Nutrient in food icon"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Link icon for nutrient in food management"
               >
                 <path
-                  d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                  d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"
                   stroke="var(--nutrient-specialist-white)"
                   fill="var(--nutrient-specialist-accent)"
                   strokeWidth="1.5"
@@ -420,185 +374,161 @@ const NutrientInFoodManagement = () => {
       </motion.aside>
 
       <motion.main
-        className={`nutrient-specialist-content ${
-          isSidebarOpen ? "sidebar-open" : "sidebar-closed"
-        }`}
+        className={`nutrient-specialist-content ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Nutrient in Food Management</h1>
-            <p>Manage associations between foods and nutrients for accurate nutritional data</p>
+            <h1>Manage Nutrients in Foods</h1>
+            <p>Associate nutrients with foods and manage their details</p>
           </div>
         </div>
 
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
-              <h2>{isEditing ? "Edit Association" : "Add New Association"}</h2>
+              <h2>Add Nutrient to Food</h2>
             </div>
-            {foods.length === 0 || nutrients.length === 0 ? (
+            {(foods.length === 0 || nutrients.length === 0) && (
               <p className="no-results">
-                No foods or nutrients available. Please add some first.
+                No foods or nutrients available. Please add foods and nutrients first.
               </p>
-            ) : (
-              <div className="form-card">
-                <div className="form-group">
-                  <label htmlFor="foodId">Food</label>
-                  <select
-                    id="foodId"
-                    name="foodId"
-                    value={newData.foodId}
-                    onChange={handleInputChange}
-                    disabled={isEditing}
-                    className="input-field"
-                    aria-label="Select Food"
-                    required
-                  >
-                    <option value="" disabled>
-                      Select a food
+            )}
+            <div className="form-card">
+              <div className="form-group">
+                <label htmlFor="food-id">Food <span className="required">*</span></label>
+                <select
+                  id="food-id"
+                  name="foodId"
+                  value={newFoodNutrient.foodId}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  aria-label="Food selection"
+                  disabled={foods.length === 0}
+                  required
+                >
+                  <option value="" disabled>
+                    Select a food
+                  </option>
+                  {foods.map((food) => (
+                    <option key={food.id} value={food.id}>
+                      {food.name}
                     </option>
-                    {foods.map((food) => (
-                      <option key={food.id} value={food.id}>
-                        {food.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <label htmlFor="nutrientId">Nutrient</label>
-                  <select
-                    id="nutrientId"
-                    name="nutrientId"
-                    value={newData.nutrientId}
-                    onChange={handleInputChange}
-                    disabled={isEditing}
-                    className="input-field"
-                    aria-label="Select Nutrient"
-                    required
-                  >
-                    <option value="" disabled>
-                      Select a nutrient
+                  ))}
+                </select>
+                <label htmlFor="nutrient-id">Nutrient <span className="required">*</span></label>
+                <select
+                  id="nutrient-id"
+                  name="nutrientId"
+                  value={newFoodNutrient.nutrientId}
+                  onChange={handleInputChange}
+                  className="input-field"
+                  aria-label="Nutrient selection"
+                  disabled={nutrients.length === 0}
+                  required
+                >
+                  <option value="" disabled>
+                    Select a nutrient
+                  </option>
+                  {nutrients.map((nutrient) => (
+                    <option key={nutrient.id} value={nutrient.id}>
+                      {nutrient.name}
                     </option>
-                    {nutrients.map((nutrient) => (
-                      <option key={nutrient.id} value={nutrient.id}>
-                        {nutrient.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <label htmlFor="nutrientEquivalent">Nutrient Equivalent</label>
-                  <input
-                    id="nutrientEquivalent"
-                    type="number"
-                    name="nutrientEquivalent"
-                    value={newData.nutrientEquivalent}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 100"
-                    className="input-field"
-                    aria-label="Nutrient Equivalent"
-                    min="0"
-                  />
-
-                  <label htmlFor="unit">Unit</label>
-                  <input
-                    id="unit"
-                    type="text"
-                    name="unit"
-                    value={newData.unit}
-                    onChange={handleInputChange}
-                    placeholder="e.g., mg"
-                    className="input-field"
-                    aria-label="Unit"
-                    required
-                  />
-
-                  <label htmlFor="amountPerUnit">Amount Per Unit</label>
-                  <input
-                    id="amountPerUnit"
-                    type="number"
-                    name="amountPerUnit"
-                    value={newData.amountPerUnit}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 50"
-                    className="input-field"
-                    aria-label="Amount Per Unit"
-                    min="0"
-                    required
-                  />
-
-                  <label htmlFor="totalWeight">Total Weight</label>
-                  <input
-                    id="totalWeight"
-                    type="number"
-                    name="totalWeight"
-                    value={newData.totalWeight}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 200"
-                    className="input-field"
-                    aria-label="Total Weight"
-                    min="0"
-                    required
-                  />
-
-                  <label htmlFor="foodEquivalent">Food Equivalent</label>
-                  <input
-                    id="foodEquivalent"
-                    type="text"
-                    name="foodEquivalent"
-                    value={newData.foodEquivalent}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 1 cup"
-                    className="input-field"
-                    aria-label="Food Equivalent"
-                  />
-
-                  <div className="button-group">
-                    <motion.button
-                      onClick={
-                        isEditing ? updateAssociationHandler : createAssociationHandler
-                      }
-                      disabled={loading}
-                      className="submit-button nutrient-specialist-button primary"
-                      whileHover={{
-                        scale: loading ? 1 : 1.05,
-                      }}
-                      whileTap={{
-                        scale: loading ? 1 : 0.95,
-                      }}
-                    >
-                      {loading
-                        ? isEditing
-                          ? "Updating..."
-                          : "Creating..."
-                        : isEditing
-                        ? "Update Association"
-                        : "Create Association"}
-                    </motion.button>
-                    {isEditing && (
-                      <motion.button
-                        onClick={cancelEdit}
-                        disabled={loading}
-                        className="cancel-button nutrient-specialist-button secondary"
-                        whileHover={{ scale: loading ? 1 : 1.05 }}
-                        whileTap={{ scale: loading ? 1 : 0.95 }}
-                      >
-                        Cancel
-                      </motion.button>
-                    )}
-                  </div>
+                  ))}
+                </select>
+                <label htmlFor="nutrient-equivalent">Nutrient Equivalent <span className="required">*</span></label>
+                <input
+                  id="nutrient-equivalent"
+                  type="number"
+                  name="nutrientEquivalent"
+                  value={newFoodNutrient.nutrientEquivalent}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 100"
+                  className="input-field"
+                  aria-label="Nutrient equivalent"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+                <label htmlFor="unit">Unit <span className="required">*</span></label>
+                <input
+                  id="unit"
+                  type="text"
+                  name="unit"
+                  value={newFoodNutrient.unit}
+                  onChange={handleInputChange}
+                  placeholder="e.g., mg"
+                  className="input-field"
+                  aria-label="Unit"
+                  required
+                />
+                <label htmlFor="amount-per-unit">Amount per Unit <span className="required">*</span></label>
+                <input
+                  id="amount-per-unit"
+                  type="number"
+                  name="amountPerUnit"
+                  value={newFoodNutrient.amountPerUnit}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 100"
+                  className="input-field"
+                  aria-label="Amount per unit"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+                <label htmlFor="total-weight">Total Weight <span className="required">*</span></label>
+                <input
+                  id="total-weight"
+                  type="number"
+                  name="totalWeight"
+                  value={newFoodNutrient.totalWeight}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 200"
+                  className="input-field"
+                  aria-label="Total weight"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+                <label htmlFor="food-equivalent">Food Equivalent <span className="required">*</span></label>
+                <input
+                  id="food-equivalent"
+                  type="text"
+                  name="foodEquivalent"
+                  value={newFoodNutrient.foodEquivalent}
+                  onChange={handleInputChange}
+                  placeholder="e.g., 1 cup"
+                  className="input-field"
+                  aria-label="Food equivalent"
+                  required
+                />
+                <div className="button-group">
+                  <motion.button
+                    onClick={addFoodNutrientHandler}
+                    disabled={loading || foods.length === 0 || nutrients.length === 0}
+                    className="submit-button nutrient-specialist-button primary"
+                    whileHover={{
+                      scale: loading || foods.length === 0 || nutrients.length === 0 ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: loading || foods.length === 0 || nutrients.length === 0 ? 1 : 0.95,
+                    }}
+                  >
+                    {loading ? "Adding..." : "Add Nutrient to Food"}
+                  </motion.button>
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
           <div className="nutrient-list-section">
             <div className="section-header">
-              <h2>Association List</h2>
+              <h2>Nutrient-Food Associations</h2>
               <div className="nutrient-count">
-                {associations.length}{" "}
-                {associations.length === 1 ? "association" : "associations"} found
+                {foodNutrients.length}{" "}
+                {foodNutrients.length === 1 ? "association" : "associations"} found
               </div>
             </div>
             {loading ? (
@@ -606,7 +536,7 @@ const NutrientInFoodManagement = () => {
                 <LoaderIcon />
                 <p>Loading associations...</p>
               </div>
-            ) : associations.length === 0 ? (
+            ) : foodNutrients.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -623,68 +553,53 @@ const NutrientInFoodManagement = () => {
                   />
                 </svg>
                 <h3>No associations found</h3>
-                <p>Create your first association to get started</p>
+                <p>Create your first nutrient-food association to get started</p>
               </div>
             ) : (
-              <div className="nutrient-grid">
-                {associations.map((assoc) => (
-                  <motion.div
-                    key={`${assoc.foodId}-${assoc.nutrientId}`}
-                    className="nutrient-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <div className="card-header">
-                      <h3>{assoc.foodName} - {assoc.nutrientName}</h3>
-                    </div>
-                    <p className="card-description">
-                      Amount: {assoc.amountPerUnit} {assoc.unit}
-                    </p>
-                    <p className="card-description">
-                      Total Weight: {assoc.totalWeight}
-                    </p>
-                    <p className="card-description">
-                      Nutrient Equivalent: {assoc.nutrientEquivalent}
-                    </p>
-                    <p className="card-description">
-                      Food Equivalent: {assoc.foodEquivalent || 'N/A'}
-                    </p>
-                    <div className="card-actions">
-                      <motion.button
-                        onClick={() => {
-                          setSelectedAssociation(assoc);
-                          setNewData({
-                            foodId: assoc.foodId,
-                            nutrientId: assoc.nutrientId,
-                            nutrientEquivalent: assoc.nutrientEquivalent || '',
-                            unit: assoc.unit,
-                            amountPerUnit: assoc.amountPerUnit,
-                            totalWeight: assoc.totalWeight,
-                            foodEquivalent: assoc.foodEquivalent || '',
-                          });
-                          setIsEditing(true);
-                        }}
-                        className="edit-button nutrient-specialist-button primary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label={`Edit association`}
+              <div className="nutrient-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Nutrient</th>
+                      <th>Food</th>
+                      <th>Nutrient Equivalent</th>
+                      <th>Unit</th>
+                      <th>Amount per Unit</th>
+                      <th>Total Weight</th>
+                      <th>Food Equivalent</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {foodNutrients.map((item) => (
+                      <motion.tr
+                        key={item.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.3 }}
                       >
-                        <span>Edit</span>
-                      </motion.button>
-                      <motion.button
-                        onClick={() => deleteAssociationHandler(assoc.foodId, assoc.nutrientId)}
-                        className="delete-button nutrient-specialist-button secondary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label={`Delete association`}
-                      >
-                        <span>Delete</span>
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                ))}
+                        <td>{item.nutrientName}</td>
+                        <td>{item.foodName}</td>
+                        <td>{item.nutrientEquivalent || "N/A"}</td>
+                        <td>{item.unit || "N/A"}</td>
+                        <td>{item.amountPerUnit || "N/A"}</td>
+                        <td>{item.totalWeight || "N/A"}</td>
+                        <td>{item.foodEquivalent || "N/A"}</td>
+                        <td>
+                          <motion.button
+                            onClick={() => deleteFoodNutrientHandler(item.foodId, item.nutrientId)}
+                            className="delete-button nutrient-specialist-button secondary"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            aria-label={`Delete ${item.nutrientName} in ${item.foodName}`}
+                          >
+                            <span>Delete</span>
+                          </motion.button>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
