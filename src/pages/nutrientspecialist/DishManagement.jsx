@@ -55,8 +55,7 @@ const DishManagement = () => {
   const [dishes, setDishes] = useState([]);
   const [foods, setFoods] = useState([]);
   const [newDish, setNewDish] = useState({
-    name: "",
-    foodList: [], // Now stores objects with { foodId, unit, amount }
+    foodList: [], // Stores objects with { foodId, unit, amount }
   });
   const [selectedDish, setSelectedDish] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -77,16 +76,25 @@ const DishManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [dishesData, foodsData] = await Promise.all([
+      const [dishesResponse, foodsData] = await Promise.all([
         getAllDishes(),
         getAllFoods(),
       ]);
-      console.log("Fetched dishes:", dishesData);
+      console.log("Fetched dishes response:", dishesResponse);
       console.log("Fetched foods:", foodsData);
-      setDishes(dishesData);
-      setFoods(foodsData);
+      // Extract the 'data' array from the dishes response
+      const dishesData = dishesResponse?.data || [];
+      setDishes(Array.isArray(dishesData) ? dishesData : []);
+      setFoods(Array.isArray(foodsData) ? foodsData : []);
     } catch (err) {
+      console.error("Fetch error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       showNotification(`Failed to fetch data: ${err.message}`, "error");
+      setDishes([]);
+      setFoods([]);
     } finally {
       setLoading(false);
     }
@@ -100,12 +108,11 @@ const DishManagement = () => {
       console.log("Fetched dish data:", data);
       setSelectedDish(data);
       setNewDish({
-        name: data.name || "",
-        foodList: data.foodList.map(food => ({
-          foodId: food.id,
-          unit: food.unit || "grams",
+        foodList: Array.isArray(data.foods) ? data.foods.map(food => ({
+          foodId: food.foodId,
+          unit: food.unit === "g" ? "grams" : food.unit, // Normalize unit for UI
           amount: food.amount || 0,
-        })) || [],
+        })) : [],
       });
       setIsEditing(true);
     } catch (err) {
@@ -116,10 +123,6 @@ const DishManagement = () => {
   };
 
   const createDishHandler = async () => {
-    if (!newDish.name.trim()) {
-      showNotification("Dish name is required", "error");
-      return;
-    }
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
       return;
@@ -132,28 +135,31 @@ const DishManagement = () => {
     try {
       console.log("Creating dish with data:", newDish);
       await createDish({
-        name: newDish.name,
-        foodList: newDish.foodList,
+        foodList: newDish.foodList.map(food => ({
+          foodId: food.foodId,
+          unit: food.unit === "grams" ? "g" : food.unit, // Normalize unit for API
+          amount: food.amount,
+        })),
       });
       setNewDish({
-        name: "",
         foodList: [],
       });
       setIsEditing(false);
       await fetchData();
       showNotification("Dish created successfully", "success");
     } catch (err) {
-      showNotification(`Failed to create dish: ${err.message}`, "error");
+      console.error("Create dish error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(`Failed to create dish: ${err.response?.data?.message || err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const updateDishHandler = async () => {
-    if (!newDish.name.trim()) {
-      showNotification("Dish name is required", "error");
-      return;
-    }
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
       return;
@@ -164,14 +170,16 @@ const DishManagement = () => {
     }
     setLoading(true);
     try {
-      console.log("Updating dish with ID:", selectedDish.id);
+      console.log("Updating dish with ID:", selectedDish?.id);
       await updateDish({
-        dishID: selectedDish.id,
-        name: newDish.name,
-        foodList: newDish.foodList,
+        dishId: selectedDish?.id,
+        foodList: newDish.foodList.map(food => ({
+          foodId: food.foodId,
+          unit: food.unit === "grams" ? "g" : food.unit, // Normalize unit for API
+          amount: food.amount,
+        })),
       });
       setNewDish({
-        name: "",
         foodList: [],
       });
       setSelectedDish(null);
@@ -179,7 +187,7 @@ const DishManagement = () => {
       await fetchData();
       showNotification("Dish updated successfully", "success");
     } catch (err) {
-      showNotification(`Failed to update dish: ${err.message}`, "error");
+      showNotification(`Failed to update dish: ${err.response?.data?.message || err.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -194,7 +202,6 @@ const DishManagement = () => {
       setSelectedDish(null);
       setIsEditing(false);
       setNewDish({
-        name: "",
         foodList: [],
       });
       await fetchData();
@@ -208,16 +215,10 @@ const DishManagement = () => {
 
   const cancelEdit = () => {
     setNewDish({
-      name: "",
       foodList: [],
     });
     setSelectedDish(null);
     setIsEditing(false);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewDish({ ...newDish, [name]: value });
   };
 
   const handleFoodSelect = (foodId) => {
@@ -262,11 +263,11 @@ const DishManagement = () => {
 
   const sidebarVariants = {
     open: {
-      width: "min(320px, 30vw)", // Increased width for consistency
+      width: "min(320px, 30vw)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: "min(80px, 20vw)", // Increased width for consistency
+      width: "min(80px, 20vw)",
       transition: { duration: 0.3, ease: "easeIn" },
     },
   };
@@ -460,17 +461,6 @@ const DishManagement = () => {
             )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="dish-name">Dish Name</label>
-                <input
-                  id="dish-name"
-                  type="text"
-                  name="name"
-                  value={newDish.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Vegetable Puree"
-                  className="input-field"
-                  aria-label="Dish name"
-                />
                 <label htmlFor="food-selection">Select Foods</label>
                 <div className="food-selection-container">
                   {foods.map(food => (
@@ -495,7 +485,7 @@ const DishManagement = () => {
                     <h4>Food Details</h4>
                     {newDish.foodList.map(food => (
                       <div key={food.foodId} className="food-detail-item">
-                        <span>{foods.find(f => f.id === food.foodId)?.name}</span>
+                        <span>{foods.find(f => f.id === food.foodId)?.name || "Unknown Food"}</span>
                         <div className="food-detail-inputs">
                           <select
                             value={food.unit}
@@ -568,7 +558,7 @@ const DishManagement = () => {
                 <LoaderIcon />
                 <p>Loading dishes...</p>
               </div>
-            ) : dishes.length === 0 ? (
+            ) : !Array.isArray(dishes) || dishes.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -599,15 +589,15 @@ const DishManagement = () => {
                     whileHover={{ y: -5 }}
                   >
                     <div className="card-header">
-                      <h3>{dish.name || "Unnamed Dish"}</h3>
+                      <h3>Dish #{dish.id}</h3>
                     </div>
                     <div className="food-list">
                       <h4>Foods:</h4>
                       <ul>
-                        {dish.foodList && dish.foodList.length > 0 ? (
-                          dish.foodList.map(food => (
-                            <li key={food.id}>
-                              {food.name} ({food.amount} {food.unit})
+                        {Array.isArray(dish.foods) && dish.foods.length > 0 ? (
+                          dish.foods.map(food => (
+                            <li key={food.foodId}>
+                              {food.foodName || foods.find(f => f.id === food.foodId)?.name || "Unknown Food"} ({food.amount} {food.unit})
                             </li>
                           ))
                         ) : (
