@@ -6,7 +6,7 @@ import { getAllCustomChecklistsByGrowthData } from "../../apis/custom-checklist-
 import { getAllChecklistProgressForGrowthData } from "../../apis/template-checklist-api";
 
 const TrimesterChecklists = ({ growthDataId, token }) => {
-  const [activeTab, setActiveTab] = useState("second");
+  const [activeTab, setActiveTab] = useState("first");
   const [templateChecklists, setTemplateChecklists] = useState([]);
   const [customChecklists, setCustomChecklists] = useState([]);
   const [loading, setLoading] = useState(false);

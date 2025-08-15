@@ -1,0 +1,366 @@
+.checkup-calendar {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.2rem;
+  box-shadow: var(--shadow);
+  max-width: 1420px;
+  margin: auto;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* HEADER */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.calendar-header select {
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--light-border);
+  background: var(--light-bg);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.calendar-header select:hover {
+  background: #f5f5f5;
+}
+.calendar-controller-header {
+  display: flex;
+  gap: 0.5rem;
+}
+.calendar-controller-header select {
+ font-weight: bold;
+}
+
+.calendar-controller-header button {
+  background: #02808F;
+  color: var(--white-text);
+  width: 100px;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.calendar-controller-header button:hover {
+  transform: translateY(-2px);
+  transition: 0.2s ease-in;
+  box-shadow: var(--shadow-hover);
+}
+.calendar-day.selected {
+  outline: 3px solid #034b67;
+  background: rgba(237, 251, 255, 0.65);
+  transform: scale(1.05);
+}
+.calendar-day.appointment-highlight {
+  background: #049aa8;
+  font-weight: bold;
+  color: white;
+}
+.calendar-day.appointment-highlight:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: scale(1.05);
+  background: #049aa8;
+  color: white;
+}
+
+.today-calendar-btn {
+  background: #02808F;
+  color: var(--white-text);
+  width: 200px;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.today-calendar-btn:hover {
+  transform: translateY(-2px);
+  transition: 0.2s ease-in;
+  box-shadow: var(--shadow-hover);
+}
+
+
+
+
+/* GRID */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.3rem;
+}
+
+.calendar-day-name {
+  font-weight: bold;
+  text-align: center;
+  padding: 0.4rem;
+  color: var(--nguyen-accent-color);
+  font-size: 0.85rem;
+}
+
+/* DAYS */
+.calendar-day {
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s, transform 0.1s;
+  border: 1px solid transparent;
+}
+
+.calendar-day:hover {
+  background: rgba(0, 0, 0, 0.05);
+  transform: scale(1.05);
+}
+
+/* TODAY */
+.calendar-day.today {
+  background: var(--nguyen-accent-color);
+  color: var(--white-text);
+  font-weight: bold;
+  border: 1px solid var(--nguyen-accent-color-dark);
+}
+
+/* REMINDER */
+.calendar-day.reminder {
+  background: #fff4c2;
+  border: 1px solid #fdd835;
+  font-weight: bold;
+  color: #6a4f00;
+}
+
+.calendar-day.reminder:hover {
+  background: #ffe97a;
+}
+
+/* EMPTY */
+.calendar-day.empty {
+  background: transparent;
+  cursor: default;
+  border: none;
+}
+
+/* REMINDER DETAILS */
+.reminder-details {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  color: var(--nguyen-accent-color);
+  background: var(--light-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-inner);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.reminder-details h5 {
+  margin: 0 0 0.3rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--nguyen-primary-bg);
+}
+
+.reminder-details p {
+  margin: 0.2rem 0;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+.calendar-day.outside-month {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calendar-instruction {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  display: flex;
+  gap: 1rem;
+}
+
+.instruction {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+.instruction.appointment-highlight {
+  color: #049AA8;
+}
+.instruction.today {
+  color: #04668D;
+}
+
+.instruction.recommended {
+  color: #038474;
+}
+
+.instruction.urgent {
+  color: #e74c3c;
+}
+
+/* Colors for days */
+.calendar-day.today {
+  background: #04668D;
+  color: white;
+}
+
+.calendar-day.recommended {
+  background: #038474;
+  color: white;
+}
+
+.calendar-day.urgent {
+  background: #e74c3c;
+  color: white;
+}
+/* Range highlights */
+.calendar-day.reminder-start {
+  outline: 2px solid #333;
+  font-weight: bold;
+}
+
+.calendar-day.reminder-end {
+  outline: 2px solid #333;
+  font-weight: bold;
+}
+
+.calendar-day.reminder-middle {
+  opacity: 0.5;
+}
+
+/* Urgent & Recommended colors applied on top */
+.calendar-day.reminder-start.urgent,
+.calendar-day.reminder-end.urgent {
+  background: #e74c3c;
+  color: white;
+}
+
+.calendar-day.reminder-middle.urgent {
+  background: rgba(231, 76, 60, 0.4);
+}
+
+.calendar-day.reminder-start.recommended,
+.calendar-day.reminder-end.recommended {
+  background: #038474;
+  color: white;
+}
+
+.calendar-day.reminder-middle.recommended {
+  background: rgba(3, 132, 116, 0.4);
+}
+
+/* --- Selected Reminder/Appointment Card Style --- */
+.reminder-details {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: none; /* Remove background to let each card handle its own */
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Each selected item card */
+.reminder-item {
+  background: linear-gradient(145deg, #fff, #f9faff);
+  border-radius: 12px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.07),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 1.25rem 1.5rem;
+  border-left: 6px solid transparent;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  white-space: normal;       
+  word-break: break-word;    
+  line-height: 1.4; 
+}
+
+.reminder-item:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.07);
+}
+
+/* Color codes */
+.reminder-item.recommended {
+  border-left-color: #038474;
+}
+.reminder-item.urgent {
+  border-left-color: #e74c3c;
+}
+.reminder-item.appointment {
+  border-left-color: #049AA8;
+  
+}
+.appointment {
+  flex-direction: column;
+}
+
+/* Card text styles */
+.reminder-item h5 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--nguyen-primary-bg);
+  margin-bottom: 0.4rem;
+}
+
+.reminder-datetime,
+.reminder-dates {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--nguyen-accent-color);
+  margin-bottom: 0.4rem;
+}
+
+.reminder-doctor {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--nguyen-accent-color);
+  margin-bottom: 0.4rem;
+}
+
+.reminder-address {
+  font-size: 0.85rem;
+  color: var(--text-color);
+  margin-bottom: 0.4rem;
+}
+
+.reminder-note {
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+}
+.reminder-datetime,
+.reminder-doctor,
+.reminder-address,
+.reminder-note {
+  display: block;
+}
+
+/* Add small visual spacing between each section */
+.reminder-datetime:not(:last-child),
+.reminder-doctor:not(:last-child),
+.reminder-address:not(:last-child),
+.reminder-note:not(:last-child) {
+  margin-bottom: 0.3rem;
+}
+
+
+
+
+/* FADE-IN ANIMATION */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}

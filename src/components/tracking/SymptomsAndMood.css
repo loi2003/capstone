@@ -39,7 +39,7 @@
 }
 
 .mood-section h4 {
-  color: var(--nguyen-primary-bg);
+  color: var(--nguyen-accent-color);
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -109,7 +109,7 @@
 }
 
 .symptoms-section h4 {
-  color: var(--nguyen-primary-bg);
+  color: var(--nguyen-accent-color);
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -125,6 +125,7 @@
 .symptom-checkbox {
   display: flex;
   align-items: center;
+  vertical-align: middle;
   gap: 0.75rem;
   padding: 0.75rem;
   border-radius: 6px;
@@ -143,13 +144,18 @@
 }
 
 .checkmark {
+  display: inline-block;
   width: 20px;
   height: 20px;
+  bottom: 2px;
+  vertical-align: middle;
+  margin-right: 0.5rem;
   border: 2px solid var(--nguyen-accent-color);
   border-radius: 4px;
   position: relative;
   transition: var(--transition);
 }
+
 
 .symptom-checkbox input[type="checkbox"]:checked + .checkmark {
   background: var(--nguyen-primary-bg);
@@ -187,6 +193,95 @@
   border-color: var(--nguyen-primary-bg);
   color: var(--nguyen-primary-bg);
 }
+
+.symptom-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.symptom-popup {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+}
+
+.symptom-popup h5 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.symptom-popup input {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.symptom-popup input:focus {
+  outline: none;
+  border-color: #046694;
+  box-shadow: 0 0 5px rgba(106, 192, 254, 0.3);
+}
+
+.symptom-popup-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.symptom-submit-btn,
+.symptom-cancel-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.symptom-popup-buttons {
+  gap: 1.5rem;
+  padding: 1rem 0.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.symptom-submit-btn {
+  background: var(--nguyen-primary-bg);
+  color: var(--light-text, #ffffff);
+  border: none;
+}
+
+.symptom-cancel-btn {
+  background: var(--color-general, #f9f9f9);
+  color: var(--dark-text, #333333);
+  border: 2px dashed #04668d;
+}
+.symptom-submit-btn:hover {
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+.symptom-cancel-btn:hover {
+  background: #e74c3c;
+  border: 2px solid #e74c3c;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  color: white;
+}
+
+
 
 @media (max-width: 768px) {
   .mood-selector {

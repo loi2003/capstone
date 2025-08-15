@@ -6,7 +6,7 @@ import {
   setSeconds,
   setMilliseconds,
 } from 'date-fns'
-import { vi } from 'date-fns/locale'
+import { enUS, vi } from 'date-fns/locale'
 
 /**
  * Converts a date and time string to ISO string using date-fns
@@ -41,7 +41,7 @@ export const convertToISOString = (date, timeString) => {
  * @returns {string}
  */
 export const formatDateForDisplay = (date) => {
-  return format(date, 'EEEE, d MMMM yyyy', { locale: vi })
+  return format(date, 'EEEE, d MMMM yyyy', { locale: enUS })
 }
 
 /**
