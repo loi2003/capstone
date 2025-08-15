@@ -12,7 +12,7 @@ import {
 } from "../../apis/nutriet-api";
 import "../../styles/NutrientCategoryManagement.css";
 
-// SVG Icons (unchanged)
+// SVG Icons (only SearchIcon kept)
 const SearchIcon = () => (
   <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <path
@@ -23,43 +23,8 @@ const SearchIcon = () => (
     />
   </svg>
 );
-const SuccessIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M5 13l4 4L19 7"
-    />
-  </svg>
-);
-const ErrorIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-    />
-  </svg>
-);
-const LoaderIcon = () => (
-  <svg
-    className="icon loader"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M4 12a8 8 0 1116 0 8 8 0 01-16 0zm8-8v2m0 12v2m8-8h-2m-12 0H4m15.364 4.364l-1.414-1.414M6.05 6.05l1.414 1.414"
-    />
-  </svg>
-);
 
-// Notification Component (unchanged)
+// Notification Component (simplified, no icons)
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -76,9 +41,6 @@ const Notification = ({ message, type }) => {
       exit={{ x: "100%", opacity: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      <div className="notification-icon">
-        {type === "success" ? <SuccessIcon /> : <ErrorIcon />}
-      </div>
       <div className="notification-content">
         <h4>{type === "success" ? "Success" : "Error"}</h4>
         <p>{message}</p>
@@ -200,6 +162,14 @@ const NutrientCategoryManagement = () => {
 
   // Delete category
   const deleteCategory = async (id) => {
+    const category = categories.find((cat) => cat.id === id);
+    if (category && category.nutrientCount > 0) {
+      showNotification(
+        "Cannot delete category: It contains nutrients",
+        "error"
+      );
+      return;
+    }
     if (window.confirm("Are you sure you want to delete this category?")) {
       setLoading(true);
       try {
@@ -468,7 +438,7 @@ const NutrientCategoryManagement = () => {
               <svg
                 width="24"
                 height="24"
-                viewBox="0 0 24 24"
+                viewBox="0 0 24 22"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="Sprout icon for nutrient management"
@@ -610,25 +580,10 @@ const NutrientCategoryManagement = () => {
             </div>
             {loading ? (
               <div className="loading-state">
-                <LoaderIcon />
                 <p>Loading categories...</p>
               </div>
             ) : filteredCategories.length === 0 ? (
               <div className="empty-state">
-                <svg
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
                 <h3>No categories found</h3>
                 <p>Create your first nutrient category to get started</p>
                 {searchTerm && (
