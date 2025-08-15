@@ -629,72 +629,89 @@ export const deleteAgeGroup = async (ageGroupId) => {
     throw error;
   }
 };
+
 export const getAllDishes = async () => {
   try {
-    const response = await apiClient.get(`/api/Dish`, {
+    const response = await apiClient.get(`/api/dish/view-all-dishes`, {
       headers: {
         "Accept": "application/json",
       },
     });
-    return response.data;
+    return response.data; // Returns { error: 0, message: null, data: [...] }
   } catch (error) {
-    console.error("Error fetching all dishes:", error.response?.data || error.message);
+    console.error("Error fetching all dishes:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw error;
   }
 };
 
+// Fetch dish by ID
 export const getDishById = async (dishId) => {
   try {
-    const response = await apiClient.get(`/api/Dish/${dishId}`, {
+    if (!dishId || dishId === '') {
+      throw new Error('Dish ID is null or empty');
+    }
+    const response = await apiClient.get(`/api/dish/view-dish-by-id?dishId=${dishId}`, {
       headers: {
         "Accept": "application/json",
       },
     });
     return response.data;
   } catch (error) {
-    console.error("Error fetching dish by ID:", error.response?.data || error.message);
-    throw error;
-  }
-};
-export const createDish = async (dishData) => {
-  try {
-    const response = await apiClient.post(
-      `/api/Dish/CreateDish`,
-      {
-        name: dishData.name,
-        foodList: dishData.foodList.map(food => ({
-          foodId: food.foodId,
-          unit: food.unit,
-          amount: food.amount,
-        })),
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error creating dish:", error.response?.data || error.message);
+    console.error("Error fetching dish by ID:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw error;
   }
 };
 
+// Create a new dish
+export const createDish = async (dishData) => {
+  try {
+    const payload = {
+      foodList: dishData.foodList.map(food => ({
+        foodId: food.foodId,
+        unit: food.unit === "grams" ? "g" : food.unit, // Normalize unit for API
+        amount: food.amount,
+      })),
+    };
+    console.log('Sending create dish request with payload:', payload);
+
+    const response = await apiClient.post(`/api/dish/add-dish`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error creating dish:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+// Update an existing dish
 export const updateDish = async (dishData) => {
   try {
-    if (!dishData.dishID || dishData.dishID === '') {
+    if (!dishData.dishId || dishData.dishId === '') {
       throw new Error('Dish ID is null or empty');
     }
     const response = await apiClient.put(
-      `/api/Dish/update-dish`,
+      `/api/dish/update-dish`,
       {
-        dishID: dishData.dishID,
-        name: dishData.name,
+        dishId: dishData.dishId,
         foodList: dishData.foodList.map(food => ({
           foodId: food.foodId,
-          unit: food.unit,
+          unit: food.unit === "grams" ? "g" : food.unit, // Normalize unit for API
           amount: food.amount,
         })),
       },
@@ -705,22 +722,36 @@ export const updateDish = async (dishData) => {
         },
       }
     );
+    console.log("Update dish response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error updating dish:", error.response?.data || error.message);
+    console.error("Error updating dish:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw error;
   }
 };
+
+// Delete a dish
 export const deleteDish = async (dishId) => {
   try {
-    const response = await apiClient.delete(`/api/Dish/${dishId}`, {
+    if (!dishId || dishId === '') {
+      throw new Error('Dish ID is null or empty');
+    }
+    const response = await apiClient.delete(`/api/dish/delete-dish-by-id?dishId=${dishId}`, {
       headers: {
         "Accept": "application/json",
       },
     });
     return response.data;
   } catch (error) {
-    console.error("Error deleting dish:", error.response?.data || error.message);
+    console.error("Error deleting dish:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw error;
   }
 };
