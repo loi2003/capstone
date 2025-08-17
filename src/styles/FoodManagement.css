@@ -1,5 +1,3 @@
-/* FoodManagement.css */
-
 /* Scoped variables */
 .food-management {
   --blue-primary: #1e88e5;
@@ -14,8 +12,8 @@
   --blue-shadow-hover: 0 8px 24px rgba(30, 136, 229, 0.15);
   --blue-border-radius: 8px;
   --blue-transition: all 0.3s ease;
-  --sidebar-width-open: min(320px, 30vw); /* Increased width for open sidebar */
-  --sidebar-width-closed: min(80px, 20vw); /* Increased width for closed sidebar */
+  --sidebar-width-open: min(320px, 30vw);
+  --sidebar-width-closed: min(80px, 20vw);
 
   display: flex;
   min-height: 100vh;
@@ -34,7 +32,8 @@
 .food-management.dark-theme .form-section,
 .food-management.dark-theme .form-card,
 .food-management.dark-theme .category-list-section,
-.food-management.dark-theme .category-card {
+.food-management.dark-theme .category-card,
+.food-management.dark-theme .modal-content {
   background: #1a3c6b;
   color: var(--blue-white);
 }
@@ -55,12 +54,16 @@
 .food-management.dark-theme .management-header h1,
 .food-management.dark-theme .page-indicator,
 .food-management.dark-theme .card-category,
-.food-management.dark-theme .card-safety {
+.food-management.dark-theme .card-safety,
+.food-management.dark-theme .modal-header h2,
+.food-management.dark-theme .modal-details p,
+.food-management.dark-theme .modal-details p strong {
   color: var(--blue-white);
 }
 
 .food-management.dark-theme .card-description,
-.food-management.dark-theme .management-header p {
+.food-management.dark-theme .management-header p,
+.food-management.dark-theme .modal-details p {
   color: #d6e9ff;
 }
 
@@ -119,7 +122,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 85%; /* Increased to accommodate longer titles */
+  max-width: 85%;
 }
 
 .food-management .nutrient-specialist-sidebar.closed .logo span {
@@ -597,18 +600,19 @@
   z-index: 2000;
   padding: 1rem;
   box-sizing: border-box;
+  overflow: hidden; /* Prevent scrolling of the modal backdrop */
 }
 
 .food-management .modal-content {
   background: var(--blue-white);
   border-radius: 12px;
   padding: 2rem;
-  max-width: 600px;
-  width: 100%;
+  max-width: 900px;
+  width: 90%;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   position: relative;
-  max-height: 85vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  overflow: hidden; /* Prevent scrolling of modal content */
   box-sizing: border-box;
   border: 1px solid var(--blue-accent);
 }
@@ -616,7 +620,6 @@
 .food-management.dark-theme .modal-content {
   background: #1e2a44;
   border-color: #3a5a9a;
-  color: var(--blue-white);
 }
 
 .food-management .modal-header {
@@ -626,6 +629,7 @@
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid var(--blue-accent);
+  position: relative;
 }
 
 .food-management.dark-theme .modal-header {
@@ -634,7 +638,7 @@
 
 .food-management .modal-header h2 {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   font-weight: 600;
   color: var(--blue-primary);
 }
@@ -652,6 +656,9 @@
   align-items: center;
   justify-content: center;
   transition: transform var(--blue-transition);
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
 }
 
 .food-management .modal-close-button:hover {
@@ -670,39 +677,46 @@
 }
 
 .food-management .modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.food-management .modal-details {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.food-management .modal-body p {
+.food-management .modal-details p {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.1rem;
   line-height: 1.6;
   color: var(--blue-text);
 }
 
-.food-management.dark-theme .modal-body p {
+.food-management.dark-theme .modal-details p {
   color: #d6e9ff;
 }
 
-.food-management .modal-body p strong {
+.food-management .modal-details p strong {
   font-weight: 600;
   color: var(--blue-primary);
 }
 
-.food-management.dark-theme .modal-body p strong {
-  color: var(--blue-accent);
+.food-management.dark-theme .modal-details p strong {
+  color: var(--blue-white);
 }
 
 .food-management .modal-image {
-  width: 250px;
-  height: 250px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 350px;
+  height: 350px;
   border-radius: 10px;
   overflow: hidden;
-  margin: 0 auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin: 0;
 }
 
 .food-management.dark-theme .modal-image {
@@ -715,6 +729,69 @@
   object-fit: cover;
 }
 
+/* Responsive adjustments for modal */
+@media (max-width: 768px) {
+  .food-management .modal-content {
+    max-width: 95%;
+    padding: 1.5rem;
+  }
+
+  .food-management .modal-body {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .food-management .modal-image {
+    max-width: 300px;
+    height: 300px;
+    margin: 0 auto;
+  }
+
+  .food-management .modal-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .food-management .modal-details p {
+    font-size: 1rem;
+  }
+
+  .food-management .modal-close-button {
+    top: 0.75rem;
+    right: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .food-management .modal-content {
+    max-width: 95%;
+    padding: 1rem;
+  }
+
+  .food-management .modal-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .food-management .modal-details p {
+    font-size: 0.9rem;
+  }
+
+  .food-management .modal-image {
+    max-width: 200px;
+    height: 200px;
+  }
+
+  .food-management .modal-close-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .food-management .modal-close-button {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}
+
+/* Other existing styles */
 .food-management .card-actions {
   display: flex;
   gap: 0.5rem;
@@ -916,24 +993,6 @@
     max-width: calc(100% - 1rem);
     max-height: calc(100% - 1rem);
   }
-
-  .food-management .modal-content {
-    max-width: 90%;
-    padding: 1.5rem;
-  }
-
-  .food-management .modal-header h2 {
-    font-size: 1.25rem;
-  }
-
-  .food-management .modal-body p {
-    font-size: 0.9rem;
-  }
-
-  .food-management .modal-image {
-    width: 180px;
-    height: 180px;
-  }
 }
 
 @media (max-width: 480px) {
@@ -962,7 +1021,7 @@
 
   .food-management .logo span {
     font-size: 1rem;
-    max-width: 150px; /* Increased to accommodate longer titles */
+    max-width: 150px;
   }
 
   .food-management .logo-svg-container svg {
@@ -1050,28 +1109,5 @@
     height: 80px;
     max-width: calc(100% - 1rem);
     max-height: calc(100% - 1rem);
-  }
-
-  .food-management .modal-content {
-    max-width: 95%;
-    padding: 1rem;
-  }
-
-  .food-management .modal-header h2 {
-    font-size: 1.1rem;
-  }
-
-  .food-management .modal-body p {
-    font-size: 0.85rem;
-  }
-
-  .food-management .modal-image {
-    width: 140px;
-    height: 140px;
-  }
-
-  .food-management .modal-close-button svg {
-    width: 20px;
-    height: 20px;
   }
 }

@@ -11,8 +11,8 @@
   --blue-shadow-hover: 0 8px 24px rgba(30, 136, 229, 0.15);
   --blue-border-radius: 8px;
   --blue-transition: all 0.3s ease;
-  --sidebar-width-open: min(320px, 30vw); /* Increased width for open sidebar */
-  --sidebar-width-closed: min(80px, 20vw); /* Increased width for closed sidebar */
+  --sidebar-width-open: min(320px, 30vw);
+  --sidebar-width-closed: min(80px, 20vw);
 
   display: flex;
   min-height: 100vh;
@@ -31,7 +31,8 @@
 .food-category-management.dark-theme .form-section,
 .food-category-management.dark-theme .form-card,
 .food-category-management.dark-theme .category-list-section,
-.food-category-management.dark-theme .category-card {
+.food-category-management.dark-theme .category-card,
+.food-category-management.dark-theme .chart-section {
   background: #1a3c5e;
   color: var(--blue-white);
 }
@@ -112,7 +113,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 85%; /* Increased to accommodate longer titles */
+  max-width: 85%;
 }
 
 .food-category-management .nutrient-specialist-sidebar.closed .logo span {
@@ -278,6 +279,23 @@
   max-width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+/* Chart section */
+.food-category-management .chart-section {
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  padding: 1rem;
+  box-shadow: var(--blue-shadow);
+  margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.food-category-management .chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
 }
 
 /* Form section */
@@ -610,6 +628,10 @@
   .food-category-management .management-container {
     padding: 1rem;
   }
+
+  .food-category-management .chart-container {
+    height: 250px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -668,6 +690,10 @@
   .food-category-management .nutrient-specialist-button {
     max-width: 100%;
   }
+
+  .food-category-management .chart-container {
+    height: 200px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -696,7 +722,7 @@
 
   .food-category-management .logo span {
     font-size: 1rem;
-    max-width: 150px; /* Increased to accommodate longer titles */
+    max-width: 150px;
   }
 
   .food-category-management .logo-svg-container svg {
@@ -774,5 +800,9 @@
 
   .food-category-management .notification-content p {
     font-size: 0.8rem;
+  }
+
+  .food-category-management .chart-container {
+    height: 180px;
   }
 }

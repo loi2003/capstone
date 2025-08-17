@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +6,7 @@ import {
   getAllFoods,
   addNutrientsToFood,
   deleteFoodNutrient,
+  updateFoodNutrient,
 } from "../../apis/nutriet-api";
 import "../../styles/NutrientInFoodManagement.css";
 
@@ -63,6 +63,8 @@ const NutrientInFoodManagement = () => {
     totalWeight: "",
     foodEquivalent: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedFoodNutrient, setSelectedFoodNutrient] = useState(null);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
@@ -125,8 +127,13 @@ const NutrientInFoodManagement = () => {
       showNotification("All fields are required", "error");
       return;
     }
-    if (!nutrientEquivalent || !amountPerUnit || !totalWeight) {
-      showNotification("Please enter valid numbers for equivalent, amount, and weight", "error");
+    const numericFields = {
+      nutrientEquivalent: Number(nutrientEquivalent),
+      amountPerUnit: Number(amountPerUnit),
+      totalWeight: Number(totalWeight),
+    };
+    if (Object.values(numericFields).some(val => isNaN(val) || val <= 0)) {
+      showNotification("Nutrient Equivalent, Amount per Unit, and Total Weight must be greater than 0", "error");
       return;
     }
 
@@ -136,10 +143,10 @@ const NutrientInFoodManagement = () => {
         foodId,
         nutrients: [{
           nutrientId,
-          nutrientEquivalent: Number(nutrientEquivalent),
+          nutrientEquivalent: numericFields.nutrientEquivalent,
           unit,
-          amountPerUnit: Number(amountPerUnit),
-          totalWeight: Number(totalWeight),
+          amountPerUnit: numericFields.amountPerUnit,
+          totalWeight: numericFields.totalWeight,
           foodEquivalent,
         }],
       };
@@ -162,6 +169,86 @@ const NutrientInFoodManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const updateFoodNutrientHandler = async () => {
+    const { foodId, nutrientId, nutrientEquivalent, unit, amountPerUnit, totalWeight, foodEquivalent } = newFoodNutrient;
+    
+    // Validate all fields
+    if (!foodId || !nutrientId || !unit || !foodEquivalent) {
+      showNotification("All fields are required", "error");
+      return;
+    }
+    const numericFields = {
+      nutrientEquivalent: Number(nutrientEquivalent),
+      amountPerUnit: Number(amountPerUnit),
+      totalWeight: Number(totalWeight),
+    };
+    if (Object.values(numericFields).some(val => isNaN(val) || val <= 0)) {
+      showNotification("Nutrient Equivalent, Amount per Unit, and Total Weight must be greater than 0", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {
+        foodId,
+        nutrientId,
+        nutrientEquivalent: numericFields.nutrientEquivalent,
+        unit,
+        amountPerUnit: numericFields.amountPerUnit,
+        totalWeight: numericFields.totalWeight,
+        foodEquivalent,
+      };
+      console.log("Updating nutrient-food association with data:", payload);
+      await updateFoodNutrient(payload);
+      setNewFoodNutrient({
+        foodId: "",
+        nutrientId: "",
+        nutrientEquivalent: "",
+        unit: "",
+        amountPerUnit: "",
+        totalWeight: "",
+        foodEquivalent: "",
+      });
+      setIsEditing(false);
+      setSelectedFoodNutrient(null);
+      await fetchData();
+      showNotification("Nutrient-food association updated successfully", "success");
+    } catch (err) {
+      console.error("Update nutrient error:", err.response?.data || err.message);
+      showNotification(`Failed to update association: ${err.response?.data?.message || err.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const editFoodNutrientHandler = (foodNutrient) => {
+    setNewFoodNutrient({
+      foodId: foodNutrient.foodId,
+      nutrientId: foodNutrient.nutrientId,
+      nutrientEquivalent: foodNutrient.nutrientEquivalent || "",
+      unit: foodNutrient.unit || "",
+      amountPerUnit: foodNutrient.amountPerUnit || "",
+      totalWeight: foodNutrient.totalWeight || "",
+      foodEquivalent: foodNutrient.foodEquivalent || "",
+    });
+    setSelectedFoodNutrient(foodNutrient);
+    setIsEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setNewFoodNutrient({
+      foodId: "",
+      nutrientId: "",
+      nutrientEquivalent: "",
+      unit: "",
+      amountPerUnit: "",
+      totalWeight: "",
+      foodEquivalent: "",
+    });
+    setSelectedFoodNutrient(null);
+    setIsEditing(false);
   };
 
   const deleteFoodNutrientHandler = async (foodId, nutrientId) => {
@@ -389,7 +476,7 @@ const NutrientInFoodManagement = () => {
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
-              <h2>Add Nutrient to Food</h2>
+              <h2>{isEditing ? "Edit Nutrient-Food Association" : "Add Nutrient to Food"}</h2>
             </div>
             {(foods.length === 0 || nutrients.length === 0) && (
               <p className="no-results">
@@ -406,7 +493,7 @@ const NutrientInFoodManagement = () => {
                   onChange={handleInputChange}
                   className="input-field"
                   aria-label="Food selection"
-                  disabled={foods.length === 0}
+                  disabled={foods.length === 0 || isEditing}
                   required
                 >
                   <option value="" disabled>
@@ -426,7 +513,7 @@ const NutrientInFoodManagement = () => {
                   onChange={handleInputChange}
                   className="input-field"
                   aria-label="Nutrient selection"
-                  disabled={nutrients.length === 0}
+                  disabled={nutrients.length === 0 || isEditing}
                   required
                 >
                   <option value="" disabled>
@@ -449,7 +536,7 @@ const NutrientInFoodManagement = () => {
                   className="input-field"
                   aria-label="Nutrient equivalent"
                   required
-                  min="0"
+                  min="0.01"
                   step="0.01"
                 />
                 <label htmlFor="unit">Unit <span className="required">*</span></label>
@@ -475,7 +562,7 @@ const NutrientInFoodManagement = () => {
                   className="input-field"
                   aria-label="Amount per unit"
                   required
-                  min="0"
+                  min="0.01"
                   step="0.01"
                 />
                 <label htmlFor="total-weight">Total Weight <span className="required">*</span></label>
@@ -489,7 +576,7 @@ const NutrientInFoodManagement = () => {
                   className="input-field"
                   aria-label="Total weight"
                   required
-                  min="0"
+                  min="0.01"
                   step="0.01"
                 />
                 <label htmlFor="food-equivalent">Food Equivalent <span className="required">*</span></label>
@@ -506,7 +593,7 @@ const NutrientInFoodManagement = () => {
                 />
                 <div className="button-group">
                   <motion.button
-                    onClick={addFoodNutrientHandler}
+                    onClick={isEditing ? updateFoodNutrientHandler : addFoodNutrientHandler}
                     disabled={loading || foods.length === 0 || nutrients.length === 0}
                     className="submit-button nutrient-specialist-button primary"
                     whileHover={{
@@ -516,8 +603,19 @@ const NutrientInFoodManagement = () => {
                       scale: loading || foods.length === 0 || nutrients.length === 0 ? 1 : 0.95,
                     }}
                   >
-                    {loading ? "Adding..." : "Add Nutrient to Food"}
+                    {loading ? (isEditing ? "Updating..." : "Adding...") : (isEditing ? "Update Association" : "Add Nutrient to Food")}
                   </motion.button>
+                  {isEditing && (
+                    <motion.button
+                      onClick={cancelEdit}
+                      disabled={loading}
+                      className="cancel-button nutrient-specialist-button secondary"
+                      whileHover={{ scale: loading ? 1 : 1.05 }}
+                      whileTap={{ scale: loading ? 1 : 0.95 }}
+                    >
+                      Cancel
+                    </motion.button>
+                  )}
                 </div>
               </div>
             </div>
@@ -586,6 +684,15 @@ const NutrientInFoodManagement = () => {
                         <td>{item.totalWeight || "N/A"}</td>
                         <td>{item.foodEquivalent || "N/A"}</td>
                         <td>
+                          <motion.button
+                            onClick={() => editFoodNutrientHandler(item)}
+                            className="edit-button nutrient-specialist-button primary"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            aria-label={`Edit ${item.nutrientName} in ${item.foodName}`}
+                          >
+                            <span>Edit</span>
+                          </motion.button>
                           <motion.button
                             onClick={() => deleteFoodNutrientHandler(item.foodId, item.nutrientId)}
                             className="delete-button nutrient-specialist-button secondary"
