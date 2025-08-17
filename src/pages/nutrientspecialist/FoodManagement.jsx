@@ -107,26 +107,28 @@ const FoodDetailsModal = ({ food, category, onClose }) => {
           </button>
         </div>
         <div className="modal-body">
+          <div className="modal-details">
+            <p>
+              <strong>Description:</strong>{" "}
+              {food.description || "No description provided"}
+            </p>
+            <p>
+              <strong>Category:</strong>{" "}
+              {category ? category.name : "Uncategorized"}
+            </p>
+            <p>
+              <strong>Pregnancy Safe:</strong> {food.pregnancySafe ? "Yes" : "No"}
+            </p>
+            {food.safetyNote && (
+              <p>
+                <strong>Safety Note:</strong> {food.safetyNote}
+              </p>
+            )}
+          </div>
           {food.imageUrl && (
             <div className="modal-image">
               <img src={food.imageUrl} alt={food.name} />
             </div>
-          )}
-          <p>
-            <strong>Description:</strong>{" "}
-            {food.description || "No description provided"}
-          </p>
-          <p>
-            <strong>Category:</strong>{" "}
-            {category ? category.name : "Uncategorized"}
-          </p>
-          <p>
-            <strong>Pregnancy Safe:</strong> {food.pregnancySafe ? "Yes" : "No"}
-          </p>
-          {food.safetyNote && (
-            <p>
-              <strong>Safety Note:</strong> {food.safetyNote}
-            </p>
           )}
         </div>
       </motion.div>
@@ -884,7 +886,6 @@ const FoodManagement = () => {
                             <strong>Safety Note:</strong> {food.safetyNote}
                           </p>
                         )}
-
                         <div className="card-actions">
                           <motion.button
                             onClick={() => handleViewAll(food)}

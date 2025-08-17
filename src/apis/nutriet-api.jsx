@@ -755,3 +755,108 @@ export const deleteDish = async (dishId) => {
     throw error;
   }
 };
+
+
+// Allergy Category APIs
+export const getAllAllergyCategories = async () => {
+  try {
+    const response = await apiClient.get(`/api/allergy-category/view-all-allergy-category`, {
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all allergy categories:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllergyCategoryById = async (categoryId) => {
+  try {
+    if (!categoryId || categoryId === '') {
+      throw new Error('Allergy Category ID is null or empty');
+    }
+    const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id`, {
+      params: {
+        categoryId: categoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching allergy category by ID:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getAllergyCategoryWithAllergiesById = async (categoryId) => {
+  try {
+    if (!categoryId || categoryId === '') {
+      throw new Error('Allergy Category ID is null or empty');
+    }
+    const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id-with-allergies`, {
+      params: {
+        categoryId: categoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching allergy category with allergies by ID:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createAllergyCategory = async (categoryData) => {
+  try {
+    console.log("Creating allergy category with data:", categoryData);
+    const response = await apiClient.post(
+      `/api/allergy-category/add-allergy-category`,
+      {
+        name: categoryData.name,
+        description: categoryData.description,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    console.log("Create allergy category response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating allergy category:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
+
+export const deleteAllergyCategory = async (categoryId) => {
+  try {
+    if (!categoryId || categoryId === '') {
+      throw new Error('Allergy Category ID is null or empty');
+    }
+    const response = await apiClient.delete(`/api/allergy-category/delete-allergy-category-by-id`, {
+      params: {
+        categoryId: categoryId,
+      },
+      headers: {
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting allergy category:", error.response?.data || error.message);
+    throw error;
+  }
+};
