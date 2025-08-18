@@ -104,47 +104,50 @@ const UpcomingAppointments = ({
       </div>
 
       <div className="appointments-list">
-        {displayedAppointments.map((appointment) => (
-          <div
-            key={appointment.id}
-            className={`appointment-card ${appointment.color}`}
-          >
-            <div className="appointment-info">
-              <h4 className="appointment-name">{appointment.name}</h4>
-              <p className="doctor-name">Dr. {appointment.doctor}</p>
-              <div className="appointment-details">
-                <span className="appointment-time">
-                  <IoTimeOutline></IoTimeOutline>{" "}
-                  {formatDateForDisplay(appointment.start)}{" "}
-                  {formatTimeForDisplay(appointment.start)} -{" "}
-                  {formatTimeForDisplay(appointment.end)}
-                </span>
-                <span className="clinic-address">
-                  <HiOutlineLocationMarker></HiOutlineLocationMarker>{" "}
-                  {appointment.address}
-                </span>
+        {appointments.length === 0 ? (
+          <p className="no-appointments">No Upcoming Appointments yet!</p>
+        ) : (
+          displayedAppointments.map((appointment) => (
+            <div
+              key={appointment.id}
+              className={`appointment-card ${appointment.color}`}
+            >
+              <div className="appointment-info">
+                <h4 className="appointment-name">{appointment.name}</h4>
+                <p className="doctor-name">Dr. {appointment.doctor}</p>
+                <div className="appointment-details">
+                  <span className="appointment-time">
+                    <IoTimeOutline /> {formatDateForDisplay(appointment.start)}{" "}
+                    {formatTimeForDisplay(appointment.start)} -{" "}
+                    {formatTimeForDisplay(appointment.end)}
+                  </span>
+                  <span className="clinic-address">
+                    <HiOutlineLocationMarker /> {appointment.address}
+                  </span>
+                </div>
+
+                <p className="notes-label">
+                  <strong>Notes:</strong> {appointment.note}
+                </p>
+
+                <div className="appointment-type-section">
+                  <span className={`appointment-type ${appointment.typecolor}`}>
+                    {appointment.type}
+                  </span>
+                </div>
               </div>
 
-              {/* Notes with label */}
-              <p className="notes-label">
-                <strong>Notes:</strong> {appointment.note}
-              </p>
-
-              {/* Single type */}
-              <div className="appointment-type-section">
-                <span className={`appointment-type ${appointment.typecolor}`}>
-                  {appointment.type}
-                </span>
+              <div className="appointment-actions">
+                <button className="appointment-view-btn">View Details</button>
+                <button className="appointment-reschedule-btn">
+                  Reschedule
+                </button>
               </div>
             </div>
-
-            <div className="appointment-actions">
-              <button className="appointment-view-btn">View Details</button>
-              <button className="appointment-reschedule-btn">Reschedule</button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
+
       <div className="appointment-instruction-legend">
         <span className="appointment confirmed">● Confirmed</span>
         <span className="appointment pending">● Pending</span>

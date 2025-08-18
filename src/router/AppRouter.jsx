@@ -44,6 +44,7 @@ import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
 import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
+import SystemMealPlanner from "../components/form/SystemMealPlanner";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -92,6 +93,7 @@ const AppRoutes = () => {
           path="/pregnancy-tracking/journal-section/edit-journal-form"
           element={<EditJournalEntryForm />}
         />
+        <Route path="/system-meal-planner" element={<SystemMealPlanner />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />

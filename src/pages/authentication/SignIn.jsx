@@ -205,7 +205,8 @@ const SignIn = () => {
         error.response?.status === 401 ||
         error.message.includes("invalid")
           ? "Invalid email or account does not exist."
-          : error.message || "Login failed. Please check your email or password.";
+          : error.message ||
+            "Login failed. Please check your email or password.";
       setErrors({
         ...errors,
         server: errorMessage,
@@ -329,7 +330,6 @@ const SignIn = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="signin-branding"
         >
-       
           <div className="signin-branding-text">
             <h1 className="signin-title">Welcome to the Community</h1>
             <p className="signin-description">
@@ -349,8 +349,8 @@ const SignIn = () => {
           className="signin-form-container"
         >
           <Link to="/" className="signin-logo">
-       <img src="/public/images/nestly.png" alt="Logo" />
-</Link>
+            <img src="/images/nestly.png" alt="Logo" />
+          </Link>
           <h2 className="signin-form-title">Sign In</h2>
           <form onSubmit={handleSubmit} className="signin-form">
             <div className="signin-input-group">
