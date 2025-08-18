@@ -17,24 +17,14 @@ const ForgotPassword = () => {
 
   // Handle notification clearing
   useEffect(() => {
-    if (errors.server || successMessage) {
+    if (errors.server || (successMessage && !successMessage.includes('Password reset successful'))) {
       const timer = setTimeout(() => {
         setErrors((prev) => ({ ...prev, server: '' }));
         setSuccessMessage('');
-      }, 6000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [errors.server, successMessage]);
-
-  // Handle redirect after successful password reset
-  useEffect(() => {
-    if (successMessage && step === 2 && successMessage.includes('thành công')) {
-      const timer = setTimeout(() => {
-        navigate('/signin', { replace: true });
-      }, 6000);
-      return () => clearTimeout(timer);
-    }
-  }, [successMessage, step, navigate]);
 
   const validateEmail = () => {
     let isValid = true;
@@ -123,6 +113,9 @@ const ForgotPassword = () => {
       console.log('Sending reset password request:', { token: otp, newPassword });
       await resetPassword({ token: otp, newPassword });
       setSuccessMessage('Password reset successful! Redirecting to sign-in...');
+      setTimeout(() => {
+        navigate('/signin', { replace: true });
+      }, 6000);
     } catch (error) {
       console.error('Lỗi khi đặt lại mật khẩu:', error);
       const errorMessage = error.response?.data?.error || error.response?.data?.message || JSON.stringify(error.response?.data) || 'Đặt lại mật khẩu thất bại. Vui lòng kiểm tra OTP hoặc thử lại.';
