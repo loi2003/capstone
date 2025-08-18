@@ -509,6 +509,32 @@ const NutrientSpecialistHomePage = () => {
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
+              to="/nutrient-specialist/allergy-category-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Allergy Category Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Warning icon for allergy category management"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                  fill="var(--nutrient-specialist-accent)"
+                  stroke="var(--nutrient-specialist-white)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Allergy Category Management</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
               to="/nutrient-specialist/dish-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Dish Management"

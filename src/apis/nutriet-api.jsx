@@ -777,10 +777,8 @@ export const getAllergyCategoryById = async (categoryId) => {
     if (!categoryId || categoryId === '') {
       throw new Error('Allergy Category ID is null or empty');
     }
-    const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id`, {
-      params: {
-        categoryId: categoryId,
-      },
+    const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id?categoryId=${categoryId}`, {
+    
       headers: {
         "Accept": "application/json",
       },
@@ -797,10 +795,8 @@ export const getAllergyCategoryWithAllergiesById = async (categoryId) => {
     if (!categoryId || categoryId === '') {
       throw new Error('Allergy Category ID is null or empty');
     }
-    const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id-with-allergies`, {
-      params: {
-        categoryId: categoryId,
-      },
+    const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id-with-allergies?categoryId=${categoryId}`, {
+   
       headers: {
         "Accept": "application/json",
       },
@@ -846,17 +842,45 @@ export const deleteAllergyCategory = async (categoryId) => {
     if (!categoryId || categoryId === '') {
       throw new Error('Allergy Category ID is null or empty');
     }
+    console.log('Sending delete request for allergy category ID:', categoryId);
     const response = await apiClient.delete(`/api/allergy-category/delete-allergy-category-by-id`, {
       params: {
-        categoryId: categoryId,
+        allergyCategoryId: categoryId, // Match API parameter name
       },
       headers: {
         "Accept": "application/json",
       },
     });
+    console.log('Delete allergy category response:', response.data);
     return response.data;
   } catch (error) {
     console.error("Error deleting allergy category:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const updateAllergyCategory = async (categoryData) => {
+  try {
+    if (!categoryData.allergyCategoryId || categoryData.allergyCategoryId === '') {
+      throw new Error('Allergy Category ID is null or empty');
+    }
+    const response = await apiClient.put(
+      `/api/allergy-category/update-allergy-category`,
+      {
+        id: categoryData.allergyCategoryId,
+        name: categoryData.name,
+        description: categoryData.description || '',
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    console.log("Update allergy category response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating allergy category:", error.response?.data || error.message);
     throw error;
   }
 };
