@@ -93,9 +93,9 @@ export const createJournalEntry = async (journalData, token) => {
     formData.append("CurrentWeek", journalData.CurrentWeek);
     formData.append("Note", journalData.Note);
     
-    if (journalData.CurrentWeight != null)
+    // if (journalData.CurrentWeight != null)
+    // formData.append("CurrentWeight", journalData.CurrentWeight);
     formData.append("CurrentWeight", journalData.CurrentWeight);
-
     // Optional fields — append only if they are not null or undefined
     if (journalData.SystolicBP != null)
       formData.append("SystolicBP", journalData.SystolicBP);
@@ -147,9 +147,9 @@ export const editJournalEntry = async (journalData, token) => {
     const formData = new FormData();
     formData.append("Id", journalData.Id);
     formData.append("Note", journalData.Note);
-    if (journalData.CurrentWeight != null)
+    // if (journalData.CurrentWeight != null)
+    // formData.append("CurrentWeight", journalData.CurrentWeight);
     formData.append("CurrentWeight", journalData.CurrentWeight);
-
     if (journalData.SystolicBP != null)
       formData.append("SystolicBP", journalData.SystolicBP);
     if (journalData.DiastolicBP != null)

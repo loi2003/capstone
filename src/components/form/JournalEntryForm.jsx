@@ -300,7 +300,7 @@ const JournalEntryForm = ({ onError }) => {
           {errors.Note && <span className="error-message">{errors.Note}</span>}
         </div>
         <div className="entry-form-section">
-          <label htmlFor="currentWeight">Current Weight (Kg)</label>
+          <label htmlFor="currentWeight">Current Weight (Kg)<span className="must-enter-info">* (Required)</span></label>
           <input
             type="number"
             id="currentWeight"
@@ -310,7 +310,7 @@ const JournalEntryForm = ({ onError }) => {
             min="30"
             max="200"
             step="0.1"
-            placeholder="Optional - Can enter if you want to track BMI"
+            placeholder="Enter the weight that you last weighed yourself!"
             className={errors.CurrentWeight ? "error" : ""}
           />
           {errors.CurrentWeight && (

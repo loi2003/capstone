@@ -84,7 +84,7 @@
 /* Buttons */
 .mealplanner-btn {
   display: inline-block;
-  width: 100%;
+  width: 200px;
   text-align: center;
   padding: 0.75rem 1.2rem;
   background: #02808F;
@@ -310,6 +310,10 @@
   align-items: center;
   margin-bottom: 1rem;
 }
+.week-day-header h3 {
+  color: #04668d;
+  font-size: 1.2rem;
+}
 
 .week-meal-grid {
   display: grid;
@@ -336,8 +340,8 @@
 .mealplanner-detail-btn {
   margin-top: 0.5rem;
   background: none;
-  border: 1px solid #e26b2c;
-  color: #e26b2c;
+  border: 1px solid #04668d;
+  color: #04668d;
   padding: 0.3rem 0.8rem;
   border-radius: 0.4rem;
   cursor: pointer;
