@@ -43,7 +43,9 @@ import AllergyCategoryManagement from "../pages/nutrientspecialist/AllergyCatego
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
+import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
+import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
 
 NutrientInFoodManagement
@@ -78,9 +80,23 @@ const AppRoutes = () => {
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
-        <Route path="/pregnancy-tracking/journal-section" element={<JournalSection />} />
-        <Route path="/pregnancy-tracking/journal-section/journal-detail" element={<JournalEntryDetail />} />
-        <Route path="/pregnancy-tracking/journal-section/journal-form" element={<JournalEntryForm />} />
+        <Route
+          path="/pregnancy-tracking/journal-section"
+          element={<JournalSection />}
+        />
+        <Route
+          path="/pregnancy-tracking/journal-section/journal-detail"
+          element={<JournalEntryDetail />}
+        />
+        <Route
+          path="/pregnancy-tracking/journal-section/journal-form"
+          element={<JournalEntryForm />}
+        />
+        <Route
+          path="/pregnancy-tracking/journal-section/edit-journal-form"
+          element={<EditJournalEntryForm />}
+        />
+        <Route path="/system-meal-planner" element={<SystemMealPlanner />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />

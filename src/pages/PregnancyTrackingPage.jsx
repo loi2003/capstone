@@ -21,6 +21,8 @@ import weightIcon from "../assets/icons/weight-hanging-svgrepo-com.svg";
 import calculatorIcon from "../assets/icons/calculator-svgrepo-com.svg";
 import heartRateIcon from "../assets/icons/heart-pulse-2-svgrepo-com.svg";
 import { useSearchParams } from "react-router-dom";
+import CheckupReminder from "../components/tracking/CheckupReminder";
+import { viewAllOfflineConsultation } from "../apis/offline-consultation-api";
 import "../styles/PregnancyTrackingPage.css";
 
 const PregnancyTrackingPage = () => {
@@ -35,8 +37,7 @@ const PregnancyTrackingPage = () => {
   const [searchParams] = useSearchParams();
   const tabFromURL =
     (searchParams.get("weeklyinfo") && "weekly") ||
-    (searchParams.get("checkupsinfo") && "checkups") ||
-    (searchParams.get("consultinfo") && "offlineconsultation") ||
+    (searchParams.get("reminderconsultationinfo") && "reminderconsultation") ||
     (searchParams.get("nutritioninfo") && "nutrition") ||
     (searchParams.get("journalinfo") && "journal") ||
     "weekly"; // default
@@ -45,6 +46,67 @@ const PregnancyTrackingPage = () => {
 
   const [openJournalModal, setOpenJournalModal] = useState(false);
   const navigate = useNavigate();
+  const [appointments, setAppointments] = useState([]);
+const [loadingAppointments, setLoadingAppointments] = useState(true);
+
+useEffect(() => {
+  const fetchAppointments = async () => {
+    try {
+      setLoadingAppointments(true);
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+
+      const response = await viewAllOfflineConsultation(userId, null, token);
+      const consultations = Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
+
+      const mappedAppointments = consultations.map((c) => {
+        const start = new Date(c.startDate);
+        const end = new Date(c.endDate);
+        return {
+          id: c.id,
+          name: c.checkupName || "Unknown name",
+          note: c.healthNote || "No notes available",
+          type: c.consultationType?.toLowerCase(),
+          doctor: c.doctor?.fullName || "Unknown Doctor",
+          clinic: c.clinic?.name || "Unknown Clinic",
+          address: c.clinic?.address,
+          start,
+          end,
+          status: c.status?.toLowerCase(),
+        };
+      });
+
+      setAppointments(mappedAppointments);
+    } catch (err) {
+      console.error("Error fetching appointments:", err);
+    } finally {
+      setLoadingAppointments(false);
+    }
+  };
+
+  fetchAppointments();
+}, []);
+
+  const appointmentDates = appointments.map((a) => a.start.toISOString());
+
+  const reminders = [
+    {
+      title: "Blood Pressure Check",
+      startDate: "2023-05-15",
+      endDate: "2023-05-15",
+      note: "Recommended during week 20",
+      type: "recommended",
+    },
+    {
+      title: "Lab Work",
+      startDate: "2023-05-25",
+      endDate: "2023-05-25",
+      note: "Urgent test results follow-up",
+      type: "urgent",
+    },
+  ];
 
   useEffect(() => {
     initializePage();
@@ -263,14 +325,9 @@ const PregnancyTrackingPage = () => {
                     queryKey: "weeklyinfo",
                   },
                   {
-                    key: "checkups",
-                    label: "Checkup Reminders",
-                    queryKey: "checkupsinfo",
-                  },
-                  {
-                    key: "offlineconsultation",
-                    label: "Offline Consultation",
-                    queryKey: "consultinfo",
+                    key: "reminderconsultation",
+                    label: "Checkup Reminder",
+                    queryKey: "reminderconsultationinfo",
                   },
                   {
                     key: "nutrition",
@@ -312,10 +369,14 @@ const PregnancyTrackingPage = () => {
                         pregnancyData={pregnancyData}
                         selectedWeek={selectedWeek}
                       />
-                      <SymptomsAndMood pregnancyData={pregnancyData} />
+                      {/* <SymptomsAndMood pregnancyData={pregnancyData} /> */}
                     </div>
                     <div className="right-column">
-                      <UpcomingAppointments />
+                      <UpcomingAppointments
+                        growthDataId={pregnancyData?.id}
+                        userId={localStorage.getItem("userId")}
+                        token={localStorage.getItem("token")}
+                      />
                       <TrimesterChecklists
                         growthDataId={pregnancyData?.id}
                         token={localStorage.getItem("token")}
@@ -391,9 +452,21 @@ const PregnancyTrackingPage = () => {
                   )}
                 </div>
               )}
-              {activeTab === "offlineconsultation" && (
+              {activeTab === "reminderconsultation" && (
                 <div className="tab-content">
-                  <UpcomingAppointments expanded={true} />
+                  <CheckupReminder
+                    token={localStorage.getItem("token")}
+                    userId={localStorage.getItem("userId")}
+                    reminders={reminders}
+                    appointments={appointments}
+                    appointmentDates={appointmentDates}
+                  />
+                  <UpcomingAppointments
+                    userId={localStorage.getItem("userId")}
+                    token={localStorage.getItem("token")}
+                    expanded={true}
+                    appointments={appointments}
+                  />
                 </div>
               )}
               {activeTab === "journal" && (

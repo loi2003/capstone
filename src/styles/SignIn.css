@@ -164,8 +164,18 @@
 }
 
 .signin-logo {
-  display: block;
+  display: flex;
+  position: relative;
+  overflow: hidden;
   margin-bottom: 2.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 100px;
+  height: 100px;
+}
+
+.signin-logo:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-hover);
 }
 
 .signin-logo svg {
@@ -285,7 +295,7 @@
   font-size: 1.05rem;
   font-weight: 600;
   color: var(--white);
-  background: var(--primary-gradient);
+  background: #02808F;
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
