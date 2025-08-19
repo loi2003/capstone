@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { Bar } from "react-chartjs-2";
 import {
   getAllFoodCategories,
   getFoodCategoryById,
   createFoodCategory,
   updateFoodCategory,
   deleteFoodCategory,
+  getAllFoods,
 } from "../../apis/nutriet-api";
 import { getCurrentUser } from "../../apis/authentication-api";
 import "../../styles/FoodCategoryManagement.css";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 
-// SVG Icons (reused from NutrientCategoryManagement)
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+// SVG Icons
 const SearchIcon = () => (
   <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <path
@@ -76,6 +90,7 @@ const FoodCategoryManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [currentPage, setCurrentPage] = useState(1);
+  const [foodCounts, setFoodCounts] = useState([]);
   const categoriesPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -90,7 +105,7 @@ const FoodCategoryManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  // Fetch user and food categories
+  // Fetch user, food categories, and food counts
   const fetchData = async () => {
     if (!token) {
       navigate("/signin", { replace: true });
@@ -98,22 +113,49 @@ const FoodCategoryManagement = () => {
     }
     setLoading(true);
     try {
-      const [userResponse, categoriesData] = await Promise.all([
+      const [userResponse, categoriesData, foodsDataResponse] = await Promise.all([
         getCurrentUser(token),
         getAllFoodCategories(),
+        getAllFoods(),
       ]);
       const userData = userResponse.data?.data || userResponse.data;
       if (userData && Number(userData.roleId) === 4) {
         setUser(userData);
-        setFoodCategories(categoriesData);
-        setFilteredCategories(categoriesData);
+
+        // Normalize categories data
+        const normalizedCategories = categoriesData.map(category => ({
+          id: category.id || category.Id,
+          name: category.name,
+          description: category.description,
+        }));
+        setFoodCategories(normalizedCategories);
+        setFilteredCategories(normalizedCategories);
         setCurrentPage(1);
+
+        // Normalize foods data
+        const foodsData = foodsDataResponse.data || foodsDataResponse;
+        console.log("Foods data:", foodsData);
+
+        // Calculate food counts per category
+        const counts = normalizedCategories.map((category) => {
+          const count = foodsData.filter(
+            (food) => {
+              const matches = food.foodCategoryId === category.id;
+              console.log(`Category: ${category.name}, Food ID: ${food.id}, Matches: ${matches}`);
+              return matches;
+            }
+          ).length;
+          return { categoryId: category.id, count };
+        });
+        console.log("Food counts:", counts);
+        setFoodCounts(counts);
       } else {
         localStorage.removeItem("token");
         setUser(null);
         navigate("/signin", { replace: true });
       }
     } catch (err) {
+      console.error("Error in fetchData:", err);
       showNotification(`Failed to fetch data: ${err.message}`, "error");
       localStorage.removeItem("token");
       setUser(null);
@@ -122,8 +164,8 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
+
   const fetchCategoryById = async (id) => {
-    console.log(id);
     if (!id) {
       showNotification("Invalid category ID", "error");
       return;
@@ -132,28 +174,16 @@ const FoodCategoryManagement = () => {
     setLoading(true);
     try {
       const response = await getFoodCategoryById(id);
-
-      console.log("API Response:", response); // Debug
-
-      let categoryData = response;
-
-      if (response && response.data) {
-        categoryData = response.data;
-        if (response.data.data) {
-          categoryData = response.data.data;
-        }
-      }
+      let categoryData = response.data || response;
 
       if (!categoryData) {
-        throw new Error(
-          "No data received from server (possible category not found)"
-        );
+        throw new Error("No data received from server (possible category not found)");
       }
 
       const normalizedData = {
-        id: categoryData?.id || categoryData?.Id || "",
-        name: categoryData?.name || "",
-        description: categoryData?.description || "",
+        id: categoryData.id || categoryData.Id || "",
+        name: categoryData.name || "",
+        description: categoryData.description || "",
       };
 
       if (!normalizedData.id || !normalizedData.name) {
@@ -174,32 +204,22 @@ const FoodCategoryManagement = () => {
         status: err.response?.status,
         config: err.config,
       });
-
-      const errorMessage =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to fetch category details";
-      showNotification(errorMessage, "error");
+      showNotification(`Failed to fetch category details: ${err.message}`, "error");
       setSelectedCategory(null);
       setIsEditing(false);
     } finally {
       setLoading(false);
     }
   };
+
   const createCategoryHandler = async () => {
-    if (
-      !newCategory.name ||
-      typeof newCategory.name !== "string" ||
-      !newCategory.name.trim()
-    ) {
+    if (!newCategory.name?.trim()) {
       showNotification("Category name is required", "error");
       return;
     }
 
     setLoading(true);
     try {
-      // Refresh categories to ensure no duplicates
-      await fetchData();
       const trimmedName = newCategory.name.trim();
       const isDuplicate = foodCategories.some(
         (category) =>
@@ -253,7 +273,7 @@ const FoodCategoryManagement = () => {
         setNewCategory({ name: "", description: "" });
         setSelectedCategory(null);
         setIsEditing(false);
-        await fetchData(); // Refresh the list
+        await fetchData();
       } else {
         throw new Error("Update failed - no response data");
       }
@@ -264,7 +284,7 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
-  // Delete food category
+
   const deleteCategoryHandler = async (id) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       setLoading(true);
@@ -280,13 +300,11 @@ const FoodCategoryManagement = () => {
     }
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewCategory({ ...newCategory, [name]: value });
   };
 
-  // Handle search
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -297,19 +315,16 @@ const FoodCategoryManagement = () => {
     setCurrentPage(1);
   };
 
-  // Cancel edit
   const cancelEdit = () => {
     setNewCategory({ name: "", description: "" });
     setSelectedCategory(null);
     setIsEditing(false);
   };
 
-  // Toggle sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Pagination
   const indexOfLastCategory = currentPage * categoriesPerPage;
   const indexOfFirstCategory = indexOfLastCategory - categoriesPerPage;
   const currentCategories = filteredCategories.slice(
@@ -330,7 +345,6 @@ const FoodCategoryManagement = () => {
     }
   };
 
-  // Handle window resize to toggle sidebar
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth > 768);
@@ -339,12 +353,91 @@ const FoodCategoryManagement = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Initialize data
   useEffect(() => {
     fetchData();
   }, []);
 
-  // Sidebar animation variants
+  // Chart data
+  const chartData = {
+    labels: foodCategories.map((category) => category.name),
+    datasets: [
+      {
+        label: "Number of Foods",
+        data: foodCategories.map(
+          (category) =>
+            foodCounts.find((count) => count.categoryId === category.id)?.count || 0
+        ),
+        backgroundColor: "rgba(30, 136, 229, 0.6)",
+        borderColor: "rgba(30, 136, 229, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+        labels: {
+          color: document.documentElement.classList.contains("dark-theme")
+            ? "#ffffff"
+            : "#0d47a1",
+        },
+      },
+      title: {
+        display: true,
+        text: "Number of Foods per Category",
+        color: document.documentElement.classList.contains("dark-theme")
+          ? "#ffffff"
+          : "#0d47a1",
+        font: {
+          size: 16,
+        },
+      },
+      tooltip: {
+        backgroundColor: document.documentElement.classList.contains("dark-theme")
+          ? "#2a4b6e"
+          : "#ffffff",
+        titleColor: document.documentElement.classList.contains("dark-theme")
+          ? "#ffffff"
+          : "#0d47a1",
+        bodyColor: document.documentElement.classList.contains("dark-theme")
+          ? "#ffffff"
+          : "#0d47a1",
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: document.documentElement.classList.contains("dark-theme")
+            ? "#ffffff"
+            : "#0d47a1",
+        },
+        grid: {
+          color: document.documentElement.classList.contains("dark-theme")
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.1)",
+        },
+      },
+      y: {
+        beginAtZero: true,
+        ticks: {
+          color: document.documentElement.classList.contains("dark-theme")
+            ? "#ffffff"
+            : "#0d47a1",
+          stepSize: 1,
+        },
+        grid: {
+          color: document.documentElement.classList.contains("dark-theme")
+            ? "rgba(255, 255, 255, 0.1)"
+            : "rgba(0, 0, 0, 0.1)",
+        },
+      },
+    },
+  };
+
   const sidebarVariants = {
     open: {
       width: "min(260px, 25vw)",
@@ -367,7 +460,6 @@ const FoodCategoryManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Sidebar - Matching NutrientCategoryManagement style */}
       <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
@@ -493,7 +585,6 @@ const FoodCategoryManagement = () => {
         </nav>
       </motion.aside>
 
-      {/* Main Content */}
       <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
@@ -505,14 +596,17 @@ const FoodCategoryManagement = () => {
         <div className="management-header">
           <div className="header-content">
             <h1>Food Category Management</h1>
-            <p>
-              Create, edit, and manage food categories for better organization
-            </p>
+            <p>Create, edit, and manage food categories for better organization</p>
           </div>
         </div>
 
         <div className="management-container">
-          {/* Form Section */}
+          <div className="chart-section">
+            <div className="chart-container">
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+          </div>
+
           <div className="form-section">
             <div className="section-header">
               <h2>{isEditing ? "Edit Category" : "Create New Category"}</h2>
@@ -554,16 +648,12 @@ const FoodCategoryManagement = () => {
                 />
                 <div className="button-group">
                   <motion.button
-                    onClick={
-                      isEditing ? updateCategoryHandler : createCategoryHandler
-                    }
+                    onClick={isEditing ? updateCategoryHandler : createCategoryHandler}
                     disabled={loading}
                     className="submit-button nutrient-specialist-button primary"
                     whileHover={{ scale: loading ? 1 : 1.05 }}
                     whileTap={{ scale: loading ? 1 : 0.95 }}
-                    aria-label={
-                      isEditing ? "Update category" : "Create category"
-                    }
+                    aria-label={isEditing ? "Update category" : "Create category"}
                   >
                     {loading
                       ? "Loading..."
@@ -588,7 +678,6 @@ const FoodCategoryManagement = () => {
             </div>
           </div>
 
-          {/* Category List Section */}
           <div className="category-list-section">
             <div className="section-header">
               <h2>All Food Categories</h2>

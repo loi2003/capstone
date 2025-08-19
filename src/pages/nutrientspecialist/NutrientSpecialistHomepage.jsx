@@ -67,18 +67,38 @@ const NutrientSpecialistHomePage = () => {
   };
 
   const logoVariants = {
-    animate: { scale: [1, 1.05, 1], transition: { duration: 1.8, ease: "easeInOut", repeat: Infinity, repeatType: "loop" } },
-    hover: { scale: 1.1, filter: "brightness(1.15)", transition: { duration: 0.3 } },
+    animate: {
+      scale: [1, 1.05, 1],
+      transition: {
+        duration: 1.8,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop",
+      },
+    },
+    hover: {
+      scale: 1.1,
+      filter: "brightness(1.15)",
+      transition: { duration: 0.3 },
+    },
   };
 
   const containerVariants = {
     initial: { opacity: 0, y: 30 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 } },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 },
+    },
   };
 
   const cardVariants = {
     initial: { opacity: 0, scale: 0.95 },
-    animate: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.5, ease: "easeOut" },
+    },
   };
 
   const sidebarVariants = {
@@ -88,24 +108,42 @@ const NutrientSpecialistHomePage = () => {
 
   const navItemVariants = {
     initial: { opacity: 0, x: -20 },
-    animate: { opacity: 1, x: 0, transition: { duration: 0.3, ease: "easeOut" } },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
   };
 
   const dropdownVariants = {
-    open: { height: "auto", opacity: 1, transition: { duration: 0.3, ease: "easeOut" } },
-    closed: { height: 0, opacity: 0, transition: { duration: 0.3, ease: "easeIn" } },
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
   };
 
   return (
     <div className="nutrient-specialist-homepage">
       <motion.aside
-        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className={`nutrient-specialist-sidebar ${
+          isSidebarOpen ? "open" : "closed"
+        }`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
       >
         <div className="sidebar-header">
-          <Link to="/nutrient-specialist" className="logo" onClick={() => setIsSidebarOpen(true)}>
+          <Link
+            to="/nutrient-specialist"
+            className="logo"
+            onClick={() => setIsSidebarOpen(true)}
+          >
             <motion.div
               variants={logoVariants}
               animate="animate"
@@ -143,7 +181,11 @@ const NutrientSpecialistHomePage = () => {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                d={isSidebarOpen ? "M13 18L7 12L13 6M18 18L12 12L18 6" : "M6 18L12 12L6 6M11 18L17 12L11 6"}
+                d={
+                  isSidebarOpen
+                    ? "M13 18L7 12L13 6M18 18L12 12L18 6"
+                    : "M6 18L12 12L6 6M11 18L17 12L11 6"
+                }
               />
             </svg>
           </motion.button>
@@ -156,7 +198,11 @@ const NutrientSpecialistHomePage = () => {
           variants={containerVariants}
         >
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <Link to="/blog-management" onClick={() => setIsSidebarOpen(true)} title="Blog Management">
+            <Link
+              to="/blog-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Blog Management"
+            >
               <svg
                 width="24"
                 height="24"
@@ -181,7 +227,9 @@ const NutrientSpecialistHomePage = () => {
             <button
               onClick={toggleFoodDropdown}
               className="food-dropdown-toggle"
-              aria-label={isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"}
+              aria-label={
+                isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"
+              }
               title="Food"
             >
               <svg
@@ -208,7 +256,9 @@ const NutrientSpecialistHomePage = () => {
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  className={`dropdown-icon ${isFoodDropdownOpen ? "open" : ""}`}
+                  className={`dropdown-icon ${
+                    isFoodDropdownOpen ? "open" : ""
+                  }`}
                 >
                   <path
                     stroke="var(--nutrient-specialist-white)"
@@ -227,7 +277,10 @@ const NutrientSpecialistHomePage = () => {
             animate={isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"}
             initial="closed"
           >
-            <motion.div variants={navItemVariants} className="sidebar-nav-item food-dropdown-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item food-dropdown-item"
+            >
               <Link
                 to="/nutrient-specialist/food-category-management"
                 onClick={() => setIsSidebarOpen(true)}
@@ -253,7 +306,10 @@ const NutrientSpecialistHomePage = () => {
                 {isSidebarOpen && <span>Food Category Management</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants} className="sidebar-nav-item food-dropdown-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item food-dropdown-item"
+            >
               <Link
                 to="/nutrient-specialist/food-management"
                 onClick={() => setIsSidebarOpen(true)}
@@ -284,7 +340,11 @@ const NutrientSpecialistHomePage = () => {
             <button
               onClick={toggleNutrientDropdown}
               className="nutrient-dropdown-toggle"
-              aria-label={isNutrientDropdownOpen ? "Collapse nutrient menu" : "Expand nutrient menu"}
+              aria-label={
+                isNutrientDropdownOpen
+                  ? "Collapse nutrient menu"
+                  : "Expand nutrient menu"
+              }
               title="Nutrient"
             >
               <svg
@@ -311,14 +371,18 @@ const NutrientSpecialistHomePage = () => {
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  className={`dropdown-icon ${isNutrientDropdownOpen ? "open" : ""}`}
+                  className={`dropdown-icon ${
+                    isNutrientDropdownOpen ? "open" : ""
+                  }`}
                 >
                   <path
                     stroke="var(--nutrient-specialist-white)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d={isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                    d={
+                      isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                    }
                   />
                 </svg>
               )}
@@ -327,10 +391,15 @@ const NutrientSpecialistHomePage = () => {
           <motion.div
             className="nutrient-dropdown"
             variants={dropdownVariants}
-            animate={isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"}
+            animate={
+              isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+            }
             initial="closed"
           >
-            <motion.div variants={navItemVariants} className="sidebar-nav-item nutrient-dropdown-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item nutrient-dropdown-item"
+            >
               <Link
                 to="/nutrient-specialist/nutrient-category-management"
                 onClick={() => setIsSidebarOpen(true)}
@@ -356,7 +425,10 @@ const NutrientSpecialistHomePage = () => {
                 {isSidebarOpen && <span>Nutrient Category Management</span>}
               </Link>
             </motion.div>
-            <motion.div variants={navItemVariants} className="sidebar-nav-item nutrient-dropdown-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item nutrient-dropdown-item"
+            >
               <Link
                 to="/nutrient-specialist/nutrient-management"
                 onClick={() => setIsSidebarOpen(true)}
@@ -383,6 +455,32 @@ const NutrientSpecialistHomePage = () => {
               </Link>
             </motion.div>
           </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item ">
+            <Link
+              to="/nutrient-specialist/nutrient-in-food-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient in Food Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Nutrient in food icon"
+              >
+                <path
+                  d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                  stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Nutrient in Food Management</span>}
+            </Link>
+          </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
               to="/nutrient-specialist/age-group-management"
@@ -407,6 +505,32 @@ const NutrientSpecialistHomePage = () => {
                 />
               </svg>
               {isSidebarOpen && <span>Age Group Management</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/allergy-category-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Allergy Category Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Warning icon for allergy category management"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                  fill="var(--nutrient-specialist-accent)"
+                  stroke="var(--nutrient-specialist-white)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Allergy Category Management</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
@@ -511,11 +635,16 @@ const NutrientSpecialistHomePage = () => {
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="nutrient-specialist-profile-email">{user.email}</span>
+                    <span className="nutrient-specialist-profile-email">
+                      {user.email}
+                    </span>
                   )}
                 </div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -543,7 +672,11 @@ const NutrientSpecialistHomePage = () => {
             </>
           ) : (
             <motion.div variants={navItemVariants} className="sidebar-nav-item">
-              <Link to="/signin" onClick={() => setIsSidebarOpen(true)} title="Sign In">
+              <Link
+                to="/signin"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sign In"
+              >
                 <svg
                   width="24"
                   height="24"
@@ -577,7 +710,9 @@ const NutrientSpecialistHomePage = () => {
               Nutrient Specialist Dashboard
             </h1>
             <p className="nutrient-specialist-banner-subtitle">
-              Empower your nutrition expertise with tools to manage food categories, nutrients, age groups, and professional blogs seamlessly.
+              Empower your nutrition expertise with tools to manage food
+              categories, nutrients, age groups, and professional blogs
+              seamlessly.
             </p>
             <div className="nutrient-specialist-banner-buttons">
               <Link
@@ -629,34 +764,72 @@ const NutrientSpecialistHomePage = () => {
             Core Nutrient Specialist Tools
           </h2>
           <p className="nutrient-specialist-features-description">
-            Leverage a comprehensive suite of tools to manage food and nutrient data, oversee age group categorizations, and create insightful blog content.
+            Leverage a comprehensive suite of tools to manage food and nutrient
+            data, oversee age group categorizations, and create insightful blog
+            content.
           </p>
           <div className="nutrient-specialist-features-grid">
-            <motion.div variants={cardVariants} className="nutrient-specialist-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="nutrient-specialist-feature-card"
+            >
               <h3>Food Management</h3>
-              <p>Organize and update food categories and items to provide accurate nutritional data.</p>
-              <Link to="/nutrient-specialist/food-management" className="nutrient-specialist-feature-link">
+              <p>
+                Organize and update food categories and items to provide
+                accurate nutritional data.
+              </p>
+              <Link
+                to="/nutrient-specialist/food-management"
+                className="nutrient-specialist-feature-link"
+              >
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="nutrient-specialist-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="nutrient-specialist-feature-card"
+            >
               <h3>Nutrient Management</h3>
-              <p>Maintain detailed nutrient profiles and categories for precise dietary recommendations.</p>
-              <Link to="/nutrient-specialist/nutrient-management" className="nutrient-specialist-feature-link">
+              <p>
+                Maintain detailed nutrient profiles and categories for precise
+                dietary recommendations.
+              </p>
+              <Link
+                to="/nutrient-specialist/nutrient-management"
+                className="nutrient-specialist-feature-link"
+              >
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="nutrient-specialist-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="nutrient-specialist-feature-card"
+            >
               <h3>Age Group Management</h3>
-              <p>Customize nutritional guidelines for different age groups to ensure targeted advice.</p>
-              <Link to="/nutrient-specialist/age-group-management" className="nutrient-specialist-feature-link">
+              <p>
+                Customize nutritional guidelines for different age groups to
+                ensure targeted advice.
+              </p>
+              <Link
+                to="/nutrient-specialist/age-group-management"
+                className="nutrient-specialist-feature-link"
+              >
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="nutrient-specialist-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="nutrient-specialist-feature-card"
+            >
               <h3>Blog Management</h3>
-              <p>Create and manage educational content to share your expertise with the community.</p>
-              <Link to="/blog-management" className="nutrient-specialist-feature-link">
+              <p>
+                Create and manage educational content to share your expertise
+                with the community.
+              </p>
+              <Link
+                to="/blog-management"
+                className="nutrient-specialist-feature-link"
+              >
                 Explore
               </Link>
             </motion.div>

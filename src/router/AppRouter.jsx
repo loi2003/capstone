@@ -39,13 +39,16 @@ import NutrientManagement from "../pages/nutrientspecialist/NutrientManagement";
 import FoodCategoryManagement from "../pages/nutrientspecialist/FoodCategoryManagement";
 import FoodManagement from "../pages/nutrientspecialist/FoodManagement";
 import AgeGroupManagement from "../pages/nutrientspecialist/AgeGroupManagement";
+import AllergyCategoryManagement from "../pages/nutrientspecialist/AllergyCategoryManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
 import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
+import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
 
+NutrientInFoodManagement
 const AppRoutes = () => {
   const location = useLocation();
 
@@ -108,7 +111,9 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/food-category-management" element={<FoodCategoryManagement />} />
         <Route path="/nutrient-specialist/food-management" element={<FoodManagement />} />
         <Route path="/nutrient-specialist/age-group-management" element={<AgeGroupManagement />} />
+        <Route path="/nutrient-specialist/allergy-category-management" element={<AllergyCategoryManagement />} />
         <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
+        <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route
           path="/blog"
           element={
