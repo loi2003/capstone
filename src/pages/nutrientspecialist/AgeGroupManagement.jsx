@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from "chart.js";
+import { Bar } from "react-chartjs-2";
 import { Link } from "react-router-dom";
 import { getAllAgeGroups, createAgeGroup, updateAgeGroup, deleteAgeGroup } from "../../apis/nutriet-api";
 import "../../styles/AgeGroupManagement.css";
+
+// Register Chart.js components
+ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
 // Search Icon
 const SearchIcon = () => (
@@ -81,13 +86,14 @@ const AgeGroupManagement = () => {
   const [isLoading, setIsLoading] = useState(false);
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
+  const chartRef = useRef(null);
 
   // Fetch age groups
   const fetchAgeGroups = async () => {
     setIsLoading(true);
     try {
       const data = await getAllAgeGroups();
-      console.log('Fetched age groups:', data.data); // Debugging log
+      console.log('Fetched age groups:', data.data);
       setAgeGroups(data.data || []);
     } catch (error) {
       showNotification("Failed to fetch age groups", "error");
@@ -122,7 +128,7 @@ const AgeGroupManagement = () => {
           fromAge: parseInt(formData.fromAge),
           toAge: parseInt(formData.toAge),
         };
-        console.log('Updating age group with:', updateData); // Debugging log
+        console.log('Updating age group with:', updateData);
         await updateAgeGroup(updateData);
         showNotification("Age group updated successfully", "success");
       } else {
@@ -144,7 +150,7 @@ const AgeGroupManagement = () => {
 
   // Handle edit
   const handleEdit = (ageGroup) => {
-    console.log('Editing age group:', ageGroup); // Debugging log
+    console.log('Editing age group:', ageGroup);
     setFormData({
       ageGroupId: ageGroup.id,
       fromAge: ageGroup.fromAge.toString(),
@@ -158,7 +164,7 @@ const AgeGroupManagement = () => {
     if (window.confirm("Are you sure you want to delete this age group?")) {
       setIsLoading(true);
       try {
-        console.log('Deleting age group with ID:', ageGroupId); // Debugging log
+        console.log('Deleting age group with ID:', ageGroupId);
         await deleteAgeGroup(ageGroupId);
         showNotification("Age group deleted successfully", "success");
         fetchAgeGroups();
@@ -208,6 +214,61 @@ const AgeGroupManagement = () => {
     currentPage * itemsPerPage
   );
   const totalPages = Math.ceil(filteredAgeGroups.length / itemsPerPage);
+
+  // Chart data
+  const chartData = {
+    labels: ageGroups.map((group) => `${group.fromAge}-${group.toAge} Years`),
+    datasets: [
+      {
+        label: "Age Range Duration (Years)",
+        data: ageGroups.map((group) => group.toAge - group.fromAge),
+        backgroundColor: "rgba(244, 81, 30, 0.6)",
+        borderColor: "rgba(244, 81, 30, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Age Group Distribution",
+        color: "var(--orange-text)",
+        font: {
+          size: 16,
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Duration (Years)",
+          color: "var(--orange-text)",
+        },
+        ticks: {
+          color: "var(--orange-text)",
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Age Groups",
+          color: "var(--orange-text)",
+        },
+        ticks: {
+          color: "var(--orange-text)",
+        },
+      },
+    },
+  };
 
   // Handle window resize to toggle sidebar
   useEffect(() => {
@@ -331,7 +392,6 @@ const AgeGroupManagement = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </div>
-        
         </nav>
       </motion.aside>
 
@@ -349,78 +409,107 @@ const AgeGroupManagement = () => {
           </div>
         </header>
         <div className="management-container">
-          {/* Form Section */}
-          <section className="form-section">
-            <h2>{isEditing ? "Edit Age Group" : "Add New Age Group"}</h2>
-            <form onSubmit={handleSubmit} className="form-card">
-              <div className="search-section">
-                <SearchIcon />
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search age groups..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  aria-label="Search age groups"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="fromAge">From Age</label>
-                <input
-                  type="number"
-                  id="fromAge"
-                  name="fromAge"
-                  value={formData.fromAge}
-                  onChange={handleInputChange}
-                  placeholder="Enter from age"
-                  className="input-field"
-                  required
-                  min="0"
-                  aria-label="From age"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="toAge">To Age</label>
-                <input
-                  type="number"
-                  id="toAge"
-                  name="toAge"
-                  value={formData.toAge}
-                  onChange={handleInputChange}
-                  placeholder="Enter to age"
-                  className="input-field"
-                  required
-                  min="0"
-                  aria-label="To age"
-                />
-              </div>
-              <div className="button-group">
-                <motion.button
-                  type="submit"
-                  className="nutrient-specialist-button primary"
-                  disabled={isLoading}
-                  whileHover={{ scale: isLoading ? 1 : 1.05 }}
-                  whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                  aria-label={isEditing ? "Update age group" : "Add age group"}
-                >
-                  {isLoading ? "Loading..." : isEditing ? "Update" : "Add"} Age Group
-                </motion.button>
-                {isEditing && (
+          <div className="split-container">
+            {/* Chart Section */}
+            <section className="chart-section">
+              <h2>Age Group Distribution</h2>
+              {isLoading ? (
+                <div className="loading-state">
+                  <LoaderIcon />
+                  <p>Loading...</p>
+                </div>
+              ) : ageGroups.length === 0 ? (
+                <div className="empty-state">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"
+                      stroke="var(--orange-text)"
+                      strokeWidth="2"
+                    />
+                  </svg>
+                  <h3>No Age Groups Found</h3>
+                  <p>Add a new age group to view the chart.</p>
+                </div>
+              ) : (
+                <div className="chart-container">
+                  <Bar ref={chartRef} data={chartData} options={chartOptions} />
+                </div>
+              )}
+            </section>
+
+            {/* Form Section */}
+            <section className="form-section">
+              <h2>{isEditing ? "Edit Age Group" : "Add New Age Group"}</h2>
+              <form onSubmit={handleSubmit} className="form-card">
+                <div className="search-section">
+                  <SearchIcon />
+                  <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search age groups..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    aria-label="Search age groups"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="fromAge">From Age</label>
+                  <input
+                    type="number"
+                    id="fromAge"
+                    name="fromAge"
+                    value={formData.fromAge}
+                    onChange={handleInputChange}
+                    placeholder="Enter from age"
+                    className="input-field"
+                    required
+                    min="0"
+                    aria-label="From age"
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="toAge">To Age</label>
+                  <input
+                    type="number"
+                    id="toAge"
+                    name="toAge"
+                    value={formData.toAge}
+                    onChange={handleInputChange}
+                    placeholder="Enter to age"
+                    className="input-field"
+                    required
+                    min="0"
+                    aria-label="To age"
+                  />
+                </div>
+                <div className="button-group">
                   <motion.button
-                    type="button"
-                    className="nutrient-specialist-button secondary"
-                    onClick={resetForm}
+                    type="submit"
+                    className="nutrient-specialist-button primary"
                     disabled={isLoading}
                     whileHover={{ scale: isLoading ? 1 : 1.05 }}
                     whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                    aria-label="Cancel edit"
+                    aria-label={isEditing ? "Update age group" : "Add age group"}
                   >
-                    Cancel
+                    {isLoading ? "Loading..." : isEditing ? "Update" : "Add"} Age Group
                   </motion.button>
-                )}
-              </div>
-            </form>
-          </section>
+                  {isEditing && (
+                    <motion.button
+                      type="button"
+                      className="nutrient-specialist-button secondary"
+                      onClick={resetForm}
+                      disabled={isLoading}
+                      whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                      whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                      aria-label="Cancel edit"
+                    >
+                      Cancel
+                    </motion.button>
+                  )}
+                </div>
+              </form>
+            </section>
+          </div>
 
           {/* Age Group List Section */}
           <section className="category-list-section">

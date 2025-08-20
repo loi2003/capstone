@@ -42,7 +42,8 @@
 .food-management.dark-theme .textarea-field,
 .food-management.dark-theme .search-input,
 .food-management.dark-theme select,
-.food-management.dark-theme .checkbox-input {
+.food-management.dark-theme .checkbox-input,
+.food-management.dark-theme .filter-select {
   background: #2a4b8a;
   color: var(--blue-white);
   border-color: #3a5a9a;
@@ -341,6 +342,22 @@
   outline: none;
   border-color: var(--blue-secondary);
   box-shadow: 0 0 0 3px rgba(66, 165, 245, 0.2);
+}
+
+.food-management .filter-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.food-management .filter-select {
+  padding: 0.75rem;
+  border: 1px solid var(--blue-accent);
+  border-radius: var(--blue-border-radius);
+  font-size: 0.9rem;
+  background: var(--blue-light-bg);
+  min-width: 150px;
 }
 
 .food-management .form-group {

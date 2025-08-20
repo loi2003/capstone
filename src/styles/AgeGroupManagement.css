@@ -1,5 +1,3 @@
-/* AgeGroupManagement.css */
-
 /* Scoped variables */
 .age-group-management {
   --orange-primary: #f4511e;
@@ -14,8 +12,8 @@
   --orange-shadow-hover: 0 8px 24px rgba(244, 81, 30, 0.15);
   --orange-border-radius: 8px;
   --orange-transition: all 0.3s ease;
-  --nutrient-specialist-sidebar-open: min(320px, 30vw); /* Increased width for open sidebar */
-  --nutrient-specialist-sidebar-closed: min(80px, 20vw); /* Increased width for closed sidebar */
+  --nutrient-specialist-sidebar-open: min(320px, 30vw);
+  --nutrient-specialist-sidebar-closed: min(80px, 20vw);
 
   display: flex;
   min-height: 100vh;
@@ -34,7 +32,8 @@
 .age-group-management.dark-theme .form-section,
 .age-group-management.dark-theme .form-card,
 .age-group-management.dark-theme .category-list-section,
-.age-group-management.dark-theme .category-card {
+.age-group-management.dark-theme .category-card,
+.age-group-management.dark-theme .chart-section {
   background: #3e2723;
   color: var(--orange-white);
 }
@@ -54,12 +53,10 @@
 .age-group-management.dark-theme .card-header h3,
 .age-group-management.dark-theme .management-header h1,
 .age-group-management.dark-theme .page-indicator,
-.age-group-management.dark-theme .card-category,
-.age-group-management.dark-theme .card-safety {
+.age-group-management.dark-theme .chart-section h2 {
   color: var(--orange-white);
 }
 
-.age-group-management.dark-theme .card-description,
 .age-group-management.dark-theme .management-header p {
   color: #ffccbc;
 }
@@ -120,7 +117,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 85%; /* Increased to accommodate longer titles */
+  max-width: 85%;
 }
 
 .age-group-management .nutrient-specialist-sidebar.closed .logo span {
@@ -291,15 +288,54 @@
   box-sizing: border-box;
 }
 
+/* Split container for chart and form */
+.age-group-management .split-container {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* Chart section */
+.age-group-management .chart-section {
+  background: var(--orange-white);
+  border-radius: var(--orange-border-radius);
+  padding: 1rem;
+  box-shadow: var(--orange-shadow);
+  flex: 1;
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+.age-group-management .chart-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--orange-primary);
+  margin-bottom: 1rem;
+}
+
+.age-group-management .chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+}
+
 /* Form section */
 .age-group-management .form-section {
   background: var(--orange-white);
   border-radius: var(--orange-border-radius);
   padding: 1rem;
   box-shadow: var(--orange-shadow);
-  margin-bottom: 1.5rem;
-  width: 100%;
+  flex: 1;
+  min-width: 300px;
   box-sizing: border-box;
+}
+
+.age-group-management .form-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--orange-primary);
+  margin-bottom: 1rem;
 }
 
 .age-group-management .form-card {
@@ -378,18 +414,6 @@
   min-height: 80px;
 }
 
-.age-group-management .checkbox-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.age-group-management .checkbox-input {
-  width: 16px;
-  height: 16px;
-  margin: 0;
-}
-
 .age-group-management .button-group {
   display: flex;
   gap: 0.75rem;
@@ -440,19 +464,6 @@
   transform: translateY(-2px);
 }
 
-.age-group-management .nutrient-specialist-button.tertiary {
-  background: var(--orange-accent);
-  color: var(--orange-primary);
-  border: none;
-}
-
-.age-group-management .nutrient-specialist-button.tertiary:hover:not(:disabled) {
-  background: var(--orange-secondary);
-  color: var(--orange-white);
-  transform: translateY(-2px);
-  box-shadow: var(--orange-shadow-hover);
-}
-
 .age-group-management .nutrient-specialist-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -472,6 +483,13 @@
   box-shadow: var(--orange-shadow);
   width: 100%;
   box-sizing: border-box;
+}
+
+.age-group-management .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .age-group-management .category-count {
@@ -642,6 +660,13 @@
     margin-left: var(--nutrient-specialist-sidebar-closed);
     width: calc(100% - var(--nutrient-specialist-sidebar-closed));
   }
+  .age-group-management .split-container {
+    flex-direction: column;
+  }
+  .age-group-management .chart-section,
+  .age-group-management .form-section {
+    min-width: 100%;
+  }
   .age-group-management .category-grid {
     grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
   }
@@ -678,6 +703,7 @@
   .age-group-management .management-container {
     padding: 0.75rem;
   }
+  .age-group-management .chart-section,
   .age-group-management .form-section,
   .age-group-management .category-list-section {
     padding: 0.75rem;
@@ -694,6 +720,9 @@
   }
   .age-group-management .nutrient-specialist-button {
     max-width: 100%;
+  }
+  .age-group-management .chart-container {
+    height: 250px;
   }
 }
 
@@ -718,7 +747,7 @@
   }
   .age-group-management .logo span {
     font-size: 1rem;
-    max-width: 150px; /* Increased to accommodate longer titles */
+    max-width: 150px;
   }
   .age-group-management .logo-svg-container svg {
     width: 32px;
@@ -743,6 +772,8 @@
   .age-group-management .management-header p {
     font-size: 0.8rem;
   }
+  .age-group-management .chart-section h2,
+  .age-group-management .form-section h2,
   .age-group-management .section-header h2 {
     font-size: 1.1rem;
   }
@@ -778,5 +809,8 @@
   }
   .age-group-management .notification-content p {
     font-size: 0.8rem;
+  }
+  .age-group-management .chart-container {
+    height: 200px;
   }
 }

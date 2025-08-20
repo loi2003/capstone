@@ -28,6 +28,17 @@ const LoaderIcon = () => (
   </svg>
 );
 
+const SearchIcon = () => (
+  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+    />
+  </svg>
+);
+
 // Notification Component
 const Notification = ({ message, type }) => {
   useEffect(() => {
@@ -55,6 +66,7 @@ const Notification = ({ message, type }) => {
 
 const NutrientManagement = () => {
   const [nutrients, setNutrients] = useState([]);
+  const [filteredNutrients, setFilteredNutrients] = useState([]);
   const [categories, setCategories] = useState([]);
   const [newNutrient, setNewNutrient] = useState({
     name: "",
@@ -66,6 +78,7 @@ const NutrientManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const navigate = useNavigate();
 
@@ -90,6 +103,7 @@ const NutrientManagement = () => {
       console.log("Fetched nutrients:", nutrientsData);
       console.log("Fetched categories:", categoriesData);
       setNutrients(nutrientsData);
+      setFilteredNutrients(nutrientsData);
       setCategories(categoriesData);
     } catch (err) {
       showNotification(`Failed to fetch data: ${err.message}`, "error");
@@ -216,6 +230,16 @@ const NutrientManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle search
+  const handleSearch = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    const filtered = nutrients.filter((nutrient) =>
+      nutrient.name?.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredNutrients(filtered);
   };
 
   // Cancel edit
@@ -407,6 +431,32 @@ const NutrientManagement = () => {
               {isSidebarOpen && <span>Nutrient Management</span>}
             </Link>
           </div>
+          <div className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/nutrient-in-food-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient in Food Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Link icon for nutrient in food management"
+              >
+                <path
+                  d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"
+                  stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Nutrient in Food Management</span>}
+            </Link>
+          </div>
         </nav>
       </motion.aside>
 
@@ -533,16 +583,27 @@ const NutrientManagement = () => {
             <div className="section-header">
               <h2>Nutrient List</h2>
               <div className="nutrient-count">
-                {nutrients.length}{" "}
-                {nutrients.length === 1 ? "nutrient" : "nutrients"} found
+                {filteredNutrients.length}{" "}
+                {filteredNutrients.length === 1 ? "nutrient" : "nutrients"} found
               </div>
+            </div>
+            <div className="search-section">
+              <SearchIcon />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearch}
+                placeholder="Search nutrients..."
+                className="search-input"
+                aria-label="Search nutrients"
+              />
             </div>
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
                 <p>Loading nutrients...</p>
               </div>
-            ) : nutrients.length === 0 ? (
+            ) : filteredNutrients.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -560,10 +621,21 @@ const NutrientManagement = () => {
                 </svg>
                 <h3>No nutrients found</h3>
                 <p>Create your first nutrient to get started</p>
+                {searchTerm && (
+                  <motion.button
+                    onClick={() => setSearchTerm("")}
+                    className="clear-search-button nutrient-specialist-button secondary"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    aria-label="Clear search"
+                  >
+                    Clear Search
+                  </motion.button>
+                )}
               </div>
             ) : (
               <div className="nutrient-grid">
-                {nutrients.map((nutrient) => (
+                {filteredNutrients.map((nutrient) => (
                   <motion.div
                     key={nutrient.id}
                     className="nutrient-card"
