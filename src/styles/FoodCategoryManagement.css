@@ -453,6 +453,13 @@
   box-sizing: border-box;
 }
 
+.food-category-management .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .food-category-management .category-count {
   font-size: 0.8rem;
   background: var(--blue-accent);

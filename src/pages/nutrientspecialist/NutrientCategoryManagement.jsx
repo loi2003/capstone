@@ -12,7 +12,7 @@ import {
 } from "../../apis/nutriet-api";
 import "../../styles/NutrientCategoryManagement.css";
 
-// SVG Icons (only SearchIcon kept)
+// SVG Icons
 const SearchIcon = () => (
   <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
     <path
@@ -24,7 +24,7 @@ const SearchIcon = () => (
   </svg>
 );
 
-// Notification Component (simplified, no icons)
+// Notification Component
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -92,7 +92,6 @@ const NutrientCategoryManagement = () => {
       }));
       setCategories(enrichedCategories);
       setFilteredCategories(enrichedCategories);
-      setNutrients(nutrientsData);
       setCurrentPage(1);
     } catch (err) {
       showNotification(`Failed to fetch data: ${err.message}`, "error");
@@ -455,6 +454,32 @@ const NutrientCategoryManagement = () => {
               {isSidebarOpen && <span>Nutrient Management</span>}
             </Link>
           </div>
+          <div className="sidebar-nav-item">
+            <Link
+              to="/nutrient-specialist/nutrient-in-food-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient in Food Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Nutrient in food icon"
+              >
+                <path
+                  d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                  stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Nutrient in Food Management</span>}
+            </Link>
+          </div>
         </nav>
       </motion.aside>
 
@@ -500,17 +525,6 @@ const NutrientCategoryManagement = () => {
               <h2>{isEditing ? "Edit Category" : "Create New Category"}</h2>
             </div>
             <div className="form-card">
-              <div className="search-section">
-                <SearchIcon />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  placeholder="Search categories..."
-                  className="search-input"
-                  aria-label="Search categories"
-                />
-              </div>
               <div className="form-group">
                 <label htmlFor="category-name">Category Name</label>
                 <input
@@ -577,6 +591,17 @@ const NutrientCategoryManagement = () => {
                 {filteredCategories.length === 1 ? "category" : "categories"}{" "}
                 found
               </div>
+            </div>
+            <div className="search-section">
+              <SearchIcon />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearch}
+                placeholder="Search categories..."
+                className="search-input"
+                aria-label="Search categories"
+              />
             </div>
             {loading ? (
               <div className="loading-state">

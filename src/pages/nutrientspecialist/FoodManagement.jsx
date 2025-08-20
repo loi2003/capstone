@@ -117,7 +117,8 @@ const FoodDetailsModal = ({ food, category, onClose }) => {
               {category ? category.name : "Uncategorized"}
             </p>
             <p>
-              <strong>Pregnancy Safe:</strong> {food.pregnancySafe ? "Yes" : "No"}
+              <strong>Pregnancy Safe:</strong>{" "}
+              {food.pregnancySafe ? "Yes" : "No"}
             </p>
             {food.safetyNote && (
               <p>
@@ -154,6 +155,8 @@ const FoodManagement = () => {
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [pregnancyFilter, setPregnancyFilter] = useState("All");
+  const [alphaFilter, setAlphaFilter] = useState("All");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
@@ -438,14 +441,35 @@ const FoodManagement = () => {
 
   // Handle search
   const handleSearch = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    const filtered = foods.filter((food) =>
-      food.name?.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredFoods(filtered);
+    setSearchTerm(e.target.value);
     setCurrentPage(1);
   };
+
+  const handlePregnancyFilter = (e) => {
+    setPregnancyFilter(e.target.value);
+    setCurrentPage(1);
+  };
+
+ 
+  // Filter foods
+  useEffect(() => {
+    let filtered = foods;
+    if (searchTerm) {
+      filtered = filtered.filter((food) =>
+        food.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    if (pregnancyFilter !== "All") {
+      const isSafe = pregnancyFilter === "Safe";
+      filtered = filtered.filter((food) => food.pregnancySafe === isSafe);
+    }
+    if (alphaFilter !== "All") {
+      filtered = filtered.filter((food) =>
+        food.name?.toUpperCase().startsWith(alphaFilter)
+      );
+    }
+    setFilteredFoods(filtered);
+  }, [foods, searchTerm, pregnancyFilter, alphaFilter]);
 
   // Cancel edit
   const cancelEdit = () => {
@@ -653,6 +677,32 @@ const FoodManagement = () => {
               {isSidebarOpen && <span>Food Management</span>}
             </Link>
           </div>
+          <div className="sidebar-nav-item active">
+            <Link
+              to="/nutrient-specialist/nutrient-in-food-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient in Food Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Nutrient in food icon"
+              >
+                <path
+                  d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                  stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Nutrient in Food Management</span>}
+            </Link>
+          </div>
         </nav>
       </motion.aside>
 
@@ -682,17 +732,6 @@ const FoodManagement = () => {
               <h2>{isEditing ? "Edit Food" : "Create New Food"}</h2>
             </div>
             <div className="form-card">
-              <div className="search-section">
-                <SearchIcon />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  placeholder="Search foods..."
-                  className="search-input"
-                  aria-label="Search foods"
-                />
-              </div>
               <div className="form-group">
                 <label htmlFor="food-name">Food Name</label>
                 <input
@@ -811,6 +850,30 @@ const FoodManagement = () => {
                 {filteredFoods.length}{" "}
                 {filteredFoods.length === 1 ? "food" : "foods"} found
               </div>
+            </div>
+            <div className="filter-section">
+              <div className="search-section">
+                <SearchIcon />
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  placeholder="Search foods..."
+                  className="search-input"
+                  aria-label="Search foods"
+                />
+              </div>
+              <select
+                value={pregnancyFilter}
+                onChange={handlePregnancyFilter}
+                className="filter-select"
+                aria-label="Filter by pregnancy safe"
+              >
+                <option value="All">All Pregnancy Safe</option>
+                <option value="Safe">Pregnancy Safe</option>
+                <option value="Unsafe">Not Pregnancy Safe</option>
+              </select>
+           
             </div>
             {loading ? (
               <div className="loading-state">

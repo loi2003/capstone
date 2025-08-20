@@ -23,7 +23,14 @@ import {
 } from "chart.js";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // SVG Icons
 const SearchIcon = () => (
@@ -113,17 +120,18 @@ const FoodCategoryManagement = () => {
     }
     setLoading(true);
     try {
-      const [userResponse, categoriesData, foodsDataResponse] = await Promise.all([
-        getCurrentUser(token),
-        getAllFoodCategories(),
-        getAllFoods(),
-      ]);
+      const [userResponse, categoriesData, foodsDataResponse] =
+        await Promise.all([
+          getCurrentUser(token),
+          getAllFoodCategories(),
+          getAllFoods(),
+        ]);
       const userData = userResponse.data?.data || userResponse.data;
       if (userData && Number(userData.roleId) === 4) {
         setUser(userData);
 
         // Normalize categories data
-        const normalizedCategories = categoriesData.map(category => ({
+        const normalizedCategories = categoriesData.map((category) => ({
           id: category.id || category.Id,
           name: category.name,
           description: category.description,
@@ -138,13 +146,13 @@ const FoodCategoryManagement = () => {
 
         // Calculate food counts per category
         const counts = normalizedCategories.map((category) => {
-          const count = foodsData.filter(
-            (food) => {
-              const matches = food.foodCategoryId === category.id;
-              console.log(`Category: ${category.name}, Food ID: ${food.id}, Matches: ${matches}`);
-              return matches;
-            }
-          ).length;
+          const count = foodsData.filter((food) => {
+            const matches = food.foodCategoryId === category.id;
+            console.log(
+              `Category: ${category.name}, Food ID: ${food.id}, Matches: ${matches}`
+            );
+            return matches;
+          }).length;
           return { categoryId: category.id, count };
         });
         console.log("Food counts:", counts);
@@ -177,7 +185,9 @@ const FoodCategoryManagement = () => {
       let categoryData = response.data || response;
 
       if (!categoryData) {
-        throw new Error("No data received from server (possible category not found)");
+        throw new Error(
+          "No data received from server (possible category not found)"
+        );
       }
 
       const normalizedData = {
@@ -204,7 +214,10 @@ const FoodCategoryManagement = () => {
         status: err.response?.status,
         config: err.config,
       });
-      showNotification(`Failed to fetch category details: ${err.message}`, "error");
+      showNotification(
+        `Failed to fetch category details: ${err.message}`,
+        "error"
+      );
       setSelectedCategory(null);
       setIsEditing(false);
     } finally {
@@ -365,7 +378,8 @@ const FoodCategoryManagement = () => {
         label: "Number of Foods",
         data: foodCategories.map(
           (category) =>
-            foodCounts.find((count) => count.categoryId === category.id)?.count || 0
+            foodCounts.find((count) => count.categoryId === category.id)
+              ?.count || 0
         ),
         backgroundColor: "rgba(30, 136, 229, 0.6)",
         borderColor: "rgba(30, 136, 229, 1)",
@@ -397,7 +411,9 @@ const FoodCategoryManagement = () => {
         },
       },
       tooltip: {
-        backgroundColor: document.documentElement.classList.contains("dark-theme")
+        backgroundColor: document.documentElement.classList.contains(
+          "dark-theme"
+        )
           ? "#2a4b6e"
           : "#ffffff",
         titleColor: document.documentElement.classList.contains("dark-theme")
@@ -582,6 +598,32 @@ const FoodCategoryManagement = () => {
               {isSidebarOpen && <span>Food Management</span>}
             </Link>
           </div>
+          <div className="sidebar-nav-item active">
+            <Link
+              to="/nutrient-specialist/nutrient-in-food-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Nutrient in Food Management"
+            >
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Nutrient in food icon"
+              >
+                <path
+                  d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                  stroke="var(--nutrient-specialist-white)"
+                  fill="var(--nutrient-specialist-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              {isSidebarOpen && <span>Nutrient in Food Management</span>}
+            </Link>
+          </div>
         </nav>
       </motion.aside>
 
@@ -596,7 +638,9 @@ const FoodCategoryManagement = () => {
         <div className="management-header">
           <div className="header-content">
             <h1>Food Category Management</h1>
-            <p>Create, edit, and manage food categories for better organization</p>
+            <p>
+              Create, edit, and manage food categories for better organization
+            </p>
           </div>
         </div>
 
@@ -612,17 +656,6 @@ const FoodCategoryManagement = () => {
               <h2>{isEditing ? "Edit Category" : "Create New Category"}</h2>
             </div>
             <div className="form-card">
-              <div className="search-section">
-                <SearchIcon />
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  placeholder="Search categories..."
-                  className="search-input"
-                  aria-label="Search categories"
-                />
-              </div>
               <div className="form-group">
                 <label htmlFor="category-name">Category Name</label>
                 <input
@@ -648,12 +681,16 @@ const FoodCategoryManagement = () => {
                 />
                 <div className="button-group">
                   <motion.button
-                    onClick={isEditing ? updateCategoryHandler : createCategoryHandler}
+                    onClick={
+                      isEditing ? updateCategoryHandler : createCategoryHandler
+                    }
                     disabled={loading}
                     className="submit-button nutrient-specialist-button primary"
                     whileHover={{ scale: loading ? 1 : 1.05 }}
                     whileTap={{ scale: loading ? 1 : 0.95 }}
-                    aria-label={isEditing ? "Update category" : "Create category"}
+                    aria-label={
+                      isEditing ? "Update category" : "Create category"
+                    }
                   >
                     {loading
                       ? "Loading..."
@@ -686,6 +723,17 @@ const FoodCategoryManagement = () => {
                 {filteredCategories.length === 1 ? "category" : "categories"}{" "}
                 found
               </div>
+            </div>
+            <div className="search-section">
+              <SearchIcon />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={handleSearch}
+                placeholder="Search categories..."
+                className="search-input"
+                aria-label="Search categories"
+              />
             </div>
             {loading ? (
               <div className="loading-state">
