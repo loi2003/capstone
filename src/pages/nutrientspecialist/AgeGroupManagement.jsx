@@ -441,17 +441,6 @@ const AgeGroupManagement = () => {
             <section className="form-section">
               <h2>{isEditing ? "Edit Age Group" : "Add New Age Group"}</h2>
               <form onSubmit={handleSubmit} className="form-card">
-                <div className="search-section">
-                  <SearchIcon />
-                  <input
-                    type="text"
-                    className="search-input"
-                    placeholder="Search age groups..."
-                    value={searchTerm}
-                    onChange={handleSearch}
-                    aria-label="Search age groups"
-                  />
-                </div>
                 <div className="form-group">
                   <label htmlFor="fromAge">From Age</label>
                   <input
@@ -516,6 +505,17 @@ const AgeGroupManagement = () => {
             <div className="section-header">
               <h2>All Age Groups</h2>
               <span className="category-count">{filteredAgeGroups.length} Age Groups</span>
+            </div>
+            <div className="search-section">
+              <SearchIcon />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search all age groups..."
+                value={searchTerm}
+                onChange={handleSearch}
+                aria-label="Search all age groups"
+              />
             </div>
             {isLoading ? (
               <div className="loading-state">

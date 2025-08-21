@@ -374,17 +374,6 @@ const AllergyCategoryManagement = () => {
               <h2>{isEditing ? "Edit Allergy Category" : "Create New Allergy Category"}</h2>
             </div>
             <form onSubmit={handleSubmit} className="form-card">
-              <div className="search-section">
-                <SearchIcon />
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Search allergy categories..."
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  aria-label="Search allergy categories"
-                />
-              </div>
               <div className="input-section">
                 <div className="form-group">
                   <label htmlFor="name">Category Name</label>
@@ -447,6 +436,17 @@ const AllergyCategoryManagement = () => {
             <div className="section-header">
               <h2>All Allergy Categories</h2>
               <span className="category-count">{filteredAllergyCategories.length} Categories</span>
+            </div>
+            <div className="search-section">
+              <SearchIcon />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search all allergy categories..."
+                value={searchTerm}
+                onChange={handleSearch}
+                aria-label="Search all allergy categories"
+              />
             </div>
             {isLoading ? (
               <div className="loading-state">

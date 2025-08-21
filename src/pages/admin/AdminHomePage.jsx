@@ -274,7 +274,8 @@ const AdminHomePage = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item admin-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="admin-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
@@ -287,14 +288,20 @@ const AdminHomePage = () => {
                     aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
+        10 10 10-4.48 10-10S17.52 2 12 2zm0 
+        4c1.66 0 3 1.34 3 3s-1.34 
+        3-3 3-3-1.34-3-3 1.34-3 
+        3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
+        4-3.08 6-3.08 1.99 0 5.97 1.09 
+        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--admin-background)"
                     />
                   </svg>
                   {isSidebarOpen && (
                     <span className="admin-profile-email">{user.email}</span>
                   )}
-                </div>
+                </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
@@ -351,7 +358,9 @@ const AdminHomePage = () => {
           >
             <h1 className="admin-banner-title">Admin Dashboard</h1>
             <p className="admin-banner-subtitle">
-              Oversee platform operations, manage user accounts, configure system settings, and ensure smooth functionality with powerful administrative tools.
+              Oversee platform operations, manage user accounts, configure
+              system settings, and ensure smooth functionality with powerful
+              administrative tools.
             </p>
             <div className="admin-banner-buttons">
               <Link to="/admin/users" className="admin-banner-button primary">
@@ -398,26 +407,40 @@ const AdminHomePage = () => {
         >
           <h2 className="admin-features-title">Core Administrative Tools</h2>
           <p className="admin-features-description">
-            Leverage a suite of tools designed to streamline user management, account creation, and system configuration for optimal platform performance.
+            Leverage a suite of tools designed to streamline user management,
+            account creation, and system configuration for optimal platform
+            performance.
           </p>
           <div className="admin-features-grid">
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>User Management</h3>
-              <p>View, edit, and assign roles to user accounts, ensuring secure and efficient access control across the platform.</p>
+              <p>
+                View, edit, and assign roles to user accounts, ensuring secure
+                and efficient access control across the platform.
+              </p>
               <Link to="/admin/users" className="admin-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>Account Management</h3>
-              <p>Create and manage accounts for Health Experts, Nutrient Specialists, and Clinics to support platform operations.</p>
-              <Link to="/admin/account-management" className="admin-feature-link">
+              <p>
+                Create and manage accounts for Health Experts, Nutrient
+                Specialists, and Clinics to support platform operations.
+              </p>
+              <Link
+                to="/admin/account-management"
+                className="admin-feature-link"
+              >
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>System Settings</h3>
-              <p>Customize platform configurations, including policies and permissions, to align with organizational needs.</p>
+              <p>
+                Customize platform configurations, including policies and
+                permissions, to align with organizational needs.
+              </p>
               <Link to="/admin/settings" className="admin-feature-link">
                 Explore
               </Link>
