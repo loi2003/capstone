@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/NutrientSpecialistHomePage.css";
 
-const NutrientSpecialistHomePage = () => {
+const NutrientPolicy = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(null);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
@@ -131,9 +131,7 @@ const NutrientSpecialistHomePage = () => {
   return (
     <div className="nutrient-specialist-homepage">
       <motion.aside
-        className={`nutrient-specialist-sidebar ${
-          isSidebarOpen ? "open" : "closed"
-        }`}
+        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
@@ -256,9 +254,7 @@ const NutrientSpecialistHomePage = () => {
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  className={`dropdown-icon ${
-                    isFoodDropdownOpen ? "open" : ""
-                  }`}
+                  className={`dropdown-icon ${isFoodDropdownOpen ? "open" : ""}`}
                 >
                   <path
                     stroke="var(--nutrient-specialist-white)"
@@ -371,18 +367,14 @@ const NutrientSpecialistHomePage = () => {
                   height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  className={`dropdown-icon ${
-                    isNutrientDropdownOpen ? "open" : ""
-                  }`}
+                  className={`dropdown-icon ${isNutrientDropdownOpen ? "open" : ""}`}
                 >
                   <path
                     stroke="var(--nutrient-specialist-white)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    d={
-                      isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
-                    }
+                    d={isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
                   />
                 </svg>
               )}
@@ -391,9 +383,7 @@ const NutrientSpecialistHomePage = () => {
           <motion.div
             className="nutrient-dropdown"
             variants={dropdownVariants}
-            animate={
-              isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
-            }
+            animate={isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"}
             initial="closed"
           >
             <motion.div
@@ -455,7 +445,7 @@ const NutrientSpecialistHomePage = () => {
               </Link>
             </motion.div>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item ">
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
               to="/nutrient-specialist/nutrient-in-food-management"
               onClick={() => setIsSidebarOpen(true)}
@@ -631,13 +621,7 @@ const NutrientSpecialistHomePage = () => {
                     aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
-        10 10 10-4.48 10-10S17.52 2 12 2zm0 
-        3c1.66 0 3 1.34 3 3s-1.34 
-        3-3 3-3-1.34-3-3 1.34-3 
-        3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
-        4-3.08 6-3.08 1.99 0 5.97 1.09 
-        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--nutrient-specialist-white)"
                     />
                   </svg>
@@ -648,7 +632,6 @@ const NutrientSpecialistHomePage = () => {
                   )}
                 </Link>
               </motion.div>
-
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
@@ -707,36 +690,21 @@ const NutrientSpecialistHomePage = () => {
         </motion.nav>
       </motion.aside>
       <main className="nutrient-specialist-content">
-        <section className="nutrient-specialist-banner">
-          <motion.div
-            className="nutrient-specialist-banner-content"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
+        <motion.section
+          className="nutrient-specialist-banner"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="nutrient-specialist-banner-content">
             <h1 className="nutrient-specialist-banner-title">
-              Nutrient Specialist Dashboard
+              Nutrient Specialist Policy
             </h1>
             <p className="nutrient-specialist-banner-subtitle">
-              Empower your nutrition expertise with tools to manage food
-              categories, nutrients, age groups, and professional blogs
-              seamlessly.
+              Review the guidelines and policies for managing nutritional data and
+              ensuring compliance with platform standards.
             </p>
-            <div className="nutrient-specialist-banner-buttons">
-              <Link
-                to="/nutrient-specialist/food-management"
-                className="nutrient-specialist-banner-button primary"
-              >
-                Manage Foods
-              </Link>
-              <Link
-                to="/nutrient-specialist/nutrient-management"
-                className="nutrient-specialist-banner-button secondary"
-              >
-                Manage Nutrients
-              </Link>
-            </div>
-          </motion.div>
+          </div>
           <motion.div
             className="nutrient-specialist-banner-image"
             initial={{ opacity: 0, x: 50 }}
@@ -749,98 +717,67 @@ const NutrientSpecialistHomePage = () => {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              aria-label="Nutrition icon for dashboard"
+              aria-label="Document icon for nutrient policy"
             >
               <path
-                d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
-                stroke="var(--nutrient-specialist-primary)"
+                d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
                 fill="var(--nutrient-specialist-highlight)"
+                stroke="var(--nutrient-specialist-primary)"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </svg>
           </motion.div>
-        </section>
+        </motion.section>
         <motion.section
-          className="nutrient-specialist-features"
+          className="nutrient-specialist-policy-content"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
-          <h2 className="nutrient-specialist-features-title">
-            Core Nutrient Specialist Tools
-          </h2>
-          <p className="nutrient-specialist-features-description">
-            Leverage a comprehensive suite of tools to manage food and nutrient
-            data, oversee age group categorizations, and create insightful blog
-            content.
+          <h2 className="nutrient-specialist-policy-title">Platform Policies</h2>
+          <p className="nutrient-specialist-policy-description">
+            As a Nutrient Specialist, you are responsible for maintaining accurate
+            and compliant nutritional data. Below are the key policies to follow:
           </p>
-          <div className="nutrient-specialist-features-grid">
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Food Management</h3>
+          <div className="nutrient-specialist-policy-list">
+            <motion.div variants={cardVariants} className="nutrient-specialist-policy-item">
+              <h3>Data Accuracy</h3>
               <p>
-                Organize and update food categories and items to provide
-                accurate nutritional data.
+                Ensure all nutritional information, including nutrient profiles and food
+                categorizations, is accurate and sourced from reputable references.
               </p>
-              <Link
-                to="/nutrient-specialist/food-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
             </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Nutrient Management</h3>
+            <motion.div variants={cardVariants} className="nutrient-specialist-policy-item">
+              <h3>Confidentiality</h3>
               <p>
-                Maintain detailed nutrient profiles and categories for precise
-                dietary recommendations.
+                Protect user data and maintain confidentiality in accordance with privacy
+                regulations.
               </p>
-              <Link
-                to="/nutrient-specialist/nutrient-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
             </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Age Group Management</h3>
+            <motion.div variants={cardVariants} className="nutrient-specialist-policy-item">
+              <h3>Content Guidelines</h3>
               <p>
-                Customize nutritional guidelines for different age groups to
-                ensure targeted advice.
+                Blog posts and nutritional guidance must be evidence-based, non-promotional,
+                and aligned with health and safety standards.
               </p>
-              <Link
-                to="/nutrient-specialist/age-group-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
             </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Blog Management</h3>
+            <motion.div variants={cardVariants} className="nutrient-specialist-policy-item">
+              <h3>Compliance</h3>
               <p>
-                Create and manage educational content to share your expertise
-                with the community.
+                Adhere to local and international nutritional guidelines and regulations when
+                updating food and nutrient data.
               </p>
-              <Link
-                to="/blog-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
             </motion.div>
+          </div>
+          <div className="nutrient-specialist-policy-actions">
+            <Link
+              to="/nutrient-specialist"
+              className="nutrient-specialist-policy-button"
+            >
+              Back to Dashboard
+            </Link>
           </div>
         </motion.section>
       </main>
@@ -848,4 +785,4 @@ const NutrientSpecialistHomePage = () => {
   );
 };
 
-export default NutrientSpecialistHomePage;
+export default NutrientPolicy;

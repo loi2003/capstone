@@ -400,6 +400,60 @@
   stroke: currentColor;
 }
 
+/* Action buttons (Edit and Delete) */
+.nutrient-in-food-management .action-buttons {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  padding: 0;
+  margin: 0;
+}
+
+.nutrient-in-food-management .edit-button,
+.nutrient-in-food-management .delete-button {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--nutrient-specialist-transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  height: 32px;
+  box-sizing: border-box;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.nutrient-in-food-management .edit-button {
+  background: var(--nutrient-specialist-highlight);
+  color: var(--nutrient-specialist-primary);
+  border: none;
+}
+
+.nutrient-in-food-management .edit-button:hover:not(:disabled) {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+  transform: translateY(-2px);
+  box-shadow: var(--nutrient-specialist-shadow-hover);
+}
+
+.nutrient-in-food-management .delete-button {
+  background: transparent;
+  color: var(--nutrient-specialist-primary);
+  border: 2px solid var(--nutrient-specialist-accent);
+}
+
+.nutrient-in-food-management .delete-button:hover:not(:disabled) {
+  background: var(--nutrient-specialist-accent);
+  color: var(--nutrient-specialist-primary);
+  transform: translateY(-2px);
+}
+
 /* Nutrient list section */
 .nutrient-in-food-management .nutrient-list-section {
   background: var(--nutrient-specialist-white);
@@ -408,6 +462,17 @@
   box-shadow: var(--nutrient-specialist-shadow);
   width: 100%;
   box-sizing: border-box;
+}
+
+.nutrient-in-food-management .header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.nutrient-in-food-management .search-input {
+  max-width: 300px;
 }
 
 .nutrient-in-food-management .nutrient-count {
@@ -547,6 +612,10 @@
   .nutrient-in-food-management .management-container {
     padding: 1rem;
   }
+
+  .nutrient-in-food-management .search-input {
+    max-width: 250px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -599,6 +668,18 @@
 
   .nutrient-in-food-management .nutrient-specialist-button {
     max-width: 100%;
+  }
+
+  .nutrient-in-food-management .search-input {
+    max-width: 100%;
+  }
+
+  .nutrient-in-food-management .edit-button,
+  .nutrient-in-food-management .delete-button {
+    min-width: 70px;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    height: 28px;
   }
 }
 
@@ -670,7 +751,7 @@
 
   .nutrient-in-food-management .input-field,
   .nutrient-in-food-management .textarea-field,
-  .nutrient-in-food-management select {
+  .nutrient-in-food-management .select {
     font-size: 0.85rem;
     padding: 0.5rem;
   }
@@ -678,6 +759,14 @@
   .nutrient-in-food-management .nutrient-specialist-button {
     font-size: 0.85rem;
     padding: 0.5rem;
+  }
+
+  .nutrient-in-food-management .edit-button,
+  .nutrient-in-food-management .delete-button {
+    min-width: 60px;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    height: 24px;
   }
 
   .nutrient-in-food-management .notification {

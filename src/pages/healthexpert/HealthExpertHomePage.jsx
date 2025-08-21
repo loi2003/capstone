@@ -171,7 +171,9 @@ const HealthExpertHomePage = () => {
                 />
               </svg>
             </motion.div>
-            {isSidebarOpen && <span className="logo-text">Health Expert Panel</span>}
+            {isSidebarOpen && (
+              <span className="logo-text">Health Expert Panel</span>
+            )}
           </Link>
           <motion.button
             className="sidebar-toggle"
@@ -290,7 +292,8 @@ const HealthExpertHomePage = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item health-expert-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="health-expert-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
@@ -303,15 +306,24 @@ const HealthExpertHomePage = () => {
                     aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
+        10 10 10-4.48 10-10S17.52 2 12 2zm0 
+        3c1.66 0 3 1.34 3 3s-1.34 
+        3-3 3-3-1.34-3-3 1.34-3 
+        3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
+        4-3.08 6-3.08 1.99 0 5.97 1.09 
+        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--health-expert-background)"
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="health-expert-profile-email">{user.email}</span>
+                    <span className="health-expert-profile-email">
+                      {user.email}
+                    </span>
                   )}
-                </div>
+                </Link>
               </motion.div>
+
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
@@ -342,10 +354,7 @@ const HealthExpertHomePage = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div
-              variants={navItemVariants}
-              className="sidebar-nav-item"
-            >
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -380,9 +389,13 @@ const HealthExpertHomePage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="health-expert-banner-title">Health Expert Dashboard</h1>
+            <h1 className="health-expert-banner-title">
+              Health Expert Dashboard
+            </h1>
             <p className="health-expert-banner-subtitle">
-              Empower your expertise with tools to access comprehensive tutorials, review policies, and manage your professional profile seamlessly.
+              Empower your expertise with tools to access comprehensive
+              tutorials, review policies, and manage your professional profile
+              seamlessly.
             </p>
             <div className="health-expert-banner-buttons">
               <Link
@@ -428,9 +441,13 @@ const HealthExpertHomePage = () => {
           initial="initial"
           animate="animate"
         >
-          <h2 className="health-expert-features-title">Core Health Expert Tools</h2>
+          <h2 className="health-expert-features-title">
+            Core Health Expert Tools
+          </h2>
           <p className="health-expert-features-description">
-            Leverage a suite of tools designed to enhance your knowledge, ensure compliance with platform policies, and maintain an up-to-date professional profile.
+            Leverage a suite of tools designed to enhance your knowledge, ensure
+            compliance with platform policies, and maintain an up-to-date
+            professional profile.
           </p>
           <div className="health-expert-features-grid">
             <motion.div
@@ -438,7 +455,10 @@ const HealthExpertHomePage = () => {
               className="health-expert-feature-card"
             >
               <h3>Tutorial Management</h3>
-              <p>Access detailed guides and resources to master platform features and enhance your expertise.</p>
+              <p>
+                Access detailed guides and resources to master platform features
+                and enhance your expertise.
+              </p>
               <Link
                 to="/health-expert/tutorial"
                 className="health-expert-feature-link"
@@ -451,7 +471,10 @@ const HealthExpertHomePage = () => {
               className="health-expert-feature-card"
             >
               <h3>Policy Review</h3>
-              <p>Stay informed with the latest platform policies and guidelines to ensure compliance.</p>
+              <p>
+                Stay informed with the latest platform policies and guidelines
+                to ensure compliance.
+              </p>
               <Link
                 to="/health-expert/policy"
                 className="health-expert-feature-link"
@@ -464,7 +487,10 @@ const HealthExpertHomePage = () => {
               className="health-expert-feature-card"
             >
               <h3>Profile Management</h3>
-              <p>Update your personal information, notification settings, and account details effortlessly.</p>
+              <p>
+                Update your personal information, notification settings, and
+                account details effortlessly.
+              </p>
               <Link
                 to="/health-expert/profile"
                 className="health-expert-feature-link"
