@@ -81,6 +81,12 @@
   outline: none;
 }
 
+.back-btn-wrapper {
+  display: flex;
+  justify-content: flex-end; /* push button to the right */
+  margin-bottom: 1rem;       /* space below button */
+}
+
 /* Buttons */
 .mealplanner-btn {
   display: inline-block;
@@ -113,7 +119,7 @@
 }
 
 .mealplanner-main h2 {
-  color: #04668d;
+  color: #013F50;
   text-align: center;
   margin-bottom: 1.5rem;
 }
@@ -156,7 +162,13 @@
   flex-direction: column;
 }
 
+.mealplanner-btn-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
 .mealplanner-form label {
+  display: flex;
   margin: 0.8rem 0 0.4rem;
   font-weight: 600;
   font-size: 0.9rem;
@@ -184,18 +196,26 @@
 }
 
 .mealplanner-output {
-  width: 1500px;
-  margin: 40px auto;
-  padding: 1rem;
+  width: 1400px;
+  margin: -5px auto;
+  /* padding: 1rem; */
+}
+.mealplanner-output h2 {
+  text-align: center;
+  color: #013F50;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
 }
 
 .mealplanner-total {
   margin-bottom: 1.5rem;
   font-size: 1.1rem;
+  color: #04668d;
 }
 
 .meal-card {
-  background: var(--white-text);
+  margin-top: 2rem;
+  background: white;
   border-radius: 1rem;
   box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
   margin-bottom: 1.5rem;
@@ -204,15 +224,41 @@
 
 .meal-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center; 
   align-items: center;
-  margin-bottom: 1rem;
+  background: #02808F;           
+  padding: 0.8rem 1.2rem;
+  border-radius: 0.6rem 0.6rem 0 0;
+  opacity: 0.9;
+  margin-bottom: 0.5rem;
+  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
+  transition: all 0.3s ease;
+}
+
+.meal-header:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+}
+
+.meal-header h3 {
+  color: white;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0;
+  /* text-transform: uppercase; */
 }
 
 .meal-serving {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.meal-card h3{
+  display: flex;
+  text-align: center;
+  justify-content: center;
 }
 
 .meal-serving button {
@@ -256,11 +302,16 @@
   padding: 1rem;
   flex: 1 1 260px;
   display: flex;
-  gap: 1rem;
+  gap: 2rem;
+  transition: background 0.3s, transform 0.2s;
+}
+.dish-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
 }
 
 .dish-card img {
-  width: 320px;
+  width: 400px;
   height: 260px;
   object-fit: cover;
   border-radius: 0.4rem;
@@ -268,33 +319,49 @@
 
 .dish-info h4 {
   margin: 0;
-  font-size: 1rem;
-  color: #04668d;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #013F50;
 }
 
 .dish-info p {
   margin: 0.3rem 0;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
+  color: #013F50;
 }
 
+
 .meal-actions {
-  margin-top: 0.5rem;
+  margin-top: 1rem;
   display: flex;
-  gap: 0.4rem;
-  flex-wrap: nowrap;
+  flex-direction: column;
+  gap: 0.6rem;        
+  flex-wrap: wrap;    
 }
 
 .meal-actions button {
-  background: #f5f5f5;
+  display: flex;
+  align-items: center;   
+  justify-content: flex-start;
+  gap: 0.4rem;           
+  padding: 0.7rem 1rem;
+  background: #02808F;
+  color: var(--white-text);
   border: none;
   border-radius: 0.4rem;
-  padding: 0.3rem 0.6rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
+  transition: background 0.3s, transform 0.2s;
+  flex: 1;               
+  width: 240px;      
 }
+
+.meal-actions button:hover {
+  background: #04668d;
+  transform: translateY(-2px);
+}
+
 
 .week-day-card {
   background: var(--white-text);
@@ -306,17 +373,26 @@
 
 .week-day-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;   
   align-items: center;
-  margin-bottom: 1rem;
+  position: relative;
 }
-.week-day-header h3 {
-  color: #04668d;
-  font-size: 1.2rem;
+
+.week-day-header .header-title {
+  flex: 1;                   
+  text-align: center;        
 }
+
+.week-day-header .header-action {
+  position: absolute;
+  right: 0;                  
+}
+
+
 
 .week-meal-grid {
   display: grid;
+  margin-top: 0.5rem;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
@@ -337,15 +413,36 @@
   margin-bottom: 0.5rem;
 }
 
-.mealplanner-detail-btn {
+.mealplanner-detail-wrapper {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  gap: 1rem;                     
   margin-top: 0.5rem;
-  background: none;
-  border: 1px solid #04668d;
-  color: #04668d;
-  padding: 0.3rem 0.8rem;
+}
+.week-meal-card h4 {
+  color: #013F50;
+  font-size: large;
+  font-weight: bold;
+  margin: 0;
+}
+
+.mealplanner-detail-btn {
+  padding: 0.4rem 0.8rem;  /* smaller button */
+  width: 100px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: #02808F;
+  color: #fff;
+  border: none;
   border-radius: 0.4rem;
   cursor: pointer;
-  font-weight: 600;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.mealplanner-detail-btn:hover {
+  background: #04668d;
+  transform: translateY(-2px);
 }
 
 .mealplanner-autocomplete-wrapper {
