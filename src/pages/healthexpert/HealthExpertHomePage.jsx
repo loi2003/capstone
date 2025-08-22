@@ -41,23 +41,16 @@ const HealthExpertHomePage = () => {
   };
 
   const handleLogout = async () => {
-    if (!user?.userId) {
+    if (!window.confirm("Are you sure you want to sign out?")) return;
+    try {
+      if (user?.userId) await logout(user.userId);
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    } finally {
       localStorage.removeItem("token");
       setUser(null);
+      setIsSidebarOpen(true);
       navigate("/signin", { replace: true });
-      return;
-    }
-    if (window.confirm("Are you sure you want to sign out?")) {
-      try {
-        await logout(user.userId);
-      } catch (error) {
-        console.error("Error logging out:", error.message);
-      } finally {
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsSidebarOpen(true);
-        navigate("/signin", { replace: true });
-      }
     }
   };
 
@@ -98,7 +91,7 @@ const HealthExpertHomePage = () => {
 
   const sidebarVariants = {
     open: {
-      width: "250px",
+      width: "280px",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
@@ -142,6 +135,7 @@ const HealthExpertHomePage = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-label="Health Expert icon for logo"
               >
                 <path
                   d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
@@ -177,7 +171,9 @@ const HealthExpertHomePage = () => {
                 />
               </svg>
             </motion.div>
-            {isSidebarOpen && <span>Health Panel</span>}
+            {isSidebarOpen && (
+              <span className="logo-text">Health Expert Panel</span>
+            )}
           </Link>
           <motion.button
             className="sidebar-toggle"
@@ -186,7 +182,13 @@ const HealthExpertHomePage = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <svg
+              width="24"
+              height="24"
+              fill="none"
+              viewBox="0 0 24 24"
+              aria-label="Toggle sidebar icon"
+            >
               <path
                 stroke="var(--health-expert-background)"
                 strokeWidth="2"
@@ -220,6 +222,7 @@ const HealthExpertHomePage = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-label="Tutorial icon"
               >
                 <path
                   d="M12 3v18m9-9H3"
@@ -245,6 +248,7 @@ const HealthExpertHomePage = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-label="Policy icon"
               >
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16.5V18c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2v.5"
@@ -288,19 +292,27 @@ const HealthExpertHomePage = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item health-expert-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="health-expert-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 22"
+                    viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
+                    aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
+        10 10 10-4.48 10-10S17.52 2 12 2zm0 
+        3c1.66 0 3 1.34 3 3s-1.34 
+        3-3 3-3-1.34-3-3 1.34-3 
+        3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
+        4-3.08 6-3.08 1.99 0 5.97 1.09 
+        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--health-expert-background)"
                     />
                   </svg>
@@ -309,8 +321,9 @@ const HealthExpertHomePage = () => {
                       {user.email}
                     </span>
                   )}
-                </div>
+                </Link>
               </motion.div>
+
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
@@ -319,8 +332,15 @@ const HealthExpertHomePage = () => {
                   className="logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
+                  title="Sign Out"
                 >
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-label="Logout icon"
+                  >
                     <path
                       stroke="var(--health-expert-logout)"
                       strokeWidth="2"
@@ -329,7 +349,7 @@ const HealthExpertHomePage = () => {
                       d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                     />
                   </svg>
-                  {isSidebarOpen && <span>Đăng Xuất</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
@@ -340,7 +360,13 @@ const HealthExpertHomePage = () => {
                 onClick={() => setIsSidebarOpen(true)}
                 title="Sign In"
               >
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-label="Sign in icon"
+                >
                   <path
                     stroke="var(--health-expert-background)"
                     strokeWidth="2"
@@ -349,7 +375,7 @@ const HealthExpertHomePage = () => {
                     d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                   />
                 </svg>
-                {isSidebarOpen && <span>Đăng Nhập</span>}
+                {isSidebarOpen && <span>Sign In</span>}
               </Link>
             </motion.div>
           )}
@@ -367,20 +393,22 @@ const HealthExpertHomePage = () => {
               Health Expert Dashboard
             </h1>
             <p className="health-expert-banner-subtitle">
-              Access tutorials, review policies, and manage your profile with ease.
+              Empower your expertise with tools to access comprehensive
+              tutorials, review policies, and manage your professional profile
+              seamlessly.
             </p>
             <div className="health-expert-banner-buttons">
               <Link
                 to="/health-expert/tutorial"
                 className="health-expert-banner-button primary"
               >
-                View Tutorial
+                Explore Tutorials
               </Link>
               <Link
                 to="/health-expert/policy"
                 className="health-expert-banner-button secondary"
               >
-                View Policy
+                Review Policies
               </Link>
             </div>
           </motion.div>
@@ -396,6 +424,7 @@ const HealthExpertHomePage = () => {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              aria-label="Health Expert icon for banner"
             >
               <path
                 d="M20 10a3 3 0 0 0-3-3h-1V5a4 4 0 0 0-8 0v2H7a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h1a3 3 0 0 0 6 0h1a3 3 0 0 0 3-3v-1.5a2.5 2.5 0 0 1 5 0v.5a1 1 0 0 0 2 0v-.5a4.5 4.5 0 0 0-9 0V10z"
@@ -412,18 +441,23 @@ const HealthExpertHomePage = () => {
           initial="initial"
           animate="animate"
         >
-          <h2 className="health-expert-features-title">Health Expert Tools</h2>
+          <h2 className="health-expert-features-title">
+            Core Health Expert Tools
+          </h2>
           <p className="health-expert-features-description">
-            Access essential tools to learn through tutorials and understand policies.
+            Leverage a suite of tools designed to enhance your knowledge, ensure
+            compliance with platform policies, and maintain an up-to-date
+            professional profile.
           </p>
           <div className="health-expert-features-grid">
             <motion.div
               variants={cardVariants}
               className="health-expert-feature-card"
             >
-              <h3>Tutorial</h3>
+              <h3>Tutorial Management</h3>
               <p>
-                Explore guides and resources to effectively use the platform.
+                Access detailed guides and resources to master platform features
+                and enhance your expertise.
               </p>
               <Link
                 to="/health-expert/tutorial"
@@ -436,9 +470,10 @@ const HealthExpertHomePage = () => {
               variants={cardVariants}
               className="health-expert-feature-card"
             >
-              <h3>Policy</h3>
+              <h3>Policy Review</h3>
               <p>
-                Review platform policies and guidelines for health experts.
+                Stay informed with the latest platform policies and guidelines
+                to ensure compliance.
               </p>
               <Link
                 to="/health-expert/policy"
@@ -451,10 +486,10 @@ const HealthExpertHomePage = () => {
               variants={cardVariants}
               className="health-expert-feature-card"
             >
-              <h3>Profile</h3>
+              <h3>Profile Management</h3>
               <p>
-                Update personal information, notification settings, and account
-                details.
+                Update your personal information, notification settings, and
+                account details effortlessly.
               </p>
               <Link
                 to="/health-expert/profile"

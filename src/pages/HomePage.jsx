@@ -218,7 +218,7 @@ const HomePage = () => {
 
         {/* Features Section */}
         <section className="features-section">
-          <h2 className="section-title">Dịch Vụ Của Chúng Tôi</h2>
+          <h2 className="section-title">Our Service</h2>
           <div className="features-grid">
             {homepageData.features.map((feature, index) => (
               <motion.div
@@ -239,7 +239,7 @@ const HomePage = () => {
 
         {/* Testimonials Section */}
         <section className="testimonials-section">
-          <h2 className="section-title">Cộng Đồng Nói Gì</h2>
+          <h2 className="section-title">What Our Community Says</h2>
           <div className="testimonials-grid">
             {homepageData.testimonials.map((testimonial, index) => (
               <motion.div

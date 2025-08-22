@@ -1,4 +1,3 @@
-/* Scoped variables */
 .food-category-management {
   --blue-primary: #1e88e5;
   --blue-secondary: #42a5f5;
@@ -12,12 +11,17 @@
   --blue-shadow-hover: 0 8px 24px rgba(30, 136, 229, 0.15);
   --blue-border-radius: 8px;
   --blue-transition: all 0.3s ease;
+  --sidebar-width-open: min(320px, 30vw);
+  --sidebar-width-closed: min(80px, 20vw);
 
   display: flex;
   min-height: 100vh;
   font-family: 'Roboto', sans-serif;
   background-color: var(--blue-light-bg);
   color: var(--blue-text);
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 /* Dark theme */
@@ -27,7 +31,8 @@
 .food-category-management.dark-theme .form-section,
 .food-category-management.dark-theme .form-card,
 .food-category-management.dark-theme .category-list-section,
-.food-category-management.dark-theme .category-card {
+.food-category-management.dark-theme .category-card,
+.food-category-management.dark-theme .chart-section {
   background: #1a3c5e;
   color: var(--blue-white);
 }
@@ -64,26 +69,27 @@
   box-shadow: var(--blue-shadow);
   z-index: 1000;
   transition: var(--blue-transition);
+  overflow-x: hidden;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .food-category-management .nutrient-specialist-sidebar.open {
-  width: min(260px, 25vw);
+  width: var(--sidebar-width-open);
 }
 
 .food-category-management .nutrient-specialist-sidebar.closed {
-  width: min(60px, 15vw);
+  width: var(--sidebar-width-closed);
 }
 
 .food-category-management .sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.75rem;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  width: 100%;
-  box-sizing: border-box;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .food-category-management .nutrient-specialist-sidebar.closed .sidebar-header {
@@ -107,7 +113,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 70%;
+  max-width: 85%;
 }
 
 .food-category-management .nutrient-specialist-sidebar.closed .logo span {
@@ -137,6 +143,7 @@
   justify-content: center;
   border-radius: 50%;
   transition: var(--blue-transition);
+  cursor: pointer;
 }
 
 .food-category-management .nutrient-specialist-sidebar.closed .sidebar-toggle {
@@ -229,16 +236,17 @@
 /* Main content */
 .food-category-management .nutrient-specialist-content {
   flex: 1;
-  margin-left: min(260px, 25vw);
+  margin-left: var(--sidebar-width-open);
   transition: margin-left var(--blue-transition);
   padding: 1rem;
-  width: calc(100% - min(260px, 25vw));
+  width: calc(100% - var(--sidebar-width-open));
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .food-category-management .nutrient-specialist-content.sidebar-closed {
-  margin-left: min(60px, 15vw);
-  width: calc(100% - min(60px, 15vw));
+  margin-left: var(--sidebar-width-closed);
+  width: calc(100% - var(--sidebar-width-closed));
 }
 
 /* Header */
@@ -271,6 +279,23 @@
   max-width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
+}
+
+/* Chart section */
+.food-category-management .chart-section {
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  padding: 1rem;
+  box-shadow: var(--blue-shadow);
+  margin-bottom: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.food-category-management .chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
 }
 
 /* Form section */
@@ -428,6 +453,13 @@
   box-sizing: border-box;
 }
 
+.food-category-management .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
 .food-category-management .category-count {
   font-size: 0.8rem;
   background: var(--blue-accent);
@@ -583,17 +615,17 @@
 /* Responsive adjustments */
 @media (max-width: 1024px) {
   .food-category-management .nutrient-specialist-sidebar.open {
-    width: min(220px, 25vw);
+    width: min(280px, 25vw);
   }
 
   .food-category-management .nutrient-specialist-content {
-    margin-left: min(220px, 25vw);
-    width: calc(100% - min(220px, 25vw));
+    margin-left: min(280px, 25vw);
+    width: calc(100% - min(280px, 25vw));
   }
 
   .food-category-management .nutrient-specialist-content.sidebar-closed {
-    margin-left: min(60px, 15vw);
-    width: calc(100% - min(60px, 15vw));
+    margin-left: var(--sidebar-width-closed);
+    width: calc(100% - var(--sidebar-width-closed));
   }
 
   .food-category-management .category-grid {
@@ -603,26 +635,30 @@
   .food-category-management .management-container {
     padding: 1rem;
   }
+
+  .food-category-management .chart-container {
+    height: 250px;
+  }
 }
 
 @media (max-width: 768px) {
   .food-category-management .nutrient-specialist-sidebar {
-    width: min(60px, 15vw);
+    width: var(--sidebar-width-closed);
   }
 
   .food-category-management .nutrient-specialist-sidebar.open {
-    width: min(200px, 25vw);
+    width: min(240px, 25vw);
   }
 
   .food-category-management .nutrient-specialist-content {
-    margin-left: min(60px, 15vw);
-    width: calc(100% - min(60px, 15vw));
+    margin-left: var(--sidebar-width-closed);
+    width: calc(100% - var(--sidebar-width-closed));
     padding: 0.75rem;
   }
 
   .food-category-management .nutrient-specialist-content.sidebar-open {
-    margin-left: min(200px, 25vw);
-    width: calc(100% - min(200px, 25vw));
+    margin-left: min(240px, 25vw);
+    width: calc(100% - min(240px, 25vw));
   }
 
   .food-category-management .management-header {
@@ -661,26 +697,30 @@
   .food-category-management .nutrient-specialist-button {
     max-width: 100%;
   }
+
+  .food-category-management .chart-container {
+    height: 200px;
+  }
 }
 
 @media (max-width: 480px) {
   .food-category-management .nutrient-specialist-sidebar {
-    width: min(60px, 15vw);
+    width: var(--sidebar-width-closed);
   }
 
   .food-category-management .nutrient-specialist-sidebar.open {
-    width: min(180px, 25vw);
+    width: min(220px, 25vw);
   }
 
   .food-category-management .nutrient-specialist-content {
-    margin-left: min(60px, 15vw);
-    width: calc(100% - min(60px, 15vw));
+    margin-left: var(--sidebar-width-closed);
+    width: calc(100% - var(--sidebar-width-closed));
     padding: 0.5rem;
   }
 
   .food-category-management .nutrient-specialist-content.sidebar-open {
-    margin-left: min(180px, 25vw);
-    width: calc(100% - min(180px, 25vw));
+    margin-left: min(220px, 25vw);
+    width: calc(100% - min(220px, 25vw));
   }
 
   .food-category-management .sidebar-header {
@@ -689,7 +729,7 @@
 
   .food-category-management .logo span {
     font-size: 1rem;
-    max-width: 100px;
+    max-width: 150px;
   }
 
   .food-category-management .logo-svg-container svg {
@@ -767,5 +807,9 @@
 
   .food-category-management .notification-content p {
     font-size: 0.8rem;
+  }
+
+  .food-category-management .chart-container {
+    height: 180px;
   }
 }

@@ -41,23 +41,16 @@ const AdminHomePage = () => {
   };
 
   const handleLogout = async () => {
-    if (!user?.userId) {
+    if (!window.confirm("Are you sure you want to sign out?")) return;
+    try {
+      if (user?.userId) await logout(user.userId);
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    } finally {
       localStorage.removeItem("token");
       setUser(null);
+      setIsSidebarOpen(true);
       navigate("/signin", { replace: true });
-      return;
-    }
-    if (window.confirm("Are you sure you want to sign out?")) {
-      try {
-        await logout(user.userId);
-      } catch (error) {
-        console.error("Error logging out:", error.message);
-      } finally {
-        localStorage.removeItem("token");
-        setUser(null);
-        setIsSidebarOpen(true);
-        navigate("/signin", { replace: true });
-      }
     }
   };
 
@@ -98,7 +91,7 @@ const AdminHomePage = () => {
 
   const sidebarVariants = {
     open: {
-      width: "250px",
+      width: "280px",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
@@ -135,7 +128,25 @@ const AdminHomePage = () => {
               animate="animate"
               whileHover="hover"
               className="logo-svg-container"
-            ></motion.div>
+            >
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Admin icon for admin panel"
+              >
+                <path
+                  d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
+                  fill="var(--admin-accent)"
+                  stroke="var(--admin-primary)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </motion.div>
             {isSidebarOpen && <span>Admin Panel</span>}
           </Link>
           <motion.button
@@ -207,7 +218,7 @@ const AdminHomePage = () => {
             <Link
               to="/admin/tutorial"
               onClick={() => setIsSidebarOpen(true)}
-              title="Tutorial"
+              title="Tutorial Management"
             >
               <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                 <path
@@ -218,7 +229,7 @@ const AdminHomePage = () => {
                   d="M12 6v12m-6-6h12"
                 />
               </svg>
-              {isSidebarOpen && <span>Tutorial</span>}
+              {isSidebarOpen && <span>Tutorial Management</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
@@ -263,7 +274,8 @@ const AdminHomePage = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item admin-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="admin-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
@@ -273,16 +285,23 @@ const AdminHomePage = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
+                    aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
+        10 10 10-4.48 10-10S17.52 2 12 2zm0 
+        4c1.66 0 3 1.34 3 3s-1.34 
+        3-3 3-3-1.34-3-3 1.34-3 
+        3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
+        4-3.08 6-3.08 1.99 0 5.97 1.09 
+        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--admin-background)"
                     />
                   </svg>
                   {isSidebarOpen && (
                     <span className="admin-profile-email">{user.email}</span>
                   )}
-                </div>
+                </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
@@ -292,6 +311,7 @@ const AdminHomePage = () => {
                   className="logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
+                  title="Sign Out"
                 >
                   <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
                     <path
@@ -332,14 +352,15 @@ const AdminHomePage = () => {
         <section className="admin-banner">
           <motion.div
             className="admin-banner-content"
-            variants={containerVariants}
-            initial="initial"
-            animate="animate"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
           >
-            <h1 className="admin-banner-title">Welcome to Admin Dashboard</h1>
+            <h1 className="admin-banner-title">Admin Dashboard</h1>
             <p className="admin-banner-subtitle">
-              Streamline your operations with powerful tools to manage users,
-              analyze reports, and configure settings.
+              Oversee platform operations, manage user accounts, configure
+              system settings, and ensure smooth functionality with powerful
+              administrative tools.
             </p>
             <div className="admin-banner-buttons">
               <Link to="/admin/users" className="admin-banner-button primary">
@@ -360,11 +381,12 @@ const AdminHomePage = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <svg
-              width="180"
-              height="180"
+              width="200"
+              height="200"
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              aria-label="Admin dashboard icon"
             >
               <path
                 d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
@@ -383,28 +405,42 @@ const AdminHomePage = () => {
           initial="initial"
           animate="animate"
         >
-          <h2 className="admin-features-title">Core Features</h2>
+          <h2 className="admin-features-title">Core Administrative Tools</h2>
           <p className="admin-features-description">
-            Access essential tools to manage your platform efficiently.
+            Leverage a suite of tools designed to streamline user management,
+            account creation, and system configuration for optimal platform
+            performance.
           </p>
           <div className="admin-features-grid">
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>User Management</h3>
-              <p>View, edit, and assign roles to user accounts seamlessly.</p>
+              <p>
+                View, edit, and assign roles to user accounts, ensuring secure
+                and efficient access control across the platform.
+              </p>
               <Link to="/admin/users" className="admin-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>Account Management</h3>
-              <p>Create accounts for Health Experts, Nutrient Specialists, and Clinics.</p>
-              <Link to="/admin/account-management" className="admin-feature-link">
+              <p>
+                Create and manage accounts for Health Experts, Nutrient
+                Specialists, and Clinics to support platform operations.
+              </p>
+              <Link
+                to="/admin/account-management"
+                className="admin-feature-link"
+              >
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
-              <h3>Settings</h3>
-              <p>Customize platform configurations to suit your needs.</p>
+              <h3>System Settings</h3>
+              <p>
+                Customize platform configurations, including policies and
+                permissions, to align with organizational needs.
+              </p>
               <Link to="/admin/settings" className="admin-feature-link">
                 Explore
               </Link>

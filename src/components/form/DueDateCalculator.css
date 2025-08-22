@@ -13,7 +13,14 @@
   --co-5: #f0f3be;
 }
 
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
 .due-date-calculator {
+  display: flex;
+  flex-direction: column;
   max-width: 500px;
   margin: 2rem auto;
   padding: 2rem;

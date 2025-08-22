@@ -1,0 +1,149 @@
+.checkup-reminder {
+  background: var(--white);
+  border-radius: var(--border-radius);
+  padding: 1.75rem 2rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 2rem;
+}
+
+.checkup-reminder h3 {
+  color: var(--nguyen-primary-bg);
+  font-size: 1.45rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.5rem;
+}
+
+.reminder-section {
+  margin-top: 2rem;
+}
+
+.reminder-section h3 {
+  color: var(--nguyen-accent-color);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.reminder-section.emergency h3 {
+  color: #d32f2f;
+}
+
+/* Card structure - reusing UpcomingAppointments style */
+.reminder-card {
+  background: linear-gradient(145deg, #fff, #f9faff);
+  border-radius: 12px;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.07),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  border-left: 6px solid transparent;
+  margin-bottom: 1.25rem;
+}
+
+.reminder-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.1),
+    0 4px 10px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+}
+
+.reminder-card.blue {
+  border-left-color: #038474;
+}
+
+.reminder-card.red {
+  border-left-color: #d32f2f;
+}
+
+/* Reminder info */
+.reminder-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-info h5 {
+  color: var(--nguyen-primary-bg);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reminder-date {
+  font-size: 0.85rem;
+  color: var(--nguyen-accent-color);
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+}
+
+.reminder-note {
+  font-size: 0.9rem;
+  color: #555;
+  /* font-style: italic; */
+}
+
+/* Actions */
+.reminder-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  justify-content: center;
+}
+
+.book-btn,
+.outside-btn {
+  width: 200px;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.book-btn {
+  background-color: #02808F;
+  color: white;
+}
+
+
+.book-btn.urgent {
+  background: #d32f2f;
+}
+
+.book-btn.urgent:hover {
+  background: #b71c1c;
+}
+
+.outside-btn {
+  background: #f1f1f1;
+  color: #333;
+}
+
+.outside-btn:hover {
+  background: #e0e0e0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .reminder-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .reminder-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}

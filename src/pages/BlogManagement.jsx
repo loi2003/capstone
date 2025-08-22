@@ -2,7 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import Chart from "chart.js/auto";
-import { getAllBlogs, getAllCategories, deleteBlog, editBlog, approveBlog, rejectBlog, getBlogsByUser } from "../apis/blog-api";
+import {
+  getAllBlogs,
+  getAllCategories,
+  deleteBlog,
+  editBlog,
+  approveBlog,
+  rejectBlog,
+  getBlogsByUser,
+} from "../apis/blog-api";
 import { getCurrentUser } from "../apis/authentication-api";
 import "../styles/BlogManagement.css";
 
@@ -63,11 +71,12 @@ const BlogManagement = () => {
           );
         }
 
-        const [categoriesResponse, blogsResponse, personalBlogsResponse] = await Promise.all([
-          getAllCategories(token),
-          getAllBlogs(token),
-          getBlogsByUser(userData.id, token),
-        ]);
+        const [categoriesResponse, blogsResponse, personalBlogsResponse] =
+          await Promise.all([
+            getAllCategories(token),
+            getAllBlogs(token),
+            getBlogsByUser(userData.id, token),
+          ]);
 
         const categoriesData = Array.isArray(categoriesResponse.data?.data)
           ? categoriesResponse.data.data
@@ -83,13 +92,16 @@ const BlogManagement = () => {
           : [];
         setBlogs(blogsData);
 
-        const personalBlogsData = Array.isArray(personalBlogsResponse.data?.data)
+        const personalBlogsData = Array.isArray(
+          personalBlogsResponse.data?.data
+        )
           ? personalBlogsResponse.data.data
           : [];
         setPersonalBlogs(personalBlogsData);
       } catch (err) {
         setShowErrorModal(
-          err.response?.data?.message || "Failed to fetch data. Please log in again."
+          err.response?.data?.message ||
+            "Failed to fetch data. Please log in again."
         );
         clearError();
         localStorage.removeItem("token");
@@ -113,9 +125,9 @@ const BlogManagement = () => {
       }
 
       const categoryCounts = categories.reduce((acc, category) => {
-        acc[category.categoryName] = (showPersonalBlogs ? personalBlogs : blogs).filter(
-          (blog) => blog.categoryName === category.categoryName
-        ).length;
+        acc[category.categoryName] = (
+          showPersonalBlogs ? personalBlogs : blogs
+        ).filter((blog) => blog.categoryName === category.categoryName).length;
         return acc;
       }, {});
 
@@ -268,8 +280,15 @@ const BlogManagement = () => {
         return;
       }
 
-      if (!editBlogData.id || !editBlogData.categoryId || !editBlogData.title || !editBlogData.body) {
-        throw new Error("All required fields (Id, CategoryId, Title, Body) must be provided.");
+      if (
+        !editBlogData.id ||
+        !editBlogData.categoryId ||
+        !editBlogData.title ||
+        !editBlogData.body
+      ) {
+        throw new Error(
+          "All required fields (Id, CategoryId, Title, Body) must be provided."
+        );
       }
 
       const formData = new FormData();
@@ -295,7 +314,10 @@ const BlogManagement = () => {
         categoryName:
           categories.find((c) => c.id === editBlogData.categoryId)
             ?.categoryName || editBlogData.categoryName,
-        status: user.roleId === "3" || user.roleId === "4" ? "Approved" : editBlogData.status,
+        status:
+          user.roleId === "3" || user.roleId === "4"
+            ? "Approved"
+            : editBlogData.status,
       };
 
       setBlogs((prev) =>
@@ -310,7 +332,8 @@ const BlogManagement = () => {
       setError("");
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "Failed to update blog. Please try again.";
+        err.response?.data?.message ||
+        "Failed to update blog. Please try again.";
       setShowErrorModal(errorMessage);
       clearError();
     } finally {
@@ -335,41 +358,52 @@ const BlogManagement = () => {
   const handleApproveBlog = async (blogId) => {
     try {
       const token = localStorage.getItem("token");
-      const blog = blogs.find((b) => b.id === blogId) || personalBlogs.find((b) => b.id === blogId);
+      const blog =
+        blogs.find((b) => b.id === blogId) ||
+        personalBlogs.find((b) => b.id === blogId);
 
-      if (user.roleId === "4" && blog.tags?.map(tag => tag.toLowerCase()).includes("nutrient")) {
-        setShowErrorModal("Only Nutrient Specialists can approve blogs with the 'nutrient' tag.");
+      if (
+        user.roleId === "4" &&
+        blog.tags?.map((tag) => tag.toLowerCase()).includes("nutrient")
+      ) {
+        setShowErrorModal(
+          "Only Nutrient Specialists can approve blogs with the 'nutrient' tag."
+        );
         clearError();
         return;
       }
-      if (user.roleId === "5" && blog.tags?.map(tag => tag.toLowerCase()).includes("health")) {
-        setShowErrorModal("Only Health Experts can approve blogs with the 'health' tag.");
+      if (
+        user.roleId === "5" &&
+        blog.tags?.map((tag) => tag.toLowerCase()).includes("health")
+      ) {
+        setShowErrorModal(
+          "Only Health Experts can approve blogs with the 'health' tag."
+        );
         clearError();
         return;
       }
 
       const response = await approveBlog(blogId, user.id, token);
-      
+
       if (response.data.error) {
-        setShowErrorModal(response.data.message || "Failed to approve blog. Please try again.");
+        setShowErrorModal(
+          response.data.message || "Failed to approve blog. Please try again."
+        );
         clearError();
         return;
       }
 
       setBlogs((prev) =>
-        prev.map((b) =>
-          b.id === blogId ? { ...b, status: "Approved" } : b
-        )
+        prev.map((b) => (b.id === blogId ? { ...b, status: "Approved" } : b))
       );
       setPersonalBlogs((prev) =>
-        prev.map((b) =>
-          b.id === blogId ? { ...b, status: "Approved" } : b
-        )
+        prev.map((b) => (b.id === blogId ? { ...b, status: "Approved" } : b))
       );
       setError("");
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "Failed to approve blog. Please try again.";
+        err.response?.data?.message ||
+        "Failed to approve blog. Please try again.";
       setShowErrorModal(errorMessage);
       clearError();
     }
@@ -383,43 +417,59 @@ const BlogManagement = () => {
     }
     try {
       const token = localStorage.getItem("token");
-      const blog = blogs.find((b) => b.id === blogId) || personalBlogs.find((b) => b.id === blogId);
+      const blog =
+        blogs.find((b) => b.id === blogId) ||
+        personalBlogs.find((b) => b.id === blogId);
 
-      if (user.roleId === "4" && blog.tags?.map(tag => tag.toLowerCase()).includes("nutrient")) {
-        setShowErrorModal("Only Nutrient Specialists can reject blogs with the 'nutrient' tag.");
+      if (
+        user.roleId === "4" &&
+        blog.tags?.map((tag) => tag.toLowerCase()).includes("nutrient")
+      ) {
+        setShowErrorModal(
+          "Only Nutrient Specialists can reject blogs with the 'nutrient' tag."
+        );
         clearError();
         return;
       }
-      if (user.roleId === "5" && blog.tags?.map(tag => tag.toLowerCase()).includes("health")) {
-        setShowErrorModal("Only Health Experts can reject blogs with the 'health' tag.");
+      if (
+        user.roleId === "5" &&
+        blog.tags?.map((tag) => tag.toLowerCase()).includes("health")
+      ) {
+        setShowErrorModal(
+          "Only Health Experts can reject blogs with the 'health' tag."
+        );
         clearError();
         return;
       }
 
-      const response = await rejectBlog(blogId, user.id, rejectionReason, token);
-      
+      const response = await rejectBlog(
+        blogId,
+        user.id,
+        rejectionReason,
+        token
+      );
+
       if (response.data.error) {
-        setShowErrorModal(response.data.message || "Failed to reject blog. Please try again.");
+        setShowErrorModal(
+          response.data.message || "Failed to reject blog. Please try again."
+        );
         clearError();
         return;
       }
 
       setBlogs((prev) =>
-        prev.map((b) =>
-          b.id === blogId ? { ...b, status: "Rejected" } : b
-        )
+        prev.map((b) => (b.id === blogId ? { ...b, status: "Rejected" } : b))
       );
       setPersonalBlogs((prev) =>
-        prev.map((b) =>
-          b.id === blogId ? { ...b, status: "Rejected" } : b
-        )
+        prev.map((b) => (b.id === blogId ? { ...b, status: "Rejected" } : b))
       );
       setShowRejectModal(null);
       setRejectionReason("");
       setError("");
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message || "Failed to reject blog. Please try again.";
+        err.response?.data?.message ||
+        "Failed to reject blog. Please try again.";
       setShowErrorModal(errorMessage);
       clearError();
     }
@@ -433,15 +483,16 @@ const BlogManagement = () => {
     setShowViewModal(null);
   };
 
-  const filteredBlogs = (showPersonalBlogs ? personalBlogs : blogs).filter((blog) => {
-    const matchesTitle = blog.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      blog.status?.toLowerCase() === statusFilter;
-    return matchesTitle && matchesStatus;
-  });
+  const filteredBlogs = (showPersonalBlogs ? personalBlogs : blogs).filter(
+    (blog) => {
+      const matchesTitle = blog.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesStatus =
+        statusFilter === "all" || blog.status?.toLowerCase() === statusFilter;
+      return matchesTitle && matchesStatus;
+    }
+  );
 
   const approvalBlogs = filteredBlogs.filter(
     (blog) => blog.status?.toLowerCase() === "pending"
@@ -522,7 +573,9 @@ const BlogManagement = () => {
 
   const truncateBody = (body, maxLength = 100) => {
     if (!body) return "No content";
-    return body.length > maxLength ? `${body.substring(0, maxLength)}...` : body;
+    return body.length > maxLength
+      ? `${body.substring(0, maxLength)}...`
+      : body;
   };
 
   if (loading) {
@@ -608,7 +661,9 @@ const BlogManagement = () => {
                 </svg>
               </span>
               <span className="stat-label">Total Blogs</span>
-              <span className="stat-value">{(showPersonalBlogs ? personalBlogs : blogs).length}</span>
+              <span className="stat-value">
+                {(showPersonalBlogs ? personalBlogs : blogs).length}
+              </span>
             </div>
             <div className="blog-stat-item">
               <span className="stat-icon" aria-hidden="true">
@@ -630,7 +685,11 @@ const BlogManagement = () => {
               </span>
               <span className="stat-label">Approved Blogs</span>
               <span className="stat-value">
-                {(showPersonalBlogs ? personalBlogs : blogs).filter((blog) => blog.status?.toLowerCase() === "approved").length}
+                {
+                  (showPersonalBlogs ? personalBlogs : blogs).filter(
+                    (blog) => blog.status?.toLowerCase() === "approved"
+                  ).length
+                }
               </span>
             </div>
             <div className="blog-stat-item">
@@ -653,7 +712,11 @@ const BlogManagement = () => {
               </span>
               <span className="stat-label">Pending Blogs</span>
               <span className="stat-value">
-                {(showPersonalBlogs ? personalBlogs : blogs).filter((blog) => blog.status?.toLowerCase() === "pending").length}
+                {
+                  (showPersonalBlogs ? personalBlogs : blogs).filter(
+                    (blog) => blog.status?.toLowerCase() === "pending"
+                  ).length
+                }
               </span>
             </div>
           </motion.div>
@@ -686,9 +749,11 @@ const BlogManagement = () => {
           </motion.button>
         </section>
         <section className="blog-list-section">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <motion.button
-              className={`blog-action-button ${showPersonalBlogs ? '' : 'active'}`}
+              className={`blog-action-button ${
+                showPersonalBlogs ? "" : "active"
+              }`}
               onClick={handleShowAllBlogs}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
@@ -697,10 +762,12 @@ const BlogManagement = () => {
               All Blogs
             </motion.button>
             <motion.button
-              className={`blog-action-button ${showPersonalBlogs ? 'active' : ''}`}
+              className={`blog-action-button ${
+                showPersonalBlogs ? "active" : ""
+              }`}
               onClick={handleShowPersonalBlogs}
               whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95}}
+              whileTap={{ scale: 0.95 }}
               aria-label="Show personal blogs"
             >
               Personal Blogs
@@ -1101,7 +1168,8 @@ const BlogManagement = () => {
                 <img
                   src={selectedImage.images[currentImageIndex].fileUrl || ""}
                   alt={
-                    selectedImage.images[currentImageIndex].fileName || "Blog image"
+                    selectedImage.images[currentImageIndex].fileName ||
+                    "Blog image"
                   }
                   onError={() =>
                     console.error(
@@ -1147,7 +1215,10 @@ const BlogManagement = () => {
                         type="text"
                         value={editBlogData.title}
                         onChange={(e) =>
-                          setEditBlogData({ ...editBlogData, title: e.target.value })
+                          setEditBlogData({
+                            ...editBlogData,
+                            title: e.target.value,
+                          })
                         }
                         required
                         aria-label="Blog title"
@@ -1160,7 +1231,10 @@ const BlogManagement = () => {
                         id="edit-category"
                         value={editBlogData.categoryId}
                         onChange={(e) =>
-                          setEditBlogData({ ...editBlogData, categoryId: e.target.value })
+                          setEditBlogData({
+                            ...editBlogData,
+                            categoryId: e.target.value,
+                          })
                         }
                         required
                         aria-label="Blog category"
@@ -1181,7 +1255,10 @@ const BlogManagement = () => {
                       id="edit-body"
                       value={editBlogData.body}
                       onChange={(e) =>
-                        setEditBlogData({ ...editBlogData, body: e.target.value })
+                        setEditBlogData({
+                          ...editBlogData,
+                          body: e.target.value,
+                        })
                       }
                       required
                       aria-label="Blog content"
@@ -1193,7 +1270,11 @@ const BlogManagement = () => {
                     <input
                       id="edit-tags"
                       type="text"
-                      value={Array.isArray(editBlogData.tags) ? editBlogData.tags.join(", ") : ""}
+                      value={
+                        Array.isArray(editBlogData.tags)
+                          ? editBlogData.tags.join(", ")
+                          : ""
+                      }
                       onChange={(e) =>
                         setEditBlogData({
                           ...editBlogData,
@@ -1435,7 +1516,7 @@ const BlogManagement = () => {
               className="blog-image-modal"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0}}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
             >
               <motion.div
@@ -1495,7 +1576,7 @@ const BlogManagement = () => {
                       className="blog-cancel-button"
                       onClick={() => setShowRejectModal(null)}
                       whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95}}
+                      whileTap={{ scale: 0.95 }}
                       aria-label="Cancel reject"
                     >
                       <svg
@@ -1530,12 +1611,11 @@ const BlogManagement = () => {
               transition={{ duration: 0.3 }}
             >
               <motion.div
-                className="blog-image-modal-content"
+                className="blog-view-modal-content"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
-                style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1544,54 +1624,72 @@ const BlogManagement = () => {
                 >
                   ×
                 </button>
-                <div className="view-content">
-                  <h2 className="blog-form-title">{showViewModal.title}</h2>
-                  <p><strong>Category:</strong> {showViewModal.categoryName || "Uncategorized"}</p>
-                  <p><strong>Body:</strong> {showViewModal.body || "No content"}</p>
-                  <p><strong>Status:</strong>
-                    <motion.span
-                      className="status-dot"
-                      title={showViewModal.status || "Pending"}
-                      style={{
-                        backgroundColor:
-                          showViewModal.status?.toLowerCase() === "approved"
-                            ? "#34C759"
-                            : showViewModal.status?.toLowerCase() === "rejected"
-                            ? "#FF3B30"
-                            : "#FBC107",
-                      }}
-                      whileHover={{
-                        scale: 1.2,
-                        boxShadow: "0 0 8px rgba(0,0,0,0.2)",
-                      }}
-                    />
-                  </p>
-                  <div className="input-group">
-                    <label>Images</label>
-                    <div className="blog-images">
-                      {showViewModal.images?.length > 0 ? (
-                        showViewModal.images.map((image, index) => (
+
+                <div className="blog-view-header">
+                  <h2 className="blog-view-title">{showViewModal.title}</h2>
+                  <div className="blog-view-meta">
+                    <span className="blog-view-category">
+                      <strong>Category:</strong>{" "}
+                      {showViewModal.categoryName || "Uncategorized"}
+                    </span>
+                    <span className="blog-view-status">
+                      <strong>Status:</strong>
+                      <motion.span
+                        className="status-dot"
+                        title={showViewModal.status || "Pending"}
+                        style={{
+                          backgroundColor:
+                            showViewModal.status?.toLowerCase() === "approved"
+                              ? "#34C759"
+                              : showViewModal.status?.toLowerCase() ===
+                                "rejected"
+                              ? "#FF3B30"
+                              : "#FBC107",
+                        }}
+                      />
+                    </span>
+                  </div>
+                </div>
+
+                <div className="blog-view-body">
+                  <h3 className="blog-view-subtitle">Content</h3>
+                  <div className="blog-view-text">
+                    {showViewModal.body || "No content available"}
+                  </div>
+                </div>
+
+                {showViewModal.images?.length > 0 && (
+                  <div className="blog-view-images">
+                    <h3 className="blog-view-subtitle">Images</h3>
+                    <div className="blog-images-grid">
+                      {showViewModal.images.map((image, index) => (
+                        <div className="blog-image-wrapper" key={index}>
                           <img
-                            key={index}
                             src={image.fileUrl || ""}
                             alt={image.fileName || "Blog image"}
                             className="blog-image"
-                            onClick={() => openImageModal(image, index, showViewModal.images)}
-                            onError={() => console.error(`Failed to load image: ${image.fileUrl}`)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                openImageModal(image, index, showViewModal.images);
-                              }
-                            }}
+                            onClick={() =>
+                              openImageModal(image, index, showViewModal.images)
+                            }
+                            onError={() =>
+                              console.error(
+                                `Failed to load image: ${image.fileUrl}`
+                              )
+                            }
                           />
-                        ))
-                      ) : (
-                        <span className="text-gray-500">No images</span>
-                      )}
+                        </div>
+                      ))}
                     </div>
                   </div>
+                )}
+
+                <div className="blog-view-footer">
+                  <button
+                    className="blog-view-close-button"
+                    onClick={closeViewModal}
+                  >
+                    Close
+                  </button>
                 </div>
               </motion.div>
             </motion.div>
@@ -1610,7 +1708,11 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
-                style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
+                style={{
+                  maxWidth: "600px",
+                  maxHeight: "80vh",
+                  overflowY: "auto",
+                }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1621,7 +1723,9 @@ const BlogManagement = () => {
                 </button>
                 <div className="full-body-content">
                   <h2 className="blog-form-title">{showFullBody.title}</h2>
-                  <p style={{ whiteSpace: 'pre-wrap' }}>{showFullBody.body || "No content"}</p>
+                  <p style={{ whiteSpace: "pre-wrap" }}>
+                    {showFullBody.body || "No content"}
+                  </p>
                 </div>
               </motion.div>
             </motion.div>

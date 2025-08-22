@@ -1,0 +1,638 @@
+import React, { useState, useRef, useEffect } from "react";
+import Header from "../header/Header";
+import Footer from "../footer/Footer";
+import "./SystemMealPlanner.css";
+import { FaSyncAlt, FaInfoCircle, FaUtensils } from "react-icons/fa";
+
+const SystemMealPlanner = () => {
+  const [week, setWeek] = useState("Week 1");
+  const [day, setDay] = useState("");
+  const [allergies, setAllergies] = useState("");
+  const [diseases, setDiseases] = useState("");
+  const [preferredFoods, setPreferredFoods] = useState("");
+  const [error, setError] = useState("");
+  const [mode, setMode] = useState("day");
+  const [generatedPlan, setGeneratedPlan] = useState(null);
+
+  const [showAllergyList, setShowAllergyList] = useState(false);
+  const [showDiseaseList, setShowDiseaseList] = useState(false);
+  const [showPreferredFoodList, setShowPreferredFoodList] = useState(false);
+
+  const [weekViewMode, setWeekViewMode] = useState("list");
+  // "list" | "dayDetail" | "mealDetail"
+  const [selectedDayDetail, setSelectedDayDetail] = useState(null);
+  const [selectedMealDetail, setSelectedMealDetail] = useState(null);
+
+  const handleViewDayDetail = (day) => {
+    setSelectedMealDetail(null);
+    setSelectedDayDetail(day);
+    setWeekViewMode("dayDetail");
+  };
+
+  const handleViewMealDetail = (day, meal) => {
+    setSelectedDayDetail(null);
+    setSelectedMealDetail({ day, meal });
+    setWeekViewMode("mealDetail");
+  };
+
+  const handleBackToWeek = () => {
+    setSelectedDayDetail(null);
+    setSelectedMealDetail(null);
+    setWeekViewMode("list");
+  };
+
+  const allergyRef = useRef(null);
+  const diseaseRef = useRef(null);
+  const preferredFoodRef = useRef(null);
+
+  const allergyOptions = ["Peanuts", "Dairy", "Shellfish", "Gluten", "Soy"];
+  const diseaseOptions = [
+    "Diabetes",
+    "Hypertension",
+    "Heart Disease",
+    "Asthma",
+    "Thyroid Disorder",
+  ];
+  const preferredFoodOptions = [
+    "Salmon",
+    "Spinach",
+    "Chicken",
+    "Avocado",
+    "Broccoli",
+    "Oats",
+    "Eggs",
+    "Tofu",
+    "Blueberries",
+    "Quinoa",
+    // add more or load from API later
+  ];
+
+  // Close dropdowns if clicked outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (allergyRef.current && !allergyRef.current.contains(e.target)) {
+        setShowAllergyList(false);
+      }
+      if (diseaseRef.current && !diseaseRef.current.contains(e.target)) {
+        setShowDiseaseList(false);
+      }
+      if (
+        preferredFoodRef.current &&
+        !preferredFoodRef.current.contains(e.target)
+      ) {
+        setShowPreferredFoodList(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    // Reset week-related state when switching to "day"
+    if (mode === "day") {
+      setWeekViewMode("list");
+      setSelectedDayDetail(null);
+      setSelectedMealDetail(null);
+      setError("");
+      setGeneratedPlan(null); // clear results
+    }
+
+    // Reset day selection when switching to "week"
+    if (mode === "week") {
+      setDay("");
+      setError("");
+      setGeneratedPlan(null); // clear results here too ✅
+    }
+  }, [mode]);
+
+  const handleAllergySelect = (a) => {
+    setAllergies(a);
+    setShowAllergyList(false);
+  };
+
+  const handleDiseaseSelect = (d) => {
+    setDiseases(d);
+    setShowDiseaseList(false);
+  };
+  const handlePreferredFoodSelect = (food) => {
+    setPreferredFoods(food);
+    setShowPreferredFoodList(false);
+  };
+
+  const staticMealsDay = [
+    {
+      type: "Breakfast",
+      dishes: [
+        {
+          name: "Grilled Cheese Sandwich",
+          image: "https://picsum.photos/200/120?1",
+          calories: 250,
+        },
+        {
+          name: "Avocado",
+          image: "https://picsum.photos/200/120?2",
+          calories: 120,
+        },
+        {
+          name: "Milk",
+          image: "https://picsum.photos/200/120?3",
+          calories: 150,
+        },
+      ],
+    },
+    {
+      type: "Lunch",
+      dishes: [
+        {
+          name: "Grilled Salmon",
+          image: "https://picsum.photos/200/120?4",
+          calories: 350,
+        },
+        {
+          name: "Brown Rice",
+          image: "https://picsum.photos/200/120?5",
+          calories: 200,
+        },
+      ],
+    },
+    {
+      type: "Dinner",
+      dishes: [
+        {
+          name: "Chicken Soup",
+          image: "https://picsum.photos/200/120?6",
+          calories: 300,
+        },
+        {
+          name: "Spinach Salad",
+          image: "https://picsum.photos/200/120?7",
+          calories: 100,
+        },
+      ],
+    },
+    {
+      type: "Snack",
+      dishes: [
+        {
+          name: "Greek Yogurt",
+          image: "https://picsum.photos/200/120?8",
+          calories: 180,
+        },
+      ],
+    },
+  ];
+
+  // Static weekly meal
+  const staticMealsWeek = [
+    {
+      day: "Monday",
+      meals: [
+        {
+          type: "Breakfast",
+          dishes: [
+            {
+              name: "Grilled Cheese Sandwich",
+              image: "https://picsum.photos/200/120?1",
+              calories: 250,
+            },
+            {
+              name: "Avocado",
+              image: "https://picsum.photos/200/120?2",
+              calories: 120,
+            },
+          ],
+        },
+        {
+          type: "Lunch",
+          dishes: [
+            {
+              name: "Grilled Salmon",
+              image: "https://picsum.photos/200/120?4",
+              calories: 350,
+            },
+            {
+              name: "Brown Rice",
+              image: "https://picsum.photos/200/120?5",
+              calories: 200,
+            },
+          ],
+        },
+        {
+          type: "Dinner",
+          dishes: [
+            {
+              name: "Chicken Soup",
+              image: "https://picsum.photos/200/120?6",
+              calories: 300,
+            },
+            {
+              name: "Spinach Salad",
+              image: "https://picsum.photos/200/120?7",
+              calories: 100,
+            },
+          ],
+        },
+        {
+          type: "Snack",
+          dishes: [
+            {
+              name: "Greek Yogurt",
+              image: "https://picsum.photos/200/120?8",
+              calories: 180,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      day: "Tuesday",
+      meals: [
+        {
+          type: "Breakfast",
+          dishes: [
+            {
+              name: "Oatmeal",
+              image: "https://picsum.photos/200/120?14",
+              calories: 200,
+            },
+            {
+              name: "Banana",
+              image: "https://picsum.photos/200/120?15",
+              calories: 100,
+            },
+          ],
+        },
+        {
+          type: "Lunch",
+          dishes: [
+            {
+              name: "Grilled Chicken",
+              image: "https://picsum.photos/200/120?16",
+              calories: 300,
+            },
+            {
+              name: "Quinoa Salad",
+              image: "https://picsum.photos/200/120?17",
+              calories: 220,
+            },
+          ],
+        },
+        {
+          type: "Dinner",
+          dishes: [
+            {
+              name: "Beef Stir Fry",
+              image: "https://picsum.photos/200/120?18",
+              calories: 400,
+            },
+          ],
+        },
+        {
+          type: "Snack",
+          dishes: [
+            {
+              name: "Apple Slices",
+              image: "https://picsum.photos/200/120?19",
+              calories: 80,
+            },
+          ],
+        },
+      ],
+    },
+  ];
+  const handleGenerate = () => {
+    if (mode === "day" && !day) {
+      setError("Please select a day before submitting.");
+      return;
+    }
+
+    setError(""); // clear previous errors
+    setGeneratedPlan(mode === "day" ? staticMealsDay : staticMealsWeek);
+  };
+
+  return (
+    <div className="mealplanner-page-wrapper">
+      <Header />
+
+      <div className="mealplanner-heading">
+        <h1>System Meal Planner</h1>
+        <p>Enter your details and choose to generate by day or by week.</p>
+      </div>
+
+      <div className="mealplanner-form">
+        <label>Gestational Week</label>
+        <select
+          value={week}
+          onChange={(e) => setWeek(e.target.value)}
+          className="mealplanner-select"
+        >
+          {Array.from({ length: 40 }, (_, i) => (
+            <option key={i}>Week {i + 1}</option>
+          ))}
+        </select>
+
+        {/* Allergy autocomplete */}
+        <label>Allergies</label>
+        <div className="mealplanner-autocomplete-wrapper" ref={allergyRef}>
+          <input
+            type="text"
+            value={allergies}
+            onChange={(e) => {
+              setAllergies(e.target.value);
+              setShowAllergyList(true);
+            }}
+            placeholder="Optional - Type to search for allergy e.g. peanuts"
+            className="mealplanner-input"
+            onFocus={() => setShowAllergyList(true)}
+          />
+          {showAllergyList && allergies && (
+            <ul className="mealplanner-autocomplete-list">
+              {allergyOptions
+                .filter((a) =>
+                  a.toLowerCase().includes(allergies.toLowerCase())
+                )
+                .map((a, i) => (
+                  <li key={i} onClick={() => handleAllergySelect(a)}>
+                    {a}
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Disease autocomplete */}
+        <label>Chronic Diseases</label>
+        <div className="mealplanner-autocomplete-wrapper" ref={diseaseRef}>
+          <input
+            type="text"
+            value={diseases}
+            onChange={(e) => {
+              setDiseases(e.target.value);
+              setShowDiseaseList(true);
+            }}
+            placeholder="Optional - Type to search for disease e.g. diabetes"
+            className="mealplanner-input"
+            onFocus={() => setShowDiseaseList(true)}
+          />
+          {showDiseaseList && diseases && (
+            <ul className="mealplanner-autocomplete-list">
+              {diseaseOptions
+                .filter((d) => d.toLowerCase().includes(diseases.toLowerCase()))
+                .map((d, i) => (
+                  <li key={i} onClick={() => handleDiseaseSelect(d)}>
+                    {d}
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Toggle Day/Week with checkboxes */}
+        <div
+          style={{
+            display: "flex",
+            gap: "1rem",
+            marginTop: "1rem",
+            alignItems: "center",
+          }}
+        >
+          <label>
+            <input
+              type="radio"
+              checked={mode === "day"}
+              onChange={() => setMode("day")}
+            />
+            Suggest by Day
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              checked={mode === "week"}
+              onChange={() => setMode("week")}
+            />
+            Suggest by Week
+          </label>
+        </div>
+
+        {/* Show day dropdown if "day" is checked */}
+        {mode === "day" && (
+          <div style={{ marginTop: "1rem" }}>
+            <label>
+              Select Day:{" "}
+              <select
+                value={day}
+                onChange={(e) => setDay(e.target.value)}
+                className="mealplanner-select"
+              >
+                <option value="">-- Choose a Day --</option>
+                {[...Array(7)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Day {i + 1}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        )}
+        {/* Preferred foods autocomplete */}
+        <label>Preferred Foods</label>
+        <div
+          className="mealplanner-autocomplete-wrapper"
+          ref={preferredFoodRef}
+        >
+          <input
+            type="text"
+            value={preferredFoods}
+            onChange={(e) => {
+              setPreferredFoods(e.target.value);
+              setShowPreferredFoodList(true);
+            }}
+            placeholder="Optional - Type to search e.g. salmon, spinach"
+            className="mealplanner-input"
+            onFocus={() => setShowPreferredFoodList(true)}
+          />
+          {showPreferredFoodList && preferredFoods && (
+            <ul className="mealplanner-autocomplete-list">
+              {preferredFoodOptions
+                .filter((f) =>
+                  f.toLowerCase().includes(preferredFoods.toLowerCase())
+                )
+                .map((f, i) => (
+                  <li key={i} onClick={() => handlePreferredFoodSelect(f)}>
+                    {f}
+                  </li>
+                ))}
+            </ul>
+          )}
+        </div>
+
+        <button className="mealplanner-btn" onClick={handleGenerate}>
+          Suggest Meal Plan
+        </button>
+        {error && (
+          <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>
+        )}
+      </div>
+
+      {/* Output */}
+      {generatedPlan && mode === "day" && (
+        <div className="mealplanner-output">
+          <h2>
+            Suggested Meals for {week}
+            {day && ` - Day ${day}`}
+          </h2>
+          {generatedPlan.map((meal, idx) => (
+            <div key={idx} className="meal-card">
+              <div className="meal-header">
+                <h3>{meal.type}</h3>
+              </div>
+              <div className="meal-dishes">
+                {meal?.dishes?.map((dish, i) => (
+                  <div key={i} className="dish-card">
+                    <img src={dish.image} alt={dish.name} />
+                    <div className="dish-info">
+                      <h4>{dish.name}</h4>
+                      <p>{dish.calories} kcal</p>
+                      <div className="meal-actions">
+                        <button>
+                          <FaSyncAlt /> Change
+                        </button>
+                        <button>
+                          <FaInfoCircle /> Info
+                        </button>
+                        <button>
+                          <FaUtensils /> Recipe
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {generatedPlan && mode === "week" && (
+        <div className="mealplanner-output">
+          <h2>Weekly Suggested Meals</h2>
+
+          {/* Week List */}
+          {weekViewMode === "list" &&
+            generatedPlan?.map((day, idx) => (
+              <div key={idx} className="week-day-card">
+                <div className="week-day-header">
+                  <h3>{day.day}</h3>
+                  <button
+                    className="mealplanner-btn"
+                    onClick={() => handleViewDayDetail(day)}
+                  >
+                    View Detail
+                  </button>
+                </div>
+
+                <div className="week-meal-grid">
+                  {day?.meals?.map((m, i) => (
+                    <div key={i} className="week-meal-card">
+                      <img src={m.dishes?.[0]?.image} alt={m.type} />{" "}
+                      <h4>{m.type}</h4>
+                      <button
+                        className="mealplanner-detail-btn"
+                        onClick={() => handleViewMealDetail(day, m)}
+                      >
+                        View Detail
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+
+          {/* Day Detail (looks like "by day" output) */}
+          {/* Day Detail */}
+          {weekViewMode === "dayDetail" && selectedDayDetail && (
+            <div className="mealplanner-output">
+              <h2>Meals for {selectedDayDetail.day}</h2>
+              {selectedDayDetail?.meals?.map((meal, idx) => (
+                <div key={idx} className="meal-card">
+                  <div className="meal-header">
+                    <h3>{meal.type}</h3>
+                  </div>
+                  <div className="meal-dishes">
+                    {meal?.dishes?.map((dish, i) => (
+                      <div key={i} className="dish-card">
+                        <img src={dish.image} alt={dish.name} />
+                        <div className="dish-info">
+                          <h4>{dish.name}</h4>
+                          <p>{dish.calories} kcal</p>
+                          <div className="meal-actions">
+                            <button>
+                              <FaSyncAlt /> Change
+                            </button>
+                            <button>
+                              <FaInfoCircle /> Info
+                            </button>
+                            <button>
+                              <FaUtensils /> Recipe
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <button className="mealplanner-btn" onClick={handleBackToWeek}>
+                Back to Week
+              </button>
+            </div>
+          )}
+
+          {/* Meal Detail */}
+          {weekViewMode === "mealDetail" && selectedMealDetail && (
+            <div className="mealplanner-output">
+              <h2>
+                {selectedMealDetail.day.day} – {selectedMealDetail.meal.type}
+              </h2>
+              <div className="meal-card">
+                <div className="meal-header">
+                  <h3>{selectedMealDetail.meal.type}</h3>
+                </div>
+                <div className="meal-dishes">
+                  {selectedMealDetail?.meal?.dishes?.map((dish, i) => (
+                    <div key={i} className="dish-card">
+                      <img src={dish.image} alt={dish.name} />
+                      <div className="dish-info">
+                        <h4>{dish.name}</h4>
+                        <p>{dish.calories} kcal</p>
+                        <div className="meal-actions">
+                          <button>
+                            <FaSyncAlt /> Change
+                          </button>
+                          <button>
+                            <FaInfoCircle /> Info
+                          </button>
+                          <button>
+                            <FaUtensils /> Recipe
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <button className="mealplanner-btn" onClick={handleBackToWeek}>
+                Back to Week
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <Footer />
+    </div>
+  );
+};
+
+export default SystemMealPlanner;
