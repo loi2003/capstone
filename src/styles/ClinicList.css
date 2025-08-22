@@ -1,0 +1,352 @@
+.clinic-list-background-container {
+  background-color: #e7f6ff;
+}
+
+.clinic-list-cards-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.clinic-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 2vh 10vh;
+}
+
+.clinic-header .clinic-main-title {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #114866;
+}
+
+.clinic-header .clinic-header-desc {
+  font-size: 1.25rem;
+  color: #6c757d;
+  margin-top: 8px;
+}
+
+.clinic-list-main-content {
+  padding: 0 10vh;
+}
+
+.clinic-list-count {
+  font-size: 1.2rem;
+  color: #114866;
+  margin-bottom: 16px;
+}
+
+/* Clinic card */
+.clinic-modern-card {
+  display: flex;
+  background: #f8fefd;
+  border: 1.5px solid #e3e8ee;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.04);
+  align-items: stretch;
+  transition: box-shadow 0.2s;
+  overflow: hidden;
+  min-height: 220px;
+}
+
+.clinic-modern-card-left {
+  background: #c9eaff;
+  min-width: 400px;
+  max-width: 410px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  gap: 16px;
+}
+
+.clinic-modern-avatar {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  margin-bottom: 2px;
+  display: block;
+}
+
+.clinic-modern-name {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #114866;
+  text-align: center;
+  word-break: break-word;
+}
+
+.clinic-modern-card-body {
+  flex: 1;
+  padding: 28px 32px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #f8fefd;
+}
+
+.clinic-modern-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.clinic-modern-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #114866;
+  margin-bottom: 2px;
+  display: block;
+}
+
+/* Rating stars */
+.clinic-modern-rating {
+  font-size: 1rem;
+  color: #f7b801;
+  font-weight: 500;
+}
+.clinic-modern-rating .star {
+  color: #f7b801;
+  font-size: 1.1em;
+  margin-right: 2px;
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+}
+.clinic-modern-rating .star-empty {
+  color: #e0e0e0;
+}
+.clinic-modern-rating .star-half {
+  color: #e0e0e0;
+}
+.clinic-modern-rating .star-half::before {
+  content: '★';
+  color: #f7b801;
+  position: absolute;
+  left: 0;
+  width: 50%;
+  overflow: hidden;
+}
+.clinic-modern-rating .rating-value {
+  color: #114866;
+  font-weight: 600;
+  margin-left: 4px;
+}
+.clinic-modern-rating .review-count {
+  color: #035f82;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* Badges */
+.clinic-modern-badges {
+  display: flex;
+  gap: 8px;
+}
+.clinic-modern-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  background: #e6f7e6;
+  color: #388e3c;
+}
+.clinic-modern-badge.teal {
+  background: #d0f5f7;
+  color: #0b8dbd;
+}
+.clinic-modern-badge.green {
+  background: #e6f7e6;
+  color: #388e3c;
+}
+
+/* Info rows */
+.clinic-modern-info-row {
+  display: flex;
+  gap: 48px;
+  margin: 12px 0 0 0;
+}
+.clinic-modern-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+  max-width: 340px;
+}
+.clinic-modern-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #035f82;
+  font-size: 1.05rem;
+  font-weight: 400;
+  word-break: break-word;
+}
+.clinic-modern-info-item .icon-card {
+  font-size: 1.1rem;
+  margin-top: 2px;
+}
+
+/* Card footer */
+.clinic-modern-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+.clinic-modern-select-btn {
+  background: #0b8dbd;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 340px;
+}
+.clinic-modern-select-btn:hover {
+  background: #066b94;
+}
+
+/* See more button */
+.see-more-btn {
+  background: none;
+  color: #0b8dbd;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 200px;
+  margin: 10px auto;
+  display: block;
+  text-align: center;
+}
+.see-more-btn:hover {
+  background: #e3e8ee;
+}
+
+/* Search bar */
+.clinic-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+  width: 100%;
+  max-width: none;
+}
+.clinic-search-bar-input-wrapper {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 100%;
+  margin-top: 2vh;
+}
+.clinic-search-icon-btn {
+  background: #f7fafd;
+  border: 1.5px solid #d3dbe3;
+  border-radius: 8px 0 0 8px;
+  height: 60px;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: -1.5px;
+  cursor: pointer;
+  transition: border 0.2s;
+  outline: none;
+  padding: 0;
+  z-index: 2;
+}
+.clinic-search-icon-btn:focus {
+  border-color: #2196f3;
+}
+.clinic-search-input {
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+  border: 1.5px solid #d3dbe3;
+  border-left: none;
+  font-size: 1rem;
+  width: 100%;
+  outline: none;
+  transition: border 0.2s;
+  background: #f7fafd;
+  height: 60px;
+  z-index: 1;
+}
+.clinic-search-input:focus {
+  border-color: #2196f3;
+  background: #fff;
+}
+.clinic-search-btn {
+  background: #0b8dbd;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0 28px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  height: 44px;
+  margin-left: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.clinic-search-btn:hover {
+  background: #1976d2;
+}
+
+/* Utility */
+.no-clinics,
+.loading-text,
+.error-text {
+  color: #114866;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .clinic-modern-card-body {
+    padding: 20px 16px 16px 16px;
+  }
+  .clinic-modern-info-row {
+    gap: 16px;
+  }
+}
+@media (max-width: 900px) {
+  .clinic-modern-card {
+    flex-direction: column;
+  }
+  .clinic-modern-card-left {
+    max-width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 24px 16px;
+  }
+  .clinic-modern-card-body {
+    padding: 20px 16px 16px 16px;
+  }
+  .clinic-modern-info-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+}

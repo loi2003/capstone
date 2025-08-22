@@ -41,6 +41,9 @@ import FoodManagement from "../pages/nutrientspecialist/FoodManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
+import ClinicList from "../pages/clinic/ClinicList";
+import ClinicDetail from "../pages/clinic/ClinicDetail";
+import OnlineConsultationManagement from "../pages/consultation/OnlineConsultationManagement";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -135,6 +138,9 @@ const AppRoutes = () => {
             </MainLayout>
           }
         />
+        <Route path="/clinic/list" element={<ClinicList />} />
+        <Route path="/clinic/:id" element={<ClinicDetail />} />
+        <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
       </Routes>
     </ThemeProvider>
   );
