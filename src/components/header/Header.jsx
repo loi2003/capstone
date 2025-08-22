@@ -85,27 +85,27 @@ const Header = () => {
 
   const handleLogout = async () => {
     if (!user?.userId) {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
-      navigate('/signin', { replace: true });
+      navigate("/signin", { replace: true });
       console.log("Logout without userId");
       return;
     }
 
     try {
       console.log("Sending logout request for userId:", user.userId);
-      await apiClient.post('/api/auth/user/logout', user.userId, {
-        headers: { 'Content-Type': 'application/json' }
+      await apiClient.post("/api/auth/user/logout", user.userId, {
+        headers: { "Content-Type": "application/json" },
       });
       console.log("Logout successful");
     } catch (error) {
       console.error("Error during logout:", error.message);
     } finally {
-      localStorage.removeItem('token');
+      localStorage.removeItem("token");
       setUser(null);
       setIsDropdownOpen(false);
       setIsMenuOpen(false);
-      navigate('/signin', { replace: true });
+      navigate("/signin", { replace: true });
     }
   };
 
@@ -113,7 +113,7 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="logo">
-          <img src="/images/IMG_4602.PNG" alt="Logo" className="web-logo"/>
+          <img src="/images/IMG_4602.PNG" alt="Logo" className="web-logo" />
           NestlyCare
         </Link>
         <button
@@ -125,17 +125,36 @@ const Header = () => {
           <span className="menu-icon"></span>
         </button>
         <nav className={`nav-links ${isMenuOpen ? "open" : ""}`}>
-          <Link to="/about" title="About Us">About</Link>
-          <Link to="/duedate-calculator">DueDate Calculator</Link>
-          <Link to="/pregnancy-tracking" title="Pregnancy Tracking">Pregnancy</Link>
-          <Link to="/nutritional-guidance" title="Nutritional Guidance">Nutrition</Link>
-          <Link to="/consultation" title="Consultation">Consultation</Link>
-          <Link to="/blog" title="Blog">Blog</Link>
+          <Link to="/about" title="About Us">
+            About
+          </Link>
+
+          {/* Conditional Links */}
+          {!user ? (
+            <Link to="/duedate-calculator">DueDate Calculator</Link>
+          ) : (
+            <Link to="/pregnancy-tracking" title="Pregnancy Tracking">
+              Pregnancy
+            </Link>
+          )}
+
+          <Link to="/nutritional-guidance" title="Nutritional Guidance">
+            Nutrition
+          </Link>
+          <Link to="/consultation" title="Consultation">
+            Consultation
+          </Link>
+          <Link to="/blog" title="Blog">
+            Blog
+          </Link>
 
           {/* Phần xác thực: Hiển thị nút Sign In hoặc user icon */}
           <div className="auth-section">
             {user ? (
-              <div className={`profile-section ${isDropdownOpen ? "open" : ""}`} ref={dropdownRef}>
+              <div
+                className={`profile-section ${isDropdownOpen ? "open" : ""}`}
+                ref={dropdownRef}
+              >
                 <button
                   className="profile-toggle"
                   onClick={toggleDropdown}
@@ -157,7 +176,10 @@ const Header = () => {
                 </button>
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
-                    <span className="profile-email" title={user.email || "Người dùng"}>
+                    <span
+                      className="profile-email"
+                      title={user.email || "Người dùng"}
+                    >
                       {user.email || "Người dùng"}
                     </span>
                     <Link to="/profile" className="dropdown-link">

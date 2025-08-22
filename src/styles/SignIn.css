@@ -165,17 +165,28 @@
 
 .signin-logo {
   display: flex;
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 2.5rem;
+  justify-content: center;
+  align-items: center;
   transition: transform 0.2s, box-shadow 0.2s;
+  gap: 0.5rem;
+  font-size: 3rem;
+  font-weight: 700;
+  color: white;
+  text-decoration: none;
+  letter-spacing: 0.4px;
+  transition: var(--transition);
+  white-space: nowrap;
+  max-width: 40%;
+}
+.signin-web-logo {
   width: 100px;
   height: 100px;
 }
 
 .signin-logo:hover {
   transform: scale(1.05);
-  box-shadow: var(--shadow-hover);
+  /* box-shadow: var(--shadow-hover); */
+  /* filter: drop-shadow(8px 8px); */
 }
 
 .signin-logo svg {
