@@ -676,7 +676,7 @@ body.menu-open {
   .profile-dropdown a, 
   .profile-dropdown .dropdown-link {
     font-size: 0.8rem;
-    padding: 8px 12px;
+    /* padding: 8px 12px; */
     white-space: nowrap;
     width: 100%;
     box-sizing: border-box;

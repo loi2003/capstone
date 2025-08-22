@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   getSymptomsForUser,
-  addNewCustomSymptom 
+  addNewCustomSymptom,
 } from "../../apis/recorded-symptom-api";
 
 import "./SymptomsAndMood.css";
@@ -11,10 +11,10 @@ import "./SymptomsAndMood.css";
 const SymptomsAndMood = ({
   selectedMood,
   onMoodChange,
-  selectedSymptoms = [], 
-  onSymptomsChange,      
+  selectedSymptoms = [],
+  onSymptomsChange,
   userId,
-  token
+  token,
 }) => {
   const [symptoms, setSymptoms] = useState([]);
   const [customSymptom, setCustomSymptom] = useState("");
@@ -251,24 +251,61 @@ const SymptomsAndMood = ({
 
     getSymptomsForUser(userId, token)
       .then((res) => {
-        const allSymptoms =
-          (res.data?.data || []).map((s) => ({
-            id: String(s.id),                // normalize id to string
-            label: s.symptomName,
-            isTemplate: !!s.isTemplate       // use the backend flag directly
-          }));
+        const allSymptoms = (res.data?.data || []).map((s) => ({
+          id: String(s.id),
+          label: s.symptomName,
+          isTemplate: !!s.isTemplate,
+        }));
         setSymptoms(allSymptoms);
+
+        // Re-normalize selected when symptoms are ready
+        if (selectedSymptoms?.length > 0) {
+          const normalized = normalizeSelected(selectedSymptoms, allSymptoms);
+          const names = getSelectedSymptomNames(normalized);
+          onSymptomsChange?.(normalized, names);
+        }
       })
       .catch((err) => {
         console.error("Failed to load symptoms", err);
         setSymptoms([]);
+        onSymptomsChange?.(["none"], ["None"]);
       });
   }, [userId, token]);
 
-  // Normalize selected ids to strings for safe comparisons
-  const selectedIds = (selectedSymptoms || []).map(String);
+  // --- Normalization: handle IDs or Names coming from selectedSymptoms ---
+  const normalizeSelected = (selectedSymptoms, symptoms) => {
+    if (!selectedSymptoms || selectedSymptoms.length === 0) return [];
 
-  // Helper: return selected symptom names given a list of ids
+    const symptomIds = new Set(symptoms.map((s) => String(s.id)));
+
+    return selectedSymptoms
+      .map((val) => {
+        const valStr = String(val);
+
+        if (symptomIds.has(valStr)) {
+          return valStr; // already an ID
+        }
+
+        // 🔑 Always prefer template match by label
+        const templateMatch = symptoms.find(
+          (s) => s.label === valStr && s.isTemplate
+        );
+        if (templateMatch) return String(templateMatch.id);
+
+        // Only if no template exists, fall back to a custom with same name
+        const customMatch = symptoms.find(
+          (s) => s.label === valStr && !s.isTemplate
+        );
+        if (customMatch) return String(customMatch.id);
+
+        return null;
+      })
+      .filter(Boolean);
+  };
+
+  const selectedIds = normalizeSelected(selectedSymptoms, symptoms);
+
+  // --- Helpers ---
   const getSelectedSymptomNames = (ids) => {
     const idSet = new Set((ids || []).map(String));
     return symptoms
@@ -279,14 +316,20 @@ const SymptomsAndMood = ({
   // Toggle symptom and pass both IDs + names
   const handleSymptomToggle = (symptomId) => {
     const idStr = String(symptomId);
-    const updatedIds = selectedIds.includes(idStr)
+
+    // Always work from selectedIds (already normalized)
+    let updatedIds = selectedIds.includes(idStr)
       ? selectedIds.filter((id) => id !== idStr)
       : [...selectedIds, idStr];
 
-    const updatedNames = getSelectedSymptomNames(updatedIds);
-    if (typeof onSymptomsChange === "function") {
-      onSymptomsChange(updatedIds, updatedNames);
+    if (updatedIds.length === 0) {
+      updatedIds = ["none"];
     }
+
+    const updatedNames =
+      updatedIds[0] === "none" ? ["None"] : getSelectedSymptomNames(updatedIds);
+
+    onSymptomsChange?.(updatedIds, updatedNames);
   };
 
   const handleAddCustomSymptomClick = () => {
@@ -298,39 +341,58 @@ const SymptomsAndMood = ({
     setShowInput(false);
   };
 
-  // If you no longer want to create custom symptoms, you can remove this handler & the UI.
   const handleCustomSymptomSubmit = async () => {
-  const trimmed = customSymptom?.trim();
-  if (!trimmed) return;
+    const trimmed = customSymptom?.trim();
+    if (!trimmed) return;
 
-  try {
-    const res = await addNewCustomSymptom(trimmed, token);
-    const newId = String(res?.data?.data?.id);
-    const newSymptom = {
-      id: newId,
-      label: trimmed,
-      isTemplate: false
-    };
+    // Check again against both template + custom symptoms
+    const existing =
+      symptoms.find(
+        (s) => s.label.toLowerCase() === trimmed.toLowerCase() && s.isTemplate
+      ) ||
+      symptoms.find((s) => s.label.toLowerCase() === trimmed.toLowerCase());
 
-    const updatedSymptoms = [...symptoms, newSymptom];
-    setSymptoms(updatedSymptoms);
+    if (existing) {
+      // ✅ Always select existing instead of recreating
+      const updatedIds = [
+        ...selectedIds.filter((id) => id !== "none"),
+        existing.id,
+      ];
+      const updatedNames = getSelectedSymptomNames(updatedIds);
 
-    const updatedIds = [...selectedIds, newId];
-    const updatedNames = updatedSymptoms
-      .filter((sym) => updatedIds.includes(String(sym.id)))
-      .map((sym) => sym.label);
-
-    if (typeof onSymptomsChange === "function") {
-      onSymptomsChange(updatedIds, updatedNames);
+      onSymptomsChange?.(Array.from(new Set(updatedIds)), updatedNames);
+      setCustomSymptom("");
+      setShowInput(false);
+      return;
     }
 
-    setCustomSymptom("");
-    setShowInput(false);
-  } catch (err) {
-    console.error("Failed to add custom symptom", err);
-  }
-};
+    if (!showInput) return;
 
+    try {
+      const res = await addNewCustomSymptom(trimmed, token);
+      const newId = String(res?.data?.data?.id);
+      const newSymptom = {
+        id: newId,
+        label: trimmed,
+        isTemplate: false,
+      };
+
+      const updatedSymptoms = [...symptoms, newSymptom];
+      setSymptoms(updatedSymptoms);
+
+      const updatedIds = [...selectedIds.filter((id) => id !== "none"), newId];
+      const updatedNames = updatedSymptoms
+        .filter((sym) => updatedIds.includes(String(sym.id)))
+        .map((sym) => sym.label);
+
+      onSymptomsChange?.(updatedIds, updatedNames);
+
+      setCustomSymptom("");
+      setShowInput(false);
+    } catch (err) {
+      console.error("Failed to add custom symptom", err);
+    }
+  };
 
   return (
     <div className="symptoms-and-mood">
@@ -371,16 +433,26 @@ const SymptomsAndMood = ({
                 />
                 <span className="checkmark" />
                 {symptom.label}
-                {!symptom.isTemplate && <span className="custom-tag"> (Custom)</span>}
+                {!symptom.isTemplate && (
+                  <span className="custom-tag"> (Custom)</span>
+                )}
               </label>
             );
           })}
         </div>
 
         {/* Add Custom Symptom Button (optional) */}
-        <button className="add-custom-btn" onClick={handleAddCustomSymptomClick}>
+        <button
+          className="add-custom-btn"
+          onClick={handleAddCustomSymptomClick}
+        >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-            <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <path
+              d="M12 5v14m-7-7h14"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
           </svg>
           Add Custom Symptom
         </button>
@@ -398,7 +470,10 @@ const SymptomsAndMood = ({
                 className="custom-symptom-input"
               />
               <div className="symptom-popup-buttons">
-                <button className="symptom-submit-btn" onClick={handleCustomSymptomSubmit}>
+                <button
+                  className="symptom-submit-btn"
+                  onClick={handleCustomSymptomSubmit}
+                >
                   Add
                 </button>
                 <button className="symptom-cancel-btn" onClick={handleCancel}>
