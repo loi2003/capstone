@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { debounce } from "lodash";
 import {
   getAllNutrients,
   getNutrientWithDetailsById,
   createNutrient,
   deleteNutrient,
   updateNutrient,
-  getAllNutrientCategories,
   updateNutrientImage,
+  getAllNutrientCategories,
 } from "../../apis/nutriet-api";
 import "../../styles/NutrientManagement.css";
 
@@ -18,6 +19,7 @@ const LoaderIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
+    aria-hidden="true"
   >
     <path
       strokeLinecap="round"
@@ -29,7 +31,13 @@ const LoaderIcon = () => (
 );
 
 const SearchIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  <svg
+    className="icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -77,7 +85,12 @@ const NutrientManagement = () => {
   const [selectedNutrient, setSelectedNutrient] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState({
+    fetch: false,
+    create: false,
+    update: false,
+    delete: false,
+  });
   const [searchTerm, setSearchTerm] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const navigate = useNavigate();
@@ -92,9 +105,39 @@ const NutrientManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
+  // Validate nutrient name for duplicates
+  const validateNutrientName = (name, nutrientId = null) => {
+    const trimmedName = name.trim().toLowerCase();
+    return nutrients.some(
+      (nutrient) =>
+        nutrient.name?.toLowerCase() === trimmedName &&
+        (nutrientId ? nutrient.id !== nutrientId : true)
+    );
+  };
+
+  // Validate nutrient data
+  const validateNutrient = (nutrient, isUpdate = false) => {
+    if (!nutrient.name.trim()) {
+      return "Nutrient name is required";
+    }
+    if (!/^[a-zA-Z0-9\s-_]{3,100}$/.test(nutrient.name.trim())) {
+      return "Nutrient name must be 3-100 characters long and contain only letters, numbers, spaces, hyphens, or underscores";
+    }
+    if (validateNutrientName(nutrient.name, isUpdate ? nutrient.id : null)) {
+      return "Nutrient name already exists";
+    }
+    if (
+      !nutrient.categoryId ||
+      !categories.some((cat) => cat.id === nutrient.categoryId)
+    ) {
+      return "Please select a valid category";
+    }
+    return null;
+  };
+
   // Fetch all nutrients and categories
   const fetchData = async () => {
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, fetch: true }));
     try {
       const [nutrientsData, categoriesData] = await Promise.all([
         getAllNutrients(),
@@ -106,16 +149,23 @@ const NutrientManagement = () => {
       setFilteredNutrients(nutrientsData);
       setCategories(categoriesData);
     } catch (err) {
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
+      if (err.response?.status === 401) {
+        showNotification("Session expired. Please log in again.", "error");
+        navigate("/login");
+      } else {
+        showNotification(
+          `Failed to fetch data: ${err.response?.data?.message || err.message}`,
+          "error"
+        );
+      }
     } finally {
-      setLoading(false);
+      setLoading((prev) => ({ ...prev, fetch: false }));
     }
   };
 
   // Fetch nutrient by ID with details
   const fetchNutrientById = async (id) => {
-    console.log("Fetching nutrient with ID:", id);
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, fetch: true }));
     try {
       const data = await getNutrientWithDetailsById(id);
       console.log("Fetched nutrient data:", data);
@@ -128,29 +178,33 @@ const NutrientManagement = () => {
       });
       setIsEditing(true);
     } catch (err) {
-      showNotification(
-        `Failed to fetch nutrient details: ${err.message}`,
-        "error"
-      );
+      if (err.response?.status === 401) {
+        showNotification("Session expired. Please log in again.", "error");
+        navigate("/login");
+      } else {
+        showNotification(
+          `Failed to fetch nutrient details: ${err.response?.data?.message || err.message}`,
+          "error"
+        );
+      }
     } finally {
-      setLoading(false);
+      setLoading((prev) => ({ ...prev, fetch: false }));
     }
   };
 
   // Create new nutrient
   const createNutrientHandler = async () => {
-    if (!newNutrient.name.trim()) {
-      showNotification("Nutrient name is required", "error");
+    const validationError = validateNutrient(newNutrient);
+    if (validationError) {
+      showNotification(validationError, "error");
       return;
     }
-    if (!newNutrient.categoryId) {
-      showNotification("Please select a category", "error");
-      return;
-    }
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, create: true }));
     try {
       console.log("Creating nutrient with data:", newNutrient);
-      await createNutrient(newNutrient);
+      const newNutrientData = await createNutrient(newNutrient);
+      setNutrients((prev) => [...prev, newNutrientData]);
+      setFilteredNutrients((prev) => [...prev, newNutrientData]);
       setNewNutrient({
         name: "",
         description: "",
@@ -158,22 +212,33 @@ const NutrientManagement = () => {
         categoryId: "",
       });
       setIsEditing(false);
-      await fetchData();
       showNotification("Nutrient created successfully", "success");
     } catch (err) {
-      showNotification(`Failed to create nutrient: ${err.message}`, "error");
+      if (err.response?.status === 401) {
+        showNotification("Session expired. Please log in again.", "error");
+        navigate("/login");
+      } else {
+        showNotification(
+          `Failed to create nutrient: ${err.response?.data?.message || err.message}`,
+          "error"
+        );
+      }
     } finally {
-      setLoading(false);
+      setLoading((prev) => ({ ...prev, create: false }));
     }
   };
 
   // Update nutrient
   const updateNutrientHandler = async () => {
-    if (!newNutrient.name.trim()) {
-      showNotification("Nutrient name is required", "error");
+    const validationError = validateNutrient(
+      { ...newNutrient, id: selectedNutrient.id },
+      true
+    );
+    if (validationError) {
+      showNotification(validationError, "error");
       return;
     }
-    setLoading(true);
+    setLoading((prev) => ({ ...prev, update: true }));
     try {
       console.log(
         "Updating nutrient with ID:",
@@ -181,7 +246,7 @@ const NutrientManagement = () => {
         "and data:",
         newNutrient
       );
-      await updateNutrient({
+      const updatedNutrient = await updateNutrient({
         nutrientId: selectedNutrient.id,
         name: newNutrient.name,
         description: newNutrient.description,
@@ -190,6 +255,20 @@ const NutrientManagement = () => {
         console.log("Updating nutrient image for ID:", selectedNutrient.id);
         await updateNutrientImage(selectedNutrient.id, newNutrient.imageUrl);
       }
+      setNutrients((prev) =>
+        prev.map((nutrient) =>
+          nutrient.id === selectedNutrient.id
+            ? { ...nutrient, ...updatedNutrient, categoryId: newNutrient.categoryId }
+            : nutrient
+        )
+      );
+      setFilteredNutrients((prev) =>
+        prev.map((nutrient) =>
+          nutrient.id === selectedNutrient.id
+            ? { ...nutrient, ...updatedNutrient, categoryId: newNutrient.categoryId }
+            : nutrient
+        )
+      );
       setNewNutrient({
         name: "",
         description: "",
@@ -198,23 +277,31 @@ const NutrientManagement = () => {
       });
       setSelectedNutrient(null);
       setIsEditing(false);
-      await fetchData();
       showNotification("Nutrient updated successfully", "success");
     } catch (err) {
-      showNotification(`Failed to update nutrient: ${err.message}`, "error");
+      if (err.response?.status === 401) {
+        showNotification("Session expired. Please log in again.", "error");
+        navigate("/login");
+      } else {
+        showNotification(
+          `Failed to update nutrient: ${err.response?.data?.message || err.message}`,
+          "error"
+        );
+      }
     } finally {
-      setLoading(false);
+      setLoading((prev) => ({ ...prev, update: false }));
     }
   };
 
   // Delete nutrient
   const deleteNutrientHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this nutrient?"))
-      return;
-    setLoading(true);
+    if (!window.confirm("Are you sure you want to delete this nutrient?")) return;
+    setLoading((prev) => ({ ...prev, delete: true }));
     try {
       console.log("Deleting nutrient with ID:", id);
       await deleteNutrient(id);
+      setNutrients((prev) => prev.filter((nutrient) => nutrient.id !== id));
+      setFilteredNutrients((prev) => prev.filter((nutrient) => nutrient.id !== id));
       setSelectedNutrient(null);
       setIsEditing(false);
       setNewNutrient({
@@ -223,23 +310,34 @@ const NutrientManagement = () => {
         imageUrl: null,
         categoryId: "",
       });
-      await fetchData();
       showNotification("Nutrient deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete nutrient: ${err.message}`, "error");
+      if (err.response?.status === 401) {
+        showNotification("Session expired. Please log in again.", "error");
+        navigate("/login");
+      } else {
+        showNotification(
+          `Failed to delete nutrient: ${err.response?.data?.message || err.message}`,
+          "error"
+        );
+      }
     } finally {
-      setLoading(false);
+      setLoading((prev) => ({ ...prev, delete: false }));
     }
   };
 
   // Handle search
-  const handleSearch = (e) => {
-    const term = e.target.value;
+  const handleSearch = debounce((term) => {
     setSearchTerm(term);
-    const filtered = nutrients.filter((nutrient) =>
-      nutrient.name?.toLowerCase().includes(term.toLowerCase())
+    const filtered = nutrients.filter(
+      (nutrient) =>
+        nutrient.name?.toLowerCase().includes(term.toLowerCase()) || false
     );
     setFilteredNutrients(filtered);
+  }, 300);
+
+  const handleSearchInput = (e) => {
+    handleSearch(e.target.value);
   };
 
   // Cancel edit
@@ -263,7 +361,20 @@ const NutrientManagement = () => {
   // Handle file input change
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    setNewNutrient({ ...newNutrient, imageUrl: file || null });
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        showNotification("Only image files are allowed", "error");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
+        showNotification("Image size must be less than 5MB", "error");
+        return;
+      }
+      setNewNutrient({ ...newNutrient, imageUrl: file });
+    } else {
+      setNewNutrient({ ...newNutrient, imageUrl: null });
+    }
   };
 
   // Toggle sidebar
@@ -326,6 +437,7 @@ const NutrientManagement = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-label="Leaf icon"
+                aria-hidden="true"
               >
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
@@ -368,6 +480,7 @@ const NutrientManagement = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-label="Dashboard icon"
+                aria-hidden="true"
               >
                 <path
                   d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"
@@ -392,6 +505,7 @@ const NutrientManagement = () => {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="Folder icon for nutrient category management"
+                aria-hidden="true"
               >
                 <path
                   d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
@@ -418,6 +532,7 @@ const NutrientManagement = () => {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="Sprout icon for nutrient management"
+                aria-hidden="true"
               >
                 <path
                   d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
@@ -444,6 +559,7 @@ const NutrientManagement = () => {
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-label="Link icon for nutrient in food management"
+                aria-hidden="true"
               >
                 <path
                   d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"
@@ -487,6 +603,11 @@ const NutrientManagement = () => {
                 No categories available. Please add a category first.
               </p>
             )}
+            {notification?.type === "error" && (
+              <span id="nutrient-error" className="error-message">
+                {notification.message}
+              </span>
+            )}
             <div className="form-card">
               <div className="form-group">
                 <label htmlFor="nutrient-name">Nutrient Name</label>
@@ -499,6 +620,9 @@ const NutrientManagement = () => {
                   placeholder="e.g., Vitamin D"
                   className="input-field"
                   aria-label="Nutrient name"
+                  aria-describedby={
+                    notification?.type === "error" ? "nutrient-error" : undefined
+                  }
                 />
                 <label htmlFor="nutrient-description">Description</label>
                 <textarea
@@ -510,6 +634,9 @@ const NutrientManagement = () => {
                   className="textarea-field"
                   rows="4"
                   aria-label="Nutrient description"
+                  aria-describedby={
+                    notification?.type === "error" ? "nutrient-error" : undefined
+                  }
                 />
                 <label htmlFor="nutrient-imageUrl">Image File</label>
                 <input
@@ -529,7 +656,10 @@ const NutrientManagement = () => {
                   onChange={handleInputChange}
                   className="input-field"
                   aria-label="Nutrient category"
-                  disabled={categories.length === 0 || isEditing}
+                  disabled={categories.length === 0}
+                  aria-describedby={
+                    notification?.type === "error" ? "nutrient-error" : undefined
+                  }
                 >
                   <option value="" disabled>
                     Select a category
@@ -545,16 +675,24 @@ const NutrientManagement = () => {
                     onClick={
                       isEditing ? updateNutrientHandler : createNutrientHandler
                     }
-                    disabled={loading || categories.length === 0}
+                    disabled={
+                      loading.create || loading.update || categories.length === 0
+                    }
                     className="submit-button nutrient-specialist-button primary"
                     whileHover={{
-                      scale: loading || categories.length === 0 ? 1 : 1.05,
+                      scale:
+                        loading.create || loading.update || categories.length === 0
+                          ? 1
+                          : 1.05,
                     }}
                     whileTap={{
-                      scale: loading || categories.length === 0 ? 1 : 0.95,
+                      scale:
+                        loading.create || loading.update || categories.length === 0
+                          ? 1
+                          : 0.95,
                     }}
                   >
-                    {loading
+                    {loading.create || loading.update
                       ? isEditing
                         ? "Updating..."
                         : "Creating..."
@@ -565,10 +703,14 @@ const NutrientManagement = () => {
                   {isEditing && (
                     <motion.button
                       onClick={cancelEdit}
-                      disabled={loading}
+                      disabled={loading.create || loading.update}
                       className="cancel-button nutrient-specialist-button secondary"
-                      whileHover={{ scale: loading ? 1 : 1.05 }}
-                      whileTap={{ scale: loading ? 1 : 0.95 }}
+                      whileHover={{
+                        scale: loading.create || loading.update ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: loading.create || loading.update ? 1 : 0.95,
+                      }}
                     >
                       Cancel
                     </motion.button>
@@ -592,13 +734,13 @@ const NutrientManagement = () => {
               <input
                 type="text"
                 value={searchTerm}
-                onChange={handleSearch}
+                onChange={handleSearchInput}
                 placeholder="Search nutrients..."
                 className="search-input"
                 aria-label="Search nutrients"
               />
             </div>
-            {loading ? (
+            {loading.fetch ? (
               <div className="loading-state">
                 <LoaderIcon />
                 <p>Loading nutrients...</p>
@@ -611,6 +753,7 @@ const NutrientManagement = () => {
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -658,7 +801,16 @@ const NutrientManagement = () => {
                     <div className="card-meta">
                       {nutrient.imageUrl && (
                         <div className="image-preview">
-                          <img src={nutrient.imageUrl} alt={nutrient.name} />
+                          <img
+                            src={nutrient.imageUrl}
+                            alt={nutrient.name}
+                            onError={(e) => {
+                              console.error(
+                                `Failed to load image for ${nutrient.name}: ${nutrient.imageUrl}`
+                              );
+                              e.target.style.display = "none";
+                            }}
+                          />
                         </div>
                       )}
                     </div>
@@ -669,6 +821,7 @@ const NutrientManagement = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         aria-label={`Edit ${nutrient.name}`}
+                        disabled={loading.delete}
                       >
                         <span>Edit</span>
                       </motion.button>
@@ -678,6 +831,7 @@ const NutrientManagement = () => {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         aria-label={`Delete ${nutrient.name}`}
+                        disabled={loading.delete}
                       >
                         <span>Delete</span>
                       </motion.button>

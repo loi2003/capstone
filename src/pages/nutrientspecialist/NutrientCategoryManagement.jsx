@@ -121,6 +121,11 @@ const NutrientCategoryManagement = () => {
       showNotification("Category name is required", "error");
       return;
     }
+    // Check for duplicate category name
+    if (categories.some((cat) => cat.name.toLowerCase() === newCategory.name.trim().toLowerCase())) {
+      showNotification("Duplicate category name", "error");
+      return;
+    }
     setLoading(true);
     try {
       await createNutrientCategory(newCategory);
@@ -138,6 +143,17 @@ const NutrientCategoryManagement = () => {
   const updateCategory = async () => {
     if (!newCategory.name.trim()) {
       showNotification("Category name is required", "error");
+      return;
+    }
+    // Check for duplicate category name (excluding the current category)
+    if (
+      categories.some(
+        (cat) =>
+          cat.name.toLowerCase() === newCategory.name.trim().toLowerCase() &&
+          cat.id !== selectedCategory.id
+      )
+    ) {
+      showNotification("Duplicate category name", "error");
       return;
     }
     setLoading(true);
