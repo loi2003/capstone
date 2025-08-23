@@ -43,6 +43,9 @@ import AllergyCategoryManagement from "../pages/nutrientspecialist/AllergyCatego
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
+import ClinicList from "../pages/clinic/ClinicList";
+import ClinicDetail from "../pages/clinic/ClinicDetail";
+import OnlineConsultationManagement from "../pages/consultation/OnlineConsultationManagement";
 import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
@@ -130,6 +133,9 @@ const AppRoutes = () => {
             </MainLayout>
           }
         />
+        <Route path="/clinic/list" element={<ClinicList />} />
+        <Route path="/clinic/:id" element={<ClinicDetail />} />
+        <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
       </Routes>
     </ThemeProvider>
   );

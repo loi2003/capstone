@@ -347,7 +347,11 @@ const ConsultantHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <button className="sidebar-action-button" title="Add Consultation">
+            <button
+              className="sidebar-action-button"
+              title="Add Consultation"
+              onClick={() => navigate("/consultation/online-consultation-management")}
+            >
               <svg
                 width="24"
                 height="24"
@@ -365,7 +369,7 @@ const ConsultantHomePage = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Add Consultation</span>}
+              {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
           {user ? (
