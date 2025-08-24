@@ -47,6 +47,7 @@ import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
+import AdvicePage from '../pages/AdvicePage';
 
 NutrientInFoodManagement
 const AppRoutes = () => {
@@ -114,6 +115,7 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/allergy-category-management" element={<AllergyCategoryManagement />} />
         <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
+        <Route path="/advice" element={<AdvicePage />} />
         <Route
           path="/blog"
           element={
