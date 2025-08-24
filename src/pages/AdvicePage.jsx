@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import MainLayout from '../layouts/MainLayout';
 import { getCurrentUser } from '../apis/authentication-api';
@@ -13,50 +13,38 @@ const AdvicePage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const chatContainerRef = useRef(null);
-  const location = useLocation();
   const navigate = useNavigate();
 
   // Check authentication status
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        console.log('AdvicePage: Retrieved token:', token); // Debug log
+        const token = localStorage.getItem('token'); // Updated to match SignIn.jsx
+        console.log('AdvicePage: Retrieved token:', token);
+        console.log('AdvicePage: localStorage contents:', JSON.stringify(localStorage));
         if (!token) {
           console.log('AdvicePage: No token found, setting isLoggedIn to false');
           setIsLoggedIn(false);
           return;
         }
-
         const response = await getCurrentUser(token);
-        console.log('AdvicePage: getCurrentUser response:', response); // Debug log
+        console.log('AdvicePage: getCurrentUser response:', response);
         if (response.status === 200 && response.data?.data) {
           console.log('AdvicePage: User authenticated, setting isLoggedIn to true');
           setIsLoggedIn(true);
         } else {
-          console.log('AdvicePage: Invalid response status or data, clearing token');
+          console.log('AdvicePage: Invalid response, clearing token');
           setIsLoggedIn(false);
-          localStorage.removeItem('authToken');
+          localStorage.removeItem('token');
         }
       } catch (error) {
-        console.error('AdvicePage: Error checking auth status:', error.response?.data || error.message); // Debug log
+        console.error('AdvicePage: Auth check error:', error.response?.data || error.message);
         setIsLoggedIn(false);
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('token');
       }
     };
-
     checkAuthStatus();
-    // Add listener for storage changes to handle token updates
-    const handleStorageChange = () => {
-      const token = localStorage.getItem('authToken');
-      console.log('AdvicePage: Storage changed, token:', token);
-      if (token) {
-        checkAuthStatus();
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [location]);
+  }, []); // Removed location.pathname dependency
 
   // Auto-scroll to bottom of chat
   useEffect(() => {
@@ -69,29 +57,55 @@ const AdvicePage = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-
     const userMessage = { text: input, sender: 'user', timestamp: new Date() };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
-    // Simulate real-time API response
-    setTimeout(() => {
-      const responseText =
-        activeMode === 'ai'
-          ? `AI Response: Here's advice for your question: "${input}". This is a simulated response for demonstration.`
-          : 'Staff Response: Your question has been submitted to our team. Expect a reply soon!';
-      setMessages((prev) => [
-        ...prev,
-        { text: responseText, sender: activeMode, timestamp: new Date() },
-      ]);
-      setIsLoading(false);
-    }, 1000);
+    if (activeMode === 'ai') {
+      // Simulate AI response
+      setTimeout(() => {
+        const responseText = `AI Response: Here's advice for your question: "${input}". This is a simulated response for demonstration.`;
+        setMessages((prev) => [
+          ...prev,
+          { text: responseText, sender: 'ai', timestamp: new Date() },
+        ]);
+        setIsLoading(false);
+      }, 1000);
+    } else {
+      // Staff mode: Indicate message sent (replace with actual API call)
+      try {
+        setTimeout(() => {
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: 'Staff Response: Your question has been submitted to our team. Expect a reply soon!',
+              sender: 'staff',
+              timestamp: new Date(),
+            },
+          ]);
+          setIsLoading(false);
+        }, 1000);
+      } catch (error) {
+        console.error('Error submitting to staff:', error);
+        setMessages((prev) => [
+          ...prev,
+          {
+            text: 'Error: Could not submit your question. Please try again.',
+            sender: 'staff',
+            timestamp: new Date(),
+          },
+        ]);
+        setIsLoading(false);
+      }
+    }
   };
 
   // Switch between AI and Staff modes
   const switchMode = (mode) => {
+    console.log('Switching mode:', mode, 'isLoggedIn:', isLoggedIn);
     if (mode === 'staff' && !isLoggedIn) {
+      console.log('Blocked: User not logged in, showing login prompt');
       setShowLoginPrompt(true);
       return;
     }
@@ -132,12 +146,14 @@ const AdvicePage = () => {
             AI Advice
           </motion.button>
           <motion.button
-            className={`advice-mode-button ${activeMode === 'staff' ? 'active' : ''}`}
+            className={`advice-mode-button ${activeMode === 'staff' ? 'active' : ''} ${
+              !isLoggedIn ? 'disabled' : ''
+            }`}
             onClick={() => switchMode('staff')}
             whileHover={{ scale: isLoggedIn ? 1.05 : 1 }}
             whileTap={{ scale: isLoggedIn ? 0.95 : 1 }}
             disabled={!isLoggedIn}
-            title={!isLoggedIn ? 'Please log in to access Staff Advice' : ''}
+            title={!isLoggedIn ? 'Please log in to access Staff Advice' : 'Switch to Staff Advice'}
           >
             Staff Advice
           </motion.button>
