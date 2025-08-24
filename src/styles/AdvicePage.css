@@ -1,153 +1,347 @@
-/* Scoped styles for AdvicePage to avoid conflicts with other components */
+/* General Page Styling */
 .advice-page {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 2rem;
-  min-height: calc(100vh - 80px); /* Adjust for header/footer in MainLayout */
+  padding: 1.5rem;
+  min-height: calc(100vh - 80px);
+  display: flex;
+  flex-direction: column;
+  background: #f5f7fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Section styling */
-.advice-section {
-  background: #ffffff;
-  border-radius: 8px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Title styling */
-.advice-section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2a2a2a;
+/* Header Styling */
+.advice-header {
   text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.advice-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.advice-description {
+  font-size: 1rem;
+  color: #666666;
+  line-height: 1.5;
+}
+
+/* Mode Navigation Styling */
+.advice-mode-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.advice-mode-button {
+  background: #ffffff;
+  color: #333333;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid #d1d5db;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.advice-mode-button.active {
+  background: #0084ff;
+  color: #ffffff;
+  border-color: #0084ff;
+}
+
+.advice-mode-button:hover {
+  background: #e6f0ff;
+  color: #0084ff;
+}
+
+.advice-mode-button:disabled {
+  background: #f0f0f0;
+  color: #999999;
+  border-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+/* Login Prompt Popup Styling */
+.advice-login-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  z-index: 1000;
+}
+
+.advice-login-popup p {
+  font-size: 0.9rem;
+  color: #333333;
   margin-bottom: 1rem;
 }
 
-/* Description styling */
-.advice-section-description {
-  font-size: 1.1rem;
-  color: #555555;
-  text-align: center;
-  margin-bottom: 2rem;
-  line-height: 1.6;
-}
-
-/* Form container styling */
-.advice-form-container {
-  background: #f7f9fc;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #e0e4ec;
-}
-
-/* Form styling */
-.advice-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-/* Form label styling */
-.advice-form-label {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #2a2a2a;
-}
-
-/* Textarea styling */
-.advice-form-textarea {
-  width: 100%;
-  padding: 1rem;
-  font-size: 1rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  resize: vertical;
-  background: #ffffff;
-  transition: border-color 0.2s ease;
-}
-
-.advice-form-textarea:focus {
-  outline: none;
-  border-color: #6b9fff;
-  box-shadow: 0 0 0 3px rgba(107, 159, 255, 0.1);
-}
-
-/* Submit button styling */
-.advice-submit-button {
-  background-color: #6b9fff;
+.advice-popup-close {
+  background: #0084ff;
   color: #ffffff;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 8px;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
 }
 
-.advice-submit-button:hover {
-  background-color: #5a8cff;
+.advice-popup-close:hover {
+  background: #006cdc;
 }
 
-/* Form note styling */
-.advice-form-note {
-  font-size: 0.9rem;
-  color: #555555;
+/* Chat Container Styling */
+.advice-chat-container {
+  flex: 1;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Empty Message Styling */
+.advice-empty-message {
   text-align: center;
-  margin-top: 1.5rem;
+  color: #888888;
+  font-size: 0.9rem;
+  padding: 2rem;
+  opacity: 0.7;
 }
 
-/* Consultation link styling */
-.advice-consultation-link {
-  color: #6b9fff;
+/* Message Styling */
+.advice-message {
+  display: flex;
+  margin-bottom: 0.75rem;
+}
+
+.message-user {
+  justify-content: flex-end;
+}
+
+.message-bot {
+  justify-content: flex-start;
+}
+
+.advice-message-content {
+  max-width: 75%;
+  padding: 0.8rem 1.2rem;
+  border-radius: 18px;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  position: relative;
+}
+
+.bg-user {
+  background: #0084ff;
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+}
+
+.bg-ai {
+  background: #e6f0ff;
+  color: #1a1a1a;
+  border-bottom-left-radius: 4px;
+}
+
+.bg-staff {
+  background: #d1fae5;
+  color: #1a1a1a;
+  border-bottom-left-radius: 4px;
+}
+
+.advice-message-timestamp {
+  display: block;
+  font-size: 0.7rem;
+  color: #999999;
+  margin-top: 0.3rem;
+  opacity: 0.8;
+}
+
+/* Typing Animation */
+.advice-typing {
+  display: flex;
+  gap: 0.3rem;
+  padding: 0.5rem 0;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: #666666;
+  border-radius: 50%;
+  animation: typing 1.2s infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Input Form Styling */
+.advice-input-form {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 25px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.advice-input {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font-size: 0.95rem;
+  border: none;
+  background: transparent;
+  color: #1a1a1a;
+}
+
+.advice-input:focus {
+  outline: none;
+}
+
+.advice-send-button {
+  background: #0084ff;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.advice-send-button:hover {
+  background: #006cdc;
+}
+
+.advice-send-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.advice-send-icon {
+  width: 20px;
+  height: 20px;
+  color: #ffffff;
+}
+
+/* Footer Note Styling */
+.advice-footer-note {
+  font-size: 0.85rem;
+  color: #666666;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* Link Styling */
+.advice-link {
+  color: #0084ff;
   text-decoration: none;
-  font-weight: 600;
+  font-weight: 500;
   transition: color 0.2s ease;
 }
 
-.advice-consultation-link:hover {
-  color: #5a8cff;
+.advice-link:hover {
+  color: #006cdc;
   text-decoration: underline;
 }
 
-/* Submission message styling */
-.advice-submission-message {
-  text-align: center;
-  background: #f0faff;
-  padding: 2rem;
-  border-radius: 8px;
-  border: 1px solid #e0e4ec;
+/* Responsive Design */
+@media (max-width: 768px) {
+  .advice-page {
+    padding: 1rem;
+  }
+
+  .advice-title {
+    font-size: 1.8rem;
+  }
+
+  .advice-description {
+    font-size: 0.9rem;
+  }
+
+  .advice-mode-nav {
+    flex-direction: row;
+    gap: 0.5rem;
+  }
+
+  .advice-mode-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .advice-chat-container {
+    max-height: 50vh;
+  }
+
+  .advice-message-content {
+    max-width: 80%;
+  }
+
+  .advice-login-popup {
+    width: 90%;
+    padding: 1rem;
+  }
 }
 
-/* Submission title styling */
-.advice-submission-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #2a2a2a;
-  margin-bottom: 1rem;
-}
+@media (max-width: 480px) {
+  .advice-title {
+    font-size: 1.5rem;
+  }
 
-/* Submission text styling */
-.advice-submission-text {
-  font-size: 1.1rem;
-  color: #555555;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
+  .advice-mode-nav {
+    flex-direction: column;
+  }
 
-/* Back home button styling */
-.advice-back-home-button {
-  display: inline-block;
-  background-color: #6b9fff;
-  color: #ffffff;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 600;
-  transition: background-color 0.2s ease;
-}
+  .advice-mode-button {
+    width: 100%;
+    padding: 0.6rem;
+  }
 
-.advice-back-home-button:hover {
-  background-color: #5a8cff;
+  .advice-input-form {
+    flex-direction: row;
+    padding: 0.4rem;
+  }
+
+  .advice-input {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .advice-send-button {
+    width: 32px;
+    height: 32px;
+  }
+
+  .advice-send-icon {
+    width: 18px;
+    height: 18px;
+  }
 }

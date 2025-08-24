@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import MainLayout from '../layouts/MainLayout';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import MainLayout from "../layouts/MainLayout";
+import "../styles/ContactUs.css"; // isolated css
 
 const ContactUs = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', message: '' });
+  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleChange = (e) => {
@@ -12,41 +13,46 @@ const ContactUs = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulate form submission
     setIsSubmitted(true);
-    setFormData({ name: '', email: '', message: '' });
+    setFormData({ name: "", email: "", message: "" });
     setTimeout(() => setIsSubmitted(false), 3000);
   };
 
   return (
     <MainLayout>
-      <div className="secondary-page">
-        <section className="secondary-hero-section">
+      <div className="contact-page">
+        {/* Hero Section */}
+        <section className="contact-hero">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="secondary-hero-content"
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="contact-hero-content"
           >
-            <h1 className="secondary-hero-title">Contact Us</h1>
-            <p className="secondary-hero-subtitle">
-              Support, Communication, Assistance, Accessibility
+            <h1 className="contact-hero-title">Contact Us</h1>
+            <p className="contact-hero-subtitle">
+              Support • Communication • Assistance • Accessibility
             </p>
           </motion.div>
         </section>
 
-        <section className="secondary-content-section">
+        {/* Form Section */}
+        <section className="contact-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
-            className="secondary-content"
+            className="contact-box"
           >
-            <h2 className="secondary-section-title">Get in Touch</h2>
-            <p className="secondary-section-description">
-              We're here to provide <strong>support</strong> and <strong>assistance</strong>. Reach out to us for any inquiries, and we'll respond with clear <strong>communication</strong> to ensure <strong>accessibility</strong>.
+            <h2 className="contact-title">Get in Touch</h2>
+            <p className="contact-description">
+              We’re here to provide <strong>support</strong> and{" "}
+              <strong>assistance</strong>. Reach out for any inquiries, and our
+              team will reply with clear <strong>communication</strong> to ensure{" "}
+              <strong>accessibility</strong>.
             </p>
+
             <form className="contact-form" onSubmit={handleSubmit}>
               <input
                 type="text"
@@ -74,8 +80,11 @@ const ContactUs = () => {
                 required
                 className="contact-textarea"
               ></textarea>
-              <button type="submit" className="contact-button">Send Message</button>
+              <button type="submit" className="contact-button">
+                Send Message
+              </button>
             </form>
+
             {isSubmitted && (
               <motion.p
                 initial={{ opacity: 0 }}
@@ -83,12 +92,14 @@ const ContactUs = () => {
                 transition={{ duration: 0.3 }}
                 className="contact-success"
               >
-                Message sent successfully!
+                ✅ Message sent successfully!
               </motion.p>
             )}
-            <p className="secondary-section-description">
-              Email: support@genderhealthweb.com | Phone: (123) 456-7890
-            </p>
+
+            <div className="contact-info">
+              <p>Email: support@genderhealthweb.com</p>
+              <p>Phone: (123) 456-7890</p>
+            </div>
           </motion.div>
         </section>
       </div>
