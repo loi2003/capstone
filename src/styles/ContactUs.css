@@ -1,0 +1,117 @@
+/* ==============================
+   Contact Us Page - Isolated CSS
+   ============================== */
+
+.contact-page {
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: #333;
+  background: #f9fafc;
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.contact-hero {
+  background: linear-gradient(135deg, #4a90e2, #6ec6ff);
+  color: white;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+.contact-hero-title {
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.contact-hero-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Contact Box */
+.contact-container {
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.contact-box {
+  background: #fff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  max-width: 600px;
+  width: 100%;
+}
+
+.contact-title {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+.contact-description {
+  font-size: 1rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  color: #555;
+}
+
+/* Form Styles */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-input,
+.contact-textarea {
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  transition: border 0.2s ease;
+}
+
+.contact-input:focus,
+.contact-textarea:focus {
+  border-color: #4a90e2;
+  outline: none;
+}
+
+.contact-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.contact-button {
+  background: #4a90e2;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.contact-button:hover {
+  background: #3b7cc5;
+}
+
+/* Success Message */
+.contact-success {
+  margin-top: 20px;
+  color: #28a745;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Contact Info */
+.contact-info {
+  margin-top: 30px;
+  font-size: 0.95rem;
+  color: #666;
+  text-align: center;
+}

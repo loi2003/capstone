@@ -1,83 +1,267 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import MainLayout from '../layouts/MainLayout';
+import { getCurrentUser } from '../apis/authentication-api';
 import '../styles/AdvicePage.css';
 
 const AdvicePage = () => {
-  const [question, setQuestion] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [activeMode, setActiveMode] = useState('ai'); // 'ai' or 'staff'
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const chatContainerRef = useRef(null);
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  // Check authentication status
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        console.log('AdvicePage: Retrieved token:', token); // Debug log
+        if (!token) {
+          console.log('AdvicePage: No token found, setting isLoggedIn to false');
+          setIsLoggedIn(false);
+          return;
+        }
+
+        const response = await getCurrentUser(token);
+        console.log('AdvicePage: getCurrentUser response:', response); // Debug log
+        if (response.status === 200 && response.data?.data) {
+          console.log('AdvicePage: User authenticated, setting isLoggedIn to true');
+          setIsLoggedIn(true);
+        } else {
+          console.log('AdvicePage: Invalid response status or data, clearing token');
+          setIsLoggedIn(false);
+          localStorage.removeItem('authToken');
+        }
+      } catch (error) {
+        console.error('AdvicePage: Error checking auth status:', error.response?.data || error.message); // Debug log
+        setIsLoggedIn(false);
+        localStorage.removeItem('authToken');
+      }
+    };
+
+    checkAuthStatus();
+    // Add listener for storage changes to handle token updates
+    const handleStorageChange = () => {
+      const token = localStorage.getItem('authToken');
+      console.log('AdvicePage: Storage changed, token:', token);
+      if (token) {
+        checkAuthStatus();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [location]);
+
+  // Auto-scroll to bottom of chat
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Handle message submission
+  const handleSendMessage = async (e) => {
     e.preventDefault();
-    // Placeholder for submitting the question to an API or backend
-    // For now, simulate submission by setting submitted state
-    setSubmitted(true);
+    if (!input.trim()) return;
+
+    const userMessage = { text: input, sender: 'user', timestamp: new Date() };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    // Simulate real-time API response
+    setTimeout(() => {
+      const responseText =
+        activeMode === 'ai'
+          ? `AI Response: Here's advice for your question: "${input}". This is a simulated response for demonstration.`
+          : 'Staff Response: Your question has been submitted to our team. Expect a reply soon!';
+      setMessages((prev) => [
+        ...prev,
+        { text: responseText, sender: activeMode, timestamp: new Date() },
+      ]);
+      setIsLoading(false);
+    }, 1000);
+  };
+
+  // Switch between AI and Staff modes
+  const switchMode = (mode) => {
+    if (mode === 'staff' && !isLoggedIn) {
+      setShowLoginPrompt(true);
+      return;
+    }
+    setActiveMode(mode);
+    setMessages([]);
+    setInput('');
+    setShowLoginPrompt(false);
   };
 
   return (
     <MainLayout>
       <div className="advice-page">
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="advice-section"
+          transition={{ duration: 0.5 }}
+          className="advice-header"
         >
-          <h1 className="advice-section-title">Quick Advice</h1>
-          <p className="advice-section-description">
-            Get quick, reliable advice for your pregnancy-related questions. Submit your query below, and our team of experts will provide guidance tailored to your needs.
+          <h1 className="advice-title">
+            {activeMode === 'ai' ? 'AI Advice Chat' : 'Staff Advice Chat'}
+          </h1>
+          <p className="advice-description">
+            {activeMode === 'ai'
+              ? 'Chat with our AI for instant pregnancy-related advice.'
+              : 'Get personalized guidance from our expert staff.'}
           </p>
+        </motion.div>
 
-          {!submitted ? (
-            <div className="advice-form-container">
-              <form onSubmit={handleSubmit} className="advice-form">
-                <label htmlFor="question" className="advice-form-label">
-                  Your Question
-                </label>
-                <textarea
-                  id="question"
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  placeholder="Enter your pregnancy-related question here..."
-                  className="advice-form-textarea"
-                  rows="5"
-                  required
-                />
-                <motion.button
-                  type="submit"
-                  className="advice-submit-button"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  Submit Question
-                </motion.button>
-              </form>
-              <p className="advice-form-note">
-                For immediate or detailed consultations, visit our{' '}
-                <Link to="/consultation" className="advice-consultation-link">
-                  Consultant Chat
-                </Link>{' '}
-                page.
-              </p>
-            </div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="advice-submission-message"
+        {/* Mode Toggle */}
+        <div className="advice-mode-nav">
+          <motion.button
+            className={`advice-mode-button ${activeMode === 'ai' ? 'active' : ''}`}
+            onClick={() => switchMode('ai')}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            AI Advice
+          </motion.button>
+          <motion.button
+            className={`advice-mode-button ${activeMode === 'staff' ? 'active' : ''}`}
+            onClick={() => switchMode('staff')}
+            whileHover={{ scale: isLoggedIn ? 1.05 : 1 }}
+            whileTap={{ scale: isLoggedIn ? 0.95 : 1 }}
+            disabled={!isLoggedIn}
+            title={!isLoggedIn ? 'Please log in to access Staff Advice' : ''}
+          >
+            Staff Advice
+          </motion.button>
+        </div>
+
+        {/* Login Prompt Popup */}
+        {showLoginPrompt && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="advice-login-popup"
+          >
+            <p>
+              Please{' '}
+              <Link to="/login" className="advice-link">
+                log in
+              </Link>{' '}
+              to access Staff Advice.
+            </p>
+            <button
+              className="advice-popup-close"
+              onClick={() => setShowLoginPrompt(false)}
             >
-              <h2 className="advice-submission-title">Thank You!</h2>
-              <p className="advice-submission-text">
-                Your question has been submitted. Our team will respond soon with tailored advice. Check your email or return to this page for updates.
-              </p>
-              <Link to="/" className="advice-back-home-button">
-                Back to Home
-              </Link>
-            </motion.div>
+              Close
+            </button>
+          </motion.div>
+        )}
+
+        {/* Chat Container */}
+        <div className="advice-chat-container" ref={chatContainerRef}>
+          {messages.length === 0 && (
+            <p className="advice-empty-message">
+              Start chatting by typing your question below!
+            </p>
           )}
-        </motion.section>
+          {messages.map((msg, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`advice-message ${
+                msg.sender === 'user' ? 'message-user' : 'message-bot'
+              }`}
+            >
+              <div
+                className={`advice-message-content ${
+                  msg.sender === 'user'
+                    ? 'bg-user'
+                    : msg.sender === 'ai'
+                    ? 'bg-ai'
+                    : 'bg-staff'
+                }`}
+              >
+                <p>{msg.text}</p>
+                <span className="advice-message-timestamp">
+                  {new Date(msg.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+          {isLoading && (
+            <div className="advice-message message-bot">
+              <div className="advice-message-content bg-ai">
+                <div className="advice-typing">
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                  <span className="dot"></span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Input Form */}
+        {(activeMode === 'ai' || (activeMode === 'staff' && isLoggedIn)) && (
+          <form onSubmit={handleSendMessage} className="advice-input-form">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask a question..."
+              className="advice-input"
+              required
+            />
+            <motion.button
+              type="submit"
+              className="advice-send-button"
+              disabled={isLoading || !input.trim()}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                className="advice-send-icon"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </motion.button>
+          </form>
+        )}
+
+        {/* Consultation Link */}
+        <p className="advice-footer-note">
+          {activeMode === 'ai'
+            ? 'Need a human touch? Try our '
+            : 'Want instant answers? Check out our '}
+          <Link to="/consultation" className="advice-link">
+            Consultant Chat
+          </Link>{' '}
+          page.
+        </p>
       </div>
     </MainLayout>
   );
