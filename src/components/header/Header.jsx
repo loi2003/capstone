@@ -129,7 +129,7 @@ const Header = () => {
           <Link to="/duedate-calculator">DueDate Calculator</Link>
           <Link to="/pregnancy-tracking" title="Pregnancy Tracking">Pregnancy</Link>
           <Link to="/nutritional-guidance" title="Nutritional Guidance">Nutrition</Link>
-          <Link to="/consultation" title="Consultation">Consultation</Link>
+          <Link to="/clinic/list" title="Consultation">Consultation</Link>
           <Link to="/blog" title="Blog">Blog</Link>
 
           {/* Phần xác thực: Hiển thị nút Sign In hoặc user icon */}
