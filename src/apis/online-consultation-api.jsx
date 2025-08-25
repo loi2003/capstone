@@ -60,13 +60,34 @@ export const getOnlineConsultationById = async (consultationId, token) => {
 // Create a new online consultation using the API
 export const createOnlineConsultation = async (consultationData, token) => {
   try {
+    // Prepare form data for FromForm API
+    const formData = new FormData();
+    formData.append("Trimester", consultationData.Trimester ?? "");
+    formData.append("Date", consultationData.Date ?? "");
+    formData.append("GestationalWeek", consultationData.GestationalWeek ?? "");
+    formData.append("Summary", consultationData.Summary ?? "");
+    formData.append("ConsultantNote", consultationData.ConsultantNote ?? "");
+    formData.append("UserNote", consultationData.UserNote ?? "");
+    formData.append("VitalSigns", consultationData.VitalSigns ?? "");
+    formData.append("Recommendations", consultationData.Recommendations ?? "");
+    formData.append("ConsultantId", consultationData.ConsultantId ?? "");
+    formData.append("UserId", consultationData.UserId ?? "");
+
+    // If Attachments is an array, append each file (if any)
+    if (Array.isArray(consultationData.Attachments)) {
+      consultationData.Attachments.forEach((file) => {
+        if (file) formData.append("Attachments", file);
+      });
+    }
+
     const response = await apiClient.post(
       '/api/online-consultation/create-online-consultation',
-      consultationData,
+      formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
+          "Content-Type": "multipart/form-data",
         },
       }
     );

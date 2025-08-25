@@ -2,38 +2,12 @@ import { useState, useEffect } from "react";
 import CheckupCalendar from "./CheckupCalendar";
 import "./CheckupReminder.css";
 import { getAllTailoredCheckupRemindersForGrowthData } from "../../apis/tailored-checkup-reminder-api";
-
-const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-// lmpDate: the first day of last menstrual period
-// weekNumber: gestational week (integer)
-const getDateFromWeek = (lmpDate, weekNumber) => {
-  const start = new Date(lmpDate);
-  // weekNumber starts at 1, so subtract 1 to get correct offset
-  const daysToAdd = (weekNumber - 1) * 7;
-  start.setDate(start.getDate() + daysToAdd);
-  return start;
-};
-
-const getWeekNumber = (dateStr) => {
-  const date = new Date(dateStr);
-  const start = new Date(date.getFullYear(), 0, 1);
-  const diff =
-    date -
-    start +
-    (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
-  return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
-};
+import { useNavigate } from "react-router-dom";
 
 const CheckupReminder = ({ token, userId, appointments = [] }) => {
   const [recommendedReminders, setRecommendedReminders] = useState([]);
   const [emergencyReminders, setEmergencyReminders] = useState([]);
+  const navigate = useNavigate(); // ✅ now inside component
 
   useEffect(() => {
     setRecommendedReminders([
@@ -70,8 +44,8 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
           ? apiResponse.data
           : [];
 
-        const lmpDateStr = localStorage.getItem("lmpDate"); // store this when user registers
-        const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date(); // fallback today
+        const lmpDateStr = localStorage.getItem("lmpDate");
+        const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date();
 
         const mappedEmergency = remindersArray.map((r) => {
           const startDate = getDateFromWeek(lmpDate, r.recommendedStartWeek);
@@ -80,9 +54,9 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
           return {
             id: r.id,
             title: r.title,
-            startDate, // real date, so calendar still works
+            startDate,
             endDate,
-            startWeek: r.recommendedStartWeek, // keep weeks!
+            startWeek: r.recommendedStartWeek,
             endWeek: r.recommendedEndWeek,
             note: r.description,
             type: r.type?.toLowerCase() || "emergency",
@@ -99,61 +73,74 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
   }, [token, userId]);
 
   const handleBookInside = (reminder) => {
-    alert(`Booking inside platform for: ${reminder.title}`);
+    // 👇 navigate instead of alert
+    navigate("/clinic/list");
   };
 
   const handleBookOutside = (reminder) => {
     alert(`Booking outside platform for: ${reminder.title}`);
   };
 
-  const renderReminderCard = (reminder, isUrgent = false) => {
-    return (
-      <div
-        key={reminder.id}
-        className={`reminder-card ${isUrgent ? "red" : "blue"}`}
-      >
-        <div className="reminder-info">
-          <h5>{reminder.title}</h5>
-          <div className="reminder-date">
-            {reminder.type === "emergency" ? (
-              <>
-                Week {reminder.startWeek} – Week {reminder.endWeek}
-                <br />
-                {new Date(reminder.startDate).toLocaleDateString(
-                  "en-GB"
-                )} – {new Date(reminder.endDate).toLocaleDateString("en-GB")}
-              </>
-            ) : (
-              <>
-                {formatDate(reminder.startDate)} –{" "}
-                {formatDate(reminder.endDate)}
-                <br />
-                Week {getWeekNumber(reminder.startDate)} – Week{" "}
-                {getWeekNumber(reminder.endDate)}
-              </>
-            )}
-          </div>
-          <p className="reminder-note">{reminder.note}</p>
-        </div>
-        <div className="reminder-actions">
-          <button
-            className={`book-btn ${isUrgent ? "emergency" : ""}`}
-            onClick={() => handleBookInside(reminder)}
-          >
-            {isUrgent ? "Book Urgently" : "Schedule Consultation"}
-          </button>
-          {/* {!isUrgent && (
-            <button
-              className="outside-btn"
-              onClick={() => handleBookOutside(reminder)}
-            >
-              Book Outside
-            </button>
-          )} */}
-        </div>
-      </div>
-    );
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
+
+  const getDateFromWeek = (lmpDate, weekNumber) => {
+    const start = new Date(lmpDate);
+    const daysToAdd = (weekNumber - 1) * 7;
+    start.setDate(start.getDate() + daysToAdd);
+    return start;
+  };
+
+  const getWeekNumber = (dateStr) => {
+    const date = new Date(dateStr);
+    const start = new Date(date.getFullYear(), 0, 1);
+    const diff =
+      date - start +
+      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
+    return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
+  };
+
+  const renderReminderCard = (reminder, isUrgent = false) => (
+    <div
+      key={reminder.id}
+      className={`reminder-card ${isUrgent ? "red" : "blue"}`}
+    >
+      <div className="reminder-info">
+        <h5>{reminder.title}</h5>
+        <div className="reminder-date">
+          {reminder.type === "emergency" ? (
+            <>
+              Week {reminder.startWeek} – Week {reminder.endWeek}
+              <br />
+              {new Date(reminder.startDate).toLocaleDateString("en-GB")} –{" "}
+              {new Date(reminder.endDate).toLocaleDateString("en-GB")}
+            </>
+          ) : (
+            <>
+              {formatDate(reminder.startDate)} – {formatDate(reminder.endDate)}
+              <br />
+              Week {getWeekNumber(reminder.startDate)} – Week{" "}
+              {getWeekNumber(reminder.endDate)}
+            </>
+          )}
+        </div>
+        <p className="reminder-note">{reminder.note}</p>
+      </div>
+      <div className="reminder-actions">
+        <button
+          className={`book-btn ${isUrgent ? "emergency" : ""}`}
+          onClick={() => handleBookInside(reminder)}
+        >
+          {isUrgent ? "Book Urgently" : "Schedule Consultation"}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="checkup-reminder">

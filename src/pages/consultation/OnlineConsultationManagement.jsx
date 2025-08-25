@@ -7,6 +7,7 @@ import {
   getAllOnlineConsultationsByConsultantId,
   updateOnlineConsultation,
   softDeleteOnlineConsultation,
+  createOnlineConsultation,
 } from "../../apis/online-consultation-api";
 import "../../styles/OnlineConsultationManagement.css";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
@@ -34,6 +35,20 @@ const OnlineConsultationManagement = () => {
   const [editForm, setEditForm] = useState(initialEditState);
   const [editLoading, setEditLoading] = useState(false);
   const navigate = useNavigate();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const [createForm, setCreateForm] = useState({
+    Trimester: "",
+    Date: "",
+    GestationalWeek: "",
+    Summary: "",
+    ConsultantNote: "",
+    UserNote: "",
+    VitalSigns: "",
+    Recommendations: "",
+    Attachments: [],
+    selectedAttachments: [],
+  });
 
   useEffect(() => {
     const fetchUserAndConsultant = async () => {
@@ -251,6 +266,79 @@ const OnlineConsultationManagement = () => {
       } catch (err) {
         alert("Failed to remove consultation.", err.message);
       }
+    }
+  };
+
+  const handleCreateChange = (e) => {
+    const { name, value, type, files } = e.target;
+    if (type === "file") {
+      setCreateForm((prev) => ({
+        ...prev,
+        selectedAttachments: Array.from(files),
+      }));
+    } else {
+      setCreateForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleAddCreateAttachments = () => {
+    setCreateForm((prev) => ({
+      ...prev,
+      Attachments: [
+        ...(prev.Attachments || []),
+        ...(prev.selectedAttachments || []),
+      ],
+      selectedAttachments: [],
+    }));
+  };
+
+  const handleRemoveCreateAttachment = (idx) => {
+    setCreateForm((prev) => ({
+      ...prev,
+      Attachments: prev.Attachments.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const handleCreateSubmit = async (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem("token");
+    if (!createForm.Summary || !createForm.Summary.trim()) {
+      alert("Summary is required.");
+      return;
+    }
+    try {
+      await createOnlineConsultation(
+        {
+          ...createForm,
+          Attachments: createForm.Attachments,
+          ConsultantId: consultant?.id,
+          UserId: user?.id,
+        },
+        token
+      );
+      // Optionally, refresh the list
+      const consultationsRes = await getAllOnlineConsultationsByConsultantId(
+        consultant.id
+      );
+      setConsultations(consultationsRes?.data || consultationsRes || []);
+      setShowCreateModal(false);
+      setCreateForm({
+        Trimester: "",
+        Date: "",
+        GestationalWeek: "",
+        Summary: "",
+        ConsultantNote: "",
+        UserNote: "",
+        VitalSigns: "",
+        Recommendations: "",
+        Attachments: [],
+        selectedAttachments: [],
+      });
+    } catch (err) {
+      alert("Failed to create consultation.", err.message);
     }
   };
 
@@ -618,6 +706,295 @@ const OnlineConsultationManagement = () => {
           <h2 style={{ marginTop: 24, marginBottom: 12 }}>
             Online Consultation List
           </h2>
+          <div className="create-online-consultation-section">
+            <button
+              className="create-online-consultation-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              <span>➕</span>
+              Add Online Consultation
+            </button>
+          </div>
+          {showCreateModal && (
+            <div className="modal-overlay">
+              <div className="consultation-container">
+                <div className="form-header">
+                  <h1 className="header-title">Add Online Consultation</h1>
+                  <p className="header-subtitle">
+                    Enter new online consultation information
+                  </p>
+                </div>
+                <form onSubmit={handleCreateSubmit}>
+                  <div className="form-content">
+                    <div className="form-grid">
+                      {/* Patient Information Section */}
+                      <div className="form-section">
+                        <div className="section-header">
+                          <div className="section-icon">
+                            <i className="fas fa-user-md"></i>
+                          </div>
+                          <h2 className="section-title">Patient Information</h2>
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">
+                            Trimester <span className="required">*</span>
+                          </label>
+                          <div className="input-icon">
+                            <input
+                              type="number"
+                              className="form-input"
+                              name="Trimester"
+                              value={createForm.Trimester}
+                              min={1}
+                              max={3}
+                              required
+                              onChange={handleCreateChange}
+                            />
+                            <i className="fas fa-hashtag"></i>
+                          </div>
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">
+                            Date <span className="required">*</span>
+                          </label>
+                          <div className="datetime-wrapper">
+                            <input
+                              type="date"
+                              className="form-input"
+                              value={
+                                createForm.Date
+                                  ? createForm.Date.slice(0, 10)
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                setCreateForm((prev) => ({
+                                  ...prev,
+                                  Date:
+                                    e.target.value +
+                                    "T" +
+                                    (createForm.Date
+                                      ? createForm.Date.slice(11, 16)
+                                      : "00:00"),
+                                }))
+                              }
+                              required
+                            />
+                            <span className="datetime-separator">at</span>
+                            <input
+                              type="time"
+                              className="form-input"
+                              value={
+                                createForm.Date
+                                  ? createForm.Date.slice(11, 16)
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                setCreateForm((prev) => ({
+                                  ...prev,
+                                  Date:
+                                    (createForm.Date
+                                      ? createForm.Date.slice(0, 10)
+                                      : new Date().toISOString().slice(0, 10)) +
+                                    "T" +
+                                    e.target.value,
+                                }))
+                              }
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Gestational Week</label>
+                          <div className="input-icon">
+                            <input
+                              type="number"
+                              className="form-input"
+                              name="GestationalWeek"
+                              value={createForm.GestationalWeek}
+                              min={1}
+                              max={42}
+                              placeholder="Enter week"
+                              onChange={handleCreateChange}
+                            />
+                            <i className="fas fa-calendar-week"></i>
+                          </div>
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Summary</label>
+                          <textarea
+                            className="form-textarea"
+                            name="Summary"
+                            placeholder="Enter detailed consultation summary..."
+                            value={createForm.Summary}
+                            onChange={handleCreateChange}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Attachments</label>
+                          {/* List current attachments */}
+                          {createForm.Attachments &&
+                            createForm.Attachments.length > 0 && (
+                              <ul
+                                style={{
+                                  margin: "8px 0 0 0",
+                                  padding: 0,
+                                  listStyle: "none",
+                                  fontSize: "0.95em",
+                                }}
+                              >
+                                {createForm.Attachments.map((file, idx) => (
+                                  <li
+                                    key={idx}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 8,
+                                    }}
+                                  >
+                                    {file.fileName
+                                      ? file.fileName
+                                      : file.name
+                                      ? file.name
+                                      : typeof file === "string"
+                                      ? file
+                                      : "Attachment"}
+                                    <button
+                                      type="button"
+                                      style={{
+                                        marginLeft: 8,
+                                        background: "none",
+                                        border: "none",
+                                        color: "#d32f2f",
+                                        cursor: "pointer",
+                                        fontSize: "1em",
+                                      }}
+                                      title="Remove"
+                                      onClick={() =>
+                                        handleRemoveCreateAttachment(idx)
+                                      }
+                                    >
+                                      &times;
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          {/* Select new attachments to add */}
+                          <input
+                            type="file"
+                            name="Attachments"
+                            multiple
+                            onChange={handleCreateChange}
+                            className="form-input"
+                            style={{ marginTop: 8 }}
+                          />
+                          {/* Show selected files before adding */}
+                          {createForm.selectedAttachments &&
+                            createForm.selectedAttachments.length > 0 && (
+                              <div style={{ marginTop: 8 }}>
+                                <strong>Selected to add:</strong>
+                                <ul
+                                  style={{
+                                    margin: "4px 0 0 0",
+                                    padding: 0,
+                                    listStyle: "none",
+                                    fontSize: "0.95em",
+                                  }}
+                                >
+                                  {createForm.selectedAttachments.map(
+                                    (file, idx) => (
+                                      <li key={idx}>{file.name}</li>
+                                    )
+                                  )}
+                                </ul>
+                                <button
+                                  type="button"
+                                  className="btn btn-save"
+                                  style={{
+                                    marginTop: 6,
+                                    padding: "6px 18px",
+                                    fontSize: "0.98em",
+                                  }}
+                                  onClick={handleAddCreateAttachments}
+                                >
+                                  Add Attachment
+                                  {createForm.selectedAttachments.length > 1
+                                    ? "s"
+                                    : ""}
+                                </button>
+                              </div>
+                            )}
+                        </div>
+                      </div>
+                      {/* Medical Information Section */}
+                      <div className="form-section">
+                        <div className="section-header">
+                          <div className="section-icon">
+                            <i className="fas fa-heartbeat"></i>
+                          </div>
+                          <h2 className="section-title">Medical Records</h2>
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Vital Signs</label>
+                          <textarea
+                            className="form-textarea"
+                            name="VitalSigns"
+                            placeholder="Record vital signs and measurements..."
+                            value={createForm.VitalSigns}
+                            onChange={handleCreateChange}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Consultant Note</label>
+                          <textarea
+                            className="form-textarea"
+                            name="ConsultantNote"
+                            placeholder="Professional medical observations..."
+                            value={createForm.ConsultantNote}
+                            onChange={handleCreateChange}
+                            required
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">User Note</label>
+                          <textarea
+                            className="form-textarea"
+                            name="UserNote"
+                            placeholder="Patient's personal notes or concerns..."
+                            value={createForm.UserNote}
+                            onChange={handleCreateChange}
+                          />
+                        </div>
+                        <div className="form-group">
+                          <label className="form-label">Recommendations</label>
+                          <textarea
+                            className="form-textarea"
+                            name="Recommendations"
+                            placeholder="Treatment recommendations and follow-up instructions..."
+                            value={createForm.Recommendations}
+                            onChange={handleCreateChange}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="actions-section">
+                      <button
+                        className="btn btn-cancel"
+                        type="button"
+                        onClick={() => setShowCreateModal(false)}
+                      >
+                        <i className="fas fa-times"></i> Cancel
+                      </button>
+                      <button className="btn btn-save" type="submit">
+                        <i className="fas fa-save"></i> Create
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
           {loading ? (
             <div>Loading consultations...</div>
           ) : consultations.length === 0 ? (
@@ -821,7 +1198,14 @@ const OnlineConsultationManagement = () => {
                                     gap: 8,
                                   }}
                                 >
-                                  {file.name}
+                                  {/* Show fileName if object has fileName, else fallback to .name or string */}
+                                  {file.fileName
+                                    ? file.fileName
+                                    : file.name
+                                    ? file.name
+                                    : typeof file === "string"
+                                    ? file
+                                    : "Attachment"}
                                   <button
                                     type="button"
                                     style={{
