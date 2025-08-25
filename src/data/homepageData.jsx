@@ -11,7 +11,7 @@ export const homepageData = {
     secondaryCta: "Get a Free Consultation",
     secondaryCtaLink: "/consultation",
     pregnancyTipsLink: "/advice",
-    pregnancyTipsText: "Discover essential health advise tips for your pregnancy journey",
+    pregnancyTipsText: "Discover essential health tips for your pregnancy journey",
   },
   features: [
     {

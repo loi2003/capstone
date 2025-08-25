@@ -1,11 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import emailjs from "@emailjs/browser";
 import MainLayout from "../layouts/MainLayout";
-import "../styles/ContactUs.css"; // isolated css
+import "../styles/ContactUs.css";
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Scroll to top on component mount to ensure full content is visible
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -13,9 +20,33 @@ const ContactUs = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitted(true);
-    setFormData({ name: "", email: "", message: "" });
-    setTimeout(() => setIsSubmitted(false), 3000);
+
+    // EmailJS configuration
+    const serviceID = "service_jsmlf4m"; // Replace with your EmailJS Service ID
+    const templateID = "template_8lxpzxe"; // Replace with your EmailJS Template ID
+    const userID = "lZSMJD9A6TAAeHelq"; // Replace with your EmailJS User ID
+
+    // Prepare the email parameters
+    const emailParams = {
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+      to_email: "loitntse171276@fpt.edu.vn", // Your email address
+    };
+
+    // Send email using EmailJS
+    emailjs.send(serviceID, templateID, emailParams, userID)
+      .then((response) => {
+        console.log("Email sent successfully!", response.status, response.text);
+        setIsSubmitted(true);
+        setFormData({ name: "", email: "", message: "" });
+        setTimeout(() => setIsSubmitted(false), 3000);
+      })
+      .catch((err) => {
+        console.error("Failed to send email:", err);
+        setError("Failed to send message. Please try again later.");
+        setTimeout(() => setError(null), 3000);
+      });
   };
 
   return (
@@ -40,9 +71,8 @@ const ContactUs = () => {
         <section className="contact-container">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
             className="contact-box"
           >
             <h2 className="contact-title">Get in Touch</h2>
@@ -93,6 +123,17 @@ const ContactUs = () => {
                 className="contact-success"
               >
                 ✅ Message sent successfully!
+              </motion.p>
+            )}
+
+            {error && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="contact-error"
+              >
+                ❌ {error}
               </motion.p>
             )}
 

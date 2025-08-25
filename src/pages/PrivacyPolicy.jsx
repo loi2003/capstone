@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import MainLayout from '../layouts/MainLayout';
 
 const PrivacyPolicy = () => {
+  // Scroll to top on component mount to ensure full content is visible
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <MainLayout>
-      <div className="secondary-page">
+      <div className="privacy-policy-page">
         <section className="secondary-hero-section">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -23,9 +28,8 @@ const PrivacyPolicy = () => {
         <section className="secondary-content-section">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: 'easeOut' }}
             className="secondary-content"
           >
             <h2 className="secondary-section-title">Our Commitment to Your Privacy</h2>
