@@ -10,6 +10,7 @@ import BabyDevelopment from "../components/tracking/BabyDevelopment";
 import UpcomingAppointments from "../components/tracking/UpcomingAppointments";
 import SymptomsAndMood from "../components/tracking/SymptomsAndMood";
 import TrimesterChecklists from "../components/tracking/TrimesterChecklists";
+import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import {
   getGrowthDataFromUser,
   createGrowthDataProfile,
@@ -477,6 +478,11 @@ useEffect(() => {
                     openModal={openJournalModal}
                     setOpenModal={setOpenJournalModal}
                   />
+                </div>
+              )}
+              {activeTab === "nutrition" && (
+                <div className="tab-content">
+                  <SystemMealPlanner />
                 </div>
               )}
             </div>

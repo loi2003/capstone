@@ -19,12 +19,12 @@ const EditJournalEntryForm = ({ onError }) => {
     Note: "",
     CurrentWeight: "",
     MoodNotes: "",
-    SymptomNames: [],
-    SymptomIds: [], // Will store names because backend doesn't give IDs
+    SymptomIds: [], // normalized IDs
     RelatedImages: [],
     UltraSoundImages: [],
   });
 
+  const [allSymptoms, setAllSymptoms] = useState([]); // templates + custom
   const [imagePreviews, setImagePreviews] = useState({
     RelatedImages: [],
     UltraSoundImages: [],
@@ -44,24 +44,43 @@ const EditJournalEntryForm = ({ onError }) => {
       if (res.data?.error === 0 && res.data?.data) {
         const entry = res.data.data;
 
-        // Fetch available symptoms for the user
+        // 1. fetch all available symptoms
         const symptomsRes = await getSymptomsForUser(
           localStorage.getItem("userId"),
           token
         );
-        const availableSymptoms = symptomsRes.data?.data || [];
+        const availableSymptoms = (symptomsRes.data?.data || []).map((s) => ({
+          id: String(s.id),
+          name: s.symptomName.trim(),
+          isTemplate: !!s.isTemplate,
+        }));
+        setAllSymptoms(availableSymptoms);
 
-        // Map symptom names from journal entry to their IDs
-        const symptomNames = entry.symptoms?.map((s) => s.symptomName) || [];
-        const symptomIds = availableSymptoms
-          .filter((sym) =>
-            symptomNames.some(
-              (name) =>
-                name.trim().toLowerCase() ===
-                sym.symptomName.trim().toLowerCase()
-            )
+        // 2. normalize entry symptoms to IDs
+        const entrySymptomNames =
+          entry.symptoms?.map((s) => s.symptomName.trim()) || [];
+
+        const entrySymptomIds = Array.from(
+          new Set(
+            entrySymptomNames
+              .map((name) => {
+                // prefer template match
+                const templateMatch = availableSymptoms.find(
+                  (sym) =>
+                    sym.name.toLowerCase() === name.toLowerCase() &&
+                    sym.isTemplate
+                );
+                if (templateMatch) return templateMatch.id;
+
+                // fallback: any symptom with same name
+                const anyMatch = availableSymptoms.find(
+                  (sym) => sym.name.toLowerCase() === name.toLowerCase()
+                );
+                return anyMatch ? anyMatch.id : null;
+              })
+              .filter(Boolean)
           )
-          .map((sym) => String(sym.id));
+        );
 
         setFormData({
           Id: entry.id || "",
@@ -69,8 +88,7 @@ const EditJournalEntryForm = ({ onError }) => {
           Note: entry.note || "",
           CurrentWeight: entry.currentWeight || "",
           MoodNotes: (entry.mood || "").trim().toLowerCase(),
-          SymptomIds: symptomIds, // IDs for SymptomsAndMood
-          SymptomNames: symptomNames, // Keep names for submit
+          SymptomIds: entrySymptomIds,
           RelatedImages: entry.relatedImages || [],
           UltraSoundImages: entry.ultraSoundImages || [],
         });
@@ -112,9 +130,20 @@ const EditJournalEntryForm = ({ onError }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const userId = localStorage.getItem("userId");
+
+    // resolve symptom IDs back to names before sending
+    const selectedNames = allSymptoms
+      .filter((sym) => formData.SymptomIds.includes(sym.id))
+      .map((sym) => sym.name);
+
     try {
       const res = await editJournalEntry(
-        { ...formData, UserId: userId, GrowthDataId: growthDataId },
+        {
+          ...formData,
+          UserId: userId,
+          GrowthDataId: growthDataId,
+          SymptomNames: selectedNames,
+        },
         token
       );
       if (res.data?.error === 0) {
@@ -148,13 +177,11 @@ const EditJournalEntryForm = ({ onError }) => {
       </div>
 
       <div className="entry-form-content">
-        {/* Current Week - locked */}
         <div className="entry-form-section">
           <label>Gestation Week</label>
           <input type="text" value={`Week ${formData.CurrentWeek}`} disabled />
         </div>
 
-        {/* Note */}
         <div className="entry-form-section">
           <label>
             Note <span className="must-enter-info">*</span>
@@ -162,7 +189,6 @@ const EditJournalEntryForm = ({ onError }) => {
           <textarea name="Note" value={formData.Note} onChange={handleChange} />
         </div>
 
-        {/* Weight */}
         <div className="entry-form-section">
           <label>Current Weight (Kg)</label>
           <input
@@ -173,25 +199,22 @@ const EditJournalEntryForm = ({ onError }) => {
           />
         </div>
 
-        {/* Mood + Symptoms */}
         <SymptomsAndMood
           selectedMood={formData.MoodNotes}
           onMoodChange={(mood) =>
             setFormData((prev) => ({ ...prev, MoodNotes: mood }))
           }
           selectedSymptoms={formData.SymptomIds}
-          onSymptomsChange={(ids, names) =>
+          onSymptomsChange={(ids) =>
             setFormData((prev) => ({
               ...prev,
               SymptomIds: ids ?? prev.SymptomIds,
-              SymptomNames: names ?? prev.SymptomNames,
             }))
           }
           userId={localStorage.getItem("userId")}
           token={token}
         />
 
-        {/* Related Images */}
         <div className="entry-form-section">
           <label>Related Images</label>
           <div className="file-upload-wrapper">
@@ -210,18 +233,12 @@ const EditJournalEntryForm = ({ onError }) => {
           {imagePreviews.RelatedImages.length > 0 && (
             <div className="image-preview">
               {imagePreviews.RelatedImages.map((src, idx) => (
-                <img
-                  key={idx}
-                  src={src}
-                  alt={`preview-${idx}`}
-                  className="preview-image"
-                />
+                <img key={idx} src={src} alt={`preview-${idx}`} className="preview-image" />
               ))}
             </div>
           )}
         </div>
 
-        {/* Ultrasound Images */}
         <div className="entry-form-section">
           <label>Ultrasound Images</label>
           <div className="file-upload-wrapper">
@@ -240,12 +257,7 @@ const EditJournalEntryForm = ({ onError }) => {
           {imagePreviews.UltraSoundImages.length > 0 && (
             <div className="image-preview">
               {imagePreviews.UltraSoundImages.map((src, idx) => (
-                <img
-                  key={idx}
-                  src={src}
-                  alt={`preview-${idx}`}
-                  className="preview-image"
-                />
+                <img key={idx} src={src} alt={`preview-${idx}`} className="preview-image" />
               ))}
             </div>
           )}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Scatter } from 'react-chartjs-2';
@@ -194,14 +194,14 @@ const HomePage = () => {
               <p className="hero-subtitle">{homepageData.hero.subtitle}</p>
               <p className="hero-quote">{homepageData.hero.quote}</p>
               <div className="hero-buttons">
-                <Link to="/explore" className="hero-button primary">
+                <Link to={homepageData.hero.ctaLink} className="hero-button primary">
                   {homepageData.hero.cta}
                 </Link>
                 <Link to={homepageData.hero.secondaryCtaLink} className="hero-button secondary">
                   {homepageData.hero.secondaryCta}
                 </Link>
-                <Link to={homepageData.hero.videoLink} className="hero-button video">
-                  {homepageData.hero.videoText}
+                <Link to={homepageData.hero.pregnancyTipsLink} className="hero-button video">
+                  {homepageData.hero.pregnancyTipsText}
                 </Link>
               </div>
             </motion.div>
@@ -211,7 +211,7 @@ const HomePage = () => {
               transition={{ duration: 0.7, delay: 0.3 }}
               className="hero-graphic"
             >
-            
+              {/* Placeholder for graphic, can be replaced with actual content */}
             </motion.div>
           </div>
         </section>
@@ -250,7 +250,11 @@ const HomePage = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <img src={testimonial.avatar} alt={`${testimonial.name} avatar`} className="testimonial-avatar" />
+                <img
+                  src={`https://picsum.photos/50/50?random=${index + 1}`}
+                  alt={`${testimonial.name} avatar`}
+                  className="testimonial-avatar"
+                />
                 <h3 className="testimonial-name">{testimonial.name}</h3>
                 <p className="testimonial-feedback">{testimonial.feedback}</p>
               </motion.div>
@@ -327,7 +331,7 @@ const HomePage = () => {
               <h4 className="week-popup-subtitle">{selectedWeek.title}</h4>
               <p className="week-popup-description">{selectedWeek.description}</p>
               <p className="week-popup-tip"><strong>Mẹo:</strong> {selectedWeek.tip}</p>
-              <Link to="/pregnancy" className="week-popup-button">
+              <Link to="/pregnancy-tracking" className="week-popup-button">
                 Để biết thêm thông tin chi tiết, vui lòng chọn tại đây
               </Link>
               <button className="week-popup-close" onClick={() => setSelectedWeek(null)}>
@@ -368,12 +372,12 @@ const HomePage = () => {
           </Link>
         </section>
 
-        {/* Resources Section */}
+        {/* Pregnancy Guides Section */}
         <section className="resources-section">
-          <h2 className="section-title">{homepageData.resources.title}</h2>
-          <p className="section-description">{homepageData.resources.description}</p>
+          <h2 className="section-title">{homepageData.pregnancyGuides.title}</h2>
+          <p className="section-description">{homepageData.pregnancyGuides.description}</p>
           <div className="resources-grid">
-            {homepageData.resources.items.map((resource, index) => (
+            {homepageData.pregnancyGuides.items.map((resource, index) => (
               <motion.div
                 key={index}
                 className="resource-card"
@@ -388,8 +392,8 @@ const HomePage = () => {
               </motion.div>
             ))}
           </div>
-          <Link to={homepageData.resources.ctaLink} className="resources-button">
-            {homepageData.resources.cta}
+          <Link to={homepageData.pregnancyGuides.ctaLink} className="resources-button">
+            {homepageData.pregnancyGuides.cta}
           </Link>
         </section>
 
@@ -408,7 +412,11 @@ const HomePage = () => {
                 viewport={{ once: true }}
               >
                 <a href={partner.link} target="_blank" rel="noopener noreferrer">
-                  <img src={partner.logo} alt={`${partner.name} logo`} className="partner-logo" />
+                  <img
+                    src={`https://picsum.photos/100/50?random=${index + 101}`}
+                    alt={`${partner.name} logo`}
+                    className="partner-logo"
+                  />
                 </a>
                 <p className="partner-name">{partner.name}</p>
               </motion.div>
@@ -437,8 +445,8 @@ const HomePage = () => {
             transition={{ duration: 0.3 }}
             className="contact-popup"
           >
-            <Link to="/contact" className="popup-button">Liên Hệ</Link>
-            <Link to="/assessment" className="popup-button">Kiểm Tra Sức Khỏe</Link>
+            <Link to="/consultation" className="popup-button">Consultant Chat</Link>
+            <Link to="/advice" className="popup-button">Quick Advice</Link>
           </motion.div>
         )}
       </div>

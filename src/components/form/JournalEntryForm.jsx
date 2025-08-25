@@ -9,7 +9,7 @@ import "./JournalEntryForm.css";
 import SymptomsAndMood from "../tracking/SymptomsAndMood";
 import { getCurrentWeekGrowthData } from "../../apis/growthdata-api";
 import { getJournalByGrowthDataId } from "../../apis/journal-api";
-import { FaImage } from "react-icons/fa";
+import { FaImage, FaTimes, FaEye } from "react-icons/fa";
 
 const JournalEntryForm = ({ onError }) => {
   const location = useLocation();
@@ -32,6 +32,10 @@ const JournalEntryForm = ({ onError }) => {
     RelatedImages: [],
     UltraSoundImages: [],
   });
+  const [modalImage, setModalImage] = useState(null);
+  const [modalImageType, setModalImageType] = useState(null);
+  const [modalImageIndex, setModalImageIndex] = useState(null);
+  
   const token = localStorage.getItem("token");
   const growthDataId = new URLSearchParams(location.search).get("growthDataId");
   const entryId = new URLSearchParams(location.search).get("entryId");
@@ -101,11 +105,11 @@ const JournalEntryForm = ({ onError }) => {
         currentDate,
         token
       );
-      const journalRes = await getJournalByGrowthDataId(growthDataId, token); // <- you must implement this if missing
+      const journalRes = await getJournalByGrowthDataId(growthDataId, token);
 
       const currentWeek =
         response?.data?.data?.currentGestationalAgeInWeeks || 1;
-      setCurrentWeek(currentWeek); // add new state
+      setCurrentWeek(currentWeek);
       const documentedWeeks =
         journalRes?.data?.data?.map((entry) => entry.currentWeek) || [];
 
@@ -138,10 +142,14 @@ const JournalEntryForm = ({ onError }) => {
         return newData;
       });
       const previews = newFiles.map((file) => URL.createObjectURL(file));
+
       setImagePreviews((prev) => ({
         ...prev,
         [name]: [...prev[name], ...previews].slice(0, 2),
       }));
+      
+      // Reset the file input to allow re-uploading after removal
+      e.target.value = '';
     } else {
       setFormData((prev) => {
         const newData = { ...prev, [name]: value };
@@ -152,6 +160,84 @@ const JournalEntryForm = ({ onError }) => {
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
+  };
+
+  const handleRemoveImage = (type, index) => {
+    // Clean up object URLs to prevent memory leaks
+    const previewUrl = imagePreviews[type][index];
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    setFormData((prev) => {
+      const updated = [...prev[type]];
+      updated.splice(index, 1);
+      return { ...prev, [type]: updated };
+    });
+
+    setImagePreviews((prev) => {
+      const updated = [...prev[type]];
+      updated.splice(index, 1);
+      return { ...prev, [type]: updated };
+    });
+
+    // Close modal if the removed image was being viewed
+    if (modalImageType === type && modalImageIndex === index) {
+      closeModal();
+    }
+  };
+
+  const openImageModal = (imageSrc, type, index) => {
+    setModalImage(imageSrc);
+    setModalImageType(type);
+    setModalImageIndex(index);
+  };
+
+  const closeModal = () => {
+    setModalImage(null);
+    setModalImageType(null);
+    setModalImageIndex(null);
+  };
+
+  const replaceImage = (type, index) => {
+    // Create a temporary file input to select new image
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = false;
+    
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file && file.size <= 5 * 1024 * 1024) {
+        // Clean up old object URL
+        const oldPreviewUrl = imagePreviews[type][index];
+        if (oldPreviewUrl && oldPreviewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(oldPreviewUrl);
+        }
+
+        // Update form data
+        setFormData((prev) => {
+          const updated = [...prev[type]];
+          updated[index] = file;
+          return { ...prev, [type]: updated };
+        });
+
+        // Update preview
+        const newPreview = URL.createObjectURL(file);
+        setImagePreviews((prev) => {
+          const updated = [...prev[type]];
+          updated[index] = newPreview;
+          return { ...prev, [type]: updated };
+        });
+
+        // Update modal if it's currently showing this image
+        setModalImage(newPreview);
+      } else if (file) {
+        alert('File size must be less than 5MB');
+      }
+    };
+    
+    input.click();
   };
 
   const handleSymptomsChange = (e) => {
@@ -242,6 +328,58 @@ const JournalEntryForm = ({ onError }) => {
     }
   };
 
+  const ImagePreviewSection = ({ type, label }) => (
+    <div className="entry-form-section">
+      <label htmlFor={type.toLowerCase()}>{label} (Optional)</label>
+      <div className="file-upload-wrapper">
+        <label htmlFor={type.toLowerCase()} className="custom-file-upload">
+          <FaImage /> Upload {label}
+        </label>
+        <input
+          type="file"
+          id={type.toLowerCase()}
+          name={type}
+          onChange={handleChange}
+          multiple
+          accept="image/*"
+        />
+      </div>
+      {/* Preview */}
+      {imagePreviews[type].length > 0 && (
+        <div className="journal-entry-image-preview">
+          {imagePreviews[type].map((preview, index) => (
+            <div key={index} className="journal-entry-preview-wrapper">
+              <img
+                src={preview}
+                alt={`Preview ${index + 1}`}
+                className="journal-entry-preview-image"
+                onClick={() => openImageModal(preview, type, index)}
+                style={{ cursor: 'pointer' }}
+              />
+              {/* <button
+                type="button"
+                className="journal-entry-view-image-btn"
+                onClick={() => openImageModal(preview, type, index)}
+                title="View full size"
+              >
+                <FaEye />
+              </button>
+              <button
+                type="button"
+                className="journal-entry-remove-image-btn"
+                onClick={() => handleRemoveImage(type, index)}
+                title="Remove image"
+              >
+                <FaTimes />
+              </button> */}
+            </div>
+          ))}
+          <span>{formData[type].length} / 2 images selected</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="journal-entry-form">
       <div className="entry-form-header">
@@ -300,7 +438,10 @@ const JournalEntryForm = ({ onError }) => {
           {errors.Note && <span className="error-message">{errors.Note}</span>}
         </div>
         <div className="entry-form-section">
-          <label htmlFor="currentWeight">Current Weight (Kg)<span className="must-enter-info">* (Required)</span></label>
+          <label htmlFor="currentWeight">
+            Current Weight (Kg)
+            <span className="must-enter-info">* (Required)</span>
+          </label>
           <input
             type="number"
             id="currentWeight"
@@ -405,7 +546,7 @@ const JournalEntryForm = ({ onError }) => {
             placeholder="Optional - Enter if you've checked recently."
           />
         </div>
-        {/* <div className="entry-form-section"> */}
+
         <SymptomsAndMood
           selectedMood={formData.MoodNotes}
           onMoodChange={(mood) =>
@@ -423,71 +564,8 @@ const JournalEntryForm = ({ onError }) => {
           token={token}
         />
 
-        {/* </div> */}
-
-        <div className="entry-form-section">
-          <label htmlFor="relatedImages">Related Images (Optional)</label>
-          <div className="file-upload-wrapper">
-            <label htmlFor="relatedImages" className="custom-file-upload">
-              <FaImage /> Upload Related Images
-            </label>
-            <input
-              type="file"
-              id="relatedImages"
-              name="RelatedImages"
-              onChange={handleChange}
-              multiple
-              accept="image/*"
-            />
-          </div>
-          {/* Preview */}
-          {imagePreviews.RelatedImages.length > 0 && (
-            <div className="image-preview">
-              {imagePreviews.RelatedImages.map((preview, index) => (
-                <img
-                  key={index}
-                  src={preview}
-                  alt={`Preview ${index + 1}`}
-                  className="preview-image"
-                />
-              ))}
-              <span>{formData.RelatedImages.length} / 2 images selected</span>
-            </div>
-          )}
-        </div>
-
-        <div className="entry-form-section">
-          <label htmlFor="ultraSoundImages">Ultrasound Images (Optional)</label>
-          <div className="file-upload-wrapper">
-            <label htmlFor="ultraSoundImages" className="custom-file-upload">
-              <FaImage /> Upload Ultrasound Images
-            </label>
-            <input
-              type="file"
-              id="ultraSoundImages"
-              name="UltraSoundImages"
-              onChange={handleChange}
-              multiple
-              accept="image/*"
-            />
-          </div>
-          {/* Preview */}
-          {imagePreviews.UltraSoundImages.length > 0 && (
-            <div className="image-preview">
-              {imagePreviews.UltraSoundImages.map((preview, index) => (
-                <img
-                  key={index}
-                  src={preview}
-                  alt={`Preview ${index + 1}`}
-                  className="preview-image"
-                />
-              ))}
-              <span>
-                {formData.UltraSoundImages.length} / 2 images selected
-              </span>
-            </div>
-          )}
-        </div>
+        <ImagePreviewSection type="RelatedImages" label="Related Images" />
+        <ImagePreviewSection type="UltraSoundImages" label="Ultrasound Images" />
       </div>
 
       <div className="entry-form-actions">
@@ -510,6 +588,43 @@ const JournalEntryForm = ({ onError }) => {
         </button>
       </div>
       {errors.submit && <span className="error-message">{errors.submit}</span>}
+
+      {/* Image Preview Modal */}
+      {modalImage && (
+        <div className="image-modal-overlay" onClick={closeModal}>
+          <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="image-modal-header">
+              <h4>
+                {modalImageType === 'RelatedImages' ? 'Related Image' : 'Ultrasound Image'} 
+                {' '}({modalImageIndex + 1})
+              </h4>
+              <button className="image-modal-close" onClick={closeModal}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="image-modal-body">
+              <img src={modalImage} alt="Full size preview" />
+            </div>
+            <div className="image-modal-actions">
+              <button 
+                className="image-modal-replace-btn"
+                onClick={() => replaceImage(modalImageType, modalImageIndex)}
+              >
+                Replace Image
+              </button>
+              <button 
+                className="image-modal-remove-btn"
+                onClick={() => {
+                  handleRemoveImage(modalImageType, modalImageIndex);
+                  closeModal();
+                }}
+              >
+                Remove Image
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

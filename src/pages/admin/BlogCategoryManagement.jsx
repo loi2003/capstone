@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -8,7 +9,7 @@ import '../../styles/BlogCategoryManagement.css';
 
 const BlogCategoryManagement = () => {
   const [categoryName, setCategoryName] = useState('');
-  const [blogCategoryTag, setBlogCategoryTag] = useState('Nutrient'); // Default to 'Nutrient'
+  const [blogCategoryTag, setBlogCategoryTag] = useState('Nutrient');
   const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -54,7 +55,6 @@ const BlogCategoryManagement = () => {
       const currentYear = today.getFullYear();
       const currentMonth = today.getMonth();
 
-      // Get the last 3 months (including current month)
       const months = [];
       const categoryCounts = [];
       for (let i = 2; i >= 0; i--) {
@@ -62,7 +62,6 @@ const BlogCategoryManagement = () => {
         const monthName = date.toLocaleString('default', { month: 'long', year: 'numeric' });
         months.push(monthName);
 
-        // Filter categories for this month
         const filteredCategories = categories.filter((cat) => {
           const createdAt = new Date(cat.createdAt || Date.now());
           return createdAt.getMonth() === date.getMonth() && createdAt.getFullYear() === date.getFullYear();
@@ -70,7 +69,6 @@ const BlogCategoryManagement = () => {
         categoryCounts.push(filteredCategories.length);
       }
 
-      // Calculate increase/decrease
       const changes = [];
       for (let i = 1; i < categoryCounts.length; i++) {
         const diff = categoryCounts[i] - categoryCounts[i - 1];
@@ -125,7 +123,6 @@ const BlogCategoryManagement = () => {
     };
   }, [categories, loading]);
 
-  // Reset currentPage to 1 when search or sort changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, sortOption]);
@@ -140,8 +137,8 @@ const BlogCategoryManagement = () => {
       return;
     }
 
-    if (!/^[a-zA-Z0-9\s]+$/.test(categoryName)) {
-      setError('Category name must be alphanumeric.');
+    if (!/^[\w\s\-!@#$%^&*()_+=[\]{}|;:,.<>?]+$/.test(categoryName.trim())) {
+      setError('Category name must contain only letters, numbers, spaces, or common special characters.');
       return;
     }
 
@@ -153,10 +150,10 @@ const BlogCategoryManagement = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found. Please log in.');
-      const response = await createCategory(user.id, categoryName, blogCategoryTag, token);
+      const response = await createCategory(user.id, categoryName.trim(), blogCategoryTag, token);
       setMessage(response.data.message || 'Category created successfully.');
       setCategoryName('');
-      setBlogCategoryTag('Nutrient'); // Reset to default
+      setBlogCategoryTag('Nutrient');
       setCurrentPage(1);
 
       const categoriesResponse = await getAllCategories(token, { params: { t: Date.now() } });
@@ -170,7 +167,7 @@ const BlogCategoryManagement = () => {
   const handleEdit = (category) => {
     setEditingCategory(category);
     setCategoryName(category.categoryName);
-    setBlogCategoryTag(category.blogCategoryTag || 'Nutrient'); // Set tag from category
+    setBlogCategoryTag(category.blogCategoryTag || 'Nutrient');
     setMessage('');
     setError('');
   };
@@ -185,8 +182,8 @@ const BlogCategoryManagement = () => {
       return;
     }
 
-    if (!/^[a-zA-Z0-9\s]+$/.test(categoryName)) {
-      setError('Category name must be alphanumeric.');
+    if (!/^[\w\s\-!@#$%^&*()_+=[\]{}|;:,.<>?]+$/.test(categoryName.trim())) {
+      setError('Category name must contain only letters, numbers, spaces, or common special characters.');
       return;
     }
 
@@ -198,10 +195,10 @@ const BlogCategoryManagement = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found. Please log in.');
-      const response = await updateCategory(editingCategory.id, categoryName, editingCategory.isActive, blogCategoryTag, token);
+      const response = await updateCategory(editingCategory.id, categoryName.trim(), editingCategory.isActive, blogCategoryTag, token);
       setMessage(response.data.message || 'Category updated successfully.');
       setCategoryName('');
-      setBlogCategoryTag('Nutrient'); // Reset to default
+      setBlogCategoryTag('Nutrient');
       setEditingCategory(null);
 
       const categoriesResponse = await getAllCategories(token, { params: { t: Date.now() } });
@@ -272,7 +269,6 @@ const BlogCategoryManagement = () => {
     setEditingCategory({ ...category, isActive: !category.isActive });
   };
 
-  // Filter and sort categories
   const filteredCategories = categories.filter((category) => {
     const matchesName = category.categoryName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTag = category.blogCategoryTag?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
@@ -439,7 +435,7 @@ const BlogCategoryManagement = () => {
         </motion.section>
         {message && (
           <motion.p
-            class23className="success-message"
+            className="success-message"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}

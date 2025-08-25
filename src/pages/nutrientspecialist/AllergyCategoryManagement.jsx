@@ -4,9 +4,29 @@ import { Link } from "react-router-dom";
 import { getAllAllergyCategories, createAllergyCategory, updateAllergyCategory, deleteAllergyCategory } from "../../apis/nutriet-api";
 import "../../styles/AllergyCategoryManagement.css";
 
+// Simple debounce function
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+// Sanitize input to prevent XSS
+const sanitizeInput = (input) => {
+  return input.replace(/[<>"'&]/g, (match) => ({
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#x27;',
+    '&': '&amp;'
+  }[match]));
+};
+
 // Search Icon
 const SearchIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -23,6 +43,8 @@ const LoaderIcon = () => (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
+    role="img"
+    aria-label="Loading indicator"
   >
     <path
       strokeLinecap="round"
@@ -49,7 +71,7 @@ const Notification = ({ message, type, onClose }) => {
       transition={{ duration: 0.3 }}
     >
       <div className="notification-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
             d={type === "success" ? "M20 6L9 17L4 12" : "M12 12V8M12 16V16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"}
             stroke="var(--blue-white)"
@@ -79,6 +101,7 @@ const AllergyCategoryManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingItems, setLoadingItems] = useState({});
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -94,7 +117,6 @@ const AllergyCategoryManagement = () => {
     try {
       const data = await getAllAllergyCategories();
       console.log('Fetched allergy categories:', data);
-      // Validate data structure
       if (!Array.isArray(data)) {
         throw new Error('Invalid data format: Expected an array of allergy categories');
       }
@@ -105,17 +127,17 @@ const AllergyCategoryManagement = () => {
       });
       setAllergyCategories(data || []);
     } catch (error) {
-      showNotification("Failed to fetch allergy categories", "error");
+      showNotification(`Failed to fetch allergy categories: ${error.response?.data?.message || error.message}`, "error");
       console.error('Error fetching allergy categories:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle input changes
+  // Handle input changes with sanitization
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: sanitizeInput(value) }));
   };
 
   // Handle form submission
@@ -146,8 +168,8 @@ const AllergyCategoryManagement = () => {
       resetForm();
       fetchAllergyCategories();
     } catch (error) {
-      showNotification(`Failed to ${isEditing ? "update" : "create"} allergy category`, "error");
-      console.error(`Error in ${isEditing ? "update" : "create"} allergy category:`, error.response?.data || error.message);
+      showNotification(`Failed to ${isEditing ? "update" : "create"} allergy category: ${error.response?.data?.message || error.message}`, "error");
+      console.error(`Error in ${isEditing ? "update" : "create"} allergy category:`, error);
     } finally {
       setIsLoading(false);
     }
@@ -176,17 +198,17 @@ const AllergyCategoryManagement = () => {
       return;
     }
     if (window.confirm("Are you sure you want to delete this allergy category?")) {
-      setIsLoading(true);
+      setLoadingItems((prev) => ({ ...prev, [allergyCategoryId]: true }));
       try {
         console.log('Deleting allergy category with ID:', allergyCategoryId);
         await deleteAllergyCategory(allergyCategoryId);
         showNotification("Allergy category deleted successfully", "success");
         fetchAllergyCategories();
       } catch (error) {
-        showNotification("Failed to delete allergy category", "error");
-        console.error('Error deleting allergy category:', error.response?.data || error.message);
+        showNotification(`Failed to delete allergy category: ${error.response?.data?.message || error.message}`, "error");
+        console.error('Error deleting allergy category:', error);
       } finally {
-        setIsLoading(false);
+        setLoadingItems((prev) => ({ ...prev, [allergyCategoryId]: false }));
       }
     }
   };
@@ -207,11 +229,12 @@ const AllergyCategoryManagement = () => {
     setNotification({ show: false, message: "", type: "" });
   };
 
-  // Handle search
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
+  // Handle search with debouncing
+  const debouncedSearch = debounce((value) => {
+    setSearchTerm(value);
     setCurrentPage(1);
-  };
+  }, 300);
+  const handleSearch = (e) => debouncedSearch(sanitizeInput(e.target.value));
 
   // Toggle sidebar
   const toggleSidebar = () => {
@@ -298,6 +321,7 @@ const AllergyCategoryManagement = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-label="Leaf icon"
+                role="img"
               >
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
@@ -316,7 +340,7 @@ const AllergyCategoryManagement = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" aria-hidden="true">
               <path
                 stroke="var(--blue-white)"
                 strokeWidth="2"
@@ -340,6 +364,7 @@ const AllergyCategoryManagement = () => {
                 viewBox="0 0 24 24"
                 fill="none"
                 aria-label="Dashboard icon"
+                role="img"
               >
                 <path
                   d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"
@@ -455,15 +480,15 @@ const AllergyCategoryManagement = () => {
               </div>
             ) : filteredAllergyCategories.length === 0 ? (
               <div className="empty-state">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" role="img" aria-label="Empty state icon">
                   <path
                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"
                     stroke="var(--blue-text)"
                     strokeWidth="2"
                   />
                 </svg>
-                <h3>No Allergy Categories Found</h3>
-                <p>Add a new allergy category to get started.</p>
+                <h3>{searchTerm ? "No Matching Categories" : "No Allergy Categories Found"}</h3>
+                <p>{searchTerm ? "Try a different search term." : "Add a new allergy category to get started."}</p>
               </div>
             ) : (
               <>
@@ -488,8 +513,9 @@ const AllergyCategoryManagement = () => {
                         <motion.button
                           className="nutrient-specialist-button primary"
                           onClick={() => handleEdit(allergyCategory)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          disabled={loadingItems[allergyCategory.id]}
+                          whileHover={{ scale: loadingItems[allergyCategory.id] ? 1 : 1.05 }}
+                          whileTap={{ scale: loadingItems[allergyCategory.id] ? 1 : 0.95 }}
                           aria-label="Edit allergy category"
                         >
                           Edit
@@ -497,11 +523,12 @@ const AllergyCategoryManagement = () => {
                         <motion.button
                           className="nutrient-specialist-button secondary"
                           onClick={() => handleDelete(allergyCategory.id)}
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          disabled={loadingItems[allergyCategory.id]}
+                          whileHover={{ scale: loadingItems[allergyCategory.id] ? 1 : 1.05 }}
+                          whileTap={{ scale: loadingItems[allergyCategory.id] ? 1 : 0.95 }}
                           aria-label="Delete allergy category"
                         >
-                          Delete
+                          {loadingItems[allergyCategory.id] ? "Deleting..." : "Delete"}
                         </motion.button>
                       </div>
                     </motion.div>

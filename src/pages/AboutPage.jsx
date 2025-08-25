@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,26 +8,6 @@ import { aboutpageData } from '../data/aboutpageData';
 
 const AboutPage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
-  // Define milestones for Hành Trình Phát Triển
-  const milestones = [
-    {
-      year: 2018,
-      event: 'Thành lập GenderHealthWeb với mục tiêu nâng cao nhận thức về sức khỏe phụ nữ.',
-    },
-    {
-      year: 2020,
-      event: 'Ra mắt ứng dụng theo dõi thai kỳ, hỗ trợ hơn 10,000 bà mẹ.',
-    },
-    {
-      year: 2022,
-      event: 'Mở rộng dịch vụ với các khóa học trực tuyến về chăm sóc trước và sau sinh.',
-    },
-    {
-      year: 2025,
-      event: 'Hợp tác với các bệnh viện quốc tế để cung cấp tư vấn y khoa từ xa.',
-    },
-  ];
 
   return (
     <MainLayout>
@@ -89,9 +70,9 @@ const AboutPage = () => {
 
         {/* History Section */}
         <section className="about-history-section">
-          <h2 className="about-section-title">Hành Trình Phát Triển</h2>
+          <h2 className="about-section-title">{aboutpageData.history.title}</h2>
           <div className="about-history-timeline">
-            {milestones.map((milestone, index) => (
+            {aboutpageData.history.milestones.map((milestone, index) => (
               <motion.div
                 key={index}
                 className="about-history-milestone"
@@ -213,8 +194,8 @@ const AboutPage = () => {
             transition={{ duration: 0.3 }}
             className="about-contact-popup"
           >
-            <Link to="/contact" className="about-popup-button">Liên Hệ</Link>
-            <Link to="/assessment" className="about-popup-button">Kiểm Tra Sức Khỏe</Link>
+            <Link to="/consultation" className="about-popup-button">Consultant Chat</Link>
+            <Link to="/advice" className="about-popup-button">Quick Advice</Link>
           </motion.div>
         )}
       </div>

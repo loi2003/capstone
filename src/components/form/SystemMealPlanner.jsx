@@ -88,7 +88,6 @@ const SystemMealPlanner = () => {
   }, []);
 
   useEffect(() => {
-    // Reset week-related state when switching to "day"
     if (mode === "day") {
       setWeekViewMode("list");
       setSelectedDayDetail(null);
@@ -97,11 +96,10 @@ const SystemMealPlanner = () => {
       setGeneratedPlan(null); // clear results
     }
 
-    // Reset day selection when switching to "week"
     if (mode === "week") {
       setDay("");
       setError("");
-      setGeneratedPlan(null); // clear results here too ✅
+      setGeneratedPlan(null); // clear results here too
     }
   }, [mode]);
 
@@ -125,17 +123,20 @@ const SystemMealPlanner = () => {
       dishes: [
         {
           name: "Grilled Cheese Sandwich",
-          image: "https://picsum.photos/200/120?1",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 250,
         },
         {
           name: "Avocado",
-          image: "https://picsum.photos/200/120?2",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 120,
         },
         {
           name: "Milk",
-          image: "https://picsum.photos/200/120?3",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 150,
         },
       ],
@@ -145,12 +146,14 @@ const SystemMealPlanner = () => {
       dishes: [
         {
           name: "Grilled Salmon",
-          image: "https://picsum.photos/200/120?4",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 350,
         },
         {
           name: "Brown Rice",
-          image: "https://picsum.photos/200/120?5",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 200,
         },
       ],
@@ -160,12 +163,14 @@ const SystemMealPlanner = () => {
       dishes: [
         {
           name: "Chicken Soup",
-          image: "https://picsum.photos/200/120?6",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 300,
         },
         {
           name: "Spinach Salad",
-          image: "https://picsum.photos/200/120?7",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 100,
         },
       ],
@@ -175,7 +180,8 @@ const SystemMealPlanner = () => {
       dishes: [
         {
           name: "Greek Yogurt",
-          image: "https://picsum.photos/200/120?8",
+          image:
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
           calories: 180,
         },
       ],
@@ -192,12 +198,14 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Grilled Cheese Sandwich",
-              image: "https://picsum.photos/200/120?1",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 250,
             },
             {
               name: "Avocado",
-              image: "https://picsum.photos/200/120?2",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 120,
             },
           ],
@@ -207,12 +215,14 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Grilled Salmon",
-              image: "https://picsum.photos/200/120?4",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 350,
             },
             {
               name: "Brown Rice",
-              image: "https://picsum.photos/200/120?5",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 200,
             },
           ],
@@ -222,12 +232,14 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Chicken Soup",
-              image: "https://picsum.photos/200/120?6",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 300,
             },
             {
               name: "Spinach Salad",
-              image: "https://picsum.photos/200/120?7",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 100,
             },
           ],
@@ -237,7 +249,8 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Greek Yogurt",
-              image: "https://picsum.photos/200/120?8",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 180,
             },
           ],
@@ -252,12 +265,14 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Oatmeal",
-              image: "https://picsum.photos/200/120?14",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 200,
             },
             {
               name: "Banana",
-              image: "https://picsum.photos/200/120?15",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 100,
             },
           ],
@@ -267,12 +282,14 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Grilled Chicken",
-              image: "https://picsum.photos/200/120?16",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 300,
             },
             {
               name: "Quinoa Salad",
-              image: "https://picsum.photos/200/120?17",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 220,
             },
           ],
@@ -282,7 +299,8 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Beef Stir Fry",
-              image: "https://picsum.photos/200/120?18",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 400,
             },
           ],
@@ -292,7 +310,8 @@ const SystemMealPlanner = () => {
           dishes: [
             {
               name: "Apple Slices",
-              image: "https://picsum.photos/200/120?19",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 80,
             },
           ],
@@ -466,83 +485,110 @@ const SystemMealPlanner = () => {
             </ul>
           )}
         </div>
-
-        <button className="mealplanner-btn" onClick={handleGenerate}>
+        <div className="mealplanner-btn-wrapper">
+          <button className="mealplanner-btn" onClick={handleGenerate}>
           Suggest Meal Plan
         </button>
+        </div>
+
+        
         {error && (
           <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>
         )}
       </div>
 
       {/* Output */}
-      {generatedPlan && mode === "day" && (
-        <div className="mealplanner-output">
-          <h2>
-            Suggested Meals for {week}
-            {day && ` - Day ${day}`}
-          </h2>
-          {generatedPlan.map((meal, idx) => (
-            <div key={idx} className="meal-card">
-              <div className="meal-header">
-                <h3>{meal.type}</h3>
-              </div>
-              <div className="meal-dishes">
-                {meal?.dishes?.map((dish, i) => (
-                  <div key={i} className="dish-card">
-                    <img src={dish.image} alt={dish.name} />
-                    <div className="dish-info">
-                      <h4>{dish.name}</h4>
-                      <p>{dish.calories} kcal</p>
-                      <div className="meal-actions">
-                        <button>
-                          <FaSyncAlt /> Change
-                        </button>
-                        <button>
-                          <FaInfoCircle /> Info
-                        </button>
-                        <button>
-                          <FaUtensils /> Recipe
-                        </button>
+      {generatedPlan &&
+        mode === "day" &&
+        Array.isArray(generatedPlan) &&
+        generatedPlan[0]?.dishes && (
+          <div className="mealplanner-output">
+            {(() => {
+              const totalCalories = generatedPlan.reduce((mealSum, meal) => {
+                return (
+                  mealSum +
+                  (meal?.dishes?.reduce(
+                    (dishSum, dish) => dishSum + (dish?.calories || 0),
+                    0
+                  ) || 0)
+                );
+              }, 0);
+
+              return (
+                <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
+                  Suggested Meals for {week}
+                  {day && ` - Day ${day}`} <br />
+                  <span style={{ fontSize: "1.1rem"}}>
+                    Total Calories: <strong>{totalCalories} kcal</strong>
+                  </span>
+                </h2>
+              );
+            })()}
+
+            {generatedPlan.map((meal, idx) => (
+              <div key={idx} className="meal-card">
+                <div className="meal-header">
+                  <h3>{meal.type}</h3>
+                </div>
+                <div className="meal-dishes">
+                  {meal?.dishes?.map((dish, i) => (
+                    <div key={i} className="dish-card">
+                      <img src={dish.image} alt={dish.name} />
+                      <div className="dish-info">
+                        <h4>{dish.name}</h4>
+                        <p>{dish.calories} kcal</p>
+                        <div className="meal-actions">
+                          <button>
+                            <FaSyncAlt /> Change Dish
+                          </button>
+                          <button>
+                            <FaInfoCircle /> Nutrition Information
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
       {generatedPlan && mode === "week" && (
         <div className="mealplanner-output">
-          <h2>Weekly Suggested Meals</h2>
+           {weekViewMode === "list" && <h2>Weekly Suggested Meals</h2>}
 
           {/* Week List */}
           {weekViewMode === "list" &&
             generatedPlan?.map((day, idx) => (
               <div key={idx} className="week-day-card">
                 <div className="week-day-header">
-                  <h3>{day.day}</h3>
-                  <button
-                    className="mealplanner-btn"
-                    onClick={() => handleViewDayDetail(day)}
-                  >
-                    View Detail
-                  </button>
+                  <div className="header-title">
+                    <h3>{day.day}</h3>
+                  </div>
+                  <div className="header-action">
+                    <button
+                      className="mealplanner-btn"
+                      onClick={() => handleViewDayDetail(day)}
+                    >
+                      View Detail
+                    </button>
+                  </div>
                 </div>
 
                 <div className="week-meal-grid">
                   {day?.meals?.map((m, i) => (
                     <div key={i} className="week-meal-card">
                       <img src={m.dishes?.[0]?.image} alt={m.type} />{" "}
-                      <h4>{m.type}</h4>
-                      <button
-                        className="mealplanner-detail-btn"
-                        onClick={() => handleViewMealDetail(day, m)}
-                      >
-                        View Detail
-                      </button>
+                      <div className="mealplanner-detail-wrapper">
+                        <h4>{m.type}</h4>
+                        <button
+                          className="mealplanner-detail-btn"
+                          onClick={() => handleViewMealDetail(day, m)}
+                        >
+                          View Detail
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -553,7 +599,35 @@ const SystemMealPlanner = () => {
           {/* Day Detail */}
           {weekViewMode === "dayDetail" && selectedDayDetail && (
             <div className="mealplanner-output">
-              <h2>Meals for {selectedDayDetail.day}</h2>
+              <div className="mealplanner-output-header">
+
+              </div>
+              {(() => {
+                const totalCalories =
+                  selectedDayDetail?.meals?.reduce((mealSum, meal) => {
+                    const mealCalories =
+                      meal?.dishes?.reduce(
+                        (dishSum, dish) => dishSum + (dish?.calories || 0),
+                        0
+                      ) || 0;
+                    return mealSum + mealCalories;
+                  }, 0) || 0;
+
+                return (
+                  <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
+                    Meals for {selectedDayDetail?.day || "Unknown"} <br />
+                    <span style={{ fontSize: "1.1rem"}}>
+                      Total Calories: <strong>{totalCalories} kcal</strong>
+                    </span>
+                  </h2>
+                );
+              })()}
+
+              <div className="back-btn-wrapper">
+                <button className="mealplanner-btn" onClick={handleBackToWeek}>
+                  Back to Weekly Menu
+                </button>
+              </div>
               {selectedDayDetail?.meals?.map((meal, idx) => (
                 <div key={idx} className="meal-card">
                   <div className="meal-header">
@@ -568,13 +642,10 @@ const SystemMealPlanner = () => {
                           <p>{dish.calories} kcal</p>
                           <div className="meal-actions">
                             <button>
-                              <FaSyncAlt /> Change
+                              <FaSyncAlt /> Change Dish
                             </button>
                             <button>
-                              <FaInfoCircle /> Info
-                            </button>
-                            <button>
-                              <FaUtensils /> Recipe
+                              <FaInfoCircle /> Dish information
                             </button>
                           </div>
                         </div>
@@ -583,18 +654,33 @@ const SystemMealPlanner = () => {
                   </div>
                 </div>
               ))}
-              <button className="mealplanner-btn" onClick={handleBackToWeek}>
-                Back to Week
-              </button>
             </div>
           )}
 
           {/* Meal Detail */}
           {weekViewMode === "mealDetail" && selectedMealDetail && (
             <div className="mealplanner-output">
-              <h2>
-                {selectedMealDetail.day.day} – {selectedMealDetail.meal.type}
-              </h2>
+              {(() => {
+                const totalCalories = selectedMealDetail.meal.dishes.reduce(
+                  (sum, dish) => sum + dish.calories,
+                  0
+                );
+                return (
+                  <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
+                    {selectedMealDetail.day.day} –{" "}
+                    {selectedMealDetail.meal.type} <br />
+                    <span style={{ fontSize: "1.1rem"}}>
+                      Total Calories: <strong>{totalCalories} kcal</strong>
+                    </span>
+                  </h2>
+                );
+              })()}
+
+              <div className="back-btn-wrapper">
+                <button className="mealplanner-btn" onClick={handleBackToWeek}>
+                  Back to Weekly Menu
+                </button>
+              </div>
               <div className="meal-card">
                 <div className="meal-header">
                   <h3>{selectedMealDetail.meal.type}</h3>
@@ -608,13 +694,10 @@ const SystemMealPlanner = () => {
                         <p>{dish.calories} kcal</p>
                         <div className="meal-actions">
                           <button>
-                            <FaSyncAlt /> Change
+                            <FaSyncAlt /> Change Dish
                           </button>
                           <button>
-                            <FaInfoCircle /> Info
-                          </button>
-                          <button>
-                            <FaUtensils /> Recipe
+                            <FaInfoCircle /> Nutrition Information
                           </button>
                         </div>
                       </div>
@@ -622,9 +705,6 @@ const SystemMealPlanner = () => {
                   ))}
                 </div>
               </div>
-              <button className="mealplanner-btn" onClick={handleBackToWeek}>
-                Back to Week
-              </button>
             </div>
           )}
         </div>
