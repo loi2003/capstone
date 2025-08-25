@@ -118,11 +118,11 @@
 }
 
 
-.book-btn.urgent {
+.book-btn.emergency {
   background: #d32f2f;
 }
 
-.book-btn.urgent:hover {
+.book-btn.emergency:hover {
   background: #b71c1c;
 }
 

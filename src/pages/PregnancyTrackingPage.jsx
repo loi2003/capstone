@@ -150,6 +150,7 @@ useEffect(() => {
       if (pregRes?.error === 0 && pregRes?.data) {
         setPregnancyData(pregRes.data);
         setSelectedWeek(pregRes.data.currentGestationalAgeInWeeks);
+        localStorage.setItem("growthDataId", pregRes.data.id);
       } else {
         setPregnancyData(null);
       }
