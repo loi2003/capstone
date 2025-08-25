@@ -141,9 +141,7 @@ const Header = () => {
           <Link to="/nutritional-guidance" title="Nutritional Guidance">
             Nutrition
           </Link>
-          <Link to="/consultation" title="Consultation">
-            Consultation
-          </Link>
+          <Link to="/clinic/list" title="Consultation">Consultation</Link>
           <Link to="/blog" title="Blog">
             Blog
           </Link>
