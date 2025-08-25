@@ -2,19 +2,41 @@
    Contact Us Page - Isolated CSS
    ============================== */
 
+:root {
+  --primary-gradient: linear-gradient(90deg, #04668D, #03C39A);
+  --cta-color: rgba(107, 159, 255, 1);
+  --cta-hover: rgba(90, 140, 230, 1);
+  --accent-blue: rgba(107, 159, 255, 1);
+  --white: #feffe9;
+  --light-bg: #f5faf6;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
+  --border-radius: 12px;
+  --transition: all 0.3s ease;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
+}
+
 .contact-page {
   font-family: "Segoe UI", Roboto, sans-serif;
   color: #333;
-  background: #f9fafc;
+  background: var(--light-bg); /* Use --light-bg instead of #f9fafc */
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hero Section */
 .contact-hero {
-  background: linear-gradient(135deg, #4a90e2, #6ec6ff);
-  color: white;
+  background: var(--primary-gradient); /* Use --primary-gradient instead of #4a90e2 to #6ec6ff */
+  color: var(--white);
   text-align: center;
   padding: 80px 20px;
+  flex-shrink: 0;
+  z-index: 100; /* Below header (z-index: 2000) */
 }
 
 .contact-hero-title {
@@ -32,29 +54,23 @@
 .contact-container {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   padding: 60px 20px;
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 400px; /* Ensure container is visible */
+  z-index: 100; /* Below header */
 }
 
 .contact-box {
-  background: #fff;
+  background: var(--white); /* Use --white instead of #fff */
   padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  border-radius: var(--border-radius); /* Use --border-radius */
+  box-shadow: var(--shadow); /* Use --shadow */
   max-width: 600px;
   width: 100%;
-}
-
-.contact-title {
-  font-size: 1.8rem;
-  margin-bottom: 15px;
-  font-weight: 600;
-}
-
-.contact-description {
-  font-size: 1rem;
-  margin-bottom: 30px;
-  line-height: 1.6;
-  color: #555;
+  box-sizing: border-box;
 }
 
 /* Form Styles */
@@ -67,15 +83,15 @@
 .contact-input,
 .contact-textarea {
   padding: 14px;
-  border-radius: 8px;
+  border-radius: var(--border-radius); /* Use --border-radius */
   border: 1px solid #ddd;
   font-size: 1rem;
-  transition: border 0.2s ease;
+  transition: var(--transition); /* Use --transition */
 }
 
 .contact-input:focus,
 .contact-textarea:focus {
-  border-color: #4a90e2;
+  border-color: var(--accent-blue); /* Use --accent-blue instead of #4a90e2 */
   outline: none;
 }
 
@@ -85,25 +101,26 @@
 }
 
 .contact-button {
-  background: #4a90e2;
-  color: white;
+  background: var(--cta-color); /* Use --cta-color */
+  color: var(--white);
   font-size: 1rem;
   font-weight: 600;
   padding: 14px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--border-radius); /* Use --border-radius */
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: var(--transition); /* Use --transition */
 }
 
 .contact-button:hover {
-  background: #3b7cc5;
+  background: var(--cta-hover); /* Use --cta-hover */
+  box-shadow: var(--shadow-hover); /* Use --shadow-hover */
 }
 
 /* Success Message */
 .contact-success {
   margin-top: 20px;
-  color: #28a745;
+  color: #28a745; /* Retained as no matching variable; can add to :root if needed */
   font-weight: 600;
   text-align: center;
 }
@@ -114,4 +131,47 @@
   font-size: 0.95rem;
   color: #666;
   text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .contact-hero {
+    padding: 60px 15px;
+  }
+
+  .contact-hero-title {
+    font-size: 2.2rem;
+  }
+
+  .contact-hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .contact-container {
+    padding: 40px 15px;
+    min-height: 300px; /* Adjust for smaller screens */
+  }
+
+  .contact-box {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-hero-title {
+    font-size: 1.8rem;
+  }
+
+  .contact-hero-subtitle {
+    font-size: 0.9rem;
+  }
+
+  .contact-container {
+    padding: 30px 10px;
+    min-height: 250px;
+  }
+
+  .contact-box {
+    padding: 20px;
+  }
 }
