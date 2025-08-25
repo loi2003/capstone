@@ -257,6 +257,14 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
 }
+.header-title {
+  color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
 .week-meal-card {
   background: #fbfeff;
   border-radius: 0.8rem;

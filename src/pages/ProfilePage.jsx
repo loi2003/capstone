@@ -167,11 +167,11 @@ const handleSubmit = async (e) => {
           <div className="profile-avatar-section">
             <div className="avatar-container">
               <img
-                src={currentUser?.avatar?.fileUrl || 'https://via.placeholder.com/150'}
+                src={currentUser?.avatar?.fileUrl || 'images/Avatar.jpg'}
                 alt="User Avatar"
                 className="avatar-image"
                 onError={(e) => {
-                  e.target.src = 'https://via.placeholder.com/150';
+                  e.target.src = 'images/Avatar.jpg';
                 }}
               />
               <label className="avatar-upload-label">
@@ -195,10 +195,10 @@ const handleSubmit = async (e) => {
           </div>
 
           <div className="profile-details-section">
-            <div className="profile-detail">
+            {/* <div className="profile-detail">
               <span className="detail-label">User ID:</span>
               <span className="detail-value">{currentUser?.id || 'N/A'}</span>
-            </div>
+            </div> */}
 
             <div className="profile-detail">
               <span className="detail-label">Email:</span>
