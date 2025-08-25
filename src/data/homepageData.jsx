@@ -10,7 +10,7 @@ export const homepageData = {
     ctaLink: "/about",
     secondaryCta: "Get a Free Consultation",
     secondaryCtaLink: "/consultation",
-    pregnancyTipsLink: "/health-tips",
+    pregnancyTipsLink: "/advice",
     pregnancyTipsText: "Discover essential health tips for your pregnancy journey",
   },
   features: [

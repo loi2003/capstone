@@ -3,6 +3,10 @@ import { motion } from 'framer-motion';
 import MainLayout from '../layouts/MainLayout';
 
 const TermsOfService = () => {
+  React.useEffect(() => {
+    console.log('TermsOfService rendered');
+  }, []);
+
   return (
     <MainLayout>
       <div className="secondary-page">
@@ -23,9 +27,8 @@ const TermsOfService = () => {
         <section className="secondary-content-section">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }} // Changed from whileInView
             transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
             className="secondary-content"
           >
             <h2 className="secondary-section-title">Using Our Services</h2>

@@ -17,6 +17,7 @@ import HealthExpertHomePage from "../pages/healthexpert/HealthExpertHomePage";
 import HealthExpertTutorial from "../pages/healthexpert/HealthExpertTutorial";
 import HealthExpertPolicy from "../pages/healthexpert/HealthExpertPolicy";
 import NutrientSpecialistHomePage from "../pages/nutrientspecialist/NutrientSpecialistHomepage";
+import NutrientPolicy from "../pages/nutrientspecialist/NutrientPolicy"; // Added import
 import ClinicHomePage from "../pages/clinic/ClinicHomePage";
 import BlogManagement from "../pages/BlogManagement";
 import AddingBlog from "../pages/AddingBlog";
@@ -50,9 +51,8 @@ import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
-import AdvicePage from '../pages/AdvicePage';
+import AdvicePage from "../pages/AdvicePage";
 
-NutrientInFoodManagement
 const AppRoutes = () => {
   const location = useLocation();
 
@@ -81,6 +81,7 @@ const AppRoutes = () => {
         <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
+        <Route path="/nutrient-specialist/nutrient-policy" element={<NutrientPolicy />} /> {/* Added route */}
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
