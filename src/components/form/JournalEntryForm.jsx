@@ -259,6 +259,7 @@ const JournalEntryForm = ({ onError }) => {
   const validateForm = () => {
     const newErrors = {};
 
+    // Week validation
     if (
       !formData.CurrentWeek ||
       isNaN(Number(formData.CurrentWeek)) ||
@@ -268,31 +269,84 @@ const JournalEntryForm = ({ onError }) => {
       newErrors.CurrentWeek = "Current week must be a number between 1 and 40";
     }
 
-    if (!formData.Note) {
+    // Note validation
+    if (!formData.Note?.trim()) {
       newErrors.Note = "Note is required";
     }
 
+    // Weight validation
     if (
-      formData.CurrentWeight &&
-      (isNaN(Number(formData.CurrentWeight)) ||
-        Number(formData.CurrentWeight) < 30 ||
-        Number(formData.CurrentWeight) > 200)
+      !formData.CurrentWeight ||
+      isNaN(Number(formData.CurrentWeight)) ||
+      Number(formData.CurrentWeight) < 30 ||
+      Number(formData.CurrentWeight) > 200
     ) {
       newErrors.CurrentWeight =
         "Current weight must be a number between 30 and 200 kg";
     }
 
-    // ✅ New Blood Pressure validation
+    // Blood Pressure validation (as you had before)
+    const systolic = Number(formData.SystolicBP);
+    const diastolic = Number(formData.DiastolicBP);
+
     if (
       (formData.SystolicBP && !formData.DiastolicBP) ||
       (!formData.SystolicBP && formData.DiastolicBP)
     ) {
-      newErrors.BloodPressure =
-        "Both Systolic and Diastolic BP must be entered together.";
+      if (!formData.SystolicBP) newErrors.SystolicBP = "Enter Systolic BP too.";
+      if (!formData.DiastolicBP)
+        newErrors.DiastolicBP = "Enter Diastolic BP too.";
+    } else if (formData.SystolicBP && formData.DiastolicBP) {
+      if (isNaN(systolic) || systolic < 90 || systolic > 250) {
+        newErrors.SystolicBP = "Systolic BP must be between 90 and 250 mmHg.";
+      }
+      if (isNaN(diastolic) || diastolic < 40 || diastolic > 150) {
+        newErrors.DiastolicBP = "Diastolic BP must be between 40 and 150 mmHg.";
+      }
+      if (
+        !newErrors.SystolicBP &&
+        !newErrors.DiastolicBP &&
+        systolic <= diastolic
+      ) {
+        newErrors.SystolicBP = "Systolic BP must be higher than Diastolic BP.";
+        newErrors.DiastolicBP = "Diastolic BP must be lower than Systolic BP.";
+      }
     }
 
-    console.log("FormData before validation:", formData);
-    console.log("Validation Errors:", newErrors);
+    // Heart Rate validation (optional, but if entered must be valid)
+    if (formData.HeartRateBPM) {
+      const hr = Number(formData.HeartRateBPM);
+      if (isNaN(hr) || hr < 30 || hr > 200) {
+        newErrors.HeartRateBPM =
+          "Heart rate must be a number between 30 and 200 BPM.";
+      }
+    }
+
+    // Blood Sugar validation (only if on clinic week)
+    if (bloodTestClinicWeeks.includes(Number(formData.CurrentWeek))) {
+      if (formData.BloodSugarLevelMgDl) {
+        const sugar = Number(formData.BloodSugarLevelMgDl);
+        if (isNaN(sugar) || sugar < 30 || sugar > 500) {
+          newErrors.BloodSugarLevelMgDl =
+            "Blood sugar must be a number between 30 and 500 mg/dL.";
+        }
+      }
+    }
+    // Images (optional, but check constraints)
+    if (formData.RelatedImages?.length > 2) {
+      newErrors.RelatedImages = "You can upload up to 2 related images.";
+    }
+    if (ultrasoundClinicWeeks.includes(Number(formData.CurrentWeek))) {
+      if (formData.UltraSoundImages?.length > 2) {
+        newErrors.UltraSoundImages =
+          "You can upload up to 2 ultrasound images.";
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+    newErrors.submit = "Failed to submit journal entry, please recheck your input.";
+  }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -478,10 +532,10 @@ const JournalEntryForm = ({ onError }) => {
 
           <div className="entry-form-section">
             <label htmlFor="systolicBP">
-              Systolic (mmHg)
+              Systolic (mmHg){" "}
               <span
                 className="entry-info-tooltip"
-                title="Normal range is 90-140 mmHg. Enter if you've checked recently."
+                title="Systolic BP normally sits at 90-120 mmHg."
               >
                 ⓘ
               </span>
@@ -492,19 +546,20 @@ const JournalEntryForm = ({ onError }) => {
               name="SystolicBP"
               value={formData.SystolicBP || ""}
               onChange={handleChange}
-              min="50"
-              max="250"
-              placeholder="Optional - Enter if you want to track blood pressure"
-              className={errors.BloodPressure ? "error" : ""}
+              placeholder="Optional - Need to enter both Systolic and Diastolic BP to track blood pressure"
+              className={errors.SystolicBP ? "error" : ""}
             />
+            {errors.SystolicBP && (
+              <span className="error-message">{errors.SystolicBP}</span>
+            )}
           </div>
 
           <div className="entry-form-section" style={{ marginTop: "1rem" }}>
             <label htmlFor="diastolicBP">
-              Diastolic (mmHg)
+              Diastolic (mmHg){" "}
               <span
                 className="entry-info-tooltip"
-                title="Normal range is 60-90 mmHg. Enter if you've checked recently."
+                title="Diastolic BP normally sits at 60-90 mmHg."
               >
                 ⓘ
               </span>
@@ -515,21 +570,21 @@ const JournalEntryForm = ({ onError }) => {
               name="DiastolicBP"
               value={formData.DiastolicBP || ""}
               onChange={handleChange}
-              min="30"
-              max="150"
-              placeholder="Optional - Enter if you want to track blood pressure"
-              className={errors.BloodPressure ? "error" : ""}
+              placeholder="Optional - Need to enter both Systolic and Diastolic BP to track blood pressure"
+              className={errors.DiastolicBP ? "error" : ""}
             />
-            {errors.BloodPressure && (
-              <span className="error-message">{errors.BloodPressure}</span>
+            {errors.DiastolicBP && (
+              <span className="error-message">{errors.DiastolicBP}</span>
             )}
           </div>
         </div>
-        <div className="entry-form-section journal-entry-info-note">
+        {/* <div className="entry-form-section journal-entry-info-note">
           <p>
-            blood pressure tracking is optional, but it's recommended to monitor it during pregnancy. Please ensure both systolic and diastolic values are entered together for accurate tracking.
+            Blood pressure tracking is optional, but it's recommended to monitor
+            it during pregnancy. Please ensure both systolic and diastolic
+            values are entered together for accurate tracking.
           </p>
-        </div>
+        </div> */}
 
         <div className="entry-form-section">
           <label htmlFor="heartRateBPM">
@@ -548,13 +603,13 @@ const JournalEntryForm = ({ onError }) => {
             name="HeartRateBPM"
             value={formData.HeartRateBPM || ""}
             onChange={handleChange}
-            min="30"
-            max="200"
             placeholder="Optional - Can enter if you want to track heart rate"
+            className={errors.HeartRateBPM ? "error" : ""}
           />
+          {errors.HeartRateBPM && (
+            <span className="error-message">{errors.HeartRateBPM}</span>
+          )}
         </div>
-
-        
 
         {/* Blood Sugar Level - only on clinic weeks */}
         {bloodTestClinicWeeks.includes(Number(formData.CurrentWeek)) && (
@@ -574,19 +629,24 @@ const JournalEntryForm = ({ onError }) => {
               name="BloodSugarLevelMgDl"
               value={formData.BloodSugarLevelMgDl || ""}
               onChange={handleChange}
-              min="30"
-              max="500"
-              placeholder="Optional - Enter if you've checked recently."
+              className={errors.BloodSugarLevelMgDl ? "error" : ""}
             />
+            {errors.BloodSugarLevelMgDl && (
+              <span className="error-message">
+                {errors.BloodSugarLevelMgDl}
+              </span>
+            )}
           </div>
         )}
         {!bloodTestClinicWeeks.includes(Number(formData.CurrentWeek)) && (
-        <div className="entry-form-section journal-entry-info-note">
-          <p>
-            blood sugar tracking is only available on clinic weeks (4, 12, 24, 28). It's highly recommended to monitor it to prevent pregnancy diabetes.
-          </p>
-        </div>
-      )}
+          <div className="entry-form-section journal-entry-info-note">
+            <p>
+              Blood sugar tracking is only available on clinic weeks (4, 12, 24,
+              28). It's highly recommended to monitor it to prevent pregnancy
+              diabetes.
+            </p>
+          </div>
+        )}
 
         <SymptomsAndMood
           selectedMood={formData.MoodNotes}
@@ -617,7 +677,8 @@ const JournalEntryForm = ({ onError }) => {
       {!ultrasoundClinicWeeks.includes(Number(formData.CurrentWeek)) && (
         <div className="entry-form-section journal-entry-info-note">
           <p>
-            Ultrasound tracking is only available on clinic weeks (12, 20, 28, 36).
+            Ultrasound tracking is only available on clinic weeks (12, 20, 28,
+            36).
           </p>
         </div>
       )}

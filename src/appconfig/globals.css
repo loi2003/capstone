@@ -23,6 +23,12 @@
   align-items: center;
 }
 
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
 .full-screen {
   position: absolute;
   width: 100vw;

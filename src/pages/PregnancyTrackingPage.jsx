@@ -181,7 +181,7 @@ useEffect(() => {
         {
           userId,
           firstDayOfLastMenstrualPeriod,
-          preWeight,
+          preWeight: preWeight,
         },
         token
       );
