@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Header from "../header/Header";
-import Footer from "../footer/Footer";
 import { editUserProfile } from "../../apis/authentication-api";
 // import { getEssentialNutritionalNeeds } from "../../apis/nutrient-suggestion-api";
 import "./RecommendedNutritionalNeeds.css";
@@ -265,8 +263,6 @@ const RecommendedNutritionalNeeds = () => {
 
   return (
     <div className="nutritionalneeds-page">
-      <Header />
-
       <div className="nutritionalneeds-heading">
         <h1>Recommended Nutritional Needs</h1>
         <p>Enter your gestational week and date of birth to see your needs.</p>
@@ -303,11 +299,12 @@ const RecommendedNutritionalNeeds = () => {
 
       {Array.isArray(nutrients) && nutrients.length > 0 && (
         <div className="nutritionalneeds-table-wrapper">
-          <h2>Nutritional Needs for Week {week}</h2>
+          <h2>Recommended Nutritional Needs for Week {week}</h2>
+          <p>Below is the recommended nutrition needed in a day to support your pregnancy:</p>
           <table className="nutritionalneeds-table">
             <thead>
               <tr>
-                <th>Target</th>
+                <th>Indicator</th>
                 <th>Value</th>
                 <th>Unit</th>
               </tr>
@@ -345,8 +342,6 @@ const RecommendedNutritionalNeeds = () => {
           </table>
         </div>
       )}
-
-      <Footer />
     </div>
   );
 };

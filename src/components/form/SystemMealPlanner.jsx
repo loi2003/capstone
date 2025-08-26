@@ -1,6 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import Header from "../header/Header";
-import Footer from "../footer/Footer";
 import "./SystemMealPlanner.css";
 import { FaSyncAlt, FaInfoCircle, FaUtensils } from "react-icons/fa";
 
@@ -331,7 +329,6 @@ const SystemMealPlanner = () => {
 
   return (
     <div className="mealplanner-page-wrapper">
-      <Header />
 
       <div className="mealplanner-heading">
         <h1>System Meal Planner</h1>
@@ -709,8 +706,6 @@ const SystemMealPlanner = () => {
           )}
         </div>
       )}
-
-      <Footer />
     </div>
   );
 };

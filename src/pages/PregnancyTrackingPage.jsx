@@ -11,6 +11,8 @@ import UpcomingAppointments from "../components/tracking/UpcomingAppointments";
 import SymptomsAndMood from "../components/tracking/SymptomsAndMood";
 import TrimesterChecklists from "../components/tracking/TrimesterChecklists";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
+import CustomMealPlanner from "../components/form/CustomMealPlanner";
+import RecommendedNutritionalNeeds from "../components/form/RecommendedNutritionalNeeds";
 import {
   getGrowthDataFromUser,
   createGrowthDataProfile,
@@ -34,12 +36,14 @@ const PregnancyTrackingPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
+  const [mealPlannerType, setMealPlannerType] = useState("system");
 
   const [searchParams] = useSearchParams();
   const tabFromURL =
     (searchParams.get("weeklyinfo") && "weekly") ||
     (searchParams.get("reminderconsultationinfo") && "reminderconsultation") ||
-    (searchParams.get("nutritioninfo") && "nutrition") ||
+    (searchParams.get("mealplannerinfo") && "mealplanner") ||
+    (searchParams.get("recommendednutritionalneedsinfo") && "recommendednutritionalneeds") ||
     (searchParams.get("journalinfo") && "journal") ||
     "weekly"; // default
 
@@ -48,47 +52,47 @@ const PregnancyTrackingPage = () => {
   const [openJournalModal, setOpenJournalModal] = useState(false);
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
-const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const [loadingAppointments, setLoadingAppointments] = useState(true);
 
-useEffect(() => {
-  const fetchAppointments = async () => {
-    try {
-      setLoadingAppointments(true);
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        setLoadingAppointments(true);
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
 
-      const response = await viewAllOfflineConsultation(userId, null, token);
-      const consultations = Array.isArray(response.data?.data)
-        ? response.data.data
-        : [];
+        const response = await viewAllOfflineConsultation(userId, null, token);
+        const consultations = Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
 
-      const mappedAppointments = consultations.map((c) => {
-        const start = new Date(c.startDate);
-        const end = new Date(c.endDate);
-        return {
-          id: c.id,
-          name: c.checkupName || "Unknown name",
-          note: c.healthNote || "No notes available",
-          type: c.consultationType?.toLowerCase(),
-          doctor: c.doctor?.fullName || "Unknown Doctor",
-          clinic: c.clinic?.name || "Unknown Clinic",
-          address: c.clinic?.address,
-          start,
-          end,
-          status: c.status?.toLowerCase(),
-        };
-      });
+        const mappedAppointments = consultations.map((c) => {
+          const start = new Date(c.startDate);
+          const end = new Date(c.endDate);
+          return {
+            id: c.id,
+            name: c.checkupName || "Unknown name",
+            note: c.healthNote || "No notes available",
+            type: c.consultationType?.toLowerCase(),
+            doctor: c.doctor?.fullName || "Unknown Doctor",
+            clinic: c.clinic?.name || "Unknown Clinic",
+            address: c.clinic?.address,
+            start,
+            end,
+            status: c.status?.toLowerCase(),
+          };
+        });
 
-      setAppointments(mappedAppointments);
-    } catch (err) {
-      console.error("Error fetching appointments:", err);
-    } finally {
-      setLoadingAppointments(false);
-    }
-  };
+        setAppointments(mappedAppointments);
+      } catch (err) {
+        console.error("Error fetching appointments:", err);
+      } finally {
+        setLoadingAppointments(false);
+      }
+    };
 
-  fetchAppointments();
-}, []);
+    fetchAppointments();
+  }, []);
 
   const appointmentDates = appointments.map((a) => a.start.toISOString());
 
@@ -332,9 +336,14 @@ useEffect(() => {
                     queryKey: "reminderconsultationinfo",
                   },
                   {
-                    key: "nutrition",
-                    label: "Nutrition Tips",
-                    queryKey: "nutritioninfo",
+                    key: "mealplanner",
+                    label: "Meal Planner",
+                    queryKey: "mealplannerinfo",
+                  },
+                  {
+                    key: "recommendednutritionalneeds",
+                    label: "Recommended Nutritional Needs",
+                    queryKey: "recommendednutritionalneedsinfo",
                   },
                   {
                     key: "journal",
@@ -481,9 +490,29 @@ useEffect(() => {
                   />
                 </div>
               )}
-              {activeTab === "nutrition" && (
+              {activeTab === "mealplanner" && (
                 <div className="tab-content">
-                  <SystemMealPlanner />
+                  <div className="mealplanner-header">
+                    <label htmlFor="mealPlannerSelect">Choose Planner:</label>
+                    <select
+                      id="mealPlannerSelect"
+                      value={mealPlannerType}
+                      onChange={(e) => setMealPlannerType(e.target.value)}
+                    >
+                      <option value="system">System Meal Planner</option>
+                      <option value="custom">Custom Meal Plan</option>
+                    </select>
+                  </div>
+
+                  {mealPlannerType === "system" && <SystemMealPlanner />}
+                  {mealPlannerType === "custom" && <CustomMealPlanner />}
+                </div>
+              )}
+              {activeTab === "recommendednutritionalneeds" && (
+                <div className="tab-content">
+                  <RecommendedNutritionalNeeds
+                    pregnancyData={pregnancyData}
+                  />
                 </div>
               )}
             </div>

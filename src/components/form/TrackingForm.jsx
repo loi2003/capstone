@@ -113,7 +113,7 @@ const TrackingForm = ({ onSubmit, isLoading }) => {
 
         <form onSubmit={handleSubmit} className="lmp-form">
           <div className="form-group">
-            <label htmlFor="lmp-date">Last Menstrual Period Date *</label>
+            <label htmlFor="lmp-date">Last Menstrual Period Date <span className="must-enter-info">* (Required)</span></label>
             <input
               type="date"
               id="lmp-date"
@@ -131,7 +131,7 @@ const TrackingForm = ({ onSubmit, isLoading }) => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="pre-weight">Pre-pregnancy Weight (kg) *</label>
+            <label htmlFor="pre-weight">Pre-pregnancy Weight (kg) <span className="must-enter-info">* (Required)</span></label>
             <input
               type="number"
               id="pre-weight"
@@ -149,7 +149,7 @@ const TrackingForm = ({ onSubmit, isLoading }) => {
             )}
           </div>
           <div className="form-group">
-            <label htmlFor="pre-height">Pre-pregnancy Height (cm) *</label>
+            <label htmlFor="pre-height">Pre-pregnancy Height (cm) <span className="must-enter-info">* (Required)</span></label>
             <input
               type="number"
               id="pre-height"

@@ -13,6 +13,14 @@
   --co-4: #03C39A;
   --co-5: #F0F3BE;
 }
+
+.overview-header h2  {
+  color: #013F50;
+}
+
+.overview-header p {
+  color: #666;
+}
 .pregnancy-tracking-page {
   min-height: 100vh;
   display: flex;
@@ -117,15 +125,14 @@
 }
 
 .tracking-welcome-header h1 {
-  color: var(--nguyen-primary-bg);
-  
+  color: #013F50;
   font-size: 2.5rem;
   margin-bottom: 1rem;
   font-weight: 700;
 }
 
 .tracking-welcome-header p {
-  color: var(--nguyen-accent-color);
+  color: #666;
   font-size: 1.2rem;
   line-height: 1.6;
 }

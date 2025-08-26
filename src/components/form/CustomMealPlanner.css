@@ -1,0 +1,18 @@
+.mealplanner-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mealplanner-header label {
+  font-weight: 600;
+  color: #04668d;
+}
+
+.mealplanner-header select {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
