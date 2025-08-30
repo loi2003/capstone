@@ -1,23 +1,35 @@
-import { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Scatter } from 'react-chartjs-2';
 import { Chart as ChartJS, PointElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement } from 'chart.js';
 import '../styles/HomePage.css';
 import MainLayout from '../layouts/MainLayout';
 import { homepageData } from '../data/homepageData';
-import ChatBox from '../components/chatbox/ChatBox';
+import ChatBoxPage from '../components/chatbox/ChatBoxPage';
 
 // Register Chart.js components
 ChartJS.register(PointElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement);
 
 const HomePage = () => {
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const location = useLocation();
+  const [isPopupOpen, setIsPopupOpen] = useState(() => {
+    // Only auto-open chat on homepage ("/") for first visit
+    const hasVisited = localStorage.getItem('hasVisited');
+    return location.pathname === '/' && !hasVisited;
+  });
   const [selectedWeek, setSelectedWeek] = useState(null);
   const [currentTrimester, setCurrentTrimester] = useState(0);
   const chartRef = useRef(null);
   const isDragging = useRef(false);
   const startX = useRef(0);
+
+  // Set hasVisited flag after first visit to homepage
+  useEffect(() => {
+    if (isPopupOpen && location.pathname === '/') {
+      localStorage.setItem('hasVisited', 'true');
+    }
+  }, [isPopupOpen, location.pathname]);
 
   // Get pregnancy data
   const pregnancyData = homepageData.pregnancyTracker.chartData.weeks;
@@ -429,7 +441,7 @@ const HomePage = () => {
           </svg>
         </motion.div>
         {/* Contact Popup with ChatBox */}
-        <ChatBox isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+        <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       </div>
     </MainLayout>
   );

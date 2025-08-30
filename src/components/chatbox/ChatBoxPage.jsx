@@ -1,16 +1,14 @@
-
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Added Link import
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import './ChatBox.css';
+import './ChatBoxPage.css';
 
-const ChatBoxPage = () => {
+const ChatBoxPage = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const chatAreaRef = useRef(null);
   const [selectedChatId, setSelectedChatId] = useState(null);
-  const navigate = useNavigate();
 
   // Load chat history from localStorage
   useEffect(() => {
@@ -80,11 +78,9 @@ const ChatBoxPage = () => {
     setSelectedChatId(Number(chatId));
   };
 
-  const handleClose = () => {
-    navigate('/advice');
-  };
-
   const storedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+
+  if (!isOpen) return null;
 
   return (
     <motion.div
@@ -100,7 +96,7 @@ const ChatBoxPage = () => {
           <h3>Pregnancy Support</h3>
           <span className="chatbox-status">Online</span>
         </div>
-        <button className="chatbox-close" onClick={handleClose} aria-label="Close chat">
+        <button className="chatbox-close" onClick={onClose} aria-label="Close chat">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M18 6L6 18" />
             <path d="M6 6l12 12" />

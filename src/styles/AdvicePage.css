@@ -15,6 +15,17 @@
   gap: 2rem;
 }
 
+/* Overlay Styling */
+.advice-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+}
+
 /* Sidebar - Advice History Styling */
 .advice-history-sidebar {
   width: 300px;
@@ -192,6 +203,159 @@
 
 .advice-popup-close:hover {
   background: #006cdc;
+}
+
+/* Staff Type Prompt Styling */
+.advice-staff-type-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 1000;
+  max-width: 400px;
+  width: 90%;
+}
+
+.advice-staff-type-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.advice-staff-type-message {
+  font-size: 1rem;
+  color: #333333;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.advice-staff-type-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.advice-staff-type-button {
+  background: #0084ff;
+  color: #ffffff;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  flex: 1;
+}
+
+.advice-staff-type-button:hover {
+  background: #006cdc;
+}
+
+.advice-staff-type-cancel {
+  background: #e5e7eb;
+  color: #333333;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.advice-staff-type-cancel:hover {
+  background: #d1d5db;
+}
+
+/* Compare Button Styling */
+.advice-compare-button {
+  background: #0084ff;
+  color: #ffffff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.advice-compare-button:hover {
+  background: #006cdc;
+}
+
+.advice-compare-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Comparison Container Styling */
+.advice-comparison-container {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.advice-comparison-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.advice-comparison-question {
+  font-size: 1rem;
+  color: #333333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.advice-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.advice-comparison-table th,
+.advice-comparison-table td {
+  padding: 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.advice-comparison-table th {
+  background: #f5f7fa;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.advice-comparison-table td {
+  font-size: 0.95rem;
+}
+
+.advice-comparison-table .advice-message-content {
+  margin: 0;
 }
 
 /* Chat Container Styling */
@@ -380,9 +544,6 @@
     width: 100%;
     position: relative;
     top: auto;
-    height: auto;
-    max-height: 250px;
-    margin-bottom: 1.5rem;
   }
 
   .advice-history-container {
@@ -418,9 +579,48 @@
     max-width: 85%;
   }
 
-  .advice-login-popup {
+  .advice-login-popup,
+  .advice-staff-type-popup {
     width: 90%;
     padding: 1.5rem;
+  }
+
+  .advice-comparison-table {
+    display: block;
+  }
+
+  .advice-comparison-table thead,
+  .advice-comparison-table tbody,
+  .advice-comparison-table tr,
+  .advice-comparison-table th,
+  .advice-comparison-table td {
+    display: block;
+  }
+
+  .advice-comparison-table th {
+    font-size: 0.95rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .advice-comparison-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .advice-comparison-table th:last-child,
+  .advice-comparison-table td:last-child {
+    border-bottom: none;
+  }
+
+  .advice-staff-type-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .advice-staff-type-button {
+    padding: 0.7rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -455,5 +655,36 @@
   .advice-send-icon {
     width: 20px;
     height: 20px;
+  }
+
+  .advice-comparison-table th,
+  .advice-comparison-table td {
+    padding: 0.5rem;
+  }
+
+  .advice-comparison-title {
+    font-size: 1.1rem;
+  }
+
+  .advice-comparison-question {
+    font-size: 0.9rem;
+  }
+
+  .advice-staff-type-title {
+    font-size: 1.3rem;
+  }
+
+  .advice-staff-type-message {
+    font-size: 0.9rem;
+  }
+
+  .advice-staff-type-button {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .advice-staff-type-cancel {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
   }
 }
