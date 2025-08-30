@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -176,12 +177,15 @@ const ProfilePage = () => {
         },
       });
       if (response.data?.error === 0) {
-        setStatus({ message: "Password changed successfully!", type: "success" });
+        setStatus({ message: "Password changed successfully! Please log in again.", type: "success" });
+        // Optionally clear token and redirect to login
+        localStorage.removeItem("token");
+        setTimeout(() => navigate("/login"), 2000); // Redirect after 2 seconds
         setPasswordMode(false);
         setPasswordData({ oldPassword: "", newPassword: "", confirmNewPassword: "" });
         setShowPasswords({ oldPassword: false, newPassword: false, confirmNewPassword: false });
       } else {
-        throw new Error(response.data?.message || "Password change failed");
+        setStatus({ message: response.data?.message || "Password change failed", type: "error" });
       }
     } catch (error) {
       console.error("Password change failed:", error);
@@ -209,18 +213,18 @@ const ProfilePage = () => {
         >
           <div className="profile-header">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => navigate(-1)}
               className="back-button"
             >
               <svg
-                width="24"
-                height="24"
+                width="20"
+                height="20"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="#ffffff"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 xmlns="http://www.w3.org/2000/svg"
