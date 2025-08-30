@@ -6,6 +6,7 @@ import { Chart as ChartJS, PointElement, LinearScale, CategoryScale, Tooltip, Le
 import '../styles/HomePage.css';
 import MainLayout from '../layouts/MainLayout';
 import { homepageData } from '../data/homepageData';
+import ChatBox from '../components/chatbox/ChatBox';
 
 // Register Chart.js components
 ChartJS.register(PointElement, LinearScale, CategoryScale, Tooltip, Legend, LineElement);
@@ -215,7 +216,6 @@ const HomePage = () => {
             </motion.div>
           </div>
         </section>
-
         {/* Features Section */}
         <section className="features-section">
           <h2 className="section-title">Our Service</h2>
@@ -236,7 +236,6 @@ const HomePage = () => {
             ))}
           </div>
         </section>
-
         {/* Testimonials Section */}
         <section className="testimonials-section">
           <h2 className="section-title">What Our Community Says</h2>
@@ -261,7 +260,6 @@ const HomePage = () => {
             ))}
           </div>
         </section>
-
         {/* Community Section */}
         <section className="community-section">
           <motion.div
@@ -278,7 +276,6 @@ const HomePage = () => {
             </Link>
           </motion.div>
         </section>
-
         {/* Pregnancy Tracker Section */}
         <section className="pregnancy-tracker-section">
           <h2 className="section-title">{homepageData.pregnancyTracker.title}</h2>
@@ -343,7 +340,6 @@ const HomePage = () => {
             {homepageData.pregnancyTracker.cta}
           </Link>
         </section>
-
         {/* Health Tips Section */}
         <section className="health-tips-section">
           <h2 className="section-title">{homepageData.healthTips.title}</h2>
@@ -371,7 +367,6 @@ const HomePage = () => {
             {homepageData.healthTips.cta}
           </Link>
         </section>
-
         {/* Pregnancy Guides Section */}
         <section className="resources-section">
           <h2 className="section-title">{homepageData.pregnancyGuides.title}</h2>
@@ -396,7 +391,6 @@ const HomePage = () => {
             {homepageData.pregnancyGuides.cta}
           </Link>
         </section>
-
         {/* Partners Section */}
         <section className="partners-section">
           <h2 className="section-title">{homepageData.partners.title}</h2>
@@ -423,7 +417,6 @@ const HomePage = () => {
             ))}
           </div>
         </section>
-
         {/* Contact Icon */}
         <motion.div
           className="contact-icon"
@@ -435,20 +428,8 @@ const HomePage = () => {
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </motion.div>
-
-        {/* Contact Popup */}
-        {isPopupOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-            className="contact-popup"
-          >
-            <Link to="/consultation" className="popup-button">Consultant Chat</Link>
-            <Link to="/advice" className="popup-button">Quick Advice</Link>
-          </motion.div>
-        )}
+        {/* Contact Popup with ChatBox */}
+        <ChatBox isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       </div>
     </MainLayout>
   );
