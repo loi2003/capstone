@@ -278,12 +278,13 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   margin-left: 6px;
   cursor: help;
+  visibility: visible;
 }
 
 .error-message {
   color: #e74c3c;
   font-size: 0.9rem;
-  margin-top: 0.25rem;
+  margin-top: 1rem;
 }
 
 .journal-entry-preview-wrapper {

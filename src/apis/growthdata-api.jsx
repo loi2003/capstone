@@ -88,7 +88,11 @@ export const editGrowthDataProfile = async (data, token) => {
     const formData = new FormData();
     formData.append('Id', data.id);
     formData.append('UserId', data.userId);
+    if (data.firstDayOfLastMenstrualPeriod != null)
     formData.append('FirstDayOfLastMenstrualPeriod', data.firstDayOfLastMenstrualPeriod);
+    if (data.estimatedDueDate != null)
+    formData.append('EstimatedDueDate', data.estimatedDueDate);
+    if (data.preWeight != null)
     formData.append('PreWeight', data.preWeight);
 
     const response = await apiClient.put('/api/growthdata/edit-growthdata-profile', formData, {

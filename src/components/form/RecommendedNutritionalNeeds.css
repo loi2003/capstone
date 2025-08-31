@@ -1,0 +1,246 @@
+.nutritionalneeds-form-container {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Page layout */
+.nutritionalneeds-page {
+  background: #f7fbfc;
+  font-family: var(--font-inter, "Inter", sans-serif);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* Heading */
+.nutritionalneeds-heading {
+  text-align: center;
+  margin: 60px auto 30px;
+  max-width: 900px;
+}
+.nutritionalneeds-heading h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #013f50;
+  margin-bottom: 0.5rem;
+}
+.nutritionalneeds-heading p {
+  font-size: 1.05rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ============ PAGE LAYOUT ============ */
+.nutritionalneeds-page {
+  background: #f7fbfc;
+  font-family: var(--font-inter, "Inter", sans-serif);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+/* ============ FORM CARD ============ */
+.nutritionalneeds-form-container {
+  max-width: 400px;
+  /* display: flex; */
+  margin: 0 auto 2rem;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+.nutritionalneeds-form-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.nutritionalneeds-form label {
+  display: flex;
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #04668d;
+}
+
+.nutritionalneeds-form input,
+.nutritionalneeds-form select {
+  width: 100%;
+  border: 1px solid #dbdbdb;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+  background: #f9fdff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+.nutritionalneeds-form input:focus,
+.nutritionalneeds-form select:focus {
+  border-color: #04668d;
+  box-shadow: 0 0 6px rgba(4, 102, 141, 0.3);
+  outline: none;
+}
+
+/* Button */
+.nutritionalneeds-form button {
+  margin-top: 1.5rem;
+  width: 100%;
+  background: #02808f;
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+}
+.nutritionalneeds-form button:hover {
+  background: #04668d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* Error message */
+.error {
+  color: #e74c3c;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+/* ============ TABLE ============ */
+.nutritionalneeds-table-wrapper {
+  max-width: 1200px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+}
+.nutritionalneeds-table-wrapper h2 {
+  text-align: center;
+  color: #013f50;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.nutritionalneeds-table {
+  width: 100%;
+  margin-top: 1rem;
+  border: 1px solid #ddd;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 0.6rem;
+  overflow: hidden;
+}
+
+.nutritionalneeds-table th,
+.nutritionalneeds-table td {
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd; /* 👈 add this */
+  text-align: left;
+}
+
+.nutritionalneeds-table th {
+  background: #02808f;
+  color: white;
+  font-weight: 600;
+  text-align: center;
+}
+
+.nutritionalneeds-table .category-row td {
+  background: #f0f8ff;
+  font-weight: 700;
+  color: #04668d;
+  border: 1px solid #ddd; /* 👈 ensures category row also has borders */
+}
+
+/* Center align the Value (2nd column) and Unit (3rd column) */
+.nutritionalneeds-table td:nth-child(2),
+.nutritionalneeds-table td:nth-child(3) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+
+/* .nutritionalneeds-table td {
+} */
+
+.nutritionalneeds-table tbody tr td {
+  padding: 0.8rem 1rem;
+}
+.nutritionalneeds-table tbody tr:hover {
+  background: #f9fdff;
+}
+
+.target-with-tooltip {
+  display: flex;
+  justify-content: space-between; /* pushes icon to the far right */
+  align-items: center;
+  position: relative;
+}
+
+.target-text {
+  flex: 1; /* take remaining space */
+}
+
+.tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Small red info icon */
+.tooltip-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 1px solid #e74c3c;
+  border-radius: 50%;
+  color: #e74c3c;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  line-height: 14px;
+  cursor: pointer;
+}
+
+/* Tooltip bubble */
+.tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 260px;
+  background-color: #fff;
+  color: #333;
+  text-align: left;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #02808F;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  position: absolute;
+  bottom: 125%; /* 👈 place above the icon */
+  left: 50%; /* 👈 center horizontally */
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  z-index: 10;
+
+  transition: opacity 0.2s ease-in-out;
+}
+
+/* Tooltip arrow pointing downwards */
+.tooltip-text::after {
+  content: "";
+  position: absolute;
+  top: 100%;  /* 👈 position arrow below the tooltip */
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #02808F transparent transparent transparent;
+}
+
+/* Show on hover */
+.target-with-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}

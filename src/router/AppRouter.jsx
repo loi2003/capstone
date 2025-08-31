@@ -52,6 +52,7 @@ import DishManagement from "../pages/nutrientspecialist/DishManagement";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
 import AdvicePage from "../pages/AdvicePage";
+import RecommendedNutritionalNeeds from "../components/form/RecommendedNutritionalNeeds";
 import NotificationPage from "../pages/NotificationPage";
 
 const AppRoutes = () => {
@@ -103,6 +104,7 @@ const AppRoutes = () => {
           element={<EditJournalEntryForm />}
         />
         <Route path="/system-meal-planner" element={<SystemMealPlanner />} />
+        <Route path="/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
