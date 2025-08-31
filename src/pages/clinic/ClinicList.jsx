@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { getAllClinics, getClinicsByName } from "../../apis/clinic-api";
 import MainLayout from "../../layouts/MainLayout";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import ChatBoxPage from "../../components/chatbox/ChatBoxPage";
 import "../../styles/ClinicList.css";
 
 const CLINICS_PER_PAGE = 6;
@@ -28,6 +30,7 @@ const ClinicList = () => {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -296,12 +299,18 @@ const ClinicList = () => {
             )}
           </div>
         </main>
-        <footer className="clinic-footer">
-          <p className="footer-text">
-            &copy; {new Date().getFullYear()} DoIt Clinic Platform. All rights
-            reserved.
-          </p>
-        </footer>
+        <motion.div
+          className="contact-icon"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsPopupOpen(!isPopupOpen)}
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </motion.div>
+        <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+        
       </MainLayout>
     </div>
   );

@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '../styles/AboutPage.css';
 import MainLayout from '../layouts/MainLayout';
 import { aboutpageData } from '../data/aboutpageData';
+import ChatBoxPage from '../components/chatbox/ChatBoxPage'; // Import ChatBoxPage
 
 const AboutPage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -175,7 +175,7 @@ const AboutPage = () => {
 
         {/* Contact Icon */}
         <motion.div
-          className="about-contact-icon"
+          className="contact-icon" // Use same class as HomePage for consistency
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsPopupOpen(!isPopupOpen)}
@@ -185,19 +185,8 @@ const AboutPage = () => {
           </svg>
         </motion.div>
 
-        {/* Contact Popup */}
-        {isPopupOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-            className="about-contact-popup"
-          >
-            <Link to="/consultation" className="about-popup-button">Consultant Chat</Link>
-            <Link to="/advice" className="about-popup-button">Quick Advice</Link>
-          </motion.div>
-        )}
+        {/* Contact Popup with ChatBox */}
+        <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       </div>
     </MainLayout>
   );
