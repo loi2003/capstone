@@ -46,22 +46,24 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
 
         const lmpDateStr = localStorage.getItem("lmpDate");
         const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date();
+        
+        const mappedEmergency = remindersArray
+          .filter((r) => r.type === "Emergency" && r.isActive === 1)
+          .map((r) => {
+            const startDate = getDateFromWeek(lmpDate, r.recommendedStartWeek);
+            const endDate = getDateFromWeek(lmpDate, r.recommendedEndWeek);
 
-        const mappedEmergency = remindersArray.map((r) => {
-          const startDate = getDateFromWeek(lmpDate, r.recommendedStartWeek);
-          const endDate = getDateFromWeek(lmpDate, r.recommendedEndWeek);
-
-          return {
-            id: r.id,
-            title: r.title,
-            startDate,
-            endDate,
-            startWeek: r.recommendedStartWeek,
-            endWeek: r.recommendedEndWeek,
-            note: r.description,
-            type: r.type?.toLowerCase() || "emergency",
-          };
-        });
+            return {
+              id: r.id,
+              title: r.title,
+              startDate,
+              endDate,
+              startWeek: r.recommendedStartWeek,
+              endWeek: r.recommendedEndWeek,
+              note: r.description,
+              type: r.type?.toLowerCase() || "emergency",
+            };
+          });
 
         setEmergencyReminders(mappedEmergency);
       } catch (err) {
@@ -100,7 +102,8 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
     const date = new Date(dateStr);
     const start = new Date(date.getFullYear(), 0, 1);
     const diff =
-      date - start +
+      date -
+      start +
       (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
     return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
   };

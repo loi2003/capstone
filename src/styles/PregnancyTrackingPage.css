@@ -7,15 +7,15 @@
   --color-text: #848785;
   --light-text: #faf9f5;
   --dark-text: #013f50;
-  --co-1: #04668D;
-  --co-2: #02808F;
-  --co-3: #00A996;
-  --co-4: #03C39A;
-  --co-5: #F0F3BE;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f0f3be;
 }
 
-.overview-header h2  {
-  color: #013F50;
+.overview-header h2 {
+  color: #013f50;
 }
 
 .overview-header p {
@@ -94,7 +94,7 @@
 }
 
 .retry-btn {
-  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808F);
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808f);
   color: var(--white-text);
   border: none;
   padding: 0.75rem 1.5rem;
@@ -125,7 +125,7 @@
 }
 
 .tracking-welcome-header h1 {
-  color: #013F50;
+  color: #013f50;
   font-size: 2.5rem;
   margin-bottom: 1rem;
   font-weight: 700;
@@ -190,6 +190,7 @@
 }
 
 .metric-label {
+  margin-top: 0.2rem;
   font-size: 0.9rem;
   color: var(--nguyen-accent-color);
 }
@@ -219,7 +220,7 @@
 
 .tab:hover {
   background-color: white;
-  color: #067DAD;
+  color: #067dad;
   /* transform: translateY(-2px);
   box-shadow: var(--shadow-hover); */
 }
@@ -228,7 +229,7 @@
   background-color: var(--white);
   color: var(--color-main);
   font-weight: 700;
-  border-bottom: 3px solid #067DAD;
+  border-bottom: 3px solid #067dad;
 }
 
 .tab.active:hover {
@@ -246,6 +247,50 @@
 .mood-selector {
   flex-wrap: nowrap;
 }
+.biometric-card.abnormal {
+  border: 2px solid var(--color-accent); /* red warning */
+  background: #ffeaea;
+}
+
+.biometric-card.abnormal .metric-value {
+  color: var(--color-accent);
+}
+.abnormal-alert-box {
+  background: #fff3f3;
+  border: 2px solid #e63946;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #b71c1c;
+  font-size: 0.95rem;
+}
+
+.abnormal-alert-box strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #e63946;
+}
+/* .abnormal-alert-box p {
+  color: #038474;
+} */
+
+.abnormal-alert-box ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.abnormal-alert-box li {
+  margin-bottom: 0.3rem;
+}
+
+.weight-chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
 
 @media (max-width: 600px) {
   .tab {
@@ -253,7 +298,6 @@
     padding: 0.75rem 0;
   }
 }
-
 
 /* Responsive Design */
 @media (max-width: 768px) {

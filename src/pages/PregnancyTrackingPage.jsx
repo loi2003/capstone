@@ -13,6 +13,8 @@ import TrimesterChecklists from "../components/tracking/TrimesterChecklists";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import CustomMealPlanner from "../components/form/CustomMealPlanner";
 import RecommendedNutritionalNeeds from "../components/form/RecommendedNutritionalNeeds";
+import WeightGainChart from "../components/tracking/WeightGainChart";
+import { getJournalByGrowthDataId } from "../apis/journal-api";
 import {
   getGrowthDataFromUser,
   createGrowthDataProfile,
@@ -43,7 +45,8 @@ const PregnancyTrackingPage = () => {
     (searchParams.get("weeklyinfo") && "weekly") ||
     (searchParams.get("reminderconsultationinfo") && "reminderconsultation") ||
     (searchParams.get("mealplannerinfo") && "mealplanner") ||
-    (searchParams.get("recommendednutritionalneedsinfo") && "recommendednutritionalneeds") ||
+    (searchParams.get("recommendednutritionalneedsinfo") &&
+      "recommendednutritionalneeds") ||
     (searchParams.get("journalinfo") && "journal") ||
     "weekly"; // default
 
@@ -53,6 +56,117 @@ const PregnancyTrackingPage = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
+
+  const [journals, setJournals] = useState([]);
+
+  useEffect(() => {
+    const fetchJournals = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const growthDataId = localStorage.getItem("growthDataId");
+
+        const { data } = await getJournalByGrowthDataId(growthDataId, token);
+        if (data?.error === 0 && Array.isArray(data?.data)) {
+          setJournals(data.data);
+        } else {
+          setJournals([]);
+        }
+      } catch (err) {
+        console.error("Error fetching journals:", err);
+        setJournals([]);
+      }
+    };
+
+    if (pregnancyData?.id) {
+      fetchJournals();
+    }
+  }, [pregnancyData?.id]);
+
+  const getAbnormalStatus = (bio) => {
+    const results = {};
+
+    // Blood Pressure
+    if (bio?.systolicBP && bio?.diastolicBP) {
+      const sys = bio.systolicBP;
+      const dia = bio.diastolicBP;
+      if (sys >= 160 || dia >= 110) {
+        results.bloodPressure = {
+          abnormal: true,
+          message: `Blood Pressure ${sys}/${dia}: severe range (≥160/110). Seek urgent care.`,
+        };
+      } else if (sys >= 140 || dia >= 90) {
+        results.bloodPressure = {
+          abnormal: true,
+          message: `Blood Pressure ${sys}/${dia}: elevated range (≥140/90)`,
+        };
+      } else if (sys < 90 || dia < 60) {
+        results.bloodPressure = {
+          abnormal: true,
+          message: `Blood Pressure ${sys}/${dia}: hypotension`,
+        };
+      }
+    }
+
+    // Blood Sugar
+    if (bio?.bloodSugar) {
+      const sugar = bio.bloodSugar;
+      if (sugar > 95) {
+        results.bloodSugar = {
+          abnormal: true,
+          message: `Blood Sugar Level ${sugar}: above pregnancy target (>95)`,
+        };
+      } else if (sugar < 70) {
+        results.bloodSugar = {
+          abnormal: true,
+          message: `Blood Sugar Level ${sugar}: hypoglycemia (<70)`,
+        };
+      }
+    }
+
+    // Heart Rate
+    if (bio?.heartRate) {
+      const hr = bio.heartRate;
+      if (hr > 110) {
+        results.heartRate = {
+          abnormal: true,
+          message: `Heart Rate ${hr}: elevated (>110)`,
+        };
+      } else if (hr < 50) {
+        results.heartRate = {
+          abnormal: true,
+          message: `Heart Rate ${hr}: bradycardia (<50)`,
+        };
+      }
+    }
+
+    // BMI
+    if (bio?.weightKg && bio?.heightCm) {
+      const bmi = bio.weightKg / Math.pow(bio.heightCm / 100, 2);
+      if (bmi < 18.5) {
+        results.bmi = {
+          abnormal: true,
+          message: `BMI ${bmi.toFixed(1)}: underweight`,
+        };
+      } else if (bmi >= 30) {
+        results.bmi = {
+          abnormal: true,
+          message: `BMI ${bmi.toFixed(
+            1
+          )}: obesity (≥30) increases pregnancy risks`,
+        };
+      }
+    }
+
+    return results;
+  };
+
+  const abnormalStatus = pregnancyData?.basicBioMetric
+    ? getAbnormalStatus(pregnancyData.basicBioMetric)
+    : {};
+
+  const abnormalMessages = Object.values(abnormalStatus)
+    .filter((s) => s?.abnormal)
+    .map((s) => s.message);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -185,7 +299,7 @@ const PregnancyTrackingPage = () => {
         {
           userId,
           firstDayOfLastMenstrualPeriod,
-          preWeight: preWeight,
+          preWeight,
         },
         token
       );
@@ -368,7 +482,11 @@ const PregnancyTrackingPage = () => {
 
               {activeTab === "weekly" && (
                 <div className="tab-content">
-                  <PregnancyOverview pregnancyData={pregnancyData} />
+                  <PregnancyOverview
+                    pregnancyData={pregnancyData}
+                    setPregnancyData={setPregnancyData}
+                    setError={setError}
+                  />
                   <PregnancyProgressBar
                     pregnancyData={pregnancyData}
                     selectedWeek={selectedWeek}
@@ -388,10 +506,10 @@ const PregnancyTrackingPage = () => {
                         userId={localStorage.getItem("userId")}
                         token={localStorage.getItem("token")}
                       />
-                      <TrimesterChecklists
+                      {/* <TrimesterChecklists
                         growthDataId={pregnancyData?.id}
                         token={localStorage.getItem("token")}
-                      />
+                      /> */}
                     </div>
                   </div>
                   {pregnancyData.basicBioMetric && (
@@ -400,67 +518,177 @@ const PregnancyTrackingPage = () => {
                         <h3>Health Metrics</h3>
                         <p>Your current health measurements</p>
                       </div>
+
+                      {abnormalMessages.length > 0 && (
+                        <div className="abnormal-alert-box">
+                          <strong>Health Alert:</strong>
+
+                          <ul>
+                            {abnormalMessages.map((msg, idx) => (
+                              <li key={idx}>{msg}</li>
+                            ))}
+                            <p>Please consult your healthcare provider.</p>
+                          </ul>
+                        </div>
+                      )}
                       <div className="biometric-cards">
-                        {pregnancyData.basicBioMetric.weightKg > 0 && (
-                          <div className="biometric-card">
-                            <div className="metric-icon">
-                              <img
-                                src={weightIcon}
-                                alt="Weight"
-                                className="bbm-icon"
-                              />
-                            </div>
-                            <div className="metric-info">
-                              <span className="metric-value">
-                                {pregnancyData.basicBioMetric.weightKg} Kg
-                              </span>
-                              <span className="metric-label">
-                                Current Weight
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        {pregnancyData.basicBioMetric.bmi > 0 && (
-                          <div className="biometric-card">
-                            <div className="metric-icon">
-                              <img
-                                src={calculatorIcon}
-                                alt="BMI"
-                                className="bbm-icon"
-                              />
-                            </div>
-                            <div className="metric-info">
-                              <span className="metric-value">
-                                {pregnancyData.basicBioMetric.bmi.toFixed(1)}
-                              </span>
-                              <span className="metric-label">BMI</span>
-                            </div>
-                          </div>
-                        )}
-                        {(pregnancyData.basicBioMetric.systolicBP > 0 ||
-                          pregnancyData.basicBioMetric.diastolicBP > 0) && (
-                          <div className="biometric-card">
-                            <div className="metric-icon">
-                              <img
-                                src={heartRateIcon}
-                                alt="Heart Rate"
-                                className="bbm-icon"
-                              />
-                            </div>
-                            <div className="metric-info">
-                              <span className="metric-value">
-                                {pregnancyData.basicBioMetric.systolicBP}/
-                                {pregnancyData.basicBioMetric.diastolicBP} mmHg
-                              </span>
-                              <span className="metric-label">
-                                Blood Pressure
-                              </span>
-                            </div>
-                          </div>
-                        )}
+                        {(() => {
+                          const status = getAbnormalStatus(
+                            pregnancyData.basicBioMetric
+                          );
+
+                          return (
+                            <>
+                              {pregnancyData.basicBioMetric.weightKg > 0 && (
+                                <div className="biometric-card">
+                                  <div className="metric-icon">
+                                    <img
+                                      src={weightIcon}
+                                      alt="Weight"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.basicBioMetric.weightKg} Kg
+                                    </span>
+                                    <span className="metric-label">
+                                      Current Weight
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {pregnancyData.basicBioMetric.bmi > 0 && (
+                                <div
+                                  className={`biometric-card ${
+                                    status.bmi?.abnormal ? "abnormal" : ""
+                                  }`}
+                                >
+                                  <div className="metric-icon">
+                                    <img
+                                      src={calculatorIcon}
+                                      alt="BMI"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.basicBioMetric.bmi.toFixed(
+                                        1
+                                      )}
+                                    </span>
+                                    <span className="metric-label">
+                                      BMI{" "}
+                                      {/* {status.bmi?.abnormal
+                                        ? `(${status.bmi.message})`
+                                        : ""} */}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {(pregnancyData.basicBioMetric.systolicBP > 0 ||
+                                pregnancyData.basicBioMetric.diastolicBP >
+                                  0) && (
+                                <div
+                                  className={`biometric-card ${
+                                    status.bloodPressure?.abnormal
+                                      ? "abnormal"
+                                      : ""
+                                  }
+                                  `}
+                                >
+                                  <div className="metric-icon">
+                                    <img
+                                      src={heartRateIcon}
+                                      alt="Blood Pressure"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.basicBioMetric.systolicBP}/
+                                      {pregnancyData.basicBioMetric.diastolicBP}{" "}
+                                      mmHg
+                                    </span>
+                                    <span className="metric-label">
+                                      Blood Pressure{" "}
+                                      {status.bloodPressure?.abnormal
+                                        ? `(${status.bloodPressure.message})`
+                                        : ""}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {pregnancyData.basicBioMetric.heartRate > 0 && (
+                                <div
+                                  className={`biometric-card ${
+                                    status.heartRate?.abnormal ? "abnormal" : ""
+                                  }`}
+                                >
+                                  <div className="metric-icon">
+                                    <img
+                                      src={heartRateIcon}
+                                      alt="Heart Rate"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.basicBioMetric.heartRate}{" "}
+                                      bpm
+                                    </span>
+                                    <span className="metric-label">
+                                      Heart Rate{" "}
+                                      {status.heartRate?.abnormal
+                                        ? `(${status.heartRate.message})`
+                                        : ""}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+
+                              {pregnancyData.basicBioMetric.bloodSugar > 0 && (
+                                <div
+                                  className={`biometric-card ${
+                                    status.bloodSugar?.abnormal
+                                      ? "abnormal"
+                                      : ""
+                                  }`}
+                                >
+                                  <div className="metric-icon">
+                                    <img
+                                      src={calculatorIcon}
+                                      alt="Blood Sugar"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.basicBioMetric.bloodSugar}{" "}
+                                      mg/dL
+                                    </span>
+                                    <span className="metric-label">
+                                      Blood Sugar{" "}
+                                      {status.bloodSugar?.abnormal
+                                        ? `(${status.bloodSugar.message})`
+                                        : ""}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   )}
+                  <WeightGainChart
+                    journalEntries={journals}
+                    preWeight={pregnancyData?.preWeight}
+                  />
                 </div>
               )}
               {activeTab === "reminderconsultation" && (
@@ -510,9 +738,7 @@ const PregnancyTrackingPage = () => {
               )}
               {activeTab === "recommendednutritionalneeds" && (
                 <div className="tab-content">
-                  <RecommendedNutritionalNeeds
-                    pregnancyData={pregnancyData}
-                  />
+                  <RecommendedNutritionalNeeds pregnancyData={pregnancyData} />
                 </div>
               )}
             </div>

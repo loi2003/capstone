@@ -1,24 +1,78 @@
-import "./PregnancyOverview.css"
+import { useState } from "react";
+import "./PregnancyOverview.css";
+import {
+  editGrowthDataProfile,
+  getCurrentWeekGrowthData,
+} from "../../apis/growthdata-api";
 
-const PregnancyOverview = ({ pregnancyData }) => {
+const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
+  const [isEditing, setIsEditing] = useState(null); // "lmp" | "duedate" | null
+  const [newDate, setNewDate] = useState("");
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    })
-  }
+    });
+  };
+  const formatDateForInput = (dateString) => {
+    const d = new Date(dateString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   const getTrimesterInfo = (trimester) => {
     const trimesterData = {
       1: { name: "First Trimester", weeks: "1-12 weeks", color: "#4caf50" },
       2: { name: "Second Trimester", weeks: "13-27 weeks", color: "#2196f3" },
       3: { name: "Third Trimester", weeks: "28-40 weeks", color: "#9c27b0" },
-    }
-    return trimesterData[trimester] || trimesterData[1]
-  }
+    };
+    return trimesterData[trimester] || trimesterData[1];
+  };
 
-  const trimesterInfo = getTrimesterInfo(pregnancyData.currentTrimester)
+  const handleSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const growthDataId = pregnancyData?.id;
+
+      if (!growthDataId || !userId) {
+        setError?.("Missing growth data ID or user ID.");
+        return;
+      }
+
+      const payload = {
+        id: growthDataId,
+        userId,
+        firstDayOfLastMenstrualPeriod: isEditing === "lmp" ? newDate : null,
+        estimatedDueDate: isEditing === "duedate" ? newDate : null,
+      };
+
+      await editGrowthDataProfile(payload, token);
+
+      // refresh pregnancy data
+      const currentDate = new Date().toISOString().split("T")[0];
+      const { data: pregRes } = await getCurrentWeekGrowthData(
+        userId,
+        currentDate,
+        token
+      );
+      if (pregRes?.error === 0 && pregRes?.data) {
+        setPregnancyData(pregRes.data);
+      }
+
+      setIsEditing(null);
+      setNewDate("");
+    } catch (err) {
+      console.error("Error editing growth data:", err);
+      setError?.("Failed to update growth data. Please try again.");
+    }
+  };
+
+  const trimesterInfo = getTrimesterInfo(pregnancyData.currentTrimester);
 
   return (
     <div className="pregnancy-overview">
@@ -28,6 +82,7 @@ const PregnancyOverview = ({ pregnancyData }) => {
       </div>
 
       <div className="overview-cards">
+        {/* Current Week Card */}
         <div className="overview-card highlight">
           <div className="card-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
@@ -42,9 +97,12 @@ const PregnancyOverview = ({ pregnancyData }) => {
             <p>Current pregnancy week</p>
           </div>
         </div>
-
+        {/* Trimester Card */}
         <div className="overview-card">
-          <div className="overview-card-icon" style={{ color: trimesterInfo.color }}>
+          <div
+            className="overview-card-icon"
+            style={{ color: trimesterInfo.color }}
+          >
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9M15 11.5C15.8 11.5 16.5 12.2 16.5 13S15.8 14.5 15 14.5 13.5 13.8 13.5 13 14.2 11.5 15 11.5M5 12C5.8 12 6.5 12.7 6.5 13.5S5.8 15 5 15 3.5 14.3 3.5 13.5 4.2 12 5 12Z"
@@ -58,7 +116,22 @@ const PregnancyOverview = ({ pregnancyData }) => {
           </div>
         </div>
 
-        <div className="overview-card">
+        {/* Due Date Card */}
+        <div
+          className={`overview-card ${
+            isEditing === "duedate" ? "editing" : "editable"
+          }`}
+          onClick={
+            isEditing === "duedate"
+              ? undefined
+              : () => {
+                  setIsEditing("duedate");
+                  setNewDate(
+                    formatDateForInput(pregnancyData.estimatedDueDate)
+                  );
+                }
+          }
+        >
           <div className="overview-card-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path
@@ -68,12 +141,59 @@ const PregnancyOverview = ({ pregnancyData }) => {
             </svg>
           </div>
           <div className="overview-card-content">
-            <h3>{formatDate(pregnancyData.estimatedDueDate)}</h3>
-            <p>Estimated due date</p>
+            {isEditing === "duedate" ? (
+              <div className="preg-overview-date-input-container">
+                <div className="preg-overview-date-input-wrapper">
+                  <input
+                    type="date"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="preg-overview-inline-edit-actions">
+                  <button className="preg-overview-save-inline-btn" onClick={handleSave}>
+                    ✓ Save
+                  </button>
+                  <button
+                    className="preg-overview-cancel-inline-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(null);
+                      setNewDate("");
+                    }}
+                  >
+                    ✕ Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h3>{formatDate(pregnancyData.estimatedDueDate)}</h3>
+                <p>Estimated due date</p>
+                <div className="preg-overview-edit-indicator"></div>
+              </>
+            )}
           </div>
         </div>
-
-        <div className="overview-card">
+        {/* LMP Card */}
+        <div
+          className={`overview-card ${
+            isEditing === "lmp" ? "editing" : "editable"
+          }`}
+          onClick={
+            isEditing === "lmp"
+              ? undefined
+              : () => {
+                  setIsEditing("lmp");
+                  setNewDate(
+                    formatDateForInput(
+                      pregnancyData.firstDayOfLastMenstrualPeriod
+                    )
+                  );
+                }
+          }
+        >
           <div className="overview-card-icon">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
               <path
@@ -83,13 +203,49 @@ const PregnancyOverview = ({ pregnancyData }) => {
             </svg>
           </div>
           <div className="overview-card-content">
-            <h3>{formatDate(pregnancyData.firstDayOfLastMenstrualPeriod)}</h3>
-            <p>Last menstrual period</p>
+            {isEditing === "lmp" ? (
+              <div className="preg-overview-date-input-container">
+                <div className="preg-overview-date-input-wrapper">
+                  <input
+                    type="date"
+                    value={newDate}
+                    onChange={(e) => setNewDate(e.target.value)}
+                    autoFocus
+                  />
+                </div>
+                <div className="preg-overview-inline-edit-actions">
+                  <button
+                    className="preg-overview-save-inline-btn"
+                    onClick={handleSave}
+                  >
+                    ✓ Save
+                  </button>
+                  <button
+                    className="preg-overview-cancel-inline-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(null);
+                      setNewDate("");
+                    }}
+                  >
+                    ✕ Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <h3>
+                  {formatDate(pregnancyData.firstDayOfLastMenstrualPeriod)}
+                </h3>
+                <p>Last menstrual period</p>
+                <div className="preg-overview-edit-indicator"></div>
+              </>
+            )}
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default PregnancyOverview
+export default PregnancyOverview;

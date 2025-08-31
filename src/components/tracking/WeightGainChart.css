@@ -1,0 +1,12 @@
+.weight-gain-chart-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  margin-top: 20px;
+  height: 400px;
+}
+
+.weight-gain-chart-container canvas {
+  border-radius: 12px;
+}
