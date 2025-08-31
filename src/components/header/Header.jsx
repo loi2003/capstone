@@ -7,6 +7,7 @@ import "./Header.css";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -16,6 +17,7 @@ const Header = () => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
+        setShowNotification(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -72,15 +74,26 @@ const Header = () => {
       if (isDropdownOpen) {
         setIsDropdownOpen(false);
       }
+      if (showNotification) {
+        setShowNotification(false);
+      }
       return newState;
     });
   };
 
   const toggleDropdown = () => {
-    setIsDropdownOpen((prev) => {
-      const newState = !prev;
-      return newState;
-    });
+    setIsDropdownOpen((prev) => !prev);
+    setShowNotification(false);
+  };
+
+  const toggleNotification = () => {
+    setShowNotification((prev) => !prev);
+    setIsDropdownOpen(false);
+  };
+
+  const handleNotificationClick = () => {
+    setShowNotification(false);
+    navigate("/notifications");
   };
 
   const handleLogout = async () => {
@@ -105,6 +118,7 @@ const Header = () => {
       setUser(null);
       setIsDropdownOpen(false);
       setIsMenuOpen(false);
+      setShowNotification(false);
       navigate("/signin", { replace: true });
     }
   };
@@ -128,8 +142,6 @@ const Header = () => {
           <Link to="/about" title="About Us">
             About
           </Link>
-
-          {/* Conditional Links */}
           {!user ? (
             <Link to="/duedate-calculator">DueDate Calculator</Link>
           ) : (
@@ -137,58 +149,145 @@ const Header = () => {
               Pregnancy
             </Link>
           )}
-
           <Link to="/nutritional-guidance" title="Nutritional Guidance">
             Nutrition
           </Link>
-          <Link to="/clinic/list" title="Consultation">Consultation</Link>
+          <Link to="/clinic/list" title="Consultation">
+            Consultation
+          </Link>
           <Link to="/blog" title="Blog">
             Blog
           </Link>
-
-          {/* Phần xác thực: Hiển thị nút Sign In hoặc user icon */}
           <div className="auth-section">
             {user ? (
               <div
-                className={`profile-section ${isDropdownOpen ? "open" : ""}`}
+                className={`profile-section ${isDropdownOpen || showNotification ? "open" : ""}`}
                 ref={dropdownRef}
               >
-                <button
-                  className="profile-toggle"
-                  onClick={toggleDropdown}
-                  aria-label="User menu"
-                  aria-expanded={isDropdownOpen}
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                <div className="profile-icons">
+                  <button
+                    className="profile-toggle"
+                    onClick={toggleDropdown}
+                    aria-label="User menu"
+                    aria-expanded={isDropdownOpen}
                   >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--white)"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                        fill="var(--white)"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    className="notification-toggle"
+                    onClick={toggleNotification}
+                    aria-label="Notifications"
+                    aria-expanded={showNotification}
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.1-.9-2-2-2s-2 .9-2 2v.68C6.63 5.36 5 7.93 5 11v5l-1.29 1.29c-.63.63-.18 1.71.71 1.71h13.17c.89 0 1.34-1.08.71-1.71L18 16z"
+                        fill="var(--white)"
+                      />
+                    </svg>
+                  </button>
+                </div>
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
-                    <span
-                      className="profile-email"
-                      title={user.email || "Người dùng"}
-                    >
-                      {user.email || "Người dùng"}
-                    </span>
-                    <Link to="/profile" className="dropdown-link">
-                      Profile
-                    </Link>
-                    <Link to="/support" className="dropdown-link">
-                      Support
-                    </Link>
-                    <button onClick={handleLogout} className="logout-btn">
-                      Đăng xuất
-                    </button>
+                    <div className="dropdown-header">
+                      <span className="profile-email" title={user.email || "Người dùng"}>
+                        {user.email || "Người dùng"}
+                      </span>
+                    </div>
+                    <div className="dropdown-content">
+                      <Link to="/profile" className="dropdown-item">
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                            fill="var(--primary-bg)"
+                          />
+                        </svg>
+                        <span>Profile</span>
+                      </Link>
+                      <Link to="/support" className="dropdown-item">
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
+                            fill="var(--primary-bg)"
+                          />
+                        </svg>
+                        <span>Support</span>
+                      </Link>
+                      <button onClick={handleLogout} className="dropdown-item logout-btn">
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
+                            fill="var(--white)"
+                          />
+                        </svg>
+                        <span>Đăng xuất</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {showNotification && (
+                  <div className="notification-dropdown">
+                    <div className="dropdown-header">
+                      <span className="dropdown-title">Notifications</span>
+                    </div>
+                    <div className="notification-content">
+                      <span className="notification-message">
+                        You have new notifications.
+                      </span>
+                      <button
+                        onClick={handleNotificationClick}
+                        className="dropdown-item notification-btn"
+                      >
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                            fill="var(--primary-bg)"
+                          />
+                        </svg>
+                        <span>View Notifications</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

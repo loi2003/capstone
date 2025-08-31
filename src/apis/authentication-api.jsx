@@ -50,7 +50,7 @@ export const getCurrentUser = async (token) => {
   try {
     const response = await apiClient.get(`/api/User/get-current-user`, {
       headers: {
-        "Accept": "*/*",
+        Accept: "*/*",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -66,18 +66,18 @@ export const logout = async (userId) => {
   try {
     const response = await apiClient.post(
       `/api/auth/user/logout`,
-      userId,
+      { userId },
       {
         headers: {
-          'Content-Type': 'application/json',
-          Accept: '*/*',
+          "Content-Type": "application/json",
+          Accept: "*/*",
         },
         withCredentials: true,
       }
     );
     return response;
   } catch (error) {
-    console.error('Error logging out:', error);
+    console.error("Error logging out:", error);
     throw error;
   }
 };
@@ -85,7 +85,7 @@ export const logout = async (userId) => {
 export const forgotPassword = async (email) => {
   try {
     const formData = new FormData();
-    formData.append('EmailOrPhoneNumber', email);
+    formData.append("EmailOrPhoneNumber", email);
     const response = await apiClient.post(`/api/auth/user/password/forgot`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
@@ -117,8 +117,8 @@ export const resetPassword = async (data) => {
 export const uploadAvatar = async (userId, file, token) => {
   try {
     const formData = new FormData();
-    formData.append('userId', userId);
-    formData.append('file', file);
+    formData.append("userId", userId);
+    formData.append("file", file);
     
     const response = await apiClient.post(`/api/user/upload-avatar`, formData, {
       headers: {
@@ -137,12 +137,12 @@ export const uploadAvatar = async (userId, file, token) => {
 export const editUserProfile = async (profileData, token) => {
   try {
     const formData = new FormData();
-    formData.append('Id', profileData.Id);
-    formData.append('UserName', profileData.UserName);
-    formData.append('PhoneNumber', profileData.PhoneNumber);
-    formData.append('DateOfBirth', profileData.DateOfBirth);
+    formData.append("Id", profileData.Id);
+    formData.append("UserName", profileData.UserName);
+    formData.append("PhoneNumber", profileData.PhoneNumber);
+    formData.append("DateOfBirth", profileData.DateOfBirth);
 
-    console.log('FormData contents:');
+    console.log("FormData contents:");
     for (let [key, value] of formData.entries()) {
       console.log(key, value);
     }
@@ -152,7 +152,7 @@ export const editUserProfile = async (profileData, token) => {
       formData,
       {
         headers: {
-          "Content-Type": "multipart/form-data",  // Changed from application/json
+          "Content-Type": "multipart/form-data",
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
         },
@@ -163,8 +163,33 @@ export const editUserProfile = async (profileData, token) => {
     console.error("Update error details:", {
       requestData: error.config?.data,
       responseData: error.response?.data,
-      status: error.response?.status
+      status: error.response?.status,
     });
+    throw error;
+  }
+};
+
+export const changePassword = async (passwordData, token) => {
+  try {
+    const response = await apiClient.post(
+      `/api/auth/user/password/change`,
+      {
+        OldPassword: passwordData.OldPassword,
+        NewPassword: passwordData.NewPassword,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    console.log("Change password response:", response.data);
+    return response;
+  } catch (error) {
+    console.error("Error changing password:", error);
+    console.error("Response data:", error.response?.data);
     throw error;
   }
 };

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import TrackingForm from "../components/form/TrackingForm";
@@ -25,14 +26,13 @@ import { getCurrentUser } from "../apis/authentication-api";
 import weightIcon from "../assets/icons/weight-hanging-svgrepo-com.svg";
 import calculatorIcon from "../assets/icons/calculator-svgrepo-com.svg";
 import heartRateIcon from "../assets/icons/heart-pulse-2-svgrepo-com.svg";
-import { useSearchParams } from "react-router-dom";
 import CheckupReminder from "../components/tracking/CheckupReminder";
 import { viewAllOfflineConsultation } from "../apis/offline-consultation-api";
+import ChatBoxPage from "../components/chatbox/ChatBoxPage";
 import "../styles/PregnancyTrackingPage.css";
 
 const PregnancyTrackingPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(null);
-
   const [user, setUser] = useState(null);
   const [pregnancyData, setPregnancyData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,19 +41,16 @@ const PregnancyTrackingPage = () => {
   const [mealPlannerType, setMealPlannerType] = useState("system");
 
   const [searchParams] = useSearchParams();
-  const tabFromURL =
+  const [activeTab, setActiveTab] = useState(
     (searchParams.get("weeklyinfo") && "weekly") ||
     (searchParams.get("reminderconsultationinfo") && "reminderconsultation") ||
     (searchParams.get("mealplannerinfo") && "mealplanner") ||
     (searchParams.get("recommendednutritionalneedsinfo") &&
       "recommendednutritionalneeds") ||
     (searchParams.get("journalinfo") && "journal") ||
-    "weekly"; // default
-
-  const [activeTab, setActiveTab] = useState(tabFromURL);
-
+    "weekly"
+  );
   const [openJournalModal, setOpenJournalModal] = useState(false);
-  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
 
@@ -168,6 +165,9 @@ const PregnancyTrackingPage = () => {
     .filter((s) => s?.abnormal)
     .map((s) => s.message);
 
+    const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const navigate = useNavigate();
+
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -207,6 +207,7 @@ const PregnancyTrackingPage = () => {
 
     fetchAppointments();
   }, []);
+
 
   const appointmentDates = appointments.map((a) => a.start.toISOString());
 
@@ -294,7 +295,6 @@ const PregnancyTrackingPage = () => {
         return;
       }
 
-      // Step 1: Create GrowthData
       const growthDataRes = await createGrowthDataProfile(
         {
           userId,
@@ -316,7 +316,6 @@ const PregnancyTrackingPage = () => {
       if (growthDataRes?.data?.data?.id) {
         growthDataId = growthDataRes.data.data.id;
       } else {
-        // fallback: fetch growth data manually
         const currentDate = new Date().toISOString().split("T")[0];
         const { data: fallbackRes } = await getCurrentWeekGrowthData(
           userId,
@@ -331,7 +330,6 @@ const PregnancyTrackingPage = () => {
         }
       }
 
-      // Step 2: Create BBM
       await createBasicBioMetric(
         {
           GrowthDataId: growthDataId,
@@ -341,7 +339,6 @@ const PregnancyTrackingPage = () => {
         token
       );
 
-      // Step 3: Fetch updated pregnancy data
       const currentDate = new Date().toISOString().split("T")[0];
       const { data: pregRes } = await getCurrentWeekGrowthData(
         userId,
@@ -498,7 +495,6 @@ const PregnancyTrackingPage = () => {
                         pregnancyData={pregnancyData}
                         selectedWeek={selectedWeek}
                       />
-                      {/* <SymptomsAndMood pregnancyData={pregnancyData} /> */}
                     </div>
                     <div className="right-column">
                       <UpcomingAppointments
@@ -744,6 +740,17 @@ const PregnancyTrackingPage = () => {
             </div>
           )}
         </div>
+        <motion.div
+          className="contact-icon"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsPopupOpen(!isPopupOpen)}
+        >
+          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
+        </motion.div>
+        <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       </main>
       <Footer />
     </div>

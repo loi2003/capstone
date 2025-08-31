@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { getAllBlogs, getAllLikedBlogs, getAllBookmarkedBlogs, deleteLike, deleteBookmark } from '../apis/blog-api';
 import apiClient from '../apis/url-api';
 import '../styles/BlogPage.css';
+import ChatBoxPage from '../components/chatbox/ChatBoxPage';
 
 const BlogPage = () => {
   const [blogs, setBlogs] = useState([]);
@@ -21,11 +22,11 @@ const BlogPage = () => {
   const [email, setEmail] = useState('');
   const [subscriptionStatus, setSubscriptionStatus] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const postsPerPage = 6;
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  // Define placeholder images for fallback
   const placeholderImages = [
     'src/assets/parenting-in-pictures.svg',
     'src/assets/due-date-calculator.svg',
@@ -33,7 +34,6 @@ const BlogPage = () => {
     'src/assets/parenting-in-pictures.svg',
   ];
 
-  // Select random placeholder image
   const getRandomPlaceholder = () => {
     const randomIndex = Math.floor(Math.random() * placeholderImages.length);
     return placeholderImages[randomIndex];
@@ -759,6 +759,19 @@ const BlogPage = () => {
           </button>
         </div>
       </div>
+
+      <motion.div
+        className="contact-icon"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsPopupOpen(!isPopupOpen)}
+      >
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </motion.div>
+
+      <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
     </div>
   );
 };

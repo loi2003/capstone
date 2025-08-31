@@ -1,6 +1,6 @@
 /* General Page Styling */
 .advice-page {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem;
   min-height: calc(100vh - 80px);
@@ -10,40 +10,143 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
+.advice-content-wrapper {
+  display: flex;
+  gap: 2rem;
+}
+
+/* Overlay Styling */
+.advice-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+}
+
+/* Sidebar - Advice History Styling */
+.advice-history-sidebar {
+  width: 300px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 1.5rem;
+  height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.advice-history-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.advice-new-chat-button {
+  background: #0084ff;
+  color: #ffffff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.advice-new-chat-button:hover {
+  background: #006cdc;
+}
+
+.advice-history-container {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.advice-history-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.advice-history-item:hover {
+  background: #e6f0ff;
+}
+
+.advice-history-sender {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.advice-history-text {
+  font-size: 0.95rem;
+  color: #333333;
+  margin-top: 0.3rem;
+  word-wrap: break-word;
+}
+
+.advice-history-timestamp {
+  font-size: 0.75rem;
+  color: #999999;
+  margin-top: 0.3rem;
+}
+
+/* Main Content Styling */
+.advice-main-content {
+  flex: 1;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
 /* Header Styling */
 .advice-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .advice-title {
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 600;
   color: #1a1a1a;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .advice-description {
-  font-size: 1rem;
+  font-size: 1.1rem;
   color: #666666;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 /* Mode Navigation Styling */
 .advice-mode-nav {
   display: flex;
   justify-content: center;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .advice-mode-button {
   background: #ffffff;
   color: #333333;
-  padding: 0.6rem 1.2rem;
+  padding: 0.75rem 1.5rem;
   border: 1px solid #d1d5db;
   border-radius: 20px;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -74,7 +177,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   background: #ffffff;
-  padding: 1.5rem;
+  padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   text-align: center;
@@ -82,18 +185,18 @@
 }
 
 .advice-login-popup p {
-  font-size: 0.9rem;
+  font-size: 1rem;
   color: #333333;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .advice-popup-close {
   background: #0084ff;
   color: #ffffff;
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.2rem;
   border: none;
   border-radius: 8px;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -102,31 +205,185 @@
   background: #006cdc;
 }
 
+/* Staff Type Prompt Styling */
+.advice-staff-type-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  z-index: 1000;
+  max-width: 400px;
+  width: 90%;
+}
+
+.advice-staff-type-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+}
+
+.advice-staff-type-message {
+  font-size: 1rem;
+  color: #333333;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.advice-staff-type-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.advice-staff-type-button {
+  background: #0084ff;
+  color: #ffffff;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  flex: 1;
+}
+
+.advice-staff-type-button:hover {
+  background: #006cdc;
+}
+
+.advice-staff-type-cancel {
+  background: #e5e7eb;
+  color: #333333;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.advice-staff-type-cancel:hover {
+  background: #d1d5db;
+}
+
+/* Compare Button Styling */
+.advice-compare-button {
+  background: #0084ff;
+  color: #ffffff;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.advice-compare-button:hover {
+  background: #006cdc;
+}
+
+.advice-compare-button:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Comparison Container Styling */
+.advice-comparison-container {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.advice-comparison-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.advice-comparison-question {
+  font-size: 1rem;
+  color: #333333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.advice-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.advice-comparison-table th,
+.advice-comparison-table td {
+  padding: 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.advice-comparison-table th {
+  background: #f5f7fa;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.advice-comparison-table td {
+  font-size: 0.95rem;
+}
+
+.advice-comparison-table .advice-message-content {
+  margin: 0;
+}
+
 /* Chat Container Styling */
 .advice-chat-container {
   flex: 1;
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
-  padding: 1rem;
+  padding: 1.5rem;
   overflow-y: auto;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  max-height: 70vh;
 }
 
 /* Empty Message Styling */
 .advice-empty-message {
   text-align: center;
   color: #888888;
-  font-size: 0.9rem;
-  padding: 2rem;
+  font-size: 1rem;
+  padding: 2.5rem;
   opacity: 0.7;
 }
 
 /* Message Styling */
 .advice-message {
   display: flex;
-  margin-bottom: 0.75rem;
+  margin-bottom: 1rem;
 }
 
 .message-user {
@@ -138,11 +395,11 @@
 }
 
 .advice-message-content {
-  max-width: 75%;
-  padding: 0.8rem 1.2rem;
+  max-width: 80%;
+  padding: 1rem 1.5rem;
   border-radius: 18px;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.6;
   position: relative;
 }
 
@@ -166,22 +423,22 @@
 
 .advice-message-timestamp {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   color: #999999;
-  margin-top: 0.3rem;
+  margin-top: 0.4rem;
   opacity: 0.8;
 }
 
 /* Typing Animation */
 .advice-typing {
   display: flex;
-  gap: 0.3rem;
-  padding: 0.5rem 0;
+  gap: 0.4rem;
+  padding: 0.6rem 0;
 }
 
 .dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   background: #666666;
   border-radius: 50%;
   animation: typing 1.2s infinite;
@@ -197,7 +454,7 @@
 
 @keyframes typing {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  50% { transform: translateY(-5px); }
 }
 
 /* Input Form Styling */
@@ -207,14 +464,14 @@
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 25px;
-  padding: 0.5rem;
+  padding: 0.75rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .advice-input {
   flex: 1;
-  padding: 0.7rem 1rem;
-  font-size: 0.95rem;
+  padding: 0.9rem 1.2rem;
+  font-size: 1rem;
   border: none;
   background: transparent;
   color: #1a1a1a;
@@ -228,8 +485,8 @@
   background: #0084ff;
   border: none;
   border-radius: 50%;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,17 +504,17 @@
 }
 
 .advice-send-icon {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   color: #ffffff;
 }
 
 /* Footer Note Styling */
 .advice-footer-note {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: #666666;
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 1.5rem;
 }
 
 /* Link Styling */
@@ -274,27 +531,44 @@
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .advice-page {
     padding: 1rem;
   }
 
+  .advice-content-wrapper {
+    flex-direction: column;
+  }
+
+  .advice-history-sidebar {
+    width: 100%;
+    position: relative;
+    top: auto;
+  }
+
+  .advice-history-container {
+    max-height: 200px;
+  }
+
+  .advice-main-content {
+    padding: 1.5rem;
+  }
+
   .advice-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
 
   .advice-description {
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 
   .advice-mode-nav {
-    flex-direction: row;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
   .advice-mode-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
   }
 
   .advice-chat-container {
@@ -302,12 +576,51 @@
   }
 
   .advice-message-content {
-    max-width: 80%;
+    max-width: 85%;
   }
 
-  .advice-login-popup {
+  .advice-login-popup,
+  .advice-staff-type-popup {
     width: 90%;
-    padding: 1rem;
+    padding: 1.5rem;
+  }
+
+  .advice-comparison-table {
+    display: block;
+  }
+
+  .advice-comparison-table thead,
+  .advice-comparison-table tbody,
+  .advice-comparison-table tr,
+  .advice-comparison-table th,
+  .advice-comparison-table td {
+    display: block;
+  }
+
+  .advice-comparison-table th {
+    font-size: 0.95rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .advice-comparison-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .advice-comparison-table th:last-child,
+  .advice-comparison-table td:last-child {
+    border-bottom: none;
+  }
+
+  .advice-staff-type-buttons {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .advice-staff-type-button {
+    padding: 0.7rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -326,22 +639,52 @@
   }
 
   .advice-input-form {
-    flex-direction: row;
-    padding: 0.4rem;
+    padding: 0.5rem;
   }
 
   .advice-input {
-    padding: 0.6rem 0.8rem;
+    padding: 0.7rem 1rem;
     font-size: 0.9rem;
   }
 
   .advice-send-button {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
   }
 
   .advice-send-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .advice-comparison-table th,
+  .advice-comparison-table td {
+    padding: 0.5rem;
+  }
+
+  .advice-comparison-title {
+    font-size: 1.1rem;
+  }
+
+  .advice-comparison-question {
+    font-size: 0.9rem;
+  }
+
+  .advice-staff-type-title {
+    font-size: 1.3rem;
+  }
+
+  .advice-staff-type-message {
+    font-size: 0.9rem;
+  }
+
+  .advice-staff-type-button {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .advice-staff-type-cancel {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
   }
 }

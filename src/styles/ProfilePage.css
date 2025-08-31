@@ -1,252 +1,311 @@
-:root {
-  --primary-color: #3498db;
-  --secondary-color: #2c3e50;
-  --accent-color: #e74c3c;
-  --light-gray: #f5f7fa;
-  --medium-gray: #e1e5eb;
-  --dark-gray: #7f8c8d;
-  --success-color: #2ecc71;
-  --error-color: #e74c3c;
-  --border-radius: 8px;
-  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --transition: all 0.3s ease;
+.profile-page {
+  min-height: 100vh;
+  padding: 80px 20px;
+  background: linear-gradient(90deg, #e0f2f7, #a3c9e0);
 }
 
-.profile-container {
+.profile-page .profile-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
-.profile-header {
+.profile-page .profile-header {
   margin-bottom: 2rem;
   text-align: center;
+  position: relative;
+  min-height: 60px;
 }
 
-.profile-header h1 {
-  color: var(--secondary-color);
+.profile-page .profile-header h1 {
+  color: #1e3a5f;
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
 
-.status-alert {
+.profile-page .back-button {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 5px; /* Reduced padding for icon focus */
+  background: #2e6da4;
+  border: none;
+  border-radius: 50%; /* Circular shape */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  width: 40px; /* Fixed width for circle */
+  height: 40px; /* Fixed height for circle */
+}
+
+.profile-page .back-button:hover {
+  background: #245a8d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-page .status-alert {
   padding: 1rem;
-  border-radius: var(--border-radius);
+  border-radius: 8px;
   margin: 1rem auto;
   max-width: 600px;
   text-align: center;
 }
 
-.status-alert.success {
+.profile-page .status-alert.success {
   background-color: rgba(46, 204, 113, 0.2);
-  color: var(--success-color);
-  border: 1px solid var(--success-color);
+  color: #2ecc71;
+  border: 1px solid #2ecc71;
 }
 
-.status-alert.error {
+.profile-page .status-alert.error {
   background-color: rgba(231, 76, 60, 0.2);
-  color: var(--error-color);
-  border: 1px solid var(--error-color);
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
 }
 
-.profile-card {
-  background: white;
-  border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+.profile-page .profile-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
-.profile-avatar-section {
+.profile-page .profile-avatar-section {
   padding: 2rem;
-  background: var(--light-gray);
+  background: #f9fafb;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.avatar-container {
+.profile-page .avatar-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
 }
 
-.avatar-image {
+.profile-page .avatar-image {
   width: 150px;
   height: 150px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid white;
-  box-shadow: var(--box-shadow);
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.avatar-upload-label {
+.profile-page .avatar-upload-label {
   cursor: pointer;
   display: inline-block;
 }
 
-.avatar-upload-input {
+.profile-page .avatar-upload-input {
   display: none;
 }
 
-.avatar-upload-text {
-  color: var(--primary-color);
+.profile-page .avatar-upload-text {
+  color: #2e6da4;
   font-weight: 500;
-  transition: var(--transition);
+  transition: all 0.3s ease;
 }
 
-.avatar-upload-text:hover {
+.profile-page .avatar-upload-text:hover {
   text-decoration: underline;
 }
 
-.avatar-upload-button {
+.profile-page .avatar-upload-button {
   padding: 0.5rem 1rem;
-  background: var(--primary-color);
-  color: white;
+  background: #2e6da4;
+  color: #ffffff;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 8px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.3s ease;
   font-weight: 500;
 }
 
-.avatar-upload-button:hover {
-  background: #2980b9;
+.profile-page .avatar-upload-button:hover {
+  background: #245a8d;
 }
 
-.profile-details-section {
+.profile-page .profile-details-section {
   padding: 2rem;
 }
 
-.profile-detail {
+.profile-page .profile-detail {
   display: flex;
   margin-bottom: 1.5rem;
   padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--medium-gray);
+  border-bottom: 1px solid #e0f2f7;
 }
 
-.detail-label {
+.profile-page .detail-label {
   font-weight: 600;
-  color: var(--secondary-color);
+  color: #1e3a5f;
   min-width: 150px;
 }
 
-.detail-value {
-  color: var(--dark-gray);
+.profile-page .detail-value {
+  color: #64748b;
   flex-grow: 1;
 }
 
-.profile-form {
+.profile-page .verified-badge {
+  color: #2ecc71;
+  font-weight: 500;
+  margin-left: 5px;
+}
+
+.profile-page .profile-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.form-group {
+.profile-page .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-group label {
+.profile-page .form-group label {
   font-weight: 600;
-  color: var(--secondary-color);
+  color: #1e3a5f;
 }
 
-.form-group input {
+.profile-page .form-group input {
   padding: 0.75rem;
-  border: 1px solid var(--medium-gray);
-  border-radius: var(--border-radius);
+  border: 1px solid #e0f2f7;
+  border-radius: 8px;
   font-size: 1rem;
-  transition: var(--transition);
+  transition: all 0.3s ease;
 }
 
-.form-group input:focus {
-  border-color: var(--primary-color);
+.profile-page .form-group input:focus {
+  border-color: #2e6da4;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+  box-shadow: 0 0 0 2px rgba(46, 109, 164, 0.2);
 }
 
-.form-actions {
+.profile-page .password-input-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.profile-page .toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  color: #2e6da4;
+  transition: all 0.3s ease;
+}
+
+.profile-page .toggle-password:hover {
+  color: #245a8d;
+}
+
+.profile-page .form-actions {
   display: flex;
   gap: 1rem;
   margin-top: 1rem;
 }
 
-.save-button, .cancel-button, .edit-button {
+.profile-page .profile-button {
   padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: var(--border-radius);
+  border-radius: 8px;
   cursor: pointer;
-  transition: var(--transition);
+  transition: all 0.3s ease;
   font-weight: 600;
 }
 
-.save-button {
-  background: var(--primary-color);
-  color: white;
+.profile-page .profile-button {
+  background: #2e6da4;
+  color: #ffffff;
 }
 
-.save-button:hover {
-  background: #2980b9;
+.profile-page .profile-button:hover {
+  background: #245a8d;
 }
 
-.cancel-button {
-  background: var(--medium-gray);
-  color: var(--secondary-color);
+.profile-page .profile-button.secondary {
+  background: #e0f2f7;
+  color: #1e3a5f;
 }
 
-.cancel-button:hover {
-  background: #d5dbdb;
+.profile-page .profile-button.secondary:hover {
+  background: #d1e7f0;
 }
 
-.edit-button {
-  background: var(--secondary-color);
-  color: white;
+.profile-page .edit-button {
+  background: #1e3a5f;
+  color: #ffffff;
   width: 100%;
   margin-top: 1rem;
 }
 
-.edit-button:hover {
-  background: #1a252f;
+.profile-page .edit-button:hover {
+  background: #475569;
 }
 
 @media (min-width: 768px) {
-  .profile-card {
+  .profile-page .profile-card {
     flex-direction: row;
   }
 
-  .profile-avatar-section {
+  .profile-page .profile-avatar-section {
     flex: 0 0 300px;
-    border-right: 1px solid var(--medium-gray);
+    border-right: 1px solid #e0f2f7;
   }
 
-  .profile-details-section {
+  .profile-page .profile-details-section {
     flex: 1;
   }
 }
 
 @media (max-width: 480px) {
-  .profile-container {
+  .profile-page .profile-container {
     padding: 1rem;
   }
 
-  .profile-header h1 {
+  .profile-page .profile-header h1 {
     font-size: 2rem;
   }
 
-  .profile-detail {
+  .profile-page .profile-detail {
     flex-direction: column;
     gap: 0.25rem;
   }
 
-  .form-actions {
+  .profile-page .form-actions {
     flex-direction: column;
   }
 
-  .save-button, .cancel-button {
+  .profile-page .profile-button {
     width: 100%;
+  }
+
+  .profile-page .back-button {
+    width: 35px; /* Adjusted for smaller screens */
+    height: 35px; /* Adjusted for smaller screens */
+    padding: 4px;
+  }
+
+  .profile-page .toggle-password {
+    right: 8px;
   }
 }
