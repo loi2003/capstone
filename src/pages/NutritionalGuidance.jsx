@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 import Header from "../components/header/Header";
 import Footer from "../components/footer/Footer";
 import { FaTint } from "react-icons/fa";
@@ -9,10 +10,12 @@ import { FaCheckCircle } from "react-icons/fa";
 import { AiFillApple } from "react-icons/ai";
 import { AiOutlineCheck } from 'react-icons/ai';
 import { BsCloud } from 'react-icons/bs';
+import ChatBoxPage from "../components/chatbox/ChatBoxPage";
 import "../styles/NutritionalGuidance.css";
 
 const NutritionalGuidance = () => {
   const navigate = useNavigate();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const trimesters = [
     {
       id: 1,
@@ -162,11 +165,10 @@ const NutritionalGuidance = () => {
   ];
 
   const [selectedTrimester, setSelectedTrimester] = useState(trimesters[0]);
+
   return (
     <div className="nutrition-page-wrapper">
       <Header />
-
-      {/* Page Heading */}
       <div className="nutrition-heading">
         <h1>Pregnancy Nutrition Guide</h1>
         <p>
@@ -177,7 +179,6 @@ const NutritionalGuidance = () => {
       </div>
 
       <div className="nutritional-guidance-layout">
-        {/* Sidebar */}
         <aside className="nutrition-sidebar">
           <h3>Select Your Trimester</h3>
           {trimesters.map((t) => (
@@ -204,7 +205,6 @@ const NutritionalGuidance = () => {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="nutrition-main-content">
           <h2>{selectedTrimester.title} Nutrition Guide</h2>
           <div className="highlight-box">{selectedTrimester.highlight}</div>
@@ -256,7 +256,17 @@ const NutritionalGuidance = () => {
           </ul>
         </main>
       </div>
-
+      <motion.div
+        className="contact-icon"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsPopupOpen(!isPopupOpen)}
+      >
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      </motion.div>
+      <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       <Footer />
     </div>
   );

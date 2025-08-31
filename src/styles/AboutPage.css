@@ -1,7 +1,5 @@
-/* About Page Specific Styles */
 .about-page {
   min-height: 100vh;
-  /* padding: 20px 0; */
   font-family: 'Inter', sans-serif;
 }
 
@@ -50,7 +48,6 @@
 
 .about-hero-button {
   padding: 16px 36px;
-  /* margin-left: 250px; */
   font-size: 1.2rem;
   font-weight: 700;
   text-decoration: none;
@@ -229,7 +226,7 @@
 
 .about-team-avatar {
   width: 140px;
-  height: 140px;
+  height-platform: 140px;
   border-radius: 50%;
   object-fit: cover;
   margin-bottom: 20px;
@@ -411,76 +408,6 @@
   box-shadow: 0 0 0 4px rgba(46, 109, 164, 0.2);
 }
 
-/* Contact Icon */
-.about-contact-icon {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
-  background-color: #2e6da4;
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.about-contact-icon:hover {
-  background-color: #245a8d;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
-
-.about-contact-icon:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(46, 109, 164, 0.2);
-}
-
-/* Contact Popup */
-.about-contact-popup {
-  position: fixed;
-  bottom: 100px;
-  right: 30px;
-  background-color: #ffffff;
-  padding: 25px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  max-width: 300px;
-  border: 1px solid #e0f2f7;
-  z-index: 1001;
-}
-
-.about-popup-button {
-  display: block;
-  width: 100%;
-  padding: 14px;
-  margin: 12px 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #ffffff;
-  background-color: #2e6da4;
-  border: none;
-  border-radius: 10px;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(46, 109, 164, 0.3);
-}
-
-.about-popup-button:hover {
-  background-color: #245a8d;
-  box-shadow: 0 6px 20px rgba(46, 109, 164, 0.4);
-}
-
-.about-popup-button:focus {
-  outline: none;
-  box-shadow: 0 0 0 4px rgba(46, 109, 164, 0.2);
-}
-
 /* Responsive Design */
 @media (max-width: 1024px) {
   .about-hero-content {
@@ -541,8 +468,7 @@
   }
 
   .about-hero-button,
-  .about-community-button,
-  .about-popup-button {
+  .about-community-button {
     padding: 14px 30px;
     font-size: 1.1rem;
   }
@@ -598,20 +524,9 @@
   }
 
   .about-hero-button,
-  .about-community-button,
-  .about-popup-button {
+  .about-community-button {
     padding: 12px 25px;
     font-size: 1rem;
-  }
-
-  .about-contact-icon {
-    width: 50px;
-    height: 50px;
-  }
-
-  .about-contact-popup {
-    max-width: 250px;
-    padding: 20px;
   }
 
   .about-team-grid,
@@ -675,15 +590,9 @@
   }
 
   .about-hero-button,
-  .about-community-button,
-  .about-popup-button {
+  .about-community-button {
     padding: 10px 20px;
     font-size: 0.95rem;
-  }
-
-  .about-contact-icon {
-    width: 45px;
-    height: 45px;
   }
 
   .about-team-avatar {
