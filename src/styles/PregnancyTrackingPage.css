@@ -7,11 +7,14 @@
   --color-text: #848785;
   --light-text: #faf9f5;
   --dark-text: #013f50;
-  --co-1: #04668d;
-  --co-2: #02808f;
-  --co-3: #00a996;
-  --co-4: #03c39a;
-  --co-5: #f0f3be;
+  --nguyen-primary-bg: #04668D;
+  --white-text: #fafafa;
+  --nguyen-accent-color: #038474;
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
 }
 
 .overview-header h2 {
@@ -147,7 +150,7 @@
 
 /* Biometric Section */
 .biometric-section {
-  background: var(--color-general);
+  background: var(--white);
   border-radius: 8px;
   padding: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -165,7 +168,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1.5rem;
-  background: var(--color-general);
+  background: var(--light-bg);
   border-radius: 8px;
   transition: all 0.3s ease;
 }
@@ -193,7 +196,7 @@
 .metric-label {
   margin-top: 0.2rem;
   font-size: 0.9rem;
-  color: var(--color-accent);
+  color: var(--nguyen-accent-color);
 }
 
 .nav-tabs {

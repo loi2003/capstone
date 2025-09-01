@@ -133,40 +133,58 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
           }
         >
           <div className="overview-card-icon">
+            {" "}
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              {" "}
               <path
                 d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"
                 fill="currentColor"
-              />
-            </svg>
+              />{" "}
+            </svg>{" "}
           </div>
           <div className="overview-card-content">
             {isEditing === "duedate" ? (
-              <div className="preg-overview-date-input-container">
-                <div className="preg-overview-date-input-wrapper">
-                  <input
-                    type="date"
-                    value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-                <div className="preg-overview-inline-edit-actions">
-                  <button className="preg-overview-save-inline-btn" onClick={handleSave}>
-                    ✓ Save
-                  </button>
-                  <button
-                    className="preg-overview-cancel-inline-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(null);
-                      setNewDate("");
-                    }}
-                  >
-                    ✕ Cancel
-                  </button>
-                </div>
-              </div>
+              (() => {
+                const dueDate = new Date(pregnancyData.estimatedDueDate);
+                const minDate = new Date(dueDate);
+                minDate.setDate(dueDate.getDate() - 30); 
+                const maxDate = new Date(dueDate);
+                maxDate.setDate(dueDate.getDate() + 30); 
+
+                return (
+                  <div className="preg-overview-date-input-container">
+                    <div className="preg-overview-date-input-wrapper">
+                      <input
+                        type="date"
+                        value={newDate}
+                        onChange={(e) => setNewDate(e.target.value)}
+                        min={formatDateForInput(minDate)}
+                        max={formatDateForInput(maxDate)}
+                        onKeyDown={(e) => e.preventDefault()} 
+                        autoFocus
+                      />
+                    </div>
+                    <div className="preg-overview-inline-edit-actions">
+                      <button
+                        className="preg-overview-save-inline-btn"
+                        onClick={handleSave}
+                      >
+                        ✓ Save
+                      </button>
+                      <button
+                        className="preg-overview-cancel-inline-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditing(null);
+                          setNewDate("");
+                        }}
+                      >
+                        ✕ Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()
             ) : (
               <>
                 <h3>{formatDate(pregnancyData.estimatedDueDate)}</h3>
@@ -176,6 +194,7 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
             )}
           </div>
         </div>
+
         {/* LMP Card */}
         <div
           className={`overview-card ${
@@ -195,43 +214,57 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
           }
         >
           <div className="overview-card-icon">
+            {" "}
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+              {" "}
               <path
                 d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
                 fill="currentColor"
-              />
-            </svg>
+              />{" "}
+            </svg>{" "}
           </div>
           <div className="overview-card-content">
             {isEditing === "lmp" ? (
-              <div className="preg-overview-date-input-container">
-                <div className="preg-overview-date-input-wrapper">
-                  <input
-                    type="date"
-                    value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
-                    autoFocus
-                  />
-                </div>
-                <div className="preg-overview-inline-edit-actions">
-                  <button
-                    className="preg-overview-save-inline-btn"
-                    onClick={handleSave}
-                  >
-                    ✓ Save
-                  </button>
-                  <button
-                    className="preg-overview-cancel-inline-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(null);
-                      setNewDate("");
-                    }}
-                  >
-                    ✕ Cancel
-                  </button>
-                </div>
-              </div>
+              (() => {
+                const lmp = new Date(
+                  pregnancyData.firstDayOfLastMenstrualPeriod
+                );
+                const minDate = new Date(lmp);
+                minDate.setDate(lmp.getDate() + 10); // must be at least 10 days after original LMP
+
+                return (
+                  <div className="preg-overview-date-input-container">
+                    <div className="preg-overview-date-input-wrapper">
+                      <input
+                        type="date"
+                        value={newDate}
+                        onChange={(e) => setNewDate(e.target.value)}
+                        min={formatDateForInput(minDate)}
+                        onKeyDown={(e) => e.preventDefault()} 
+                        autoFocus
+                      />
+                    </div>
+                    <div className="preg-overview-inline-edit-actions">
+                      <button
+                        className="preg-overview-save-inline-btn"
+                        onClick={handleSave}
+                      >
+                        ✓ Save
+                      </button>
+                      <button
+                        className="preg-overview-cancel-inline-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsEditing(null);
+                          setNewDate("");
+                        }}
+                      >
+                        ✕ Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()
             ) : (
               <>
                 <h3>

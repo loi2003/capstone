@@ -25,7 +25,6 @@ ChartJS.register(
 const WeightGainChart = ({ journalEntries = [], preWeight = 0 }) => {
   const weeks = Array.from({ length: 40 }, (_, i) => `Week ${i + 1}`);
 
-  // 🟢 Calculate recommended weight gain target
   let targetGain = preWeight * 0.15; // 15%
   if (targetGain > 12) {
     targetGain = 11; // midpoint of 10–12 kg
@@ -33,33 +32,43 @@ const WeightGainChart = ({ journalEntries = [], preWeight = 0 }) => {
 
   const targetWeight = preWeight + targetGain;
 
-  // 🟢 Build lower & upper recommended bands
+  // 🟢 Lower & Upper recommended now start from Week 1
   const lowerRecommended = weeks.map((_, i) => {
-    if (i < 12) return preWeight; // first trimester: baseline
-    // distribute from week 13–40
-    const progress = (i - 12) / (40 - 12);
-    return preWeight + progress * (targetGain * 0.9); // 90% of target as lower bound
+    const progress = i / (40 - 1); // spread across weeks 1–40
+    return preWeight + progress * (targetGain * 0.9);
   });
 
   const upperRecommended = weeks.map((_, i) => {
-    if (i < 12) return preWeight;
-    const progress = (i - 12) / (40 - 12);
-    return preWeight + progress * (targetGain * 1.1); // 110% of target as upper bound
+    const progress = i / (40 - 1);
+    return preWeight + progress * (targetGain * 1.1);
   });
 
-  const weightData = journalEntries.map((entry) => ({
-    x: `Week ${entry.currentWeek}`,
-    y: entry.currentWeight,
-  }));
+  const weightData = journalEntries
+    .map((entry) => ({
+      x: `Week ${entry.currentWeek}`,
+      y: entry.currentWeight,
+    }))
+    .sort((a, b) => {
+      const weekA = parseInt(a.x.replace("Week ", ""), 10);
+      const weekB = parseInt(b.x.replace("Week ", ""), 10);
+      return weekA - weekB;
+    });
 
   const preWeightData = Array(weeks.length).fill(preWeight);
+  // 🟢 Calculate summary values
+  const lastWeight = [...journalEntries]
+    .sort((a, b) => a.currentWeek - b.currentWeek)
+    .pop()?.currentWeight;
+
+  const totalGain = lastWeight ? lastWeight - preWeight : 0;
+  const remainingGain = lastWeight ? (targetWeight - lastWeight).toFixed(1) : 0;
 
   const data = {
     labels: weeks,
     datasets: [
       {
         label: "Recorded Weight (Kg)",
-        data: weightData, 
+        data: weightData,
         borderColor: "#3498db",
         backgroundColor: "rgba(52, 152, 219, 0.2)",
         tension: 0.4,
@@ -104,7 +113,7 @@ const WeightGainChart = ({ journalEntries = [], preWeight = 0 }) => {
       title: {
         display: true,
         text: "Weight Gain Progress (Weeks 1–40)",
-        font: { size: 18, weight: "bold" },
+        font: { size: 18, weight: "bold", color: "#046A8D" },
       },
       tooltip: {
         callbacks: {
@@ -132,6 +141,26 @@ const WeightGainChart = ({ journalEntries = [], preWeight = 0 }) => {
   return (
     <div className="weight-gain-chart-container">
       <Line data={data} options={options} />
+
+      <div className="weight-gain-summary">
+        <h3>CURRENT WEIGHT GAIN RESULTS & RECOMMENDATIONS</h3>
+        <ul>
+          <li>
+            Your weight gain since pregnancy until now is{" "}
+            <strong>{totalGain.toFixed(1)} Kg</strong>.
+          </li>
+          <li>
+            According to the recommended weight gain based on pre-pregnancy BMI,
+            you need to gain an additional <strong>{remainingGain} Kg</strong>{" "}
+            until you are nine months pregnant to ensure the health of both
+            mother and baby.
+          </li>
+          <li>
+            You should seek further consultation from doctors and nutrition
+            experts regarding your dietary plan.
+          </li>
+        </ul>
+      </div>
     </div>
   );
 };

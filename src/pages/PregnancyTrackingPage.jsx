@@ -535,6 +535,25 @@ const PregnancyTrackingPage = () => {
 
                           return (
                             <>
+                            {pregnancyData.preWeight > 0 && (
+                                <div className="biometric-card">
+                                  <div className="metric-icon">
+                                    <img
+                                      src={weightIcon}
+                                      alt="Weight"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.preWeight} Kg
+                                    </span>
+                                    <span className="metric-label">
+                                      Pre-Pregnancy Weight
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                               {pregnancyData.basicBioMetric.weightKg > 0 && (
                                 <div className="biometric-card">
                                   <div className="metric-icon">
