@@ -71,6 +71,8 @@ const NutrientInFoodManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const navigate = useNavigate();
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
