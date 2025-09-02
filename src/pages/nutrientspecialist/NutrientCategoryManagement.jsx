@@ -80,8 +80,8 @@ const NutrientCategoryManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(true); // Open by default
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(true);
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false); // Open by default
   const categoriesPerPage = 6;
   const chartRef = useRef(null);
   const chartInstanceRef = useRef(null);

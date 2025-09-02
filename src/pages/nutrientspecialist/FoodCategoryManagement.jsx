@@ -21,6 +21,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -30,6 +31,7 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
 // SVG Icons
 const SearchIcon = () => (
   <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -41,6 +43,7 @@ const SearchIcon = () => (
     />
   </svg>
 );
+
 const LoaderIcon = () => (
   <svg
     className="icon loader"
@@ -56,6 +59,7 @@ const LoaderIcon = () => (
     />
   </svg>
 );
+
 // Notification Component
 const Notification = ({ message, type }) => {
   useEffect(() => {
@@ -79,6 +83,7 @@ const Notification = ({ message, type }) => {
     </motion.div>
   );
 };
+
 const FoodCategoryManagement = () => {
   const [user, setUser] = useState(null);
   const [foodCategories, setFoodCategories] = useState([]);
@@ -96,8 +101,8 @@ const FoodCategoryManagement = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(true); // Open by default
-    const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(true);
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
 
   // Show notification
   const showNotification = (message, type) => {
@@ -108,6 +113,7 @@ const FoodCategoryManagement = () => {
     };
     document.addEventListener("closeNotification", closeListener);
   };
+
   // Fetch user, food categories, and food counts
   const fetchData = async () => {
     if (!token) {
@@ -165,6 +171,7 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
+
   const fetchCategoryById = async (id) => {
     if (!id) {
       showNotification("Invalid category ID", "error");
@@ -211,6 +218,7 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
+
   const createCategoryHandler = async () => {
     if (!newCategory.name?.trim()) {
       showNotification("Category name is required", "error");
@@ -246,6 +254,7 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
+
   const updateCategoryHandler = async () => {
     if (!newCategory.name?.trim()) {
       showNotification("Category name is required", "error");
@@ -278,6 +287,7 @@ const FoodCategoryManagement = () => {
       setLoading(false);
     }
   };
+
   const deleteCategoryHandler = async (id) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       setLoading(true);
@@ -292,10 +302,12 @@ const FoodCategoryManagement = () => {
       }
     }
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewCategory({ ...newCategory, [name]: value });
   };
+
   const handleSearch = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
@@ -305,14 +317,17 @@ const FoodCategoryManagement = () => {
     setFilteredCategories(filtered);
     setCurrentPage(1);
   };
+
   const cancelEdit = () => {
     setNewCategory({ name: "", description: "" });
     setSelectedCategory(null);
     setIsEditing(false);
   };
+
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
   const indexOfLastCategory = currentPage * categoriesPerPage;
   const indexOfFirstCategory = indexOfLastCategory - categoriesPerPage;
   const currentCategories = filteredCategories.slice(
@@ -320,16 +335,19 @@ const FoodCategoryManagement = () => {
     indexOfLastCategory
   );
   const totalPages = Math.ceil(filteredCategories.length / categoriesPerPage);
+
   const handlePrevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
+
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
   };
+
   // Handle logout
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
@@ -345,12 +363,15 @@ const FoodCategoryManagement = () => {
       navigate("/signin", { replace: true });
     }
   };
+
   const toggleNutrientDropdown = () => {
     setIsNutrientDropdownOpen((prev) => !prev);
   };
+
   const toggleFoodDropdown = () => {
     setIsFoodDropdownOpen((prev) => !prev);
   };
+
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth > 768);
@@ -358,9 +379,11 @@ const FoodCategoryManagement = () => {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
   useEffect(() => {
     fetchData();
   }, []);
+
   // Chart data
   const chartData = {
     labels: foodCategories.map((category) => category.name),
@@ -378,6 +401,7 @@ const FoodCategoryManagement = () => {
       },
     ],
   };
+
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -443,12 +467,13 @@ const FoodCategoryManagement = () => {
       },
     },
   };
+
   // Sidebar animation variants
   const sidebarVariants = {
     open: { width: "280px", transition: { duration: 0.3, ease: "easeOut" } },
     closed: { width: "60px", transition: { duration: 0.3, ease: "easeIn" } },
   };
-  // Additional sidebar animation variants
+
   const logoVariants = {
     animate: {
       scale: [1, 1.05, 1],
@@ -465,6 +490,7 @@ const FoodCategoryManagement = () => {
       transition: { duration: 0.3 },
     },
   };
+
   const containerVariants = {
     initial: { opacity: 0, y: 30 },
     animate: {
@@ -473,6 +499,7 @@ const FoodCategoryManagement = () => {
       transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 },
     },
   };
+
   const navItemVariants = {
     initial: { opacity: 0, x: -20 },
     animate: {
@@ -480,7 +507,13 @@ const FoodCategoryManagement = () => {
       x: 0,
       transition: { duration: 0.3, ease: "easeOut" },
     },
+    hover: {
+      backgroundColor: "var(--blue-secondary)",
+      transform: "translateY(-2px)",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
   };
+
   const dropdownVariants = {
     open: {
       height: "auto",
@@ -493,6 +526,7 @@ const FoodCategoryManagement = () => {
       transition: { duration: 0.3, ease: "easeIn" },
     },
   };
+
   return (
     <div className="food-category-management">
       <AnimatePresence>
@@ -504,7 +538,7 @@ const FoodCategoryManagement = () => {
         )}
       </AnimatePresence>
       {/* Sidebar */}
- <motion.aside
+      <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
         }`}
@@ -573,7 +607,11 @@ const FoodCategoryManagement = () => {
         >
           {currentSidebarPage === 1 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -599,7 +637,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Blog Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
@@ -656,6 +698,7 @@ const FoodCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-category-management"
@@ -685,6 +728,7 @@ const FoodCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-management"
@@ -712,7 +756,11 @@ const FoodCategoryManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -775,6 +823,7 @@ const FoodCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
@@ -804,6 +853,7 @@ const FoodCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
@@ -831,7 +881,11 @@ const FoodCategoryManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item ">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -857,7 +911,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Nutrient in Food Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -883,7 +941,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Age Group Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -913,7 +975,11 @@ const FoodCategoryManagement = () => {
           )}
           {currentSidebarPage === 2 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -939,7 +1005,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Allergy Category Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -965,7 +1035,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Allergy Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -991,7 +1065,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Disease Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1017,7 +1095,11 @@ const FoodCategoryManagement = () => {
                   {isSidebarOpen && <span>Nutrient Policy</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1068,6 +1150,7 @@ const FoodCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
+                whileHover="hover"
               >
                 <Link
                   to="/profile"
@@ -1103,6 +1186,7 @@ const FoodCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   className="logout-button"
@@ -1130,7 +1214,11 @@ const FoodCategoryManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item"
+              whileHover="hover"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -1378,4 +1466,5 @@ const FoodCategoryManagement = () => {
     </div>
   );
 };
+
 export default FoodCategoryManagement;
