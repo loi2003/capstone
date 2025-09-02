@@ -29,6 +29,8 @@ import heartRateIcon from "../assets/icons/heart-pulse-2-svgrepo-com.svg";
 import CheckupReminder from "../components/tracking/CheckupReminder";
 import { viewAllOfflineConsultation } from "../apis/offline-consultation-api";
 import ChatBoxPage from "../components/chatbox/ChatBoxPage";
+import { FaCube } from 'react-icons/fa6';
+import { FaHandHoldingHeart } from 'react-icons/fa';
 import "../styles/PregnancyTrackingPage.css";
 
 const PregnancyTrackingPage = () => {
@@ -105,15 +107,15 @@ const PregnancyTrackingPage = () => {
     }
 
     // Blood Sugar
-    if (bio?.bloodSugar) {
-      const sugar = bio.bloodSugar;
+    if (bio?.bloodSugarLevelMgDl) {
+      const sugar = bio.bloodSugarLevelMgDl;
       if (sugar > 95) {
-        results.bloodSugar = {
+        results.bloodSugarLevelMgDl = {
           abnormal: true,
           message: `Blood Sugar Level ${sugar}: above pregnancy target (>95)`,
         };
       } else if (sugar < 70) {
-        results.bloodSugar = {
+        results.bloodSugarLevelMgDl = {
           abnormal: true,
           message: `Blood Sugar Level ${sugar}: hypoglycemia (<70)`,
         };
@@ -121,15 +123,15 @@ const PregnancyTrackingPage = () => {
     }
 
     // Heart Rate
-    if (bio?.heartRate) {
-      const hr = bio.heartRate;
+    if (bio?.heartRateBPM) {
+      const hr = bio.heartRateBPM;
       if (hr > 110) {
-        results.heartRate = {
+        results.heartRateBPM = {
           abnormal: true,
           message: `Heart Rate ${hr}: elevated (>110)`,
         };
       } else if (hr < 50) {
-        results.heartRate = {
+        results.heartRateBPM = {
           abnormal: true,
           message: `Heart Rate ${hr}: bradycardia (<50)`,
         };
@@ -637,58 +639,49 @@ const PregnancyTrackingPage = () => {
                                 </div>
                               )}
 
-                              {pregnancyData.basicBioMetric.heartRate > 0 && (
+                              {pregnancyData.basicBioMetric.heartRateBPM > 0 && (
                                 <div
                                   className={`biometric-card ${
-                                    status.heartRate?.abnormal ? "abnormal" : ""
+                                    status.heartRateBPM?.abnormal ? "abnormal" : ""
                                   }`}
                                 >
                                   <div className="metric-icon">
-                                    <img
-                                      src={heartRateIcon}
-                                      alt="Heart Rate"
-                                      className="bbm-icon"
-                                    />
+                                    <FaHandHoldingHeart className="bbm-icon" />
                                   </div>
                                   <div className="metric-info">
                                     <span className="metric-value">
-                                      {pregnancyData.basicBioMetric.heartRate}{" "}
+                                      {pregnancyData.basicBioMetric.heartRateBPM}{" "}
                                       bpm
                                     </span>
                                     <span className="metric-label">
                                       Heart Rate{" "}
-                                      {status.heartRate?.abnormal
-                                        ? `(${status.heartRate.message})`
+                                      {status.heartRateBPM?.abnormal
+                                        ? `(${status.heartRateBPM.message})`
                                         : ""}
                                     </span>
                                   </div>
                                 </div>
                               )}
-
-                              {pregnancyData.basicBioMetric.bloodSugar > 0 && (
+                              {pregnancyData.basicBioMetric.bloodSugarLevelMgDl > 0 && (
                                 <div
                                   className={`biometric-card ${
-                                    status.bloodSugar?.abnormal
+                                    status.bloodSugarLevelMgDl?.abnormal
                                       ? "abnormal"
                                       : ""
                                   }`}
                                 >
                                   <div className="metric-icon">
-                                    <img
-                                      src={calculatorIcon}
-                                      alt="Blood Sugar"
-                                      className="bbm-icon"
-                                    />
+                                    <FaCube className="bbm-icon" />
                                   </div>
                                   <div className="metric-info">
                                     <span className="metric-value">
-                                      {pregnancyData.basicBioMetric.bloodSugar}{" "}
+                                      {pregnancyData.basicBioMetric.bloodSugarLevelMgDl}{" "}
                                       mg/dL
                                     </span>
                                     <span className="metric-label">
                                       Blood Sugar{" "}
-                                      {status.bloodSugar?.abnormal
-                                        ? `(${status.bloodSugar.message})`
+                                      {status.bloodSugarLevelMgDl?.abnormal
+                                        ? `(${status.bloodSugarLevelMgDl.message})`
                                         : ""}
                                     </span>
                                   </div>

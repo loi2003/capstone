@@ -33,9 +33,7 @@ const JournalEntryDetail = () => {
         </button>
       </div>
       <div className="detail-content">
-        <div className="detail-section">
-          <h3>Summary</h3>
-          {/* <p><strong>ID:</strong> {journalData.id || "N/A"}</p> */}
+        <div className="detail-section-header">
           <p><strong>Week:</strong> {journalData.currentWeek || "N/A"}</p>
           <p><strong>Trimester:</strong> {journalData.currentTrimester || "N/A"}</p>
           <p><strong>Date:</strong> {new Date(journalData.createdAt || Date.now()).toLocaleDateString("en-US", { dateStyle: "medium" }) || "N/A"}</p>
@@ -50,9 +48,30 @@ const JournalEntryDetail = () => {
         {journalData.currentWeight && (
           <div className="detail-section">
             <h3>Weight</h3>
-            <p><strong>Current Weight:</strong> {journalData.currentWeight} kg</p>
+            <p><strong>Recorded Weight:</strong> {journalData.currentWeight} Kg</p>
           </div>
         )}
+        {journalData.bloodPressure && (
+            <div className="detail-section">
+              <h3>Blood Pressure</h3>
+              <p><strong>Blood Pressure:</strong> {journalData.SystolicBP || "N/A"}</p>
+            </div>
+        )}
+        {
+          journalData.heartRate && (
+            <div className="detail-section">
+              <h3>Heart Rate</h3>
+              <p><strong>Heart Rate:</strong> {journalData.heartRate || "N/A"}</p>
+            </div>
+        )}
+        {
+          journalData.bloodSugar && (
+            <div className="detail-section">
+              <h3>Blood Sugar</h3>
+              <p><strong>Blood Sugar:</strong> {journalData.bloodSugar || "N/A"}</p>
+            </div>
+          )
+        }
         {journalData.mood && (
           <div className="detail-section">
             <h3>Mood</h3>
