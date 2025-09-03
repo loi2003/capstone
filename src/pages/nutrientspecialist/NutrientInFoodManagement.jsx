@@ -11,21 +11,6 @@ import {
 import "../../styles/NutrientInFoodManagement.css";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 
-const LoaderIcon = () => (
-  <svg
-    className="icon loader"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M4 12a8 8 0 1116 0 8 8 0 01-16 0zm8-8v2m0 12v2m8-8h-2m-12 0H4m15.364 4.364l-1.414-1.414M6.05 6.05l1.414 1.414"
-    />
-  </svg>
-);
 
 const Notification = ({ message, type }) => {
   useEffect(() => {
@@ -1377,7 +1362,6 @@ const NutrientInFoodManagement = () => {
             </div>
             {loading ? (
               <div className="loading-state">
-                <LoaderIcon />
                 <p>Loading associations...</p>
               </div>
             ) : filteredFoodNutrients.length === 0 ? (
