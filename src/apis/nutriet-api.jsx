@@ -860,13 +860,14 @@ export const deleteAllergyCategory = async (categoryId) => {
 };
 export const updateAllergyCategory = async (categoryData) => {
   try {
-    if (!categoryData.allergyCategoryId || categoryData.allergyCategoryId === '') {
+    if (!categoryData.id || categoryData.id === '') {
       throw new Error('Allergy Category ID is null or empty');
     }
+    console.log("Updating allergy category with data:", categoryData);
     const response = await apiClient.put(
       `/api/allergy-category/update-allergy-category`,
       {
-        id: categoryData.allergyCategoryId,
+        id: categoryData.id,
         name: categoryData.name,
         description: categoryData.description || '',
       },
