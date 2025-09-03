@@ -1,0 +1,1648 @@
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  getAllAllergies,
+  createAllergy,
+  updateAllergy,
+  deleteAllergy,
+  getAllAllergyCategories,
+} from "../../apis/nutriet-api";
+import { getCurrentUser, logout } from "../../apis/authentication-api";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { Doughnut } from "react-chartjs-2";
+import "../../styles/AllergyManagement.css";
+
+// Register Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+// Simple debounce function
+const debounce = (func, wait) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+// Sanitize input to prevent XSS
+const sanitizeInput = (input) => {
+  return input.replace(
+    /[<>"'&]/g,
+    (match) =>
+      ({
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#x27;",
+        "&": "&amp;",
+      }[match])
+  );
+};
+
+// Search Icon
+const SearchIcon = () => (
+  <svg
+    className="icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+    />
+  </svg>
+);
+
+
+// Notification component
+const Notification = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className={`notification ${type}`}
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -50 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="notification-icon">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d={
+              type === "success"
+                ? "M20 6L9 17L4 12"
+                : "M12 12V8M12 16V16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+            }
+            stroke="var(--blue-white)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+      <div className="notification-content">
+        <h4>{type === "success" ? "Success" : "Error"}</h4>
+        <p>{message}</p>
+      </div>
+    </motion.div>
+  );
+};
+
+const AllergyManagement = () => {
+  const [allergies, setAllergies] = useState([]);
+  const [allergyCategories, setAllergyCategories] = useState([]);
+  const [categoryFetchError, setCategoryFetchError] = useState(null);
+  const [formData, setFormData] = useState({
+    allergyId: "",
+    name: "",
+    description: "",
+    allergyCategoryId: "",
+    commonSymptoms: "",
+    pregnancyRisk: "",
+  });
+  const [isEditing, setIsEditing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingItems, setLoadingItems] = useState({});
+  const [isCategoriesLoading, setIsCategoriesLoading] = useState(false);
+  const [chartFilter, setChartFilter] = useState("category");
+  const itemsPerPage = 6;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  // UUID validation regex
+  const isValidUUID = (id) => {
+    if (!id) return false;
+    const uuidRegex =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
+    return uuidRegex.test(id);
+  };
+
+  // Debug allergyCategories state changes
+  useEffect(() => {
+    console.log("Current allergyCategories state:", allergyCategories);
+  }, [allergyCategories]);
+
+  // Fetch user data
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!token) {
+        navigate("/signin", { replace: true });
+        return;
+      }
+      try {
+        const response = await getCurrentUser(token);
+        const userData = response.data?.data || response.data;
+        if (userData && Number(userData.roleId) === 4) {
+          setUser(userData);
+        } else {
+          localStorage.removeItem("token");
+          setUser(null);
+          navigate("/signin", { replace: true });
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error.message);
+        localStorage.removeItem("token");
+        setUser(null);
+        navigate("/signin", { replace: true });
+      }
+    };
+    fetchUser();
+  }, [navigate]);
+
+  // Fetch allergies
+  const fetchAllergies = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllAllergies(token);
+      console.log("Fetched allergies response:", response);
+      const data = response.data?.data || response.data || [];
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid data format: Expected an array of allergies");
+      }
+      data.forEach((allergy, index) => {
+        if (!allergy.id || !isValidUUID(allergy.id)) {
+          console.warn(
+            `Invalid or missing ID for allergy at index ${index}:`,
+            allergy
+          );
+        }
+      });
+      setAllergies(data);
+    } catch (error) {
+      showNotification(
+        `Failed to fetch allergies: ${
+          error.response?.data?.message || error.message
+        }`,
+        "error"
+      );
+      console.error("Error fetching allergies:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch allergy categories
+  const fetchAllergyCategories = async () => {
+    setIsCategoriesLoading(true);
+    setCategoryFetchError(null);
+    try {
+      const response = await getAllAllergyCategories(token);
+      console.log("Raw API response for allergy categories:", response);
+      
+      let data = [];
+      if (Array.isArray(response)) {
+        data = response;
+      } else if (response.data && Array.isArray(response.data)) {
+        data = response.data;
+      } else if (response.data && Array.isArray(response.data.data)) {
+        data = response.data.data;
+      }
+      
+      console.log("Processed allergy categories:", data);
+      setAllergyCategories(data);
+      
+      if (data.length === 0) {
+        console.warn("No allergy categories returned from API");
+      }
+    } catch (error) {
+      const errorMessage = `Failed to fetch allergy categories: ${
+        error.response?.data?.message || error.message
+      }`;
+      showNotification(errorMessage, "error");
+      console.error("Error fetching allergy categories:", error);
+      setCategoryFetchError(errorMessage);
+      setAllergyCategories([]);
+    } finally {
+      setIsCategoriesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllergies();
+    fetchAllergyCategories();
+  }, []);
+
+  // Handle input changes with sanitization
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: sanitizeInput(value) }));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name) {
+      showNotification("Please fill in the name field", "error");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const allergyData = {
+        name: formData.name,
+        description: formData.description || "",
+        allergyCategoryId: formData.allergyCategoryId || null,
+        commonSymptoms: formData.commonSymptoms || "",
+        pregnancyRisk: formData.pregnancyRisk || "",
+      };
+      if (isEditing) {
+        allergyData.id = formData.allergyId;
+        console.log("Updating allergy with:", allergyData);
+        await updateAllergy(allergyData, token);
+        showNotification("Allergy updated successfully", "success");
+      } else {
+        console.log("Creating allergy with:", allergyData);
+        await createAllergy(allergyData, token);
+        showNotification("Allergy created successfully", "success");
+      }
+      resetForm();
+      fetchAllergies();
+      fetchAllergyCategories();
+    } catch (error) {
+      showNotification(
+        `Failed to ${isEditing ? "update" : "create"} allergy: ${
+          error.response?.data?.message || error.message
+        }`,
+        "error"
+      );
+      console.error(
+        `Error in ${isEditing ? "update" : "create"} allergy:`,
+        error.response?.data || error
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle edit
+  const handleEdit = (allergy) => {
+    console.log("Editing allergy:", allergy);
+    if (!allergy.id || !isValidUUID(allergy.id)) {
+      showNotification("Invalid or missing allergy ID for editing", "error");
+      console.error("Invalid or missing allergy ID:", allergy.id);
+      return;
+    }
+    setFormData({
+      allergyId: allergy.id,
+      name: allergy.name,
+      description: allergy.description || "",
+      allergyCategoryId: allergy.allergyCategoryId || "",
+      commonSymptoms: allergy.commonSymptoms || "",
+      pregnancyRisk: allergy.pregnancyRisk || "",
+    });
+    setIsEditing(true);
+  };
+
+  // Handle delete
+  const handleDelete = async (allergyId) => {
+    if (!allergyId) {
+      showNotification("Missing allergy ID", "error");
+      console.error("Missing allergyId");
+      return;
+    }
+    if (!isValidUUID(allergyId)) {
+      showNotification("Invalid allergy ID format", "error");
+      console.error("Invalid allergyId format:", allergyId);
+      return;
+    }
+    if (window.confirm("Are you sure you want to delete this allergy?")) {
+      setLoadingItems((prev) => ({ ...prev, [allergyId]: true }));
+      try {
+        console.log("Deleting allergy with ID:", allergyId);
+        await deleteAllergy(allergyId, token);
+        showNotification("Allergy deleted successfully", "success");
+        fetchAllergies();
+        fetchAllergyCategories();
+      } catch (error) {
+        showNotification(
+          `Failed to delete allergy: ${
+            error.response?.data?.message || error.message
+          }`,
+          "error"
+        );
+        console.error("Error deleting allergy:", error.response?.data || error);
+      } finally {
+        setLoadingItems((prev) => ({ ...prev, [allergyId]: false }));
+      }
+    }
+  };
+
+  // Handle logout
+  const handleLogout = async () => {
+    if (!window.confirm("Are you sure you want to sign out?")) return;
+    try {
+      if (user?.userId) await logout(user.userId);
+    } catch (error) {
+      console.error("Error logging out:", error.message);
+    } finally {
+      localStorage.removeItem("token");
+      setUser(null);
+      setIsSidebarOpen(true);
+      navigate("/signin", { replace: true });
+    }
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setFormData({
+      allergyId: "",
+      name: "",
+      description: "",
+      allergyCategoryId: "",
+      commonSymptoms: "",
+      pregnancyRisk: "",
+    });
+    setIsEditing(false);
+  };
+
+  // Show notification
+  const showNotification = (message, type) => {
+    setNotification({ show: true, message, type });
+  };
+
+  // Close notification
+  const closeNotification = () => {
+    setNotification({ show: false, message: "", type: "" });
+  };
+
+  // Handle search with debouncing
+  const debouncedSearch = debounce((value) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  }, 300);
+  const handleSearch = (e) => debouncedSearch(sanitizeInput(e.target.value));
+
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+    if (isNutrientDropdownOpen) setIsNutrientDropdownOpen(false);
+    if (isFoodDropdownOpen) setIsFoodDropdownOpen(false);
+  };
+
+  // Toggle dropdowns
+  const toggleNutrientDropdown = () => {
+    setIsNutrientDropdownOpen((prev) => !prev);
+  };
+
+  const toggleFoodDropdown = () => {
+    setIsFoodDropdownOpen((prev) => !prev);
+  };
+
+  // Pagination
+  const filteredAllergies = allergies.filter((allergy) =>
+    allergy.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const paginatedAllergies = filteredAllergies.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(filteredAllergies.length / itemsPerPage);
+
+  // Handle window resize to toggle sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > 768);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // Animation variants
+  const containerVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.5 } },
+  };
+
+  const cardVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+  };
+
+  const sidebarVariants = {
+    open: {
+      width: "min(260px, 25vw)",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      width: "min(60px, 15vw)",
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
+
+  const logoVariants = {
+    animate: {
+      scale: [1, 1.05, 1],
+      transition: {
+        duration: 1.8,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop",
+      },
+    },
+    hover: {
+      scale: 1.1,
+      filter: "brightness(1.15)",
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const navItemVariants = {
+    initial: { opacity: 0, x: -20 },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+  };
+
+  const dropdownVariants = {
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
+
+  // Helper to get category name by ID
+  const getCategoryName = (categoryId) => {
+    const category = allergyCategories.find((cat) => cat.id === categoryId);
+    return category ? category.name : "No Category";
+  };
+
+  // Chart data preparation
+  const getChartData = () => {
+    let labels = [];
+    let data = [];
+    let backgroundColors = [
+      "#1e88e5",
+      "#42a5f5",
+      "#90caf9",
+      "#0288d1",
+      "#e3f2fd",
+      "#0d47a1",
+    ];
+
+    if (chartFilter === "category") {
+      const categoryCounts = {};
+      filteredAllergies.forEach((allergy) => {
+        const categoryName = getCategoryName(allergy.allergyCategoryId);
+        categoryCounts[categoryName] = (categoryCounts[categoryName] || 0) + 1;
+      });
+      labels = Object.keys(categoryCounts);
+      data = Object.values(categoryCounts);
+    } else if (chartFilter === "commonSymptoms") {
+      const symptomCounts = {};
+      filteredAllergies.forEach((allergy) => {
+        const symptoms = allergy.commonSymptoms
+          ? allergy.commonSymptoms.split(",").map((s) => s.trim())
+          : ["No Symptoms"];
+        symptoms.forEach((symptom) => {
+          symptomCounts[symptom] = (symptomCounts[symptom] || 0) + 1;
+        });
+      });
+      labels = Object.keys(symptomCounts);
+      data = Object.values(symptomCounts);
+    } else if (chartFilter === "pregnancyRisk") {
+      const riskCounts = {};
+      filteredAllergies.forEach((allergy) => {
+        const risk = allergy.pregnancyRisk
+          ? allergy.pregnancyRisk
+          : "No Risk Info";
+        riskCounts[risk] = (riskCounts[risk] || 0) + 1;
+      });
+      labels = Object.keys(riskCounts);
+      data = Object.values(riskCounts);
+    }
+
+    return {
+      labels,
+      datasets: [
+        {
+          data,
+          backgroundColor: backgroundColors.slice(0, labels.length),
+          borderColor: "#ffffff",
+          borderWidth: 2,
+        },
+      ],
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "bottom",
+        labels: {
+          color: "var(--blue-text)",
+          font: {
+            size: 12,
+          },
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || "";
+            const value = context.raw || 0;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = ((value / total) * 100).toFixed(1);
+            return `${label}: ${value} (${percentage}%)`;
+          },
+        },
+      },
+    },
+  };
+
+  return (
+    <motion.div
+      className={`allergy-management ${isSidebarOpen ? "" : "sidebar-closed"}`}
+      variants={containerVariants}
+      initial="initial"
+      animate="animate"
+    >
+      <AnimatePresence>
+        {notification.show && (
+          <Notification
+            message={notification.message}
+            type={notification.type}
+            onClose={closeNotification}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Sidebar */}
+      <motion.aside
+        className={`nutrient-specialist-sidebar ${
+          isSidebarOpen ? "open" : "closed"
+        }`}
+        variants={sidebarVariants}
+        animate={isSidebarOpen ? "open" : "closed"}
+        initial={window.innerWidth > 768 ? "open" : "closed"}
+      >
+        <div className="sidebar-header">
+          <Link
+            to="/nutrient-specialist"
+            className="logo"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <motion.div
+              variants={logoVariants}
+              animate="animate"
+              whileHover="hover"
+              className="logo-svg-container"
+            >
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Leaf icon for nutrient specialist panel"
+              >
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
+                  fill="var(--blue-secondary)"
+                  stroke="var(--blue-primary)"
+                  strokeWidth="1.5"
+                />
+              </svg>
+            </motion.div>
+            {isSidebarOpen && <span className="logo-text">Nutrient Panel</span>}
+          </Link>
+          <motion.button
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path
+                stroke="var(--blue-white)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d={
+                  isSidebarOpen
+                    ? "M13 18L7 12L13 6M18 18L12 12L18 6"
+                    : "M6 18L12 12L6 6M11 18L17 12L11 6"
+                }
+              />
+            </svg>
+          </motion.button>
+        </div>
+        <motion.nav
+          className="sidebar-nav"
+          aria-label="Sidebar navigation"
+          initial="initial"
+          animate="animate"
+          variants={containerVariants}
+        >
+          {currentSidebarPage === 1 && (
+            <>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/blog-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Blog Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Edit icon for blog management"
+                  >
+                    <path
+                      d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4L18.5 2.5z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Blog Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <button
+                  onClick={toggleFoodDropdown}
+                  className="food-dropdown-toggle"
+                  aria-label={
+                    isFoodDropdownOpen
+                      ? "Collapse food menu"
+                      : "Expand food menu"
+                  }
+                  title="Food"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Apple icon for food management"
+                  >
+                    <path
+                      d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Food</span>}
+                  {isSidebarOpen && (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className={`dropdown-icon ${
+                        isFoodDropdownOpen ? "open" : ""
+                      }`}
+                    >
+                      <path
+                        stroke="var(--blue-white)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d={
+                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                        }
+                      />
+                    </svg>
+                  )}
+                </button>
+              </motion.div>
+              <motion.div
+                className="food-dropdown"
+                variants={dropdownVariants}
+                animate={
+                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
+                }
+                initial="closed"
+              >
+                <motion.div
+                  variants={navItemVariants}
+                  className="sidebar-nav-item food-dropdown-item"
+                >
+                  <Link
+                    to="/nutrient-specialist/food-category-management"
+                    onClick={() => setIsSidebarOpen(true)}
+                    title="Food Category Management"
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-label="Folder icon for food category management"
+                    >
+                      <path
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                        fill="var(--blue-secondary)"
+                        stroke="var(--blue-white)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isSidebarOpen && <span>Food Category Management</span>}
+                  </Link>
+                </motion.div>
+                <motion.div
+                  variants={navItemVariants}
+                  className="sidebar-nav-item food-dropdown-item"
+                >
+                  <Link
+                    to="/nutrient-specialist/food-management"
+                    onClick={() => setIsSidebarOpen(true)}
+                    title="Food Management"
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-label="Apple icon for food management"
+                    >
+                      <path
+                        d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
+                        fill="var(--blue-accent)"
+                        stroke="var(--blue-white)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isSidebarOpen && <span>Food Management</span>}
+                  </Link>
+                </motion.div>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <button
+                  onClick={toggleNutrientDropdown}
+                  className="nutrient-dropdown-toggle"
+                  aria-label={
+                    isNutrientDropdownOpen
+                      ? "Collapse nutrient menu"
+                      : "Expand nutrient menu"
+                  }
+                  title="Nutrient"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Nutrient icon for nutrient management"
+                  >
+                    <path
+                      d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                      stroke="var(--blue-white)"
+                      fill="var(--blue-accent)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient</span>}
+                  {isSidebarOpen && (
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className={`dropdown-icon ${
+                        isNutrientDropdownOpen ? "open" : ""
+                      }`}
+                    >
+                      <path
+                        stroke="var(--blue-white)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d={
+                          isNutrientDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
+                        }
+                      />
+                    </svg>
+                  )}
+                </button>
+              </motion.div>
+              <motion.div
+                className="nutrient-dropdown"
+                variants={dropdownVariants}
+                animate={
+                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                }
+                initial="closed"
+              >
+                <motion.div
+                  variants={navItemVariants}
+                  className="sidebar-nav-item nutrient-dropdown-item"
+                >
+                  <Link
+                    to="/nutrient-specialist/nutrient-category-management"
+                    onClick={() => setIsSidebarOpen(true)}
+                    title="Nutrient Category Management"
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-label="Folder icon for nutrient category management"
+                    >
+                      <path
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                        fill="var(--blue-secondary)"
+                        stroke="var(--blue-white)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isSidebarOpen && <span>Nutrient Category Management</span>}
+                  </Link>
+                </motion.div>
+                <motion.div
+                  variants={navItemVariants}
+                  className="sidebar-nav-item nutrient-dropdown-item"
+                >
+                  <Link
+                    to="/nutrient-specialist/nutrient-management"
+                    onClick={() => setIsSidebarOpen(true)}
+                    title="Nutrient Management"
+                  >
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      aria-label="Sprout icon for nutrient management"
+                    >
+                      <path
+                        d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                        stroke="var(--blue-white)"
+                        fill="var(--blue-accent)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isSidebarOpen && <span>Nutrient Management</span>}
+                  </Link>
+                </motion.div>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-in-food-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Nutrient in Food Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Nutrient in food icon"
+                  >
+                    <path
+                      d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
+                      stroke="var(--blue-white)"
+                      fill="var(--blue-accent)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient in Food Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/age-group-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Age Group Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Users icon for age group management"
+                  >
+                    <path
+                      d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m14-10a4 4 0 010-8m-6 4a4 4 0 11-8 0 4 4 0 018 0zm10 13v-2a4 4 0 00-3-3.87"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Age Group Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/dish-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Dish Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Plate icon for dish management"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 8a4 4 0 014-4 4 4 0 014 4"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Dish Management</span>}
+                </Link>
+              </motion.div>
+            </>
+          )}
+          {currentSidebarPage === 2 && (
+            <>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/allergy-category-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Allergy Category Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for allergy category management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Allergy Category Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/allergy-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Allergy Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for allergy management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Allergy Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Disease Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Disease Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-policy"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Nutrient Policy"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Document icon for nutrient policy"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient Policy</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-tutorial"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Nutrient Tutorial"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Book icon for nutrient tutorial"
+                  >
+                    <path
+                      d="M4 19.5A2.5 2.5 0 016.5 17H20m-16 0V5a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6.5"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient Tutorial</span>}
+                </Link>
+              </motion.div>
+            </>
+          )}
+          <motion.div
+            variants={navItemVariants}
+            className="sidebar-nav-item page-switcher"
+          >
+            <button
+              onClick={() => setCurrentSidebarPage(1)}
+              className={currentSidebarPage === 1 ? "active" : ""}
+              aria-label="Switch to sidebar page 1"
+              title="<<"
+            >
+              {isSidebarOpen ? "<<" : "<<"}
+            </button>
+            <button
+              onClick={() => setCurrentSidebarPage(2)}
+              className={currentSidebarPage === 2 ? "active" : ""}
+              aria-label="Switch to sidebar page 2"
+              title=">>"
+            >
+              {isSidebarOpen ? ">>" : ">>"}
+            </button>
+          </motion.div>
+          {user ? (
+            <>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item nutrient-specialist-profile-section"
+              >
+                <Link
+                  to="/profile"
+                  className="nutrient-specialist-profile-info"
+                  title={isSidebarOpen ? user.email : ""}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="User icon for profile"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      fill="var(--blue-white)"
+                    />
+                  </svg>
+                  {isSidebarOpen && (
+                    <span className="nutrient-specialist-profile-email">
+                      {user.email}
+                    </span>
+                  )}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <button
+                  className="logout-button"
+                  onClick={handleLogout}
+                  aria-label="Sign out"
+                  title="Sign Out"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    aria-label="Logout icon"
+                  >
+                    <path
+                      stroke="var(--blue-logout)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Sign Out</span>}
+                </button>
+              </motion.div>
+            </>
+          ) : (
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link
+                to="/signin"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sign In"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-label="Login icon"
+                >
+                  <path
+                    stroke="var(--blue-white)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Sign In</span>}
+              </Link>
+            </motion.div>
+          )}
+        </motion.nav>
+      </motion.aside>
+
+      {/* Main Content */}
+      <motion.main
+        className={`nutrient-specialist-content ${
+          isSidebarOpen ? "" : "sidebar-closed"
+        }`}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <header className="management-header">
+          <div>
+            <h1>Allergy Management</h1>
+            <p>Manage allergies for nutritional guidance.</p>
+          </div>
+        </header>
+        <div className="management-container">
+          <div className="content-wrapper">
+            {/* Form Section */}
+            <section className="form-section">
+              <div className="section-header">
+                <h2>{isEditing ? "Edit Allergy" : "Create New Allergy"}</h2>
+              </div>
+              <form onSubmit={handleSubmit} className="form-card">
+                <div className="input-section">
+                  <div className="form-group">
+                    <label htmlFor="name">Allergy Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter allergy name"
+                      className="input-field"
+                      required
+                      aria-label="Allergy name"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="allergyCategoryId">Allergy Category</label>
+                    <select
+                      id="allergyCategoryId"
+                      name="allergyCategoryId"
+                      value={formData.allergyCategoryId}
+                      onChange={handleInputChange}
+                      className="input-field"
+                      aria-label="Allergy category"
+                      disabled={isCategoriesLoading}
+                    >
+                      <option value="">Select a category (optional)</option>
+                      {isCategoriesLoading ? (
+                        <option value="" disabled>
+                          Loading categories...
+                        </option>
+                      ) : categoryFetchError ? (
+                        <option value="" disabled>
+                          Error loading categories
+                        </option>
+                      ) : allergyCategories.length > 0 ? (
+                        allergyCategories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="" disabled>
+                          No categories available
+                        </option>
+                      )}
+                    </select>
+                    {categoryFetchError && (
+                      <p className="error-message">{categoryFetchError}</p>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Enter allergy description"
+                      className="textarea-field"
+                      rows="4"
+                      aria-label="Allergy description"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="commonSymptoms">Common Symptoms</label>
+                    <textarea
+                      id="commonSymptoms"
+                      name="commonSymptoms"
+                      value={formData.commonSymptoms}
+                      onChange={handleInputChange}
+                      placeholder="Enter common symptoms"
+                      className="textarea-field"
+                      rows="4"
+                      aria-label="Common symptoms"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="pregnancyRisk">Pregnancy Risk</label>
+                    <textarea
+                      id="pregnancyRisk"
+                      name="pregnancyRisk"
+                      value={formData.pregnancyRisk}
+                      onChange={handleInputChange}
+                      placeholder="Enter pregnancy risk information"
+                      className="textarea-field"
+                      rows="4"
+                      aria-label="Pregnancy risk"
+                    />
+                  </div>
+                </div>
+                <div className="button-section">
+                  <motion.button
+                    type="submit"
+                    className="nutrient-specialist-button primary"
+                    disabled={isLoading}
+                    whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                    whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                    aria-label={isEditing ? "Update allergy" : "Create allergy"}
+                  >
+                    {isLoading
+                      ? "Loading..."
+                      : isEditing
+                      ? "Update Allergy"
+                      : "Create Allergy"}
+                  </motion.button>
+                  {isEditing && (
+                    <motion.button
+                      type="button"
+                      className="nutrient-specialist-button secondary"
+                      onClick={resetForm}
+                      disabled={isLoading}
+                      whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                      whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                      aria-label="Cancel edit"
+                    >
+                      Cancel
+                    </motion.button>
+                  )}
+                </div>
+              </form>
+            </section>
+
+            {/* Chart Section */}
+            <section className="chart-section">
+              <div className="section-header">
+                <h2>Allergy Distribution</h2>
+                <select
+                  value={chartFilter}
+                  onChange={(e) => setChartFilter(e.target.value)}
+                  className="chart-filter-select"
+                  aria-label="Select chart filter"
+                >
+                  <option value="category">Category</option>
+                  <option value="commonSymptoms">Common Symptoms</option>
+                  <option value="pregnancyRisk">Pregnancy Risk</option>
+                </select>
+              </div>
+              <div className="chart-container">
+                {filteredAllergies.length > 0 ? (
+                  <Doughnut data={getChartData()} options={chartOptions} />
+                ) : (
+                  <div className="empty-chart-state">
+                    <p>No data available for chart</p>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+
+          {/* Allergy List Section */}
+          <section className="category-list-section">
+            <div className="section-header">
+              <h2>All Allergies</h2>
+              <span className="category-count">
+                {filteredAllergies.length} Allergies
+              </span>
+            </div>
+            <div className="search-section">
+              <SearchIcon />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Search all allergies..."
+                value={searchTerm}
+                onChange={handleSearch}
+                aria-label="Search all allergies"
+              />
+            </div>
+            {isLoading ? (
+              <div className="loading-state">
+                <p>Loading...</p>
+              </div>
+            ) : filteredAllergies.length === 0 ? (
+              <div className="empty-state">
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  role="img"
+                  aria-label="Empty state icon"
+                >
+                  <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"
+                    stroke="var(--blue-text)"
+                    strokeWidth="2"
+                  />
+                </svg>
+                <h3>
+                  {searchTerm ? "No Matching Allergies" : "No Allergies Found"}
+                </h3>
+                <p>
+                  {searchTerm
+                    ? "Try a different search term."
+                    : "Add a new allergy to get started."}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="category-grid">
+                  {paginatedAllergies.map((allergy) => (
+                    <motion.div
+                      key={allergy.id}
+                      className="category-card"
+                      variants={cardVariants}
+                      initial="initial"
+                      animate="animate"
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="card-header">
+                        <h3>{allergy.name}</h3>
+                      </div>
+                      <div className="card-content">
+                        <p className="card-description">
+                          {allergy.description || "No description available"}
+                        </p>
+                        <p
+                          className="card-description"
+                          style={{
+                            fontWeight: 500,
+                            color: "var(--blue-highlight)",
+                          }}
+                        >
+                          <strong>Category:</strong> {getCategoryName(allergy.allergyCategoryId)}
+                        </p>
+                        <p
+                          className="card-description"
+                          style={{
+                            fontWeight: 500,
+                            color: "var(--blue-highlight)",
+                          }}
+                        >
+                          <strong>Common Symptoms:</strong>{" "}
+                          {allergy.commonSymptoms || "No symptoms available"}
+                        </p>
+                        <p
+                          className="card-description"
+                          style={{
+                            fontWeight: 500,
+                            color: "var(--blue-highlight)",
+                          }}
+                        >
+                          <strong>Pregnancy Risk:</strong>{" "}
+                          {allergy.pregnancyRisk || "No pregnancy risk information"}
+                        </p>
+                      </div>
+                      <div className="card-divider"></div>
+                      <div className="card-actions">
+                        <motion.button
+                          className="nutrient-specialist-button primary"
+                          onClick={() => handleEdit(allergy)}
+                          disabled={loadingItems[allergy.id]}
+                          whileHover={{
+                            scale: loadingItems[allergy.id] ? 1 : 1.05,
+                          }}
+                          whileTap={{
+                            scale: loadingItems[allergy.id] ? 1 : 0.95,
+                          }}
+                          aria-label="Edit allergy"
+                        >
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          className="nutrient-specialist-button secondary"
+                          onClick={() => handleDelete(allergy.id)}
+                          disabled={loadingItems[allergy.id]}
+                          whileHover={{
+                            scale: loadingItems[allergy.id] ? 1 : 1.05,
+                          }}
+                          whileTap={{
+                            scale: loadingItems[allergy.id] ? 1 : 0.95,
+                          }}
+                          aria-label="Delete allergy"
+                        >
+                          {loadingItems[allergy.id] ? "Deleting..." : "Delete"}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="pagination-controls">
+                  <motion.button
+                    className="nutrient-specialist-button secondary"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
+                    disabled={currentPage === 1 || isLoading}
+                    whileHover={{
+                      scale: currentPage === 1 || isLoading ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: currentPage === 1 || isLoading ? 1 : 0.95,
+                    }}
+                    aria-label="Previous page"
+                  >
+                    Previous
+                  </motion.button>
+                  <span className="page-indicator">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <motion.button
+                    className="nutrient-specialist-button secondary"
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages || isLoading}
+                    whileHover={{
+                      scale: currentPage === totalPages || isLoading ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: currentPage === totalPages || isLoading ? 1 : 0.95,
+                    }}
+                    aria-label="Next page"
+                  >
+                    Next
+                  </motion.button>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
+      </motion.main>
+    </motion.div>
+  );
+};
+
+export default AllergyManagement;
