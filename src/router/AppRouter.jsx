@@ -17,7 +17,7 @@ import HealthExpertHomePage from "../pages/healthexpert/HealthExpertHomePage";
 import HealthExpertTutorial from "../pages/healthexpert/HealthExpertTutorial";
 import HealthExpertPolicy from "../pages/healthexpert/HealthExpertPolicy";
 import NutrientSpecialistHomePage from "../pages/nutrientspecialist/NutrientSpecialistHomepage";
-import NutrientPolicy from "../pages/nutrientspecialist/NutrientPolicy"; // Added import
+import NutrientPolicy from "../pages/nutrientspecialist/NutrientPolicy";
 import ClinicHomePage from "../pages/clinic/ClinicHomePage";
 import BlogManagement from "../pages/BlogManagement";
 import AddingBlog from "../pages/AddingBlog";
@@ -41,6 +41,7 @@ import FoodCategoryManagement from "../pages/nutrientspecialist/FoodCategoryMana
 import FoodManagement from "../pages/nutrientspecialist/FoodManagement";
 import AgeGroupManagement from "../pages/nutrientspecialist/AgeGroupManagement";
 import AllergyCategoryManagement from "../pages/nutrientspecialist/AllergyCategoryManagement";
+import AllergyManagement from "../pages/nutrientspecialist/AllergyManagement"; // Added import
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
@@ -83,7 +84,16 @@ const AppRoutes = () => {
         <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
         <Route path="/nutrient-specialist" element={<NutrientSpecialistHomePage />} />
-        <Route path="/nutrient-specialist/nutrient-policy" element={<NutrientPolicy />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/nutrient-policy" element={<NutrientPolicy />} />
+        <Route path="/nutrient-specialist/nutrient-category-management" element={<NutrientCategoryManagement />} />
+        <Route path="/nutrient-specialist/nutrient-management" element={<NutrientManagement />} />
+        <Route path="/nutrient-specialist/food-category-management" element={<FoodCategoryManagement />} />
+        <Route path="/nutrient-specialist/food-management" element={<FoodManagement />} />
+        <Route path="/nutrient-specialist/age-group-management" element={<AgeGroupManagement />} />
+        <Route path="/nutrient-specialist/allergy-category-management" element={<AllergyCategoryManagement />} />
+        <Route path="/nutrient-specialist/allergy-management" element={<AllergyManagement />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
+        <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
@@ -115,14 +125,6 @@ const AppRoutes = () => {
         <Route path="/support" element={<SupportPage />} />
         <Route path="/notifications" element={<NotificationPage />} />
         <Route path="/admin/account-management" element={<AdminAccountManagement />} />
-        <Route path="/nutrient-specialist/nutrient-category-management" element={<NutrientCategoryManagement />} />
-        <Route path="/nutrient-specialist/nutrient-management" element={<NutrientManagement />} />
-        <Route path="/nutrient-specialist/food-category-management" element={<FoodCategoryManagement />} />
-        <Route path="/nutrient-specialist/food-management" element={<FoodManagement />} />
-        <Route path="/nutrient-specialist/age-group-management" element={<AgeGroupManagement />} />
-        <Route path="/nutrient-specialist/allergy-category-management" element={<AllergyCategoryManagement />} />
-        <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
-        <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/advice" element={<AdvicePage />} />
         <Route
           path="/blog"

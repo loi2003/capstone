@@ -758,10 +758,11 @@ export const deleteDish = async (dishId) => {
 
 
 // Allergy Category APIs
-export const getAllAllergyCategories = async () => {
+export const getAllAllergyCategories = async (token) => {
   try {
     const response = await apiClient.get(`/api/allergy-category/view-all-allergy-category`, {
       headers: {
+        "Authorization": `Bearer ${token}`,
         "Accept": "application/json",
       },
     });
@@ -772,17 +773,19 @@ export const getAllAllergyCategories = async () => {
   }
 };
 
-export const getAllergyCategoryById = async (categoryId) => {
+export const getAllergyCategoryById = async (categoryId, token) => {
   try {
     if (!categoryId || categoryId === '') {
       throw new Error('Allergy Category ID is null or empty');
     }
+    console.log('Fetching allergy category with ID:', categoryId);
     const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id?categoryId=${categoryId}`, {
-    
       headers: {
+        "Authorization": `Bearer ${token}`,
         "Accept": "application/json",
       },
     });
+    console.log('Get allergy category by ID response:', response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching allergy category by ID:", error.response?.data || error.message);
@@ -882,6 +885,108 @@ export const updateAllergyCategory = async (categoryData) => {
     return response.data;
   } catch (error) {
     console.error("Error updating allergy category:", error.response?.data || error.message);
+    throw error;
+  }
+};
+export const getAllAllergies = async (token) => {
+  try {
+    const response = await apiClient.get(`/api/Allergy/view-all-allergies`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all allergies:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createAllergy = async (allergyData, token) => {
+  try {
+    console.log("Creating allergy with data:", allergyData);
+    const response = await apiClient.post(
+      `/api/Allergy/add-allergy`,
+      {
+        name: allergyData.name,
+        description: allergyData.description || '',
+        allergyCategoryId: allergyData.allergyCategoryId || null,
+        commonSymptoms: allergyData.commonSymptoms || '',
+        pregnancyRisk: allergyData.pregnancyRisk || ''
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    console.log("Create allergy response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating allergy:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
+
+export const updateAllergy = async (allergyData, token) => {
+  try {
+    if (!allergyData.id || allergyData.id === '') {
+      throw new Error('Allergy ID is null or empty');
+    }
+    console.log("Updating allergy with data:", allergyData);
+    const response = await apiClient.put(
+      `/api/Allergy/update-allergy`,
+      {
+        allergyId: allergyData.id,
+        name: allergyData.name,
+        description: allergyData.description || '',
+        allergyCategoryId: allergyData.allergyCategoryId || null,
+        commonSymptoms: allergyData.commonSymptoms || '',
+        pregnancyRisk: allergyData.pregnancyRisk || ''
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    console.log("Update allergy response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating allergy:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteAllergy = async (allergyId, token) => {
+  try {
+    if (!allergyId || allergyId === '') {
+      throw new Error('Allergy ID is null or empty');
+    }
+    console.log('Sending delete request for allergy ID:', allergyId);
+    const response = await apiClient.delete(`/api/Allergy/delete-allergy-by-id`, {
+      params: {
+        allergyId: allergyId,
+      },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
+    console.log('Delete allergy response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting allergy:", error.response?.data || error.message);
     throw error;
   }
 };
