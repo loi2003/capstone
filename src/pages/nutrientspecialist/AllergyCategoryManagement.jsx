@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllAllergyCategories, createAllergyCategory, updateAllergyCategory, deleteAllergyCategory } from "../../apis/nutriet-api";
+import { getAllAllergyCategories, createAllergyCategory, updateAllergyCategory, deleteAllergyCategory, getAllAllergies } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
+import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import "../../styles/AllergyCategoryManagement.css";
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // Simple debounce function
 const debounce = (func, wait) => {
@@ -92,6 +97,7 @@ const Notification = ({ message, type, onClose }) => {
 
 const AllergyCategoryManagement = () => {
   const [allergyCategories, setAllergyCategories] = useState([]);
+  const [allergies, setAllergies] = useState([]);
   const [formData, setFormData] = useState({
     allergyCategoryId: "",
     name: "",
@@ -103,6 +109,7 @@ const AllergyCategoryManagement = () => {
   const [notification, setNotification] = useState({ show: false, message: "", type: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingItems, setLoadingItems] = useState({});
+  const [chartData, setChartData] = useState(null);
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
@@ -146,11 +153,11 @@ const AllergyCategoryManagement = () => {
     fetchUser();
   }, [navigate]);
 
-  // Fetch allergy categories
+  // Fetch allergy categories and prepare chart data
   const fetchAllergyCategories = async () => {
     setIsLoading(true);
     try {
-      const data = await getAllAllergyCategories();
+      const data = await getAllAllergyCategories(token);
       console.log("Fetched allergy categories:", data);
       if (!Array.isArray(data)) {
         throw new Error("Invalid data format: Expected an array of allergy categories");
@@ -161,9 +168,52 @@ const AllergyCategoryManagement = () => {
         }
       });
       setAllergyCategories(data || []);
+
+      // Prepare chart data using allergies
+      const labels = data.map(category => category.name);
+      const counts = data.map(category => 
+        allergies.filter(allergy => allergy.allergyCategoryId === category.id).length
+      );
+
+      setChartData({
+        labels: labels,
+        datasets: [
+          {
+            label: 'Number of Allergies',
+            data: counts,
+            backgroundColor: 'var(--blue-secondary)',
+            borderColor: 'var(--blue-primary)',
+            borderWidth: 1,
+          },
+        ],
+      });
     } catch (error) {
       showNotification(`Failed to fetch allergy categories: ${error.response?.data?.message || error.message}`, "error");
       console.error("Error fetching allergy categories:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch allergies
+  const fetchAllergies = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getAllAllergies(token);
+      console.log("Fetched allergies response:", response);
+      const data = response.data?.data || response.data || [];
+      if (!Array.isArray(data)) {
+        throw new Error("Invalid data format: Expected an array of allergies");
+      }
+      data.forEach((allergy, index) => {
+        if (!allergy.id || !isValidUUID(allergy.id)) {
+          console.warn(`Invalid or missing ID for allergy at index ${index}:`, allergy);
+        }
+      });
+      setAllergies(data);
+    } catch (error) {
+      showNotification(`Failed to fetch allergies: ${error.response?.data?.message || error.message}`, "error");
+      console.error("Error fetching allergies:", error);
     } finally {
       setIsLoading(false);
     }
@@ -186,7 +236,7 @@ const AllergyCategoryManagement = () => {
     try {
       if (isEditing) {
         const updateData = {
-          id: formData.allergyCategoryId, // Map allergyCategoryId to id
+          id: formData.allergyCategoryId,
           name: formData.name,
           description: formData.description,
         };
@@ -202,6 +252,7 @@ const AllergyCategoryManagement = () => {
       }
       resetForm();
       fetchAllergyCategories();
+      fetchAllergies();
     } catch (error) {
       showNotification(
         `Failed to ${isEditing ? "update" : "create"} allergy category: ${
@@ -250,6 +301,7 @@ const AllergyCategoryManagement = () => {
         await deleteAllergyCategory(allergyCategoryId);
         showNotification("Allergy category deleted successfully", "success");
         fetchAllergyCategories();
+        fetchAllergies();
       } catch (error) {
         showNotification(
           `Failed to delete allergy category: ${error.response?.data?.message || error.message}`,
@@ -339,6 +391,7 @@ const AllergyCategoryManagement = () => {
   // Fetch data on mount
   useEffect(() => {
     fetchAllergyCategories();
+    fetchAllergies();
   }, []);
 
   // Animation variants
@@ -402,6 +455,36 @@ const AllergyCategoryManagement = () => {
     },
   };
 
+  // Chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Allergies by Category',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Number of Allergies',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Allergy Categories',
+        },
+      },
+    },
+  };
+
   return (
     <motion.div
       className={`allergy-category-management ${isSidebarOpen ? "" : "sidebar-closed"}`}
@@ -419,7 +502,7 @@ const AllergyCategoryManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Sidebar (unchanged) */}
+      {/* Sidebar */}
       <motion.aside
         className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
@@ -1066,68 +1149,96 @@ const AllergyCategoryManagement = () => {
           </div>
         </header>
         <div className="management-container">
-          {/* Form Section */}
-          <section className="form-section">
-            <div className="section-header">
-              <h2>{isEditing ? "Edit Allergy Category" : "Create New Allergy Category"}</h2>
-            </div>
-            <form onSubmit={handleSubmit} className="form-card">
-              <div className="input-section">
-                <div className="form-group">
-                  <label htmlFor="name">Category Name</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    placeholder="Enter category name"
-                    className="input-field"
-                    required
-                    aria-label="Category name"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="description">Description</label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Enter category description"
-                    className="textarea-field"
-                    rows="4"
-                    aria-label="Category description"
-                  />
-                </div>
+          <div className="form-chart-container">
+            {/* Form Section */}
+            <section className="form-section">
+              <div className="section-header">
+                <h2>{isEditing ? "Edit Allergy Category" : "Create New Allergy Category"}</h2>
               </div>
-              <div className="button-section">
-                <motion.button
-                  type="submit"
-                  className="nutrient-specialist-button primary"
-                  disabled={isLoading}
-                  whileHover={{ scale: isLoading ? 1 : 1.05 }}
-                  whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                  aria-label={isEditing ? "Update allergy category" : "Create allergy category"}
-                >
-                  {isLoading ? "Loading..." : isEditing ? "Update Category" : "Create Category"}
-                </motion.button>
-                {isEditing && (
+              <form onSubmit={handleSubmit} className="form-card">
+                <div className="input-section">
+                  <div className="form-group">
+                    <label htmlFor="name">Category Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter category name"
+                      className="input-field"
+                      required
+                      aria-label="Category name"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="description">Description</label>
+                    <textarea
+                      id="description"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleInputChange}
+                      placeholder="Enter category description"
+                      className="textarea-field"
+                      rows="4"
+                      aria-label="Category description"
+                    />
+                  </div>
+                </div>
+                <div className="button-section">
                   <motion.button
-                    type="button"
-                    className="nutrient-specialist-button secondary"
-                    onClick={resetForm}
+                    type="submit"
+                    className="nutrient-specialist-button primary"
                     disabled={isLoading}
                     whileHover={{ scale: isLoading ? 1 : 1.05 }}
                     whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                    aria-label="Cancel edit"
+                    aria-label={isEditing ? "Update allergy category" : "Create allergy category"}
                   >
-                    Cancel
+                    {isLoading ? "Loading..." : isEditing ? "Update Category" : "Create Category"}
                   </motion.button>
+                  {isEditing && (
+                    <motion.button
+                      type="button"
+                      className="nutrient-specialist-button secondary"
+                      onClick={resetForm}
+                      disabled={isLoading}
+                      whileHover={{ scale: isLoading ? 1 : 1.05 }}
+                      whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                      aria-label="Cancel edit"
+                    >
+                      Cancel
+                    </motion.button>
+                  )}
+                </div>
+              </form>
+            </section>
+
+            {/* Chart Section */}
+            <section className="chart-section">
+              <div className="section-header">
+                <h2>Allergies by Category</h2>
+              </div>
+              <div className="chart-container">
+                {isLoading ? (
+                  <div className="loading-state">
+                    <LoaderIcon />
+                    <p>Loading chart...</p>
+                  </div>
+                ) : allergies.length === 0 ? (
+                  <div className="empty-chart-state">
+                    <p>No allergy data available for chart</p>
+                  </div>
+                ) : chartData ? (
+                  <Bar data={chartData} options={chartOptions} />
+                ) : (
+                  <div className="loading-state">
+                    <LoaderIcon />
+                    <p>Loading chart...</p>
+                  </div>
                 )}
               </div>
-            </form>
-          </section>
+            </section>
+          </div>
 
           {/* Allergy Category List Section */}
           <section className="category-list-section">

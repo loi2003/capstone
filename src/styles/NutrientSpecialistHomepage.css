@@ -85,6 +85,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   max-width: 280px;
   display: flex;
   flex-direction: column;
+    overflow-y: hidden; /* Prevent scrolling */
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.open {
@@ -191,7 +192,7 @@ body.dark-theme .nutrient-specialist-homepage .nutrient-specialist-profile-email
   padding: 0 0.75rem;
   flex-grow: 1;
   flex-shrink: 0;
-  min-height: calc(100vh - 60px); /* Ensure consistent height to prevent scrollbar */
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .nutrient-specialist-homepage .nutrient-specialist-sidebar.closed .sidebar-nav {
