@@ -115,6 +115,8 @@ body.dark-theme .nutrient-category-management .nutrient-badge {
   max-width: 280px;
   display: flex;
   flex-direction: column;
+    overflow-y: hidden; /* Prevent scrolling */
+
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.open {
@@ -221,7 +223,7 @@ body.dark-theme .nutrient-category-management .nutrient-badge {
   padding: 0 0.75rem;
   flex-grow: 1;
   flex-shrink: 0;
-  min-height: calc(100vh - 60px);
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav {

@@ -76,6 +76,8 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
   max-width: 280px;
   display: flex;
   flex-direction: column;
+    overflow-y: hidden; /* Prevent scrolling */
+
 }
 
 .nutrient-in-food-management .nutrient-specialist-sidebar.open {
@@ -182,7 +184,7 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
   padding: 0 0.75rem;
   flex-grow: 1;
   flex-shrink: 0;
-  min-height: calc(100vh - 60px);
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .nutrient-in-food-management .nutrient-specialist-sidebar.closed .sidebar-nav {

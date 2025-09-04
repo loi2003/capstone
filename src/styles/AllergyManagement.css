@@ -1,3 +1,4 @@
+/* Allergy Management Styles */
 .allergy-management {
   --blue-primary: #1e88e5;
   --blue-secondary: #42a5f5;
@@ -13,6 +14,9 @@
   --blue-transition: all 0.3s ease;
   --sidebar-width-open: min(260px, 25vw);
   --sidebar-width-closed: min(60px, 15vw);
+  --nutrient-specialist-primary: #ffffff; /* Added for logo */
+  --nutrient-specialist-accent: #a5d6a7; /* Added for logo dark theme */
+  --nutrient-specialist-highlight: #ffca28; /* Added for logo dark theme */
 
   display: flex;
   min-height: 100vh;
@@ -92,8 +96,8 @@
 }
 
 .allergy-management.dark-theme .logo-svg-container svg path {
-  stroke: var(--blue-accent);
-  fill: var(--blue-highlight);
+  stroke: var(--nutrient-specialist-accent); /* Updated for dark theme */
+  fill: var(--nutrient-specialist-highlight); /* Updated for dark theme */
 }
 
 /* Sidebar */
@@ -110,6 +114,7 @@
   max-width: 260px;
   display: flex;
   flex-direction: column;
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .allergy-management .nutrient-specialist-sidebar.open {
@@ -176,8 +181,8 @@
 }
 
 .allergy-management .logo-svg-container svg path {
-  stroke: var(--blue-primary);
-  fill: var(--blue-highlight);
+  stroke: var(--nutrient-specialist-primary); /* Updated to match nutrient-specialist-homepage */
+  fill: none; /* Updated to match nutrient-specialist-homepage */
 }
 
 .allergy-management .sidebar-toggle {
@@ -221,7 +226,7 @@
   padding: 0 0.75rem;
   flex-grow: 1;
   flex-shrink: 0;
-  min-height: calc(100vh - 60px);
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav {
@@ -415,10 +420,7 @@
 .allergy-management .chart-section {
   flex: 1;
   min-width: 300px;
-  background: var(--blue-white);
-  border-radius: var(--blue-border-radius);
-  box-shadow: var(--blue-shadow);
-  padding: 1.5rem;
+  width: 100%; /* Ensure full width within content-wrapper */
 }
 
 /* Header */
@@ -453,13 +455,18 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  min-width: 300px; /* Maintain minimum width for consistency with chart-section */
+  width: 100%; /* Ensure it takes full available width */
 }
 
+/* Form card */
 .allergy-management .form-card {
   background: var(--blue-white);
   border-radius: var(--blue-border-radius);
   box-shadow: var(--blue-shadow);
   padding: 1.5rem;
+  width: 100%; /* Ensure it fills the form-section */
+  box-sizing: border-box; /* Prevent padding from causing overflow */
 }
 
 .allergy-management .form-group {
@@ -539,9 +546,12 @@
 
 /* Chart section */
 .allergy-management .chart-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  flex: 1;
+  min-width: 300px;
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  box-shadow: var(--blue-shadow);
+  padding: 1.5rem;
 }
 
 .allergy-management .chart-container {
@@ -872,6 +882,14 @@
   .allergy-management .chart-filter-select {
     font-size: 0.85rem;
     padding: 0.5rem;
+  }
+
+  .allergy-management .form-section {
+    min-width: 100%;
+  }
+
+  .allergy-management .form-card {
+    padding: 1rem;
   }
 
   .allergy-management .notification {
