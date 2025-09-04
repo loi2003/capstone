@@ -1,7 +1,11 @@
 import apiClient from "./url-api";
 
 // GET: /api/NutrientSuggestion/GetEssentialNutritionalNeedsInOneDay
-export const getEssentialNutritionalNeeds = async ({ currentWeek, dateOfBirth, activityLevel = 0 }) => {
+export const getEssentialNutritionalNeeds = async ({
+  currentWeek,
+  dateOfBirth,
+  activityLevel = 0,
+}) => {
   const response = await apiClient.get(
     "/api/NutrientSuggestion/GetEssentialNutritionalNeedsInOneDay",
     {
@@ -10,7 +14,12 @@ export const getEssentialNutritionalNeeds = async ({ currentWeek, dateOfBirth, a
         dateOfBirth,
         activityLevel: activityLevel ?? 0,
       },
+      headers: {
+        Accept: "application/json",
+      },
     }
   );
+
   return response.data;
 };
+

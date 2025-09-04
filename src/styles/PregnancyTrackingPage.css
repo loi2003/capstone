@@ -208,6 +208,8 @@
   overflow: hidden;
   margin-bottom: 2rem;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: visible;
+  transition: background 0.3s, color 0.3s;
 }
 
 .tab {
@@ -243,6 +245,66 @@
   font-weight: 700;
   border-bottom: 3px solid white;
 }
+
+/* Keep Meal Planner highlighted while hovering its submenu */
+.tab.dropdown:hover > .tab,
+.tab.dropdown:has(.dropdown-menu:hover) > .tab {
+  background-color: white;
+  color: #067dad;
+}
+
+.tab.dropdown {
+  position: relative;
+  transition: background 0.3s, color 0.3s;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  z-index: 20;
+  padding: 0.25rem 0;
+}
+
+/* Show on hover */
+.tab.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Subtab buttons */
+.dropdown-menu button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--dark-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+/* Hover effect */
+.dropdown-menu button:hover {
+  background: var(--color-general);
+  color: var(--color-main);
+  border-left: 3px solid var(--color-main);
+}
+
+/* Active subtab */
+.dropdown-menu button.active {
+  background: var(--color-main);
+  color: var(--light-text);
+  /* border-left: 3px solid var(--nguyen-accent-color); */
+}
+
 
 .bbm-icon {
   color: #046A8D;
