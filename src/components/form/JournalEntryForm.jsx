@@ -642,7 +642,7 @@ const JournalEntryForm = ({ onError }) => {
           <div className="entry-form-section journal-entry-info-note">
             <p>
               Blood sugar tracking is only available on clinic weeks (4, 12, 24,
-              28). It's highly recommended to monitor it to prevent pregnancy
+              28). It's highly recommended to perform OGTT to prevent pregnancy
               diabetes.
             </p>
           </div>

@@ -29,7 +29,11 @@ import heartRateIcon from "../assets/icons/heart-pulse-2-svgrepo-com.svg";
 import CheckupReminder from "../components/tracking/CheckupReminder";
 import { viewAllOfflineConsultation } from "../apis/offline-consultation-api";
 import ChatBoxPage from "../components/chatbox/ChatBoxPage";
+import { FaCube } from "react-icons/fa6";
+import { FaHandHoldingHeart } from "react-icons/fa";
+import { FaCaretDown } from "react-icons/fa";
 import "../styles/PregnancyTrackingPage.css";
+import FoodWarning from "../components/form/FoodWarning";
 
 const PregnancyTrackingPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -43,12 +47,13 @@ const PregnancyTrackingPage = () => {
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(
     (searchParams.get("weeklyinfo") && "weekly") ||
-    (searchParams.get("reminderconsultationinfo") && "reminderconsultation") ||
-    (searchParams.get("mealplannerinfo") && "mealplanner") ||
-    (searchParams.get("recommendednutritionalneedsinfo") &&
-      "recommendednutritionalneeds") ||
-    (searchParams.get("journalinfo") && "journal") ||
-    "weekly"
+      (searchParams.get("reminderconsultationinfo") &&
+        "reminderconsultation") ||
+      (searchParams.get("mealplannerinfo") && "mealplanner") ||
+      (searchParams.get("recommendednutritionalneedsinfo") &&
+        "recommendednutritionalneeds") ||
+      (searchParams.get("journalinfo") && "journal") ||
+      "weekly"
   );
   const [openJournalModal, setOpenJournalModal] = useState(false);
   const [appointments, setAppointments] = useState([]);
@@ -105,15 +110,15 @@ const PregnancyTrackingPage = () => {
     }
 
     // Blood Sugar
-    if (bio?.bloodSugar) {
-      const sugar = bio.bloodSugar;
+    if (bio?.bloodSugarLevelMgDl) {
+      const sugar = bio.bloodSugarLevelMgDl;
       if (sugar > 95) {
-        results.bloodSugar = {
+        results.bloodSugarLevelMgDl = {
           abnormal: true,
           message: `Blood Sugar Level ${sugar}: above pregnancy target (>95)`,
         };
       } else if (sugar < 70) {
-        results.bloodSugar = {
+        results.bloodSugarLevelMgDl = {
           abnormal: true,
           message: `Blood Sugar Level ${sugar}: hypoglycemia (<70)`,
         };
@@ -121,15 +126,15 @@ const PregnancyTrackingPage = () => {
     }
 
     // Heart Rate
-    if (bio?.heartRate) {
-      const hr = bio.heartRate;
+    if (bio?.heartRateBPM) {
+      const hr = bio.heartRateBPM;
       if (hr > 110) {
-        results.heartRate = {
+        results.heartRateBPM = {
           abnormal: true,
           message: `Heart Rate ${hr}: elevated (>110)`,
         };
       } else if (hr < 50) {
-        results.heartRate = {
+        results.heartRateBPM = {
           abnormal: true,
           message: `Heart Rate ${hr}: bradycardia (<50)`,
         };
@@ -165,7 +170,7 @@ const PregnancyTrackingPage = () => {
     .filter((s) => s?.abnormal)
     .map((s) => s.message);
 
-    const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -207,7 +212,6 @@ const PregnancyTrackingPage = () => {
 
     fetchAppointments();
   }, []);
-
 
   const appointmentDates = appointments.map((a) => a.start.toISOString());
 
@@ -447,16 +451,6 @@ const PregnancyTrackingPage = () => {
                     queryKey: "reminderconsultationinfo",
                   },
                   {
-                    key: "mealplanner",
-                    label: "Meal Planner",
-                    queryKey: "mealplannerinfo",
-                  },
-                  {
-                    key: "recommendednutritionalneeds",
-                    label: "Recommended Nutritional Needs",
-                    queryKey: "recommendednutritionalneedsinfo",
-                  },
-                  {
                     key: "journal",
                     label: "Journal Entries",
                     queryKey: "journalinfo",
@@ -475,6 +469,87 @@ const PregnancyTrackingPage = () => {
                     {tab.label}
                   </button>
                 ))}
+                {/* Dropdown for Recommended Nutritional Needs */}
+                <div className="tab dropdown">
+                  <button className="tab">
+                    Nutritional Guidance{" "}
+                    <span>
+                      <FaCaretDown />
+                    </span>
+                  </button>
+                  <div className="dropdown-menu">
+                    <button
+                      className={
+                        activeTab === "nutritional-guidance-recommendations"
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() => {
+                        setActiveTab("nutritional-guidance-recommendations");
+                        navigate(
+                          `?growthDataId=${pregnancyData?.id}&nutritional-guidance=recommendations`
+                        );
+                      }}
+                    >
+                      Recommended Nutritional Needs
+                    </button>
+
+                    <button
+                      className={
+                        activeTab === "nutritional-guidance-foodwarnings"
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() => {
+                        setActiveTab("nutritional-guidance-foodwarnings");
+                        navigate(
+                          `?growthDataId=${pregnancyData?.id}&nutritional-guidance=foodwarnings`
+                        );
+                      }}
+                    >
+                      Food Warning
+                    </button>
+                  </div>
+                </div>
+
+                {/* Dropdown for Meal Planner */}
+                <div className="tab dropdown">
+                  <button className="tab">
+                    Meal Planner{" "}
+                    <span>
+                      <FaCaretDown />
+                    </span>
+                  </button>
+                  <div className="dropdown-menu">
+                    <button
+                      className={
+                        activeTab === "mealplanner-system" ? "active" : ""
+                      }
+                      onClick={() => {
+                        setActiveTab("mealplanner-system");
+                        navigate(
+                          `?growthDataId=${pregnancyData?.id}&mealplanner=system`
+                        );
+                      }}
+                    >
+                      System Meal Planner
+                    </button>
+
+                    <button
+                      className={
+                        activeTab === "mealplanner-custom" ? "active" : ""
+                      }
+                      onClick={() => {
+                        setActiveTab("mealplanner-custom");
+                        navigate(
+                          `?growthDataId=${pregnancyData?.id}&mealplanner=custom`
+                        );
+                      }}
+                    >
+                      Custom Meal Planner
+                    </button>
+                  </div>
+                </div>
               </div>
 
               {activeTab === "weekly" && (
@@ -535,6 +610,25 @@ const PregnancyTrackingPage = () => {
 
                           return (
                             <>
+                              {pregnancyData.preWeight > 0 && (
+                                <div className="biometric-card">
+                                  <div className="metric-icon">
+                                    <img
+                                      src={weightIcon}
+                                      alt="Weight"
+                                      className="bbm-icon"
+                                    />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {pregnancyData.preWeight} Kg
+                                    </span>
+                                    <span className="metric-label">
+                                      Pre-Pregnancy Weight
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
                               {pregnancyData.basicBioMetric.weightKg > 0 && (
                                 <div className="biometric-card">
                                   <div className="metric-icon">
@@ -618,58 +712,59 @@ const PregnancyTrackingPage = () => {
                                 </div>
                               )}
 
-                              {pregnancyData.basicBioMetric.heartRate > 0 && (
+                              {pregnancyData.basicBioMetric.heartRateBPM >
+                                0 && (
                                 <div
                                   className={`biometric-card ${
-                                    status.heartRate?.abnormal ? "abnormal" : ""
-                                  }`}
-                                >
-                                  <div className="metric-icon">
-                                    <img
-                                      src={heartRateIcon}
-                                      alt="Heart Rate"
-                                      className="bbm-icon"
-                                    />
-                                  </div>
-                                  <div className="metric-info">
-                                    <span className="metric-value">
-                                      {pregnancyData.basicBioMetric.heartRate}{" "}
-                                      bpm
-                                    </span>
-                                    <span className="metric-label">
-                                      Heart Rate{" "}
-                                      {status.heartRate?.abnormal
-                                        ? `(${status.heartRate.message})`
-                                        : ""}
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {pregnancyData.basicBioMetric.bloodSugar > 0 && (
-                                <div
-                                  className={`biometric-card ${
-                                    status.bloodSugar?.abnormal
+                                    status.heartRateBPM?.abnormal
                                       ? "abnormal"
                                       : ""
                                   }`}
                                 >
                                   <div className="metric-icon">
-                                    <img
-                                      src={calculatorIcon}
-                                      alt="Blood Sugar"
-                                      className="bbm-icon"
-                                    />
+                                    <FaHandHoldingHeart className="bbm-icon" />
                                   </div>
                                   <div className="metric-info">
                                     <span className="metric-value">
-                                      {pregnancyData.basicBioMetric.bloodSugar}{" "}
+                                      {
+                                        pregnancyData.basicBioMetric
+                                          .heartRateBPM
+                                      }{" "}
+                                      bpm
+                                    </span>
+                                    <span className="metric-label">
+                                      Heart Rate{" "}
+                                      {status.heartRateBPM?.abnormal
+                                        ? `(${status.heartRateBPM.message})`
+                                        : ""}
+                                    </span>
+                                  </div>
+                                </div>
+                              )}
+                              {pregnancyData.basicBioMetric
+                                .bloodSugarLevelMgDl > 0 && (
+                                <div
+                                  className={`biometric-card ${
+                                    status.bloodSugarLevelMgDl?.abnormal
+                                      ? "abnormal"
+                                      : ""
+                                  }`}
+                                >
+                                  <div className="metric-icon">
+                                    <FaCube className="bbm-icon" />
+                                  </div>
+                                  <div className="metric-info">
+                                    <span className="metric-value">
+                                      {
+                                        pregnancyData.basicBioMetric
+                                          .bloodSugarLevelMgDl
+                                      }{" "}
                                       mg/dL
                                     </span>
                                     <span className="metric-label">
                                       Blood Sugar{" "}
-                                      {status.bloodSugar?.abnormal
-                                        ? `(${status.bloodSugar.message})`
+                                      {status.bloodSugarLevelMgDl?.abnormal
+                                        ? `(${status.bloodSugarLevelMgDl.message})`
                                         : ""}
                                     </span>
                                   </div>
@@ -714,27 +809,26 @@ const PregnancyTrackingPage = () => {
                   />
                 </div>
               )}
-              {activeTab === "mealplanner" && (
+              {activeTab === "mealplanner-system" && (
                 <div className="tab-content">
-                  <div className="mealplanner-header">
-                    <label htmlFor="mealPlannerSelect">Choose Planner:</label>
-                    <select
-                      id="mealPlannerSelect"
-                      value={mealPlannerType}
-                      onChange={(e) => setMealPlannerType(e.target.value)}
-                    >
-                      <option value="system">System Meal Planner</option>
-                      <option value="custom">Custom Meal Plan</option>
-                    </select>
-                  </div>
-
-                  {mealPlannerType === "system" && <SystemMealPlanner />}
-                  {mealPlannerType === "custom" && <CustomMealPlanner />}
+                  <SystemMealPlanner />
                 </div>
               )}
-              {activeTab === "recommendednutritionalneeds" && (
+
+              {activeTab === "mealplanner-custom" && (
+                <div className="tab-content">
+                  <CustomMealPlanner />
+                </div>
+              )}
+
+              {activeTab === "nutritional-guidance-recommendations" && (
                 <div className="tab-content">
                   <RecommendedNutritionalNeeds pregnancyData={pregnancyData} />
+                </div>
+              )}
+              {activeTab === "nutritional-guidance-foodwarnings" && (
+                <div className="tab-content">
+                  <FoodWarning />
                 </div>
               )}
             </div>
@@ -746,11 +840,21 @@ const PregnancyTrackingPage = () => {
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsPopupOpen(!isPopupOpen)}
         >
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+          <svg
+            width="24"
+            height="24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </motion.div>
-        <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
+        <ChatBoxPage
+          isOpen={isPopupOpen}
+          onClose={() => setIsPopupOpen(false)}
+        />
       </main>
       <Footer />
     </div>

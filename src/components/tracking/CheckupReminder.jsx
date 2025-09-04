@@ -7,27 +7,109 @@ import { useNavigate } from "react-router-dom";
 const CheckupReminder = ({ token, userId, appointments = [] }) => {
   const [recommendedReminders, setRecommendedReminders] = useState([]);
   const [emergencyReminders, setEmergencyReminders] = useState([]);
-  const navigate = useNavigate(); // ✅ now inside component
+  const [selectedTrimester, setSelectedTrimester] = useState("all");
+  const navigate = useNavigate();
+
+  const getDateFromWeek = (lmpDate, weekNumber) => {
+    const start = new Date(lmpDate);
+    const daysToAdd = (weekNumber - 1) * 7;
+    start.setDate(start.getDate() + daysToAdd);
+    return start;
+  };
 
   useEffect(() => {
-    setRecommendedReminders([
+    const lmpDateStr = localStorage.getItem("lmpDate");
+    const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date();
+
+    const recommended = [
       {
         id: 1,
-        title: "Second Trimester Checkup",
-        startDate: "2025-08-11",
-        endDate: "2025-08-21",
-        note: "Book a general prenatal checkup for the 16th week.",
+        title: "Initial Prenatal Visit",
+        description:
+          "Confirm pregnancy, estimate due date, and run baseline tests (blood, urine, STIs, etc).",
+        RecommendedStartWeek: 6,
+        RecommendedEndWeek: 10,
+        note: "First in-depth appointment—establish prenatal care baseline.",
         type: "recommended",
       },
       {
         id: 2,
-        title: "Glucose Screening",
-        startDate: "2025-09-05",
-        endDate: "2025-09-11",
-        note: "Check blood sugar level for gestational diabetes.",
+        title: "Second Trimester Checkpoint",
+        description:
+          "Follow-up to monitor maternal and fetal health—typical physical exam.",
+        RecommendedStartWeek: 10,
+        RecommendedEndWeek: 12,
+        note: "Short visit to revisit labs and check progress.",
         type: "recommended",
       },
-    ]);
+      {
+        id: 3,
+        title: "Mid-Pregnancy Screening",
+        description: "Detailed scan and fetal development assessment.",
+        RecommendedStartWeek: 16,
+        RecommendedEndWeek: 18,
+        note: "Includes anatomy ultrasound and growth tracking.",
+        type: "recommended",
+      },
+      {
+        id: 4,
+        title: "Gestational Diabetes Screening",
+        description: "Glucose challenge test to check for gestational diabetes.",
+        RecommendedStartWeek: 20,
+        RecommendedEndWeek: 22,
+        note: "Standard screening in mid-pregnancy.",
+        type: "recommended",
+      },
+      {
+        id: 5,
+        title: "Routine Follow-up",
+        description: "Regular wellness check to assess maternal and fetal status.",
+        RecommendedStartWeek: 24,
+        RecommendedEndWeek: 28,
+        note: "Standard check-up during late second trimester.",
+        type: "recommended",
+      },
+      {
+        id: 6,
+        title: "Early Third Trimester Visit",
+        description: "Assessment around the beginning of the third trimester.",
+        RecommendedStartWeek: 32,
+        RecommendedEndWeek: 32,
+        note: "Transition to more frequent visits begins soon.",
+        type: "recommended",
+      },
+      {
+        id: 7,
+        title: "Late Third Trimester Check (36 weeks)",
+        description: "Checkup for dilation, fetal position, and Group B strep culture.",
+        RecommendedStartWeek: 36,
+        RecommendedEndWeek: 36,
+        note: "Key milestone before entering weekly visits.",
+        type: "recommended",
+      },
+      {
+        id: 8,
+        title: "Weekly Monitoring (3 Weeks)",
+        description: "Frequent monitoring leading up to labor and delivery.",
+        RecommendedStartWeek: 38,
+        RecommendedEndWeek: 40,
+        note: "Weekly prenatal visits until birth.",
+        type: "recommended",
+      },
+    ].map((r) => {
+      const startDate = getDateFromWeek(lmpDate, r.RecommendedStartWeek);
+      const endDate = getDateFromWeek(lmpDate, r.RecommendedEndWeek);
+
+      return {
+        ...r,
+        startDate,
+        endDate,
+        startWeek: r.RecommendedStartWeek,
+        endWeek: r.RecommendedEndWeek,
+      };
+    });
+
+    setRecommendedReminders(recommended);
 
     const fetchEmergencyReminders = async () => {
       try {
@@ -44,9 +126,6 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
           ? apiResponse.data
           : [];
 
-        const lmpDateStr = localStorage.getItem("lmpDate");
-        const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date();
-        
         const mappedEmergency = remindersArray
           .filter((r) => r.type === "Emergency" && r.isActive === 1)
           .map((r) => {
@@ -61,7 +140,7 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
               startWeek: r.recommendedStartWeek,
               endWeek: r.recommendedEndWeek,
               note: r.description,
-              type: r.type?.toLowerCase() || "emergency",
+              type: "emergency",
             };
           });
 
@@ -74,8 +153,18 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
     fetchEmergencyReminders();
   }, [token, userId]);
 
+  const filterByTrimester = (reminder) => {
+    if (selectedTrimester === "all") return true;
+    if (selectedTrimester === "first")
+      return reminder.startWeek <= 13;
+    if (selectedTrimester === "second")
+      return reminder.startWeek >= 14 && reminder.startWeek <= 27;
+    if (selectedTrimester === "third")
+      return reminder.startWeek >= 28;
+    return true;
+  };
+
   const handleBookInside = (reminder) => {
-    // 👇 navigate instead of alert
     navigate("/clinic/list");
   };
 
@@ -91,23 +180,6 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
     });
   };
 
-  const getDateFromWeek = (lmpDate, weekNumber) => {
-    const start = new Date(lmpDate);
-    const daysToAdd = (weekNumber - 1) * 7;
-    start.setDate(start.getDate() + daysToAdd);
-    return start;
-  };
-
-  const getWeekNumber = (dateStr) => {
-    const date = new Date(dateStr);
-    const start = new Date(date.getFullYear(), 0, 1);
-    const diff =
-      date -
-      start +
-      (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
-    return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
-  };
-
   const renderReminderCard = (reminder, isUrgent = false) => (
     <div
       key={reminder.id}
@@ -116,21 +188,9 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
       <div className="reminder-info">
         <h5>{reminder.title}</h5>
         <div className="reminder-date">
-          {reminder.type === "emergency" ? (
-            <>
-              Week {reminder.startWeek} – Week {reminder.endWeek}
-              <br />
-              {new Date(reminder.startDate).toLocaleDateString("en-GB")} –{" "}
-              {new Date(reminder.endDate).toLocaleDateString("en-GB")}
-            </>
-          ) : (
-            <>
-              {formatDate(reminder.startDate)} – {formatDate(reminder.endDate)}
-              <br />
-              Week {getWeekNumber(reminder.startDate)} – Week{" "}
-              {getWeekNumber(reminder.endDate)}
-            </>
-          )}
+          Week {reminder.startWeek} – Week {reminder.endWeek}
+          <br />
+          {formatDate(reminder.startDate)} – {formatDate(reminder.endDate)}
         </div>
         <p className="reminder-note">{reminder.note}</p>
       </div>
@@ -157,8 +217,24 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
 
       <div className="reminder-section">
         <h3>Recommended Checkup</h3>
+
+        <div className="reminder-trimester-filter">
+          <label>Show: </label>
+          <select
+            value={selectedTrimester}
+            onChange={(e) => setSelectedTrimester(e.target.value)}
+          >
+            <option value="all">All Trimesters</option>
+            <option value="first">First Trimester</option>
+            <option value="second">Second Trimester</option>
+            <option value="third">Third Trimester</option>
+          </select>
+        </div>
+
         {recommendedReminders.length > 0 ? (
-          recommendedReminders.map((reminder) => renderReminderCard(reminder))
+          recommendedReminders
+            .filter(filterByTrimester)
+            .map((reminder) => renderReminderCard(reminder))
         ) : (
           <p className="empty-text">No recommended reminders at this time.</p>
         )}

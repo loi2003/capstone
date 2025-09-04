@@ -55,6 +55,7 @@ import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFood
 import AdvicePage from "../pages/AdvicePage";
 import RecommendedNutritionalNeeds from "../components/form/RecommendedNutritionalNeeds";
 import NotificationPage from "../pages/NotificationPage";
+import FoodWarning from "../components/form/FoodWarning";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -113,8 +114,9 @@ const AppRoutes = () => {
           path="/pregnancy-tracking/journal-section/edit-journal-form"
           element={<EditJournalEntryForm />}
         />
-        <Route path="/system-meal-planner" element={<SystemMealPlanner />} />
-        <Route path="/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
+        {/* <Route path="/system-meal-planner" element={<SystemMealPlanner />} /> */}
+        {/* <Route path="/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} /> */}
+        {/* <Route path="/nutritional-guidance-foodwarning" element={<FoodWarning />} /> */}
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />

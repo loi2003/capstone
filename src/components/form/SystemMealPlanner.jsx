@@ -535,9 +535,9 @@ const SystemMealPlanner = () => {
                         <h4>{dish.name}</h4>
                         <p>{dish.calories} kcal</p>
                         <div className="meal-actions">
-                          <button>
+                          {/* <button>
                             <FaSyncAlt /> Change Dish
-                          </button>
+                          </button> */}
                           <button>
                             <FaInfoCircle /> Nutrition Information
                           </button>
@@ -638,9 +638,9 @@ const SystemMealPlanner = () => {
                           <h4>{dish.name}</h4>
                           <p>{dish.calories} kcal</p>
                           <div className="meal-actions">
-                            <button>
+                            {/* <button>
                               <FaSyncAlt /> Change Dish
-                            </button>
+                            </button> */}
                             <button>
                               <FaInfoCircle /> Dish information
                             </button>
@@ -690,9 +690,9 @@ const SystemMealPlanner = () => {
                         <h4>{dish.name}</h4>
                         <p>{dish.calories} kcal</p>
                         <div className="meal-actions">
-                          <button>
+                          {/* <button>
                             <FaSyncAlt /> Change Dish
-                          </button>
+                          </button> */}
                           <button>
                             <FaInfoCircle /> Nutrition Information
                           </button>
