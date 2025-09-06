@@ -56,6 +56,8 @@ import AdvicePage from "../pages/AdvicePage";
 import RecommendedNutritionalNeeds from "../components/form/RecommendedNutritionalNeeds";
 import NotificationPage from "../pages/NotificationPage";
 import FoodWarning from "../components/form/FoodWarning";
+import DiseaseManagement from "../pages/nutrientspecialist/DiseaseManagement";
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -94,6 +96,8 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/allergy-category-management" element={<AllergyCategoryManagement />} />
         <Route path="/nutrient-specialist/allergy-management" element={<AllergyManagement />} /> {/* Added route */}
         <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
+                  <Route path="/nutrient-specialist/disease-management" element={<DiseaseManagement />} />
+
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />

@@ -1025,3 +1025,137 @@ export const deleteAllergy = async (allergyId, token) => {
     throw error;
   }
 };
+
+// Disease Management APIs
+export const getAllDiseases = async (token) => {
+  try {
+    const response = await apiClient.get(`/api/Disease/view-all-diseases`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all diseases:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getDiseaseById = async (diseaseId, token) => {
+  try {
+    if (!diseaseId || diseaseId === '') {
+      throw new Error('Disease ID is null or empty');
+    }
+    console.log('Fetching disease with ID:', diseaseId);
+    const response = await apiClient.get(`/api/Disease/view-disease-by-id?diseaseId=${diseaseId}`, {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
+    console.log('Get disease by ID response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching disease by ID:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createDisease = async (diseaseData, token) => {
+  try {
+    if (!diseaseData.name || diseaseData.name.trim() === '') {
+      throw new Error('Disease name is required');
+    }
+    console.log("Creating disease with data:", diseaseData);
+    const response = await apiClient.post(
+      `/api/Disease/add-disease`,
+      {
+        name: diseaseData.diseaseName,
+        description: diseaseData.description || '',
+        symptoms: diseaseData.symptoms || '',
+        treatmentOptions: diseaseData.treatmentOptions || '',
+        pregnancyRelated: diseaseData.pregnancyRelated || false,
+        riskLevel: diseaseData.riskLevel || '',
+        typeOfDesease: diseaseData.typeOfDesease || ''
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    console.log("Create disease response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating disease:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
+
+export const updateDisease = async (diseaseData, token) => {
+  try {
+    if (!diseaseData.diseaseId || diseaseData.diseaseId === '') {
+      throw new Error('Disease ID is null or empty');
+    }
+    if (!diseaseData.name || diseaseData.name.trim() === '') {
+      throw new Error('Disease name is required');
+    }
+    console.log("Updating disease with data:", diseaseData);
+    const response = await apiClient.put(
+      `/api/Disease/update-disease`,
+      {
+        diseaseId: diseaseData.diseaseId,
+        name: diseaseData.diseaseName,
+        description: diseaseData.description || '',
+        symptoms: diseaseData.symptoms || '',
+        treatmentOptions: diseaseData.treatmentOptions || '',
+        pregnancyRelated: diseaseData.pregnancyRelated || false,
+        riskLevel: diseaseData.riskLevel || '',
+        typeOfDesease: diseaseData.typeOfDesease || ''
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+      }
+    );
+    console.log("Update disease response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating disease:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deleteDisease = async (diseaseId, token) => {
+  try {
+    if (!diseaseId || diseaseId === '') {
+      throw new Error('Disease ID is null or empty');
+    }
+    console.log('Sending delete request for disease ID:', diseaseId);
+    const response = await apiClient.delete(`/api/Disease/delete-disease-by-id`, {
+      params: {
+        diseaseId: diseaseId,
+      },
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Accept": "application/json",
+      },
+    });
+    console.log('Delete disease response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting disease:", error.response?.data || error.message);
+    throw error;
+  }
+};
