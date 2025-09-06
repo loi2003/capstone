@@ -56,7 +56,10 @@ const DishManagement = () => {
   const [dishes, setDishes] = useState([]);
   const [foods, setFoods] = useState([]);
   const [newDish, setNewDish] = useState({
-    foodList: [], // Stores objects with { foodId, unit, amount }
+    dishName: "",
+    description: "",
+    foodList: [],
+    image: null, // Added image field
   });
   const [selectedDish, setSelectedDish] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -141,11 +144,16 @@ const DishManagement = () => {
       console.log("Fetched dish data:", data);
       setSelectedDish(data);
       setNewDish({
-        foodList: Array.isArray(data.foods) ? data.foods.map(food => ({
-          foodId: food.foodId,
-          unit: food.unit === "g" ? "grams" : food.unit,
-          amount: food.amount || 0,
-        })) : [],
+        dishName: data.dishName || "",
+        description: data.description || "",
+        foodList: Array.isArray(data.foods)
+          ? data.foods.map((food) => ({
+              foodId: food.foodId,
+              unit: food.unit === "g" ? "grams" : food.unit,
+              amount: food.amount || 0,
+            }))
+          : [],
+        image: null, // Reset image field
       });
       setIsEditing(true);
     } catch (err) {
@@ -156,26 +164,35 @@ const DishManagement = () => {
   };
 
   const createDishHandler = async () => {
+    if (!newDish.dishName || newDish.dishName.trim() === "") {
+      showNotification("Dish name is required", "error");
+      return;
+    }
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
       return;
     }
-    if (newDish.foodList.some(food => !food.unit || food.amount <= 0)) {
-      showNotification("Please provide valid unit and amount for all selected foods", "error");
+    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
+      showNotification(
+        "Please provide valid unit and amount for all selected foods",
+        "error"
+      );
       return;
     }
     setLoading(true);
     try {
       console.log("Creating dish with data:", newDish);
       await createDish({
-        foodList: newDish.foodList.map(food => ({
-          foodId: food.foodId,
-          unit: food.unit === "grams" ? "g" : food.unit,
-          amount: food.amount,
-        })),
+        dishName: newDish.dishName,
+        description: newDish.description,
+        foodList: newDish.foodList,
+        image: newDish.image, // Include image in payload
       });
       setNewDish({
+        dishName: "",
+        description: "",
         foodList: [],
+        image: null, // Reset image field
       });
       setIsEditing(false);
       await fetchData();
@@ -186,19 +203,29 @@ const DishManagement = () => {
         response: err.response?.data,
         status: err.response?.status,
       });
-      showNotification(`Failed to create dish: ${err.response?.data?.message || err.message}`, "error");
+      showNotification(
+        `Failed to create dish: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const updateDishHandler = async () => {
+    if (!newDish.dishName || newDish.dishName.trim() === "") {
+      showNotification("Dish name is required", "error");
+      return;
+    }
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
       return;
     }
-    if (newDish.foodList.some(food => !food.unit || food.amount <= 0)) {
-      showNotification("Please provide valid unit and amount for all selected foods", "error");
+    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
+      showNotification(
+        "Please provide valid unit and amount for all selected foods",
+        "error"
+      );
       return;
     }
     setLoading(true);
@@ -206,21 +233,29 @@ const DishManagement = () => {
       console.log("Updating dish with ID:", selectedDish?.id);
       await updateDish({
         dishId: selectedDish?.id,
-        foodList: newDish.foodList.map(food => ({
+        dishName: newDish.dishName,
+        description: newDish.description,
+        foodList: newDish.foodList.map((food) => ({
           foodId: food.foodId,
           unit: food.unit === "grams" ? "g" : food.unit,
           amount: food.amount,
         })),
       });
       setNewDish({
+        dishName: "",
+        description: "",
         foodList: [],
+        image: null, // Reset image field
       });
       setSelectedDish(null);
       setIsEditing(false);
       await fetchData();
       showNotification("Dish updated successfully", "success");
     } catch (err) {
-      showNotification(`Failed to update dish: ${err.response?.data?.message || err.message}`, "error");
+      showNotification(
+        `Failed to update dish: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -235,7 +270,10 @@ const DishManagement = () => {
       setSelectedDish(null);
       setIsEditing(false);
       setNewDish({
+        dishName: "",
+        description: "",
         foodList: [],
+        image: null, // Reset image field
       });
       await fetchData();
       showNotification("Dish deleted successfully", "success");
@@ -248,16 +286,19 @@ const DishManagement = () => {
 
   const cancelEdit = () => {
     setNewDish({
+      dishName: "",
+      description: "",
       foodList: [],
+      image: null, // Reset image field
     });
     setSelectedDish(null);
     setIsEditing(false);
   };
 
   const handleFoodSelect = (foodId) => {
-    setNewDish(prev => {
+    setNewDish((prev) => {
       const currentFoods = [...prev.foodList];
-      const index = currentFoods.findIndex(food => food.foodId === foodId);
+      const index = currentFoods.findIndex((food) => food.foodId === foodId);
 
       if (index > -1) {
         currentFoods.splice(index, 1);
@@ -270,9 +311,9 @@ const DishManagement = () => {
   };
 
   const handleFoodDetailChange = (foodId, field, value) => {
-    setNewDish(prev => ({
+    setNewDish((prev) => ({
       ...prev,
-      foodList: prev.foodList.map(food =>
+      foodList: prev.foodList.map((food) =>
         food.foodId === foodId ? { ...food, [field]: value } : food
       ),
     }));
@@ -321,7 +362,7 @@ const DishManagement = () => {
   // Fix for toLowerCase error
   const filteredDishes = dishes.filter(
     (dish) =>
-      (dish.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (dish.dishName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dish.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -393,7 +434,9 @@ const DishManagement = () => {
 
       {/* Sidebar */}
       <motion.aside
-        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className={`nutrient-specialist-sidebar ${
+          isSidebarOpen ? "open" : "closed"
+        }`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
@@ -459,7 +502,10 @@ const DishManagement = () => {
         >
           {currentSidebarPage === 1 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -485,11 +531,18 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Blog Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
-                  aria-label={isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"}
+                  aria-label={
+                    isFoodDropdownOpen
+                      ? "Collapse food menu"
+                      : "Expand food menu"
+                  }
                   title="Food"
                 >
                   <svg
@@ -516,14 +569,18 @@ const DishManagement = () => {
                       height="16"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className={`dropdown-icon ${isFoodDropdownOpen ? "open" : ""}`}
+                      className={`dropdown-icon ${
+                        isFoodDropdownOpen ? "open" : ""
+                      }`}
                     >
                       <path
                         stroke="var(--orange-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -532,7 +589,9 @@ const DishManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -553,7 +612,7 @@ const DishManagement = () => {
                       aria-label="Folder icon for food category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2xc11z"
                         fill="var(--orange-secondary)"
                         stroke="var(--orange-white)"
                         strokeWidth="1.5"
@@ -583,22 +642,29 @@ const DishManagement = () => {
                     >
                       <path
                         d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Food Management</span>}
-                </Link>
+                        fill="var(--orange-accent)"
+                        stroke="var(--orange-white)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                    {isSidebarOpen && <span>Food Management</span>}
+                  </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
-                  aria-label={isNutrientDropdownOpen ? "Collapse nutrient menu" : "Expand nutrient menu"}
+                  aria-label={
+                    isNutrientDropdownOpen
+                      ? "Collapse nutrient menu"
+                      : "Expand nutrient menu"
+                  }
                   title="Nutrient"
                 >
                   <svg
@@ -625,14 +691,20 @@ const DishManagement = () => {
                       height="16"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className={`dropdown-icon ${isNutrientDropdownOpen ? "open" : ""}`}
+                      className={`dropdown-icon ${
+                        isNutrientDropdownOpen ? "open" : ""
+                      }`}
                     >
                       <path
                         stroke="var(--orange-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isNutrientDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -641,7 +713,9 @@ const DishManagement = () => {
               <motion.div
                 className="nutrient-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -703,7 +777,10 @@ const DishManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -729,7 +806,10 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Nutrient in Food Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -755,7 +835,10 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Age Group Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -785,7 +868,10 @@ const DishManagement = () => {
           )}
           {currentSidebarPage === 2 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -811,7 +897,10 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Allergy Category Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -837,7 +926,10 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Allergy Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -863,7 +955,68 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Disease Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Messenger Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Messenger Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -889,7 +1042,10 @@ const DishManagement = () => {
                   {isSidebarOpen && <span>Nutrient Policy</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -917,7 +1073,10 @@ const DishManagement = () => {
               </motion.div>
             </>
           )}
-          <motion.div variants={navItemVariants} className="sidebar-nav-item page-switcher">
+          <motion.div
+            variants={navItemVariants}
+            className="sidebar-nav-item page-switcher"
+          >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
@@ -1051,20 +1210,68 @@ const DishManagement = () => {
             )}
             <div className="form-card">
               <div className="form-group">
+                <label htmlFor="dish-name">Dish Name</label>
+                <input
+                  id="dish-name"
+                  type="text"
+                  value={newDish.dishName}
+                  onChange={(e) =>
+                    setNewDish((prev) => ({
+                      ...prev,
+                      dishName: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter dish name"
+                  className="input-field"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="dish-description">Description</label>
+                <textarea
+                  id="dish-description"
+                  value={newDish.description}
+                  onChange={(e) =>
+                    setNewDish((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter dish description"
+                  className="textarea-field"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="dish-image">Dish Image (Optional)</label>
+                <input
+                  id="dish-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) =>
+                    setNewDish((prev) => ({
+                      ...prev,
+                      image: e.target.files[0] || null,
+                    }))
+                  }
+                  className="input-field"
+                />
+              </div>
+              <div className="form-group">
                 <label htmlFor="food-selection">Select Foods</label>
                 <div className="food-selection-container">
-                  {foods.map(food => (
+                  {foods.map((food) => (
                     <motion.div
                       key={food.id}
                       className={`food-item ${
-                        newDish.foodList.some(f => f.foodId === food.id) ? "selected" : ""
+                        newDish.foodList.some((f) => f.foodId === food.id)
+                          ? "selected"
+                          : ""
                       }`}
                       onClick={() => handleFoodSelect(food.id)}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.98 }}
                     >
                       <span className="food-name">{food.name}</span>
-                      {newDish.foodList.some(f => f.foodId === food.id) && (
+                      {newDish.foodList.some((f) => f.foodId === food.id) && (
                         <span className="checkmark">✓</span>
                       )}
                     </motion.div>
@@ -1073,13 +1280,22 @@ const DishManagement = () => {
                 {newDish.foodList.length > 0 && (
                   <div className="food-details-container">
                     <h4>Food Details</h4>
-                    {newDish.foodList.map(food => (
+                    {newDish.foodList.map((food) => (
                       <div key={food.foodId} className="food-detail-item">
-                        <span>{foods.find(f => f.id === food.foodId)?.name || "Unknown Food"}</span>
+                        <span>
+                          {foods.find((f) => f.id === food.foodId)?.name ||
+                            "Unknown Food"}
+                        </span>
                         <div className="food-detail-inputs">
                           <select
                             value={food.unit}
-                            onChange={e => handleFoodDetailChange(food.foodId, "unit", e.target.value)}
+                            onChange={(e) =>
+                              handleFoodDetailChange(
+                                food.foodId,
+                                "unit",
+                                e.target.value
+                              )
+                            }
                             className="input-field"
                           >
                             <option value="grams">Grams</option>
@@ -1090,7 +1306,13 @@ const DishManagement = () => {
                           <input
                             type="number"
                             value={food.amount}
-                            onChange={e => handleFoodDetailChange(food.foodId, "amount", parseFloat(e.target.value))}
+                            onChange={(e) =>
+                              handleFoodDetailChange(
+                                food.foodId,
+                                "amount",
+                                parseFloat(e.target.value)
+                              )
+                            }
                             placeholder="Amount"
                             className="input-field"
                             min="0"
@@ -1169,7 +1391,7 @@ const DishManagement = () => {
               </div>
             ) : (
               <div className="nutrient-grid">
-                {filteredDishes.map(dish => (
+                {filteredDishes.map((dish) => (
                   <motion.div
                     key={dish.id}
                     className="nutrient-card"
@@ -1179,15 +1401,18 @@ const DishManagement = () => {
                     whileHover={{ y: -5 }}
                   >
                     <div className="card-header">
-                      <h3>Dish #{dish.id}</h3>
+                      <h3>{dish.dishName || `Dish #${dish.id}`}</h3>
                     </div>
                     <div className="food-list">
                       <h4>Foods:</h4>
                       <ul>
                         {Array.isArray(dish.foods) && dish.foods.length > 0 ? (
-                          dish.foods.map(food => (
+                          dish.foods.map((food) => (
                             <li key={food.foodId}>
-                              {food.foodName || foods.find(f => f.id === food.foodId)?.name || "Unknown Food"} ({food.amount} {food.unit})
+                              {food.foodName ||
+                                foods.find((f) => f.id === food.foodId)?.name ||
+                                "Unknown Food"}{" "}
+                              ({food.amount} {food.unit})
                             </li>
                           ))
                         ) : (

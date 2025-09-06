@@ -157,7 +157,6 @@ export const createNutrient = async (nutrientData) => {
   }
 };
 
-
 export const updateNutrient = async (nutrientData) => {
   try {
     console.log('Sending update nutrient request with data:', nutrientData);
@@ -357,7 +356,6 @@ export const getAllFoods = async () => {
 export const getFoodById = async (foodId) => {
   try {
     const response = await apiClient.get(`/api/food/view-food-by-id?foodId=${foodId}`, {
-     
       headers: {
         "Accept": "application/json",
       },
@@ -426,6 +424,7 @@ export const updateFood = async (foodData) => {
     throw error;
   }
 };
+
 export const updateFoodImage = async (foodId, image) => {
   try {
     const formData = new FormData();
@@ -550,7 +549,6 @@ export const getAllAgeGroups = async () => {
 export const getAgeGroupById = async (ageGroupId) => {
   try {
     const response = await apiClient.get(`/api/AgeGroup/view-age-group-by-id?ageGroupId=${ageGroupId}`, {
- 
       headers: {
         "Accept": "application/json",
       },
@@ -590,12 +588,13 @@ export const createAgeGroup = async (ageGroupData) => {
     throw error;
   }
 };
+
 export const updateAgeGroup = async (ageGroupData) => {
   try {
     if (!ageGroupData.ageGroupId || ageGroupData.ageGroupId === '') {
       throw new Error('AgeGroup Id is null or empty');
     }
-    const response = await apiClient.put(
+    const response = await apiClient.post(
       `/api/AgeGroup/update-age-group`,
       {
         ageGroupId: ageGroupData.ageGroupId,
@@ -648,7 +647,6 @@ export const getAllDishes = async () => {
   }
 };
 
-// Fetch dish by ID
 export const getDishById = async (dishId) => {
   try {
     if (!dishId || dishId === '') {
@@ -670,24 +668,49 @@ export const getDishById = async (dishId) => {
   }
 };
 
-// Create a new dish
 export const createDish = async (dishData) => {
   try {
-    const payload = {
-      foodList: dishData.foodList.map(food => ({
-        foodId: food.foodId,
-        unit: food.unit === "grams" ? "g" : food.unit, // Normalize unit for API
-        amount: food.amount,
-      })),
-    };
-    console.log('Sending create dish request with payload:', payload);
+    if (!dishData.dishName || dishData.dishName.trim() === '') {
+      throw new Error('Dish name is required');
+    }
+    if (!dishData.foodList || dishData.foodList.length === 0) {
+      throw new Error('At least one food item is required');
+    }
+    if (dishData.foodList.some((food) => !food.unit || food.amount <= 0)) {
+      throw new Error('All food items must have a valid unit and amount greater than 0');
+    }
 
-    const response = await apiClient.post(`/api/dish/add-dish`, payload, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+    const formData = new FormData();
+    formData.append('FoodList', JSON.stringify(dishData.foodList.map(food => ({
+      foodId: food.foodId,
+      unit: food.unit === "grams" ? "g" : food.unit,
+      amount: parseFloat(food.amount),
+    }))));
+
+    if (dishData.image) {
+      formData.append('Image', dishData.image);
+    }
+
+    const params = new URLSearchParams({
+      DishName: dishData.dishName,
+      Description: dishData.description || '',
     });
+
+    console.log('Sending create dish request with FormData:', Array.from(formData.entries()));
+    console.log('Query params:', params.toString());
+
+    const response = await apiClient.post(
+      `/api/dish/add-dish?${params.toString()}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    console.log('Create dish response:', response.data);
     return response.data;
   } catch (error) {
     console.error("Error creating dish:", {
@@ -699,29 +722,43 @@ export const createDish = async (dishData) => {
   }
 };
 
-// Update an existing dish
 export const updateDish = async (dishData) => {
   try {
-    if (!dishData.dishId || dishData.dishId === '') {
-      throw new Error('Dish ID is null or empty');
+    if (!dishData.dishId || dishData.dishId === "") {
+      throw new Error("Dish ID is null or empty");
     }
-    const response = await apiClient.put(
-      `/api/dish/update-dish`,
-      {
-        dishId: dishData.dishId,
-        foodList: dishData.foodList.map(food => ({
-          foodId: food.foodId,
-          unit: food.unit === "grams" ? "g" : food.unit, // Normalize unit for API
-          amount: food.amount,
-        })),
+    if (!dishData.dishName || dishData.dishName.trim() === "") {
+      throw new Error("Dish name is required");
+    }
+    if (dishData.foodList.length === 0) {
+      throw new Error("At least one food item is required");
+    }
+    if (dishData.foodList.some((food) => !food.unit || food.amount <= 0)) {
+      throw new Error(
+        "All food items must have a valid unit and amount greater than 0"
+      );
+    }
+
+    const payload = {
+      dishID: dishData.dishId,
+      dishName: dishData.dishName,
+      description: dishData.description || "",
+      foodList: dishData.foodList.map((food) => ({
+        foodId: food.foodId,
+        unit: food.unit === "grams" ? "g" : food.unit,
+        amount: parseFloat(food.amount),
+      })),
+    };
+
+    console.log("Sending update dish request with payload:", payload);
+
+    const response = await apiClient.put("/api/dish/update-dish", payload, {
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
       },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        },
-      }
-    );
+    });
+
     console.log("Update dish response:", response.data);
     return response.data;
   } catch (error) {
@@ -734,7 +771,6 @@ export const updateDish = async (dishData) => {
   }
 };
 
-// Delete a dish
 export const deleteDish = async (dishId) => {
   try {
     if (!dishId || dishId === '') {
@@ -756,8 +792,6 @@ export const deleteDish = async (dishId) => {
   }
 };
 
-
-// Allergy Category APIs
 export const getAllAllergyCategories = async (token) => {
   try {
     const response = await apiClient.get(`/api/allergy-category/view-all-allergy-category`, {
@@ -799,7 +833,6 @@ export const getAllergyCategoryWithAllergiesById = async (categoryId) => {
       throw new Error('Allergy Category ID is null or empty');
     }
     const response = await apiClient.get(`/api/allergy-category/view-allergy-category-by-id-with-allergies?categoryId=${categoryId}`, {
-   
       headers: {
         "Accept": "application/json",
       },
@@ -848,7 +881,7 @@ export const deleteAllergyCategory = async (categoryId) => {
     console.log('Sending delete request for allergy category ID:', categoryId);
     const response = await apiClient.delete(`/api/allergy-category/delete-allergy-category-by-id`, {
       params: {
-        allergyCategoryId: categoryId, // Match API parameter name
+        allergyCategoryId: categoryId,
       },
       headers: {
         "Accept": "application/json",
@@ -861,6 +894,7 @@ export const deleteAllergyCategory = async (categoryId) => {
     throw error;
   }
 };
+
 export const updateAllergyCategory = async (categoryData) => {
   try {
     if (!categoryData.id || categoryData.id === '') {
@@ -888,6 +922,7 @@ export const updateAllergyCategory = async (categoryData) => {
     throw error;
   }
 };
+
 export const getAllAllergies = async (token) => {
   try {
     const response = await apiClient.get(`/api/Allergy/view-all-allergies`, {

@@ -11,7 +11,6 @@ import {
 import "../../styles/NutrientInFoodManagement.css";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 
-
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -530,7 +529,10 @@ const NutrientInFoodManagement = () => {
         >
           {currentSidebarPage === 1 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -556,12 +558,17 @@ const NutrientInFoodManagement = () => {
                   {isSidebarOpen && <span>Blog Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
                   aria-label={
-                    isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"
+                    isFoodDropdownOpen
+                      ? "Collapse food menu"
+                      : "Expand food menu"
                   }
                   title="Food"
                 >
@@ -598,7 +605,9 @@ const NutrientInFoodManagement = () => {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -607,7 +616,9 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -669,7 +680,10 @@ const NutrientInFoodManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -714,7 +728,9 @@ const NutrientInFoodManagement = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d={
-                          isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                          isNutrientDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
                         }
                       />
                     </svg>
@@ -971,6 +987,64 @@ const NutrientInFoodManagement = () => {
                 className="sidebar-nav-item"
               >
                 <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Messenger Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Messenger Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Nutrient Policy"
@@ -1108,10 +1182,7 @@ const NutrientInFoodManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div
-              variants={navItemVariants}
-              className="sidebar-nav-item"
-            >
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}

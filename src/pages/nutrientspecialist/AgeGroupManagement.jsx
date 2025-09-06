@@ -1,15 +1,34 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from "chart.js";
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { Bar } from "react-chartjs-2";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllAgeGroups, createAgeGroup, updateAgeGroup, deleteAgeGroup } from "../../apis/nutriet-api";
+import {
+  getAllAgeGroups,
+  createAgeGroup,
+  updateAgeGroup,
+  deleteAgeGroup,
+} from "../../apis/nutriet-api";
 import "../../styles/AgeGroupManagement.css";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 
-
 // Register Chart.js components
-ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Search Icon
 const SearchIcon = () => (
@@ -58,7 +77,11 @@ const Notification = ({ message, type, onClose }) => {
       <div className="notification-icon">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path
-            d={type === "success" ? "M20 6L9 17L4 12" : "M12 12V8M12 16V16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"}
+            d={
+              type === "success"
+                ? "M20 6L9 17L4 12"
+                : "M12 12V8M12 16V16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+            }
             stroke="var(--orange-white)"
             strokeWidth="2"
             strokeLinecap="round"
@@ -84,7 +107,11 @@ const AgeGroupManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
@@ -128,11 +155,11 @@ const AgeGroupManagement = () => {
     setIsLoading(true);
     try {
       const data = await getAllAgeGroups();
-      console.log('Fetched age groups:', data.data);
+      console.log("Fetched age groups:", data.data);
       setAgeGroups(data.data || []);
     } catch (error) {
       showNotification("Failed to fetch age groups", "error");
-      console.error('Error fetching age groups:', error);
+      console.error("Error fetching age groups:", error);
     } finally {
       setIsLoading(false);
     }
@@ -163,7 +190,7 @@ const AgeGroupManagement = () => {
           fromAge: parseInt(formData.fromAge),
           toAge: parseInt(formData.toAge),
         };
-        console.log('Updating age group with:', updateData);
+        console.log("Updating age group with:", updateData);
         await updateAgeGroup(updateData);
         showNotification("Age group updated successfully", "success");
       } else {
@@ -176,8 +203,14 @@ const AgeGroupManagement = () => {
       resetForm();
       fetchAgeGroups();
     } catch (error) {
-      showNotification(`Failed to ${isEditing ? "update" : "create"} age group`, "error");
-      console.error(`Error in ${isEditing ? "update" : "create"} age group:`, error.response?.data || error.message);
+      showNotification(
+        `Failed to ${isEditing ? "update" : "create"} age group`,
+        "error"
+      );
+      console.error(
+        `Error in ${isEditing ? "update" : "create"} age group:`,
+        error.response?.data || error.message
+      );
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +218,7 @@ const AgeGroupManagement = () => {
 
   // Handle edit
   const handleEdit = (ageGroup) => {
-    console.log('Editing age group:', ageGroup);
+    console.log("Editing age group:", ageGroup);
     setFormData({
       ageGroupId: ageGroup.id,
       fromAge: ageGroup.fromAge.toString(),
@@ -199,13 +232,16 @@ const AgeGroupManagement = () => {
     if (window.confirm("Are you sure you want to delete this age group?")) {
       setIsLoading(true);
       try {
-        console.log('Deleting age group with ID:', ageGroupId);
+        console.log("Deleting age group with ID:", ageGroupId);
         await deleteAgeGroup(ageGroupId);
         showNotification("Age group deleted successfully", "success");
         fetchAgeGroups();
       } catch (error) {
         showNotification("Failed to delete age group", "error");
-        console.error('Error deleting age group:', error.response?.data || error.message);
+        console.error(
+          "Error deleting age group:",
+          error.response?.data || error.message
+        );
       } finally {
         setIsLoading(false);
       }
@@ -266,9 +302,10 @@ const AgeGroupManagement = () => {
   };
 
   // Pagination
-  const filteredAgeGroups = ageGroups.filter(
-    (ageGroup) =>
-      `${ageGroup.fromAge}-${ageGroup.toAge}`.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAgeGroups = ageGroups.filter((ageGroup) =>
+    `${ageGroup.fromAge}-${ageGroup.toAge}`
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
   const paginatedAgeGroups = filteredAgeGroups.slice(
     (currentPage - 1) * itemsPerPage,
@@ -402,7 +439,9 @@ const AgeGroupManagement = () => {
 
   return (
     <motion.div
-      className={`age-group-management ${isSidebarOpen ? "" : "sidebar-closed"}`}
+      className={`age-group-management ${
+        isSidebarOpen ? "" : "sidebar-closed"
+      }`}
       variants={containerVariants}
       initial="initial"
       animate="animate"
@@ -419,7 +458,9 @@ const AgeGroupManagement = () => {
 
       {/* Sidebar */}
       <motion.aside
-        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className={`nutrient-specialist-sidebar ${
+          isSidebarOpen ? "open" : "closed"
+        }`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
@@ -485,7 +526,10 @@ const AgeGroupManagement = () => {
         >
           {currentSidebarPage === 1 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -511,11 +555,18 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Blog Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
-                  aria-label={isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"}
+                  aria-label={
+                    isFoodDropdownOpen
+                      ? "Collapse food menu"
+                      : "Expand food menu"
+                  }
                   title="Food"
                 >
                   <svg
@@ -542,14 +593,18 @@ const AgeGroupManagement = () => {
                       height="16"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className={`dropdown-icon ${isFoodDropdownOpen ? "open" : ""}`}
+                      className={`dropdown-icon ${
+                        isFoodDropdownOpen ? "open" : ""
+                      }`}
                     >
                       <path
                         stroke="var(--orange-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -558,7 +613,9 @@ const AgeGroupManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -620,11 +677,18 @@ const AgeGroupManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
-                  aria-label={isNutrientDropdownOpen ? "Collapse nutrient menu" : "Expand nutrient menu"}
+                  aria-label={
+                    isNutrientDropdownOpen
+                      ? "Collapse nutrient menu"
+                      : "Expand nutrient menu"
+                  }
                   title="Nutrient"
                 >
                   <svg
@@ -651,14 +715,20 @@ const AgeGroupManagement = () => {
                       height="16"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className={`dropdown-icon ${isNutrientDropdownOpen ? "open" : ""}`}
+                      className={`dropdown-icon ${
+                        isNutrientDropdownOpen ? "open" : ""
+                      }`}
                     >
                       <path
                         stroke="var(--orange-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isNutrientDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -667,7 +737,9 @@ const AgeGroupManagement = () => {
               <motion.div
                 className="nutrient-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -729,7 +801,10 @@ const AgeGroupManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -755,7 +830,10 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Nutrient in Food Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -781,7 +859,10 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Age Group Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -811,7 +892,10 @@ const AgeGroupManagement = () => {
           )}
           {currentSidebarPage === 2 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -837,7 +921,10 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Allergy Category Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -863,7 +950,10 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Allergy Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -889,7 +979,68 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Disease Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/allergy-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for allergy management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--orange-accent)"
+                      stroke="var(--orange-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/allergy-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Messenger Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for allergy management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--orange-accent)"
+                      stroke="var(--orange-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Messenger Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -915,7 +1066,10 @@ const AgeGroupManagement = () => {
                   {isSidebarOpen && <span>Nutrient Policy</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -943,7 +1097,10 @@ const AgeGroupManagement = () => {
               </motion.div>
             </>
           )}
-          <motion.div variants={navItemVariants} className="sidebar-nav-item page-switcher">
+          <motion.div
+            variants={navItemVariants}
+            className="sidebar-nav-item page-switcher"
+          >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
@@ -1052,7 +1209,9 @@ const AgeGroupManagement = () => {
 
       {/* Main Content */}
       <motion.main
-        className={`nutrient-specialist-content ${isSidebarOpen ? "" : "sidebar-closed"}`}
+        className={`nutrient-specialist-content ${
+          isSidebarOpen ? "" : "sidebar-closed"
+        }`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -1133,9 +1292,12 @@ const AgeGroupManagement = () => {
                     disabled={isLoading}
                     whileHover={{ scale: isLoading ? 1 : 1.05 }}
                     whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                    aria-label={isEditing ? "Update age group" : "Add age group"}
+                    aria-label={
+                      isEditing ? "Update age group" : "Add age group"
+                    }
                   >
-                    {isLoading ? "Loading..." : isEditing ? "Update" : "Add"} Age Group
+                    {isLoading ? "Loading..." : isEditing ? "Update" : "Add"}{" "}
+                    Age Group
                   </motion.button>
                   {isEditing && (
                     <motion.button
@@ -1159,7 +1321,9 @@ const AgeGroupManagement = () => {
           <section className="category-list-section">
             <div className="section-header">
               <h2>All Age Groups</h2>
-              <span className="category-count">{filteredAgeGroups.length} Age Groups</span>
+              <span className="category-count">
+                {filteredAgeGroups.length} Age Groups
+              </span>
             </div>
             <div className="search-section">
               <SearchIcon />
@@ -1230,10 +1394,16 @@ const AgeGroupManagement = () => {
                 <div className="pagination-controls">
                   <motion.button
                     className="nutrient-specialist-button secondary"
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1 || isLoading}
-                    whileHover={{ scale: currentPage === 1 || isLoading ? 1 : 1.05 }}
-                    whileTap={{ scale: currentPage === 1 || isLoading ? 1 : 0.95 }}
+                    whileHover={{
+                      scale: currentPage === 1 || isLoading ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: currentPage === 1 || isLoading ? 1 : 0.95,
+                    }}
                     aria-label="Previous page"
                   >
                     Previous
@@ -1243,10 +1413,16 @@ const AgeGroupManagement = () => {
                   </span>
                   <motion.button
                     className="nutrient-specialist-button secondary"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
                     disabled={currentPage === totalPages || isLoading}
-                    whileHover={{ scale: currentPage === totalPages || isLoading ? 1 : 1.05 }}
-                    whileTap={{ scale: currentPage === totalPages || isLoading ? 1 : 0.95 }}
+                    whileHover={{
+                      scale: currentPage === totalPages || isLoading ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: currentPage === totalPages || isLoading ? 1 : 0.95,
+                    }}
                     aria-label="Next page"
                   >
                     Next
