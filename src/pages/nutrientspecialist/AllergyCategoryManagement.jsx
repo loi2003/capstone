@@ -1,14 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllAllergyCategories, createAllergyCategory, updateAllergyCategory, deleteAllergyCategory, getAllAllergies } from "../../apis/nutriet-api";
+import {
+  getAllAllergyCategories,
+  createAllergyCategory,
+  updateAllergyCategory,
+  deleteAllergyCategory,
+  getAllAllergies,
+} from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import "../../styles/AllergyCategoryManagement.css";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 // Simple debounce function
 const debounce = (func, wait) => {
@@ -21,18 +42,28 @@ const debounce = (func, wait) => {
 
 // Sanitize input to prevent XSS
 const sanitizeInput = (input) => {
-  return input.replace(/[<>"'&]/g, (match) => ({
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '&': '&amp;'
-  }[match]));
+  return input.replace(
+    /[<>"'&]/g,
+    (match) =>
+      ({
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#x27;",
+        "&": "&amp;",
+      }[match])
+  );
 };
 
 // Search Icon
 const SearchIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+  <svg
+    className="icon"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    aria-hidden="true"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -77,9 +108,19 @@ const Notification = ({ message, type, onClose }) => {
       transition={{ duration: 0.3 }}
     >
       <div className="notification-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
           <path
-            d={type === "success" ? "M20 6L9 17L4 12" : "M12 12V8M12 16V16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"}
+            d={
+              type === "success"
+                ? "M20 6L9 17L4 12"
+                : "M12 12V8M12 16V16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+            }
             stroke="var(--blue-white)"
             strokeWidth="2"
             strokeLinecap="round"
@@ -106,7 +147,11 @@ const AllergyCategoryManagement = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [notification, setNotification] = useState({ show: false, message: "", type: "" });
+  const [notification, setNotification] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingItems, setLoadingItems] = useState({});
   const [chartData, setChartData] = useState(null);
@@ -122,7 +167,8 @@ const AllergyCategoryManagement = () => {
   // UUID validation regex
   const isValidUUID = (id) => {
     if (!id) return false;
-    const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/i;
     return uuidRegex.test(id);
   };
 
@@ -153,42 +199,33 @@ const AllergyCategoryManagement = () => {
     fetchUser();
   }, [navigate]);
 
-  // Fetch allergy categories and prepare chart data
+  // Fetch allergy categories
   const fetchAllergyCategories = async () => {
     setIsLoading(true);
     try {
       const data = await getAllAllergyCategories(token);
       console.log("Fetched allergy categories:", data);
       if (!Array.isArray(data)) {
-        throw new Error("Invalid data format: Expected an array of allergy categories");
+        throw new Error(
+          "Invalid data format: Expected an array of allergy categories"
+        );
       }
       data.forEach((category, index) => {
         if (!category.id || !isValidUUID(category.id)) {
-          console.warn(`Invalid or missing ID for category at index ${index}:`, category);
+          console.warn(
+            `Invalid or missing ID for category at index ${index}:`,
+            category
+          );
         }
       });
       setAllergyCategories(data || []);
-
-      // Prepare chart data using allergies
-      const labels = data.map(category => category.name);
-      const counts = data.map(category => 
-        allergies.filter(allergy => allergy.allergyCategoryId === category.id).length
-      );
-
-      setChartData({
-        labels: labels,
-        datasets: [
-          {
-            label: 'Number of Allergies',
-            data: counts,
-            backgroundColor: 'var(--blue-secondary)',
-            borderColor: 'var(--blue-primary)',
-            borderWidth: 1,
-          },
-        ],
-      });
     } catch (error) {
-      showNotification(`Failed to fetch allergy categories: ${error.response?.data?.message || error.message}`, "error");
+      showNotification(
+        `Failed to fetch allergy categories: ${
+          error.response?.data?.message || error.message
+        }`,
+        "error"
+      );
       console.error("Error fetching allergy categories:", error);
     } finally {
       setIsLoading(false);
@@ -207,17 +244,126 @@ const AllergyCategoryManagement = () => {
       }
       data.forEach((allergy, index) => {
         if (!allergy.id || !isValidUUID(allergy.id)) {
-          console.warn(`Invalid or missing ID for allergy at index ${index}:`, allergy);
+          console.warn(
+            `Invalid or missing ID for allergy at index ${index}:`,
+            allergy
+          );
         }
       });
       setAllergies(data);
     } catch (error) {
-      showNotification(`Failed to fetch allergies: ${error.response?.data?.message || error.message}`, "error");
+      showNotification(
+        `Failed to fetch allergies: ${
+          error.response?.data?.message || error.message
+        }`,
+        "error"
+      );
       console.error("Error fetching allergies:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Prepare chart data with theme-aware colors
+  useEffect(() => {
+    if (allergyCategories.length > 0 && allergies.length > 0) {
+      const isDarkTheme =
+        document.documentElement.classList.contains("dark-theme");
+      const textColor = isDarkTheme ? "#ffffff" : "#0d47a1";
+      const backgroundColor = isDarkTheme ? "#1a3c5e" : "#e3f2fd";
+
+      setChartData({
+        labels: allergyCategories.map((category) => category.name),
+        datasets: [
+          {
+            label: "Number of Allergies",
+            data: allergyCategories.map(
+              (category) =>
+                allergies.filter(
+                  (allergy) => allergy.allergyCategoryId === category.id
+                ).length
+            ),
+            backgroundColor: "#1e88e5", // --blue-primary
+            borderColor: "#42a5f5", // --blue-secondary
+            borderWidth: 1,
+          },
+        ],
+      });
+
+      setChartOptions({
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+            labels: {
+              color: textColor, // --blue-text or --blue-white
+              font: {
+                family: "'Roboto', sans-serif",
+              },
+            },
+          },
+          title: {
+            display: true,
+            text: "Allergies by Category",
+            color: textColor, // --blue-text or --blue-white
+            font: {
+              family: "'Roboto', sans-serif",
+              size: 16,
+              weight: "600",
+            },
+          },
+          tooltip: {
+            backgroundColor: "#e3f2fd", // --blue-light-bg
+            titleColor: textColor, // --blue-text or --blue-white
+            bodyColor: textColor, // --blue-text or --blue-white
+            borderColor: "#42a5f5", // --blue-secondary
+            borderWidth: 1,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Number of Allergies",
+              color: textColor, // --blue-text or --blue-white
+              font: {
+                family: "'Roboto', sans-serif",
+                size: 14,
+              },
+            },
+            ticks: {
+              color: textColor, // --blue-text or --blue-white
+            },
+            grid: {
+              color: "#90caf9", // --blue-accent
+              borderColor: "#42a5f5", // --blue-secondary
+            },
+          },
+          x: {
+            title: {
+              display: true,
+              text: "Allergy Categories",
+              color: textColor, // --blue-text or --blue-white
+              font: {
+                family: "'Roboto', sans-serif",
+                size: 14,
+              },
+            },
+            ticks: {
+              color: textColor, // --blue-text or --blue-white
+            },
+            grid: {
+              color: "#90caf9", // --blue-accent
+              borderColor: "#42a5f5", // --blue-secondary
+            },
+          },
+        },
+        backgroundColor: backgroundColor, // --blue-light-bg or dark theme background
+      });
+    }
+  }, [allergyCategories, allergies]);
 
   // Handle input changes with sanitization
   const handleInputChange = (e) => {
@@ -260,7 +406,10 @@ const AllergyCategoryManagement = () => {
         }`,
         "error"
       );
-      console.error(`Error in ${isEditing ? "update" : "create"} allergy category:`, error.response?.data || error.message);
+      console.error(
+        `Error in ${isEditing ? "update" : "create"} allergy category:`,
+        error.response?.data || error.message
+      );
     } finally {
       setIsLoading(false);
     }
@@ -294,7 +443,9 @@ const AllergyCategoryManagement = () => {
       console.error("Invalid allergyCategoryId format:", allergyCategoryId);
       return;
     }
-    if (window.confirm("Are you sure you want to delete this allergy category?")) {
+    if (
+      window.confirm("Are you sure you want to delete this allergy category?")
+    ) {
       setLoadingItems((prev) => ({ ...prev, [allergyCategoryId]: true }));
       try {
         console.log("Deleting allergy category with ID:", allergyCategoryId);
@@ -304,10 +455,15 @@ const AllergyCategoryManagement = () => {
         fetchAllergies();
       } catch (error) {
         showNotification(
-          `Failed to delete allergy category: ${error.response?.data?.message || error.message}`,
+          `Failed to delete allergy category: ${
+            error.response?.data?.message || error.message
+          }`,
           "error"
         );
-        console.error("Error deleting allergy category:", error.response?.data || error.message);
+        console.error(
+          "Error deleting allergy category:",
+          error.response?.data || error.message
+        );
       } finally {
         setLoadingItems((prev) => ({ ...prev, [allergyCategoryId]: false }));
       }
@@ -456,16 +612,35 @@ const AllergyCategoryManagement = () => {
   };
 
   // Chart options
-  const chartOptions = {
+  const [chartOptions, setChartOptions] = useState({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top',
+        position: "top",
+        labels: {
+          color: "#0d47a1", // --blue-text
+          font: {
+            family: "'Roboto', sans-serif",
+          },
+        },
       },
       title: {
         display: true,
-        text: 'Allergies by Category',
+        text: "Allergies by Category",
+        color: "#0d47a1", // --blue-text
+        font: {
+          family: "'Roboto', sans-serif",
+          size: 16,
+          weight: "600",
+        },
+      },
+      tooltip: {
+        backgroundColor: "#e3f2fd", // --blue-light-bg
+        titleColor: "#0d47a1", // --blue-text
+        bodyColor: "#0d47a1", // --blue-text
+        borderColor: "#42a5f5", // --blue-secondary
+        borderWidth: 1,
       },
     },
     scales: {
@@ -473,21 +648,48 @@ const AllergyCategoryManagement = () => {
         beginAtZero: true,
         title: {
           display: true,
-          text: 'Number of Allergies',
+          text: "Number of Allergies",
+          color: "#0d47a1", // --blue-text
+          font: {
+            family: "'Roboto', sans-serif",
+            size: 14,
+          },
+        },
+        ticks: {
+          color: "#0d47a1", // --blue-text
+        },
+        grid: {
+          color: "#90caf9", // --blue-accent
+          borderColor: "#42a5f5", // --blue-secondary
         },
       },
       x: {
         title: {
           display: true,
-          text: 'Allergy Categories',
+          text: "Allergy Categories",
+          color: "#0d47a1", // --blue-text
+          font: {
+            family: "'Roboto', sans-serif",
+            size: 14,
+          },
+        },
+        ticks: {
+          color: "#0d47a1", // --blue-text
+        },
+        grid: {
+          color: "#90caf9", // --blue-accent
+          borderColor: "#42a5f5", // --blue-secondary
         },
       },
     },
-  };
+    backgroundColor: "#e3f2fd", // --blue-light-bg
+  });
 
   return (
     <motion.div
-      className={`allergy-category-management ${isSidebarOpen ? "" : "sidebar-closed"}`}
+      className={`allergy-category-management ${
+        isSidebarOpen ? "" : "sidebar-closed"
+      }`}
       variants={containerVariants}
       initial="initial"
       animate="animate"
@@ -504,7 +706,9 @@ const AllergyCategoryManagement = () => {
 
       {/* Sidebar */}
       <motion.aside
-        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className={`nutrient-specialist-sidebar ${
+          isSidebarOpen ? "open" : "closed"
+        }`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
@@ -570,7 +774,10 @@ const AllergyCategoryManagement = () => {
         >
           {currentSidebarPage === 1 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -596,11 +803,18 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Blog Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
-                  aria-label={isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"}
+                  aria-label={
+                    isFoodDropdownOpen
+                      ? "Collapse food menu"
+                      : "Expand food menu"
+                  }
                   title="Food"
                 >
                   <svg
@@ -627,14 +841,18 @@ const AllergyCategoryManagement = () => {
                       height="16"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className={`dropdown-icon ${isFoodDropdownOpen ? "open" : ""}`}
+                      className={`dropdown-icon ${
+                        isFoodDropdownOpen ? "open" : ""
+                      }`}
                     >
                       <path
                         stroke="var(--blue-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -643,7 +861,9 @@ const AllergyCategoryManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -705,11 +925,18 @@ const AllergyCategoryManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
-                  aria-label={isNutrientDropdownOpen ? "Collapse nutrient menu" : "Expand nutrient menu"}
+                  aria-label={
+                    isNutrientDropdownOpen
+                      ? "Collapse nutrient menu"
+                      : "Expand nutrient menu"
+                  }
                   title="Nutrient"
                 >
                   <svg
@@ -736,14 +963,20 @@ const AllergyCategoryManagement = () => {
                       height="16"
                       viewBox="0 0 24 24"
                       fill="none"
-                      className={`dropdown-icon ${isNutrientDropdownOpen ? "open" : ""}`}
+                      className={`dropdown-icon ${
+                        isNutrientDropdownOpen ? "open" : ""
+                      }`}
                     >
                       <path
                         stroke="var(--blue-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isNutrientDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -752,7 +985,9 @@ const AllergyCategoryManagement = () => {
               <motion.div
                 className="nutrient-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -814,7 +1049,10 @@ const AllergyCategoryManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -840,7 +1078,10 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Nutrient in Food Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -866,7 +1107,10 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Age Group Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -896,7 +1140,10 @@ const AllergyCategoryManagement = () => {
           )}
           {currentSidebarPage === 2 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -922,7 +1169,10 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Allergy Category Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -948,7 +1198,10 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Allergy Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -974,7 +1227,68 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Disease Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Messenger Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Messenger Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1000,7 +1314,10 @@ const AllergyCategoryManagement = () => {
                   {isSidebarOpen && <span>Nutrient Policy</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1028,7 +1345,10 @@ const AllergyCategoryManagement = () => {
               </motion.div>
             </>
           )}
-          <motion.div variants={navItemVariants} className="sidebar-nav-item page-switcher">
+          <motion.div
+            variants={navItemVariants}
+            className="sidebar-nav-item page-switcher"
+          >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
@@ -1137,7 +1457,9 @@ const AllergyCategoryManagement = () => {
 
       {/* Main Content */}
       <motion.main
-        className={`nutrient-specialist-content ${isSidebarOpen ? "" : "sidebar-closed"}`}
+        className={`nutrient-specialist-content ${
+          isSidebarOpen ? "" : "sidebar-closed"
+        }`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
@@ -1153,7 +1475,11 @@ const AllergyCategoryManagement = () => {
             {/* Form Section */}
             <section className="form-section">
               <div className="section-header">
-                <h2>{isEditing ? "Edit Allergy Category" : "Create New Allergy Category"}</h2>
+                <h2>
+                  {isEditing
+                    ? "Edit Allergy Category"
+                    : "Create New Allergy Category"}
+                </h2>
               </div>
               <form onSubmit={handleSubmit} className="form-card">
                 <div className="input-section">
@@ -1192,9 +1518,17 @@ const AllergyCategoryManagement = () => {
                     disabled={isLoading}
                     whileHover={{ scale: isLoading ? 1 : 1.05 }}
                     whileTap={{ scale: isLoading ? 1 : 0.95 }}
-                    aria-label={isEditing ? "Update allergy category" : "Create allergy category"}
+                    aria-label={
+                      isEditing
+                        ? "Update allergy category"
+                        : "Create allergy category"
+                    }
                   >
-                    {isLoading ? "Loading..." : isEditing ? "Update Category" : "Create Category"}
+                    {isLoading
+                      ? "Loading..."
+                      : isEditing
+                      ? "Update Category"
+                      : "Create Category"}
                   </motion.button>
                   {isEditing && (
                     <motion.button
@@ -1244,7 +1578,9 @@ const AllergyCategoryManagement = () => {
           <section className="category-list-section">
             <div className="section-header">
               <h2>All Allergy Categories</h2>
-              <span className="category-count">{filteredAllergyCategories.length} Categories</span>
+              <span className="category-count">
+                {filteredAllergyCategories.length} Categories
+              </span>
             </div>
             <div className="search-section">
               <SearchIcon />
@@ -1264,15 +1600,30 @@ const AllergyCategoryManagement = () => {
               </div>
             ) : filteredAllergyCategories.length === 0 ? (
               <div className="empty-state">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" role="img" aria-label="Empty state icon">
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  role="img"
+                  aria-label="Empty state icon"
+                >
                   <path
                     d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6z"
                     stroke="var(--blue-text)"
                     strokeWidth="2"
                   />
                 </svg>
-                <h3>{searchTerm ? "No Matching Categories" : "No Allergy Categories Found"}</h3>
-                <p>{searchTerm ? "Try a different search term." : "Add a new allergy category to get started."}</p>
+                <h3>
+                  {searchTerm
+                    ? "No Matching Categories"
+                    : "No Allergy Categories Found"}
+                </h3>
+                <p>
+                  {searchTerm
+                    ? "Try a different search term."
+                    : "Add a new allergy category to get started."}
+                </p>
               </div>
             ) : (
               <>
@@ -1290,7 +1641,10 @@ const AllergyCategoryManagement = () => {
                         <h3>{allergyCategory.name}</h3>
                       </div>
                       <div className="card-content">
-                        <p className="card-description">{allergyCategory.description || "No description available"}</p>
+                        <p className="card-description">
+                          {allergyCategory.description ||
+                            "No description available"}
+                        </p>
                       </div>
                       <div className="card-divider"></div>
                       <div className="card-actions">
@@ -1298,8 +1652,12 @@ const AllergyCategoryManagement = () => {
                           className="nutrient-specialist-button primary"
                           onClick={() => handleEdit(allergyCategory)}
                           disabled={loadingItems[allergyCategory.id]}
-                          whileHover={{ scale: loadingItems[allergyCategory.id] ? 1 : 1.05 }}
-                          whileTap={{ scale: loadingItems[allergyCategory.id] ? 1 : 0.95 }}
+                          whileHover={{
+                            scale: loadingItems[allergyCategory.id] ? 1 : 1.05,
+                          }}
+                          whileTap={{
+                            scale: loadingItems[allergyCategory.id] ? 1 : 0.95,
+                          }}
                           aria-label="Edit allergy category"
                         >
                           Edit
@@ -1308,11 +1666,17 @@ const AllergyCategoryManagement = () => {
                           className="nutrient-specialist-button secondary"
                           onClick={() => handleDelete(allergyCategory.id)}
                           disabled={loadingItems[allergyCategory.id]}
-                          whileHover={{ scale: loadingItems[allergyCategory.id] ? 1 : 1.05 }}
-                          whileTap={{ scale: loadingItems[allergyCategory.id] ? 1 : 0.95 }}
+                          whileHover={{
+                            scale: loadingItems[allergyCategory.id] ? 1 : 1.05,
+                          }}
+                          whileTap={{
+                            scale: loadingItems[allergyCategory.id] ? 1 : 0.95,
+                          }}
                           aria-label="Delete allergy category"
                         >
-                          {loadingItems[allergyCategory.id] ? "Deleting..." : "Delete"}
+                          {loadingItems[allergyCategory.id]
+                            ? "Deleting..."
+                            : "Delete"}
                         </motion.button>
                       </div>
                     </motion.div>
@@ -1321,10 +1685,16 @@ const AllergyCategoryManagement = () => {
                 <div className="pagination-controls">
                   <motion.button
                     className="nutrient-specialist-button secondary"
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.max(prev - 1, 1))
+                    }
                     disabled={currentPage === 1 || isLoading}
-                    whileHover={{ scale: currentPage === 1 || isLoading ? 1 : 1.05 }}
-                    whileTap={{ scale: currentPage === 1 || isLoading ? 1 : 0.95 }}
+                    whileHover={{
+                      scale: currentPage === 1 || isLoading ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: currentPage === 1 || isLoading ? 1 : 0.95,
+                    }}
                     aria-label="Previous page"
                   >
                     Previous
@@ -1334,10 +1704,16 @@ const AllergyCategoryManagement = () => {
                   </span>
                   <motion.button
                     className="nutrient-specialist-button secondary"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    onClick={() =>
+                      setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                    }
                     disabled={currentPage === totalPages || isLoading}
-                    whileHover={{ scale: currentPage === totalPages || isLoading ? 1 : 1.05 }}
-                    whileTap={{ scale: currentPage === totalPages || isLoading ? 1 : 0.95 }}
+                    whileHover={{
+                      scale: currentPage === totalPages || isLoading ? 1 : 1.05,
+                    }}
+                    whileTap={{
+                      scale: currentPage === totalPages || isLoading ? 1 : 0.95,
+                    }}
                     aria-label="Next page"
                   >
                     Next

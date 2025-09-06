@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -71,31 +71,36 @@ const FoodDetailsModal = ({ food, category, onClose }) => {
   return (
     <motion.div
       className="food-details-modal"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+      animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
+      exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      role="dialog"
+      aria-labelledby="modal-title"
+      aria-modal="true"
     >
       <motion.div
         className="modal-content"
-        initial={{ scale: 0.8, y: 50 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.8, y: 50 }}
-        transition={{ duration: 0.3 }}
+        initial={{ scale: 0.9, y: 50, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.9, y: 50, opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
       >
         <div className="modal-header">
-          <h2>{food.name}</h2>
-          <button
+          <h2 id="modal-title">{food.name}</h2>
+          <motion.button
             className="modal-close-button"
             onClick={onClose}
             aria-label="Close modal"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
           >
             <svg
               width="24"
               height="24"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="currentColor"
+              stroke="var(--blue-primary)"
             >
               <path
                 strokeLinecap="round"
@@ -104,33 +109,60 @@ const FoodDetailsModal = ({ food, category, onClose }) => {
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
+          </motion.button>
         </div>
         <div className="modal-body">
-          <div className="modal-details">
-            <p>
-              <strong>Description:</strong>{" "}
-              {food.description || "No description provided"}
-            </p>
-            <p>
-              <strong>Category:</strong>{" "}
-              {category ? category.name : "Uncategorized"}
-            </p>
-            <p>
-              <strong>Pregnancy Safe:</strong>{" "}
-              {food.pregnancySafe ? "Yes" : "No"}
-            </p>
-            {food.safetyNote && (
-              <p>
-                <strong>Safety Note:</strong> {food.safetyNote}
-              </p>
+          <div className="modal-layout">
+            {food.imageUrl ? (
+              <div className="modal-image">
+                <img src={food.imageUrl} alt={food.name} />
+              </div>
+            ) : (
+              <div className="modal-image placeholder">
+                <svg
+                  width="64"
+                  height="64"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="var(--blue-text)"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <p>No image available</p>
+              </div>
             )}
-          </div>
-          {food.imageUrl && (
-            <div className="modal-image">
-              <img src={food.imageUrl} alt={food.name} />
+            <div className="modal-details">
+              <div className="detail-item">
+                <strong>Description:</strong>
+                <p>{food.description || "No description provided"}</p>
+              </div>
+              <div className="detail-item">
+                <strong>Category:</strong>
+                <p>{category ? category.name : "Uncategorized"}</p>
+              </div>
+              <div className="detail-item">
+                <strong>Pregnancy Safe:</strong>
+                <span
+                  className={`pregnancy-tag ${
+                    food.pregnancySafe ? "safe" : "unsafe"
+                  }`}
+                >
+                  {food.pregnancySafe ? "Yes" : "No"}
+                </span>
+              </div>
+              {food.safetyNote && (
+                <div className="detail-item">
+                  <strong>Safety Note:</strong>
+                  <p>{food.safetyNote}</p>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -164,8 +196,8 @@ const FoodManagement = () => {
   const foodsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-    const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
-
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const fileInputRef = useRef(null);
 
   // Show notification
   const showNotification = (message, type) => {
@@ -175,6 +207,23 @@ const FoodManagement = () => {
       document.removeEventListener("closeNotification", closeListener);
     };
     document.addEventListener("closeNotification", closeListener);
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setNewFood({
+      name: "",
+      description: "",
+      pregnancySafe: false,
+      foodCategoryId: "",
+      safetyNote: "",
+      image: null,
+    });
+    setSelectedFood(null);
+    setIsEditing(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
   };
 
   // Fetch user, foods, and food categories
@@ -245,6 +294,9 @@ const FoodManagement = () => {
         foodCategoryId: foodData?.foodCategoryId || "",
         safetyNote: foodData?.safetyNote || "",
         imageUrl: foodData?.imageUrl || null,
+        imageFileName: foodData?.imageUrl
+          ? foodData.imageUrl.split("/").pop()
+          : null,
       };
 
       if (!normalizedData.id || !normalizedData.name) {
@@ -258,7 +310,7 @@ const FoodManagement = () => {
         pregnancySafe: normalizedData.pregnancySafe,
         foodCategoryId: normalizedData.foodCategoryId,
         safetyNote: normalizedData.safetyNote,
-        image: normalizedData.imageUrl,
+        image: normalizedData.imageFileName,
       });
       setIsEditing(true);
     } catch (err) {
@@ -311,7 +363,6 @@ const FoodManagement = () => {
 
     setLoading(true);
     try {
-      // Refresh foods to ensure no duplicates
       await fetchData();
       const trimmedName = newFood.name.trim();
       const isDuplicate = foods.some(
@@ -330,17 +381,9 @@ const FoodManagement = () => {
         pregnancySafe: newFood.pregnancySafe,
         foodCategoryId: newFood.foodCategoryId,
         safetyNote: newFood.safetyNote?.trim() || "",
-        image: newFood.image,
+        image: newFood.image instanceof File ? newFood.image : null,
       });
-      setNewFood({
-        name: "",
-        description: "",
-        pregnancySafe: false,
-        foodCategoryId: "",
-        safetyNote: "",
-        image: null,
-      });
-      setIsEditing(false);
+      resetForm();
       await fetchData();
       showNotification("Food created successfully", "success");
     } catch (err) {
@@ -364,7 +407,6 @@ const FoodManagement = () => {
 
     setLoading(true);
     try {
-      // Update food details (excluding foodCategoryId as per API spec)
       const foodUpdateResponse = await updateFood({
         id: selectedFood.id,
         name: newFood.name.trim(),
@@ -377,10 +419,13 @@ const FoodManagement = () => {
         throw new Error("Update failed - no response data from food update");
       }
 
-      // Update image if provided
       let imageUpdated = false;
-      if (newFood.image && newFood.image instanceof File) {
+      if (newFood.image instanceof File) {
         await updateFoodImage(selectedFood.id, newFood.image);
+        imageUpdated = true;
+      } else if (newFood.image === null && selectedFood.imageUrl) {
+        // Assuming API supports null to remove image
+        await updateFoodImage(selectedFood.id, null);
         imageUpdated = true;
       }
 
@@ -388,17 +433,8 @@ const FoodManagement = () => {
         `Food ${imageUpdated ? "and image " : ""}updated successfully`,
         "success"
       );
-      setNewFood({
-        name: "",
-        description: "",
-        pregnancySafe: false,
-        foodCategoryId: "",
-        safetyNote: "",
-        image: null,
-      });
-      setSelectedFood(null);
-      setIsEditing(false);
-      await fetchData(); // Refresh the list
+      resetForm();
+      await fetchData();
     } catch (err) {
       const errorMessage =
         err.response?.data?.message || err.message || "Failed to update food";
@@ -436,8 +472,14 @@ const FoodManagement = () => {
   // Handle file upload
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setNewFood({ ...newFood, image: file });
+    setNewFood({ ...newFood, image: file || null });
+  };
+
+  // Handle image removal
+  const handleRemoveImage = () => {
+    setNewFood({ ...newFood, image: null });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
     }
   };
 
@@ -474,16 +516,7 @@ const FoodManagement = () => {
 
   // Cancel edit
   const cancelEdit = () => {
-    setNewFood({
-      name: "",
-      description: "",
-      pregnancySafe: false,
-      foodCategoryId: "",
-      safetyNote: "",
-      image: null,
-    });
-    setSelectedFood(null);
-    setIsEditing(false);
+    resetForm();
   };
 
   // Toggle sidebar
@@ -529,7 +562,6 @@ const FoodManagement = () => {
     closed: { width: "60px", transition: { duration: 0.3, ease: "easeIn" } },
   };
 
-  // Additional sidebar animation variants
   const logoVariants = {
     animate: {
       scale: [1, 1.05, 1],
@@ -595,7 +627,7 @@ const FoodManagement = () => {
 
   // Toggle dropdowns
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(true); // Open by default since we're in FoodManagement
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(true);
 
   const toggleNutrientDropdown = () => {
     setIsNutrientDropdownOpen((prev) => !prev);
@@ -626,7 +658,7 @@ const FoodManagement = () => {
       </AnimatePresence>
 
       {/* Sidebar */}
-       <motion.aside
+      <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
         }`}
@@ -695,7 +727,10 @@ const FoodManagement = () => {
         >
           {currentSidebarPage === 1 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -721,12 +756,17 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Blog Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
                   aria-label={
-                    isFoodDropdownOpen ? "Collapse food menu" : "Expand food menu"
+                    isFoodDropdownOpen
+                      ? "Collapse food menu"
+                      : "Expand food menu"
                   }
                   title="Food"
                 >
@@ -763,7 +803,9 @@ const FoodManagement = () => {
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        d={isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"}
+                        d={
+                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                        }
                       />
                     </svg>
                   )}
@@ -772,7 +814,9 @@ const FoodManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"}
+                animate={
+                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -834,7 +878,10 @@ const FoodManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -879,7 +926,9 @@ const FoodManagement = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d={
-                          isNutrientDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                          isNutrientDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
                         }
                       />
                     </svg>
@@ -953,7 +1002,10 @@ const FoodManagement = () => {
                   </Link>
                 </motion.div>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item ">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item "
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -979,7 +1031,10 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Nutrient in Food Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1005,7 +1060,10 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Age Group Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1035,7 +1093,10 @@ const FoodManagement = () => {
           )}
           {currentSidebarPage === 2 && (
             <>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1061,7 +1122,10 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Allergy Category Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1087,7 +1151,10 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Allergy Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1113,7 +1180,70 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Disease Management</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-policy"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Managerment"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Document icon for nutrient policy"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Managerment</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-policy"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Messenger Managerment"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Document icon for nutrient policy"
+                  >
+                    <path
+                      d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Messenger Managermen</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1139,7 +1269,10 @@ const FoodManagement = () => {
                   {isSidebarOpen && <span>Nutrient Policy</span>}
                 </Link>
               </motion.div>
-              <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1167,7 +1300,10 @@ const FoodManagement = () => {
               </motion.div>
             </>
           )}
-          <motion.div variants={navItemVariants} className="sidebar-nav-item page-switcher">
+          <motion.div
+            variants={navItemVariants}
+            className="sidebar-nav-item page-switcher"
+          >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
@@ -1374,15 +1510,37 @@ const FoodManagement = () => {
                 />
 
                 <label htmlFor="food-image">Image</label>
-                <input
-                  id="food-image"
-                  type="file"
-                  name="image"
-                  onChange={handleFileChange}
-                  className="input-field"
-                  accept="image/*"
-                  aria-label="Food image"
-                />
+                <div className="image-upload-group">
+                  <input
+                    id="food-image"
+                    type="file"
+                    name="image"
+                    onChange={handleFileChange}
+                    className="input-field"
+                    accept="image/*"
+                    aria-label="Food image"
+                    ref={fileInputRef}
+                  />
+                  {isEditing &&
+                    newFood.image &&
+                    typeof newFood.image === "string" && (
+                      <div className="current-image">
+                        Current image: {newFood.image}
+                        <motion.button
+                          onClick={handleRemoveImage}
+                          className="remove-image-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          aria-label="Remove current image"
+                        >
+                          Remove Image
+                        </motion.button>
+                      </div>
+                    )}
+                  {isEditing && !newFood.image && (
+                    <div className="no-image">No image selected</div>
+                  )}
+                </div>
 
                 <div className="button-group">
                   <motion.button

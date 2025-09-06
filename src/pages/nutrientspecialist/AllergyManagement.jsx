@@ -58,7 +58,6 @@ const SearchIcon = () => (
   </svg>
 );
 
-
 // Notification component
 const Notification = ({ message, type, onClose }) => {
   useEffect(() => {
@@ -215,7 +214,7 @@ const AllergyManagement = () => {
     try {
       const response = await getAllAllergyCategories(token);
       console.log("Raw API response for allergy categories:", response);
-      
+
       let data = [];
       if (Array.isArray(response)) {
         data = response;
@@ -224,10 +223,10 @@ const AllergyManagement = () => {
       } else if (response.data && Array.isArray(response.data.data)) {
         data = response.data.data;
       }
-      
+
       console.log("Processed allergy categories:", data);
       setAllergyCategories(data);
-      
+
       if (data.length === 0) {
         console.warn("No allergy categories returned from API");
       }
@@ -1130,6 +1129,64 @@ const AllergyManagement = () => {
                 className="sidebar-nav-item"
               >
                 <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Messenger Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Messenger Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Nutrient Policy"
@@ -1542,7 +1599,8 @@ const AllergyManagement = () => {
                             color: "var(--blue-highlight)",
                           }}
                         >
-                          <strong>Category:</strong> {getCategoryName(allergy.allergyCategoryId)}
+                          <strong>Category:</strong>{" "}
+                          {getCategoryName(allergy.allergyCategoryId)}
                         </p>
                         <p
                           className="card-description"
@@ -1562,7 +1620,8 @@ const AllergyManagement = () => {
                           }}
                         >
                           <strong>Pregnancy Risk:</strong>{" "}
-                          {allergy.pregnancyRisk || "No pregnancy risk information"}
+                          {allergy.pregnancyRisk ||
+                            "No pregnancy risk information"}
                         </p>
                       </div>
                       <div className="card-divider"></div>
