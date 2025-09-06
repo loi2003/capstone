@@ -1,30 +1,25 @@
-
-/* Reset default margins and paddings */
-* {
+/* Scoped to .home-page to prevent external interference */
+.home-page * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Set font and background for the entire page */
-body {
+/* Set font and background for the home page */
+.home-page {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background-color: #f5f7fa;
   color: #333;
-}
-
-/* Main page container */
-.home-page {
   min-height: 100vh;
 }
 
 /* Color variables for easy customization */
-:root {
+.home-page {
   --primary-gradient: linear-gradient(90deg, #04668D, #03C39A);
   --cta-color: rgba(107, 159, 255, 1);
   --cta-hover: rgba(90, 140, 230, 1);
   --accent-blue: rgba(107, 159, 255, 1);
-  --white: #feffe9;
+  --white: #ffffff;
   --light-bg: #f5faf6;
   --shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   --shadow-hover: 0 12px 24px rgba(0, 0, 0, 0.12);
@@ -42,8 +37,19 @@ body {
   --messenger-border: #ddd;
 }
 
+/* Section Title */
+.home-page .section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 50px;
+  text-align: center;
+  line-height: 1.2;
+  text-transform: capitalize;
+}
+
 /* Hero Section */
-.hero-section {
+.home-page .hero-section {
   padding: 120px 20px 80px;
   background: linear-gradient(90deg, #e0f2f7, #a3c9e0);
   color: #1e3a5f;
@@ -51,44 +57,44 @@ body {
   overflow: hidden;
   box-shadow: inset 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
-.hero-content {
+.home-page .hero-content {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   align-items: center;
   gap: 20px;
 }
-.hero-text {
+.home-page .hero-text {
   max-width: 50%;
 }
-.hero-title {
+.home-page .hero-title {
   color: #1e3a5f;
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 1rem;
 }
-.hero-tagline {
+.home-page .hero-tagline {
   color: #1e3a5f;
   font-size: 1.4rem;
   font-weight: 500;
   margin-bottom: 1rem;
 }
-.hero-subtitle {
+.home-page .hero-subtitle {
   color: #1e3a5f;
   font-size: 1.2rem;
   margin-bottom: 1rem;
 }
-.hero-quote {
+.home-page .hero-quote {
   color: #1e3a5f;
   font-size: 1.1rem;
   font-style: italic;
   margin-bottom: 2rem;
 }
-.hero-buttons {
+.home-page .hero-buttons {
   display: flex;
   gap: 15px;
 }
-.hero-button {
+.home-page .hero-button {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: bold;
@@ -96,60 +102,54 @@ body {
   border-radius: 25px;
   transition: var(--transition);
 }
-.hero-button.primary {
+.home-page .hero-button.primary {
   background: #04668D;
   color: #ffffff;
   border: 2px solid #2e6da4;
 }
-.hero-button.primary:hover {
+.home-page .hero-button.primary:hover {
   background: #035474;
   box-shadow: 0 6px 20px rgba(46, 109, 164, 0.4);
   transform: translateY(-3px);
 }
-.hero-button.secondary {
+.home-page .hero-button.secondary {
   background: #04668D;
   color: #ffffff;
   border: 2px solid #2e6da4;
 }
-.hero-button.secondary:hover {
+.home-page .hero-button.secondary:hover {
   background: #035474;
   box-shadow: 0 6px 20px rgba(46, 109, 164, 0.4);
   transform: translateY(-3px);
 }
-.hero-button.video {
+.home-page .hero-button.video {
   background: #04668D;
   color: #ffffff;
   border: 2px solid #2e6da4;
 }
-.hero-button.video:hover {
+.home-page .hero-button.video:hover {
   background: #035474;
   box-shadow: 0 6px 20px rgba(46, 109, 164, 0.4);
   transform: translateY(-3px);
 }
-.hero-graphic {
+.home-page .hero-graphic {
   max-width: 40%;
 }
 
 /* Features Section */
-.features-section {
+.home-page .features-section {
   padding: 80px 20px;
   text-align: center;
   background-color: var(--white);
 }
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #222;
-  margin-bottom: 50px;
-}
-.features-grid {
+.home-page .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
-.feature-card {
+.home-page .feature-card {
   background: var(--white);
   padding: 35px;
   border-radius: var(--border-radius);
@@ -157,41 +157,41 @@ body {
   transition: var(--transition);
   border: 1px solid #eee;
 }
-.feature-card:hover {
+.home-page .feature-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-hover);
 }
-.feature-icon {
+.home-page .feature-icon {
   font-size: 3rem;
   margin-bottom: 20px;
   color: var(--accent-blue);
 }
-.feature-title {
+.home-page .feature-title {
   font-size: 1.6rem;
   font-weight: 600;
   color: #333;
   margin-bottom: 15px;
 }
-.feature-description {
+.home-page .feature-description {
   font-size: 1.05rem;
   color: #555;
   line-height: 1.6;
 }
 
 /* Testimonials Section */
-.testimonials-section {
+.home-page .testimonials-section {
   padding: 80px 20px;
   text-align: center;
   background-color: #f8fafc;
 }
-.testimonials-grid {
+.home-page .testimonials-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
-.testimonial-card {
+.home-page .testimonial-card {
   background: var(--white);
   padding: 30px;
   border-radius: var(--border-radius);
@@ -199,50 +199,54 @@ body {
   transition: var(--transition);
   border: 1px solid #eee;
 }
-.testimonial-card:hover {
+.home-page .testimonial-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-hover);
 }
-.testimonial-avatar {
+.home-page .testimonial-avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   margin-bottom: 15px;
 }
-.testimonial-name {
+.home-page .testimonial-name {
   font-size: 1.4rem;
   font-weight: 600;
   color: #333;
   margin-bottom: 10px;
 }
-.testimonial-feedback {
+.home-page .testimonial-feedback {
   font-size: 1rem;
   color: #555;
   line-height: 1.6;
 }
 
 /* Community Section */
-.community-section {
+.home-page .community-section {
   padding: 80px 20px;
   text-align: center;
   background: var(--primary-gradient);
+}
+.home-page .community-section .section-title {
   color: var(--white);
 }
-.community-content {
+.home-page .community-content {
   max-width: 800px;
   margin: 0 auto;
 }
-.community-description {
+.home-page .community-description {
   font-size: 1.2rem;
   margin-bottom: 1.5rem;
+  color: var(--white);
   opacity: 0.9;
 }
-.community-highlight {
+.home-page .community-highlight {
   font-size: 1.1rem;
   margin-bottom: 2rem;
+  color: var(--white);
   opacity: 0.8;
 }
-.community-button {
+.home-page .community-button {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: bold;
@@ -253,19 +257,19 @@ body {
   transition: var(--transition);
   display: inline-block;
 }
-.community-button:hover {
+.home-page .community-button:hover {
   background: var(--cta-hover);
   color: var(--white);
 }
 
 /* Pregnancy Tracker Section */
-.pregnancy-tracker-section {
+.home-page .pregnancy-tracker-section {
   padding: 80px 20px;
   text-align: center;
   background-color: var(--white);
   position: relative;
 }
-.section-description {
+.home-page .section-description {
   font-size: 1.2rem;
   color: #555;
   margin-bottom: 30px;
@@ -273,7 +277,7 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-.tracker-chart-container {
+.home-page .tracker-chart-container {
   max-width: 1200px;
   margin: 0 auto;
   height: 400px;
@@ -287,17 +291,17 @@ body {
   overflow: hidden;
   z-index: 300;
 }
-.chart-wrapper {
+.home-page .chart-wrapper {
   position: relative;
   width: 100%;
   height: 100%;
   cursor: grab;
   z-index: 350;
 }
-.chart-wrapper:active {
+.home-page .chart-wrapper:active {
   cursor: grabbing;
 }
-.week-popup {
+.home-page .week-popup {
   position: relative;
   max-width: 600px;
   width: 90%;
@@ -310,31 +314,31 @@ body {
   text-align: left;
   z-index: 400;
 }
-.week-popup-title {
+.home-page .week-popup-title {
   font-size: 1.8rem;
   font-weight: 600;
   color: var(--accent-blue);
   margin-bottom: 10px;
 }
-.week-popup-subtitle {
+.home-page .week-popup-subtitle {
   font-size: 1.4rem;
   font-weight: 500;
   color: #333;
   margin-bottom: 10px;
 }
-.week-popup-description {
+.home-page .week-popup-description {
   font-size: 1rem;
   color: #555;
   line-height: 1.6;
   margin-bottom: 15px;
 }
-.week-popup-tip {
+.home-page .week-popup-tip {
   font-size: 0.95rem;
   color: #555;
   font-style: italic;
   margin-bottom: 20px;
 }
-.week-popup-button {
+.home-page .week-popup-button {
   display: inline-block;
   padding: 10px 20px;
   font-size: 1rem;
@@ -351,7 +355,7 @@ body {
   text-align: center;
   line-height: 1.2;
 }
-.week-popup-close {
+.home-page .week-popup-close {
   display: inline-block;
   padding: 10px 20px;
   font-size: 1rem;
@@ -366,7 +370,7 @@ body {
   text-align: center;
   line-height: 1.2;
 }
-.tracker-button {
+.home-page .tracker-button {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: bold;
@@ -378,11 +382,11 @@ body {
   display: inline-block;
   margin-top: 20px;
 }
-.tracker-button:hover {
+.home-page .tracker-button:hover {
   background: var(--cta-hover);
   box-shadow: var(--shadow-hover);
 }
-.nav-button {
+.home-page .nav-button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -400,36 +404,36 @@ body {
   z-index: 500;
   box-shadow: var(--shadow);
 }
-.nav-button:hover {
+.home-page .nav-button:hover {
   background-color: var(--cta-hover);
   box-shadow: var(--shadow-hover);
 }
-.nav-button:disabled {
+.home-page .nav-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
   box-shadow: none;
 }
-.nav-button.left {
+.home-page .nav-button.left {
   left: 10px;
 }
-.nav-button.right {
+.home-page .nav-button.right {
   right: 10px;
 }
 
 /* Health Tips Section */
-.health-tips-section {
+.home-page .health-tips-section {
   padding: 80px 20px;
   text-align: center;
   background-color: #f8fafc;
 }
-.tips-grid {
+.home-page .tips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
-.tip-card {
+.home-page .tip-card {
   background: var(--white);
   padding: 30px;
   border-radius: var(--border-radius);
@@ -437,17 +441,17 @@ body {
   transition: var(--transition);
   border: 1px solid #eee;
 }
-.tip-card:hover {
+.home-page .tip-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-hover);
 }
-.tip-title {
+.home-page .tip-title {
   font-size: 1.4rem;
   font-weight: 600;
   color: var(--accent-blue);
   margin-bottom: 10px;
 }
-.tip-list {
+.home-page .tip-list {
   list-style: disc;
   padding-left: 20px;
   text-align: left;
@@ -455,7 +459,7 @@ body {
   color: #555;
   line-height: 1.6;
 }
-.tips-button {
+.home-page .tips-button {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: bold;
@@ -467,25 +471,25 @@ body {
   display: inline-block;
   margin-top: 20px;
 }
-.tips-button:hover {
+.home-page .tips-button:hover {
   background: var(--cta-hover);
   box-shadow: var(--shadow-hover);
 }
 
 /* Resources Section */
-.resources-section {
+.home-page .resources-section {
   padding: 80px 20px;
   text-align: center;
   background-color: var(--white);
 }
-.resources-grid {
+.home-page .resources-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
-.resource-card {
+.home-page .resource-card {
   background: var(--white);
   padding: 30px;
   border-radius: var(--border-radius);
@@ -493,34 +497,34 @@ body {
   transition: var(--transition);
   border: 1px solid #eee;
 }
-.resource-card:hover {
+.home-page .resource-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-hover);
 }
-.resource-title {
+.home-page .resource-title {
   font-size: 1.4rem;
   font-weight: 600;
   color: var(--accent-blue);
   margin-bottom: 10px;
 }
-.resource-description {
+.home-page .resource-description {
   font-size: 1rem;
   color: #555;
   line-height: 1.6;
   margin-bottom: 10px;
 }
-.resource-link {
+.home-page .resource-link {
   font-size: 0.95rem;
   color: var(--cta-color);
   text-decoration: none;
   font-weight: 600;
   transition: var(--transition);
 }
-.resource-link:hover {
+.home-page .resource-link:hover {
   color: var(--cta-hover);
   text-decoration: underline;
 }
-.resources-button {
+.home-page .resources-button {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: bold;
@@ -532,25 +536,25 @@ body {
   display: inline-block;
   margin-top: 20px;
 }
-.resources-button:hover {
+.home-page .resources-button:hover {
   background: var(--cta-hover);
   box-shadow: var(--shadow-hover);
 }
 
 /* Partners Section */
-.partners-section {
+.home-page .partners-section {
   padding: 80px 20px;
   text-align: center;
   background-color: #f8fafc;
 }
-.partners-grid {
+.home-page .partners-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 40px;
   max-width: 1200px;
   margin: 0 auto;
 }
-.partner-card {
+.home-page .partner-card {
   background: var(--white);
   padding: 20px;
   border-radius: var(--border-radius);
@@ -558,29 +562,29 @@ body {
   transition: var(--transition);
   border: 1px solid #eee;
 }
-.partner-card:hover {
+.home-page .partner-card:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-hover);
 }
-.partner-logo {
+.home-page .partner-logo {
   width: 100px;
   height: 50px;
   object-fit: contain;
   margin-bottom: 10px;
 }
-.partner-name {
+.home-page .partner-name {
   font-size: 1rem;
   color: #555;
   font-weight: 500;
 }
 
 /* Contact Icon */
-.contact-icon {
+.home-page .contact-icon {
   position: fixed;
   bottom: 30px;
   right: 30px;
-  width: 50px; /* Reduced from 60px */
-  height: 50px; /* Reduced from 60px */
+  width: 50px;
+  height: 50px;
   background-color: var(--messenger-blue);
   color: #ffffff;
   border-radius: 50%;
@@ -592,158 +596,158 @@ body {
   transition: all 0.3s ease;
   z-index: 600;
 }
-.contact-icon:hover {
+.home-page .contact-icon:hover {
   background-color: #006aff;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .hero-content {
+  .home-page .hero-content {
     flex-direction: column;
     text-align: center;
     gap: 30px;
   }
-  .hero-text {
+  .home-page .hero-text {
     max-width: 80%;
   }
-  .hero-graphic {
+  .home-page .hero-graphic {
     max-width: 60%;
   }
-  .hero-title {
+  .home-page .hero-title {
     font-size: 2.5rem;
   }
-  .tracker-chart-container {
+  .home-page .tracker-chart-container {
     height: 350px;
   }
-  .week-popup {
+  .home-page .week-popup {
     width: 85%;
   }
 }
 @media (max-width: 768px) {
-  .hero-section,
-  .features-section,
-  .testimonials-section,
-  .community-section,
-  .pregnancy-tracker-section,
-  .health-tips-section,
-  .resources-section,
-  .partners-section {
+  .home-page .hero-section,
+  .home-page .features-section,
+  .home-page .testimonials-section,
+  .home-page .community-section,
+  .home-page .pregnancy-tracker-section,
+  .home-page .health-tips-section,
+  .home-page .resources-section,
+  .home-page .partners-section {
     padding: 60px 15px;
   }
-  .section-title {
+  .home-page .section-title {
     font-size: 2rem;
   }
-  .hero-title {
+  .home-page .hero-title {
     font-size: 2.2rem;
   }
-  .hero-buttons {
+  .home-page .hero-buttons {
     flex-wrap: wrap;
     justify-content: center;
   }
-  .tracker-chart-container {
+  .home-page .tracker-chart-container {
     height: 300px;
     padding: 20px;
   }
-  .nav-button {
+  .home-page .nav-button {
     width: 36px;
     height: 36px;
   }
-  .week-popup {
+  .home-page .week-popup {
     width: 90%;
     padding: 15px;
   }
-  .week-popup-title {
+  .home-page .week-popup-title {
     font-size: 1.6rem;
   }
-  .week-popup-subtitle {
+  .home-page .week-popup-subtitle {
     font-size: 1.2rem;
   }
-  .week-popup-description {
+  .home-page .week-popup-description {
     font-size: 0.95rem;
   }
-  .week-popup-tip {
+  .home-page .week-popup-tip {
     font-size: 0.9rem;
   }
-  .week-popup-button {
+  .home-page .week-popup-button {
     padding: 8px 16px;
     font-size: 0.95rem;
     min-width: 220px;
   }
-  .week-popup-close {
+  .home-page .week-popup-close {
     padding: 8px 16px;
     font-size: 0.95rem;
     min-width: 220px;
   }
 }
 @media (max-width: 480px) {
-  .hero-title {
+  .home-page .hero-title {
     font-size: 1.8rem;
   }
-  .section-title {
+  .home-page .section-title {
     font-size: 1.8rem;
   }
-  .hero-button,
-  .community-button,
-  .tracker-button,
-  .tips-button,
-  .resources-button {
+  .home-page .hero-button,
+  .home-page .community-button,
+  .home-page .tracker-button,
+  .home-page .tips-button,
+  .home-page .resources-button {
     padding: 10px 20px;
     font-size: 0.9rem;
   }
-  .contact-icon {
-    width: 50px; /* Already reduced, no change needed */
-    height: 50px; /* Already reduced, no change needed */
+  .home-page .contact-icon {
+    width: 50px;
+    height: 50px;
   }
-  .tracker-chart-container {
+  .home-page .tracker-chart-container {
     height: 250px;
   }
-  .week-popup {
+  .home-page .week-popup {
     width: 95%;
     padding: 12px;
   }
-  .week-popup-title {
+  .home-page .week-popup-title {
     font-size: 1.4rem;
   }
-  .week-popup-subtitle {
+  .home-page .week-popup-subtitle {
     font-size: 1.1rem;
   }
-  .week-popup-description {
+  .home-page .week-popup-description {
     font-size: 0.9rem;
   }
-  .week-popup-tip {
+  .home-page .week-popup-tip {
     font-size: 0.85rem;
   }
-  .week-popup-button {
+  .home-page .week-popup-button {
     padding: 8px 12px;
     font-size: 0.9rem;
     min-width: 200px;
   }
-  .week-popup-close {
+  .home-page .week-popup-close {
     padding: 8px 12px;
     font-size: 0.9rem;
     min-width: 200px;
   }
-  .nav-button {
+  .home-page .nav-button {
     width: 32px;
     height: 32px;
   }
 }
 @media (max-width: 360px) {
-  .features-grid,
-  .testimonials-grid,
-  .tips-grid,
-  .resources-grid,
-  .partners-grid {
+  .home-page .features-grid,
+  .home-page .testimonials-grid,
+  .home-page .tips-grid,
+  .home-page .resources-grid,
+  .home-page .partners-grid {
     grid-template-columns: 1fr;
   }
-  .hero-title {
+  .home-page .hero-title {
     font-size: 1.6rem;
   }
-  .tracker-chart-container {
+  .home-page .tracker-chart-container {
     height: 200px;
   }
-  .week-popup {
+  .home-page .week-popup {
     width: 100%;
     padding: 10px;
   }
