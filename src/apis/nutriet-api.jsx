@@ -680,27 +680,57 @@ export const createDish = async (dishData) => {
       throw new Error('All food items must have a valid unit and amount greater than 0');
     }
 
-    const formData = new FormData();
-    formData.append('FoodList', JSON.stringify(dishData.foodList.map(food => ({
-      foodId: food.foodId,
-      unit: food.unit === "grams" ? "g" : food.unit,
-      amount: parseFloat(food.amount),
-    }))));
+    const payload = {
+      dishName: dishData.dishName,
+      description: dishData.description || '',
+      foodList: dishData.foodList.map((food) => ({
+        foodId: food.foodId,
+        unit: food.unit === 'grams' ? 'g' : food.unit,
+        amount: parseFloat(food.amount),
+      })),
+    };
 
-    if (dishData.image) {
-      formData.append('Image', dishData.image);
-    }
-
-    const params = new URLSearchParams({
-      DishName: dishData.dishName,
-      Description: dishData.description || '',
-    });
-
-    console.log('Sending create dish request with FormData:', Array.from(formData.entries()));
-    console.log('Query params:', params.toString());
+    console.log('Sending create dish request with payload:', payload);
 
     const response = await apiClient.post(
-      `/api/dish/add-dish?${params.toString()}`,
+      `/api/Dish/add-dish`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      }
+    );
+
+    console.log('Create dish response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating dish:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+export const addDishImage = async (dishId, image) => {
+  try {
+    if (!dishId || dishId === '') {
+      throw new Error('Dish ID is null or empty');
+    }
+    if (!image) {
+      throw new Error('Image is required');
+    }
+
+    const formData = new FormData();
+    formData.append('dishId', dishId);
+    formData.append('Image', image);
+
+    console.log('Sending add dish image request with FormData:', Array.from(formData.entries()));
+
+    const response = await apiClient.put(
+      `/api/Dish/add-dish-image`,
       formData,
       {
         headers: {
@@ -710,10 +740,10 @@ export const createDish = async (dishData) => {
       }
     );
 
-    console.log('Create dish response:', response.data);
+    console.log('Add dish image response:', response.data);
     return response.data;
   } catch (error) {
-    console.error("Error creating dish:", {
+    console.error('Error adding dish image:', {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
