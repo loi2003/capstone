@@ -94,8 +94,7 @@
   max-width: 280px;
   display: flex;
   flex-direction: column;
-    overflow-y: hidden; /* Prevent scrolling */
-
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .dish-management .nutrient-specialist-sidebar.open {
@@ -876,6 +875,116 @@
   margin: 0.25rem 0 0;
 }
 
+/* Modal styles (Updated for DishModal) */
+.dish-management .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 60, 52, 0.5); /* Semi-transparent backdrop */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.dish-management .modal-content {
+  background: var(--nutrient-specialist-white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--nutrient-specialist-shadow-hover);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+}
+
+.dish-management .modal-content h2 {
+  color: var(--nutrient-specialist-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  text-align: center;
+}
+
+.dish-management .modal-dish-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--nutrient-specialist-border-radius);
+  margin: 0.5rem 0;
+  border: 1px solid var(--nutrient-specialist-accent);
+  object-fit: cover;
+  max-height: 200px;
+}
+
+.dish-management .modal-content p {
+  font-size: 0.9rem;
+  color: var(--nutrient-specialist-text);
+  line-height: 1.5;
+  margin: 0;
+  text-align: center;
+}
+
+.dish-management .modal-content h3 {
+  color: var(--nutrient-specialist-primary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.dish-management .modal-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dish-management .modal-content li {
+  font-size: 0.85rem;
+  color: var(--nutrient-specialist-text);
+  background: var(--nutrient-specialist-light-bg);
+  padding: 0.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  border: 1px solid var(--nutrient-specialist-accent);
+}
+
+.dish-management .modal-content .nutrient-specialist-button {
+  margin-top: 1rem;
+  align-self: center;
+  max-width: 150px;
+}
+
+/* Dark theme for modal */
+.dish-management.dark-theme .modal-content {
+  background: #1a3c34;
+  color: var(--nutrient-specialist-white);
+}
+
+.dish-management.dark-theme .modal-content h2,
+.dish-management.dark-theme .modal-content h3 {
+  color: var(--nutrient-specialist-white);
+}
+
+.dish-management.dark-theme .modal-content p {
+  color: var(--nutrient-specialist-accent);
+}
+
+.dish-management.dark-theme .modal-content li {
+  background: #2e7d32;
+  border-color: #4caf50;
+  color: var(--nutrient-specialist-white);
+}
+
 /* Animation for loader */
 @keyframes spin {
   0% {
@@ -926,6 +1035,11 @@
     right: 0.5rem;
     max-width: calc(100% - 1rem);
   }
+
+  .dish-management .modal-content {
+    max-width: 90%;
+    padding: 1rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -948,5 +1062,18 @@
 
   .dish-management .food-selection-container {
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .dish-management .modal-content {
+    max-width: 95%;
+    padding: 0.75rem;
+  }
+
+  .dish-management .modal-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .dish-management .modal-dish-image {
+    max-height: 150px;
   }
 }

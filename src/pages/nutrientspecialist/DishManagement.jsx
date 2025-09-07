@@ -5,6 +5,7 @@ import {
   getAllDishes,
   getDishById,
   createDish,
+  addDishImage,
   updateDish,
   deleteDish,
   getAllFoods,
@@ -32,7 +33,7 @@ const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       document.dispatchEvent(new CustomEvent("closeNotification"));
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -52,6 +53,60 @@ const Notification = ({ message, type }) => {
   );
 };
 
+const DishModal = ({ dish, onClose, foods }) => {
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2>{dish.dishName || `Dish #${dish.id}`}</h2>
+        {dish.imageUrl && (
+          <img
+            src={dish.imageUrl}
+            alt={dish.dishName || `Dish #${dish.id}`}
+            className="modal-dish-image"
+          />
+        )}
+        <p>{dish.description || "No description available"}</p>
+        <h3>Foods:</h3>
+        <ul>
+          {Array.isArray(dish.foods) && dish.foods.length > 0 ? (
+            dish.foods.map((food) => (
+              <li key={food.foodId}>
+                {food.foodName ||
+                  foods.find((f) => f.id === food.foodId)?.name ||
+                  "Unknown Food"}{" "}
+                ({food.amount} {food.unit})
+              </li>
+            ))
+          ) : (
+            <li>No foods in this dish</li>
+          )}
+        </ul>
+        <motion.button
+          onClick={onClose}
+          className="nutrient-specialist-button primary"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Close
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const DishManagement = () => {
   const [dishes, setDishes] = useState([]);
   const [foods, setFoods] = useState([]);
@@ -59,9 +114,10 @@ const DishManagement = () => {
     dishName: "",
     description: "",
     foodList: [],
-    image: null, // Added image field
+    image: null,
   });
   const [selectedDish, setSelectedDish] = useState(null);
+  const [selectedViewDish, setSelectedViewDish] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -71,10 +127,11 @@ const DishManagement = () => {
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Fetch user data
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) {
@@ -99,7 +156,7 @@ const DishManagement = () => {
       }
     };
     fetchUser();
-  }, [navigate]);
+  }, [navigate, token]);
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
@@ -117,8 +174,6 @@ const DishManagement = () => {
         getAllDishes(),
         getAllFoods(),
       ]);
-      console.log("Fetched dishes response:", dishesResponse);
-      console.log("Fetched foods:", foodsData);
       const dishesData = dishesResponse?.data || [];
       setDishes(Array.isArray(dishesData) ? dishesData : []);
       setFoods(Array.isArray(foodsData) ? foodsData : []);
@@ -137,11 +192,9 @@ const DishManagement = () => {
   };
 
   const fetchDishById = async (id) => {
-    console.log("Fetching dish with ID:", id);
     setLoading(true);
     try {
       const data = await getDishById(id);
-      console.log("Fetched dish data:", data);
       setSelectedDish(data);
       setNewDish({
         dishName: data.dishName || "",
@@ -153,7 +206,7 @@ const DishManagement = () => {
               amount: food.amount || 0,
             }))
           : [],
-        image: null, // Reset image field
+        image: null,
       });
       setIsEditing(true);
     } catch (err) {
@@ -181,28 +234,29 @@ const DishManagement = () => {
     }
     setLoading(true);
     try {
-      console.log("Creating dish with data:", newDish);
-      await createDish({
+      const dishResponse = await createDish({
         dishName: newDish.dishName,
         description: newDish.description,
         foodList: newDish.foodList,
-        image: newDish.image, // Include image in payload
       });
+      const dishId = dishResponse?.data?.id || dishResponse?.id;
+      if (!dishId) {
+        throw new Error("Dish ID not returned from create dish response");
+      }
+      if (newDish.image) {
+        await addDishImage(dishId, newDish.image);
+      }
       setNewDish({
         dishName: "",
         description: "",
         foodList: [],
-        image: null, // Reset image field
+        image: null,
       });
       setIsEditing(false);
       await fetchData();
       showNotification("Dish created successfully", "success");
     } catch (err) {
-      console.error("Create dish error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
+      console.error("Create dish error:", err);
       showNotification(
         `Failed to create dish: ${err.response?.data?.message || err.message}`,
         "error"
@@ -230,7 +284,6 @@ const DishManagement = () => {
     }
     setLoading(true);
     try {
-      console.log("Updating dish with ID:", selectedDish?.id);
       await updateDish({
         dishId: selectedDish?.id,
         dishName: newDish.dishName,
@@ -245,7 +298,7 @@ const DishManagement = () => {
         dishName: "",
         description: "",
         foodList: [],
-        image: null, // Reset image field
+        image: null,
       });
       setSelectedDish(null);
       setIsEditing(false);
@@ -265,7 +318,6 @@ const DishManagement = () => {
     if (!window.confirm("Are you sure you want to delete this dish?")) return;
     setLoading(true);
     try {
-      console.log("Deleting dish with ID:", id);
       await deleteDish(id);
       setSelectedDish(null);
       setIsEditing(false);
@@ -273,7 +325,7 @@ const DishManagement = () => {
         dishName: "",
         description: "",
         foodList: [],
-        image: null, // Reset image field
+        image: null,
       });
       await fetchData();
       showNotification("Dish deleted successfully", "success");
@@ -289,7 +341,7 @@ const DishManagement = () => {
       dishName: "",
       description: "",
       foodList: [],
-      image: null, // Reset image field
+      image: null,
     });
     setSelectedDish(null);
     setIsEditing(false);
@@ -299,13 +351,11 @@ const DishManagement = () => {
     setNewDish((prev) => {
       const currentFoods = [...prev.foodList];
       const index = currentFoods.findIndex((food) => food.foodId === foodId);
-
       if (index > -1) {
         currentFoods.splice(index, 1);
       } else {
         currentFoods.push({ foodId, unit: "grams", amount: 1 });
       }
-
       return { ...prev, foodList: currentFoods };
     });
   };
@@ -321,8 +371,8 @@ const DishManagement = () => {
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-    if (isNutrientDropdownOpen) setIsNutrientDropdownOpen(false);
-    if (isFoodDropdownOpen) setIsFoodDropdownOpen(false);
+    setIsNutrientDropdownOpen(false);
+    setIsFoodDropdownOpen(false);
   };
 
   const toggleNutrientDropdown = () => {
@@ -359,12 +409,28 @@ const DishManagement = () => {
     fetchData();
   }, []);
 
-  // Fix for toLowerCase error
   const filteredDishes = dishes.filter(
     (dish) =>
       (dish.dishName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dish.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const indexOfLastDish = currentPage * itemsPerPage;
+  const indexOfFirstDish = indexOfLastDish - itemsPerPage;
+  const currentDishes = filteredDishes.slice(indexOfFirstDish, indexOfLastDish);
+  const totalPages = Math.ceil(filteredDishes.length / itemsPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -579,7 +645,9 @@ const DishManagement = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         d={
-                          isFoodDropdownOpen ? "M6 9l6 6 6-6" : "M6 15l6-6 6 6"
+                          isFoodDropdownOpen
+                            ? "M6 9l6 6 6-6"
+                            : "M6 15l6-6 6 6"
                         }
                       />
                     </svg>
@@ -589,9 +657,7 @@ const DishManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={
-                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
-                }
+                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
                 initial="closed"
               >
                 <motion.div
@@ -612,7 +678,7 @@ const DishManagement = () => {
                       aria-label="Folder icon for food category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2xc11z"
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
                         fill="var(--orange-secondary)"
                         stroke="var(--orange-white)"
                         strokeWidth="1.5"
@@ -642,15 +708,15 @@ const DishManagement = () => {
                     >
                       <path
                         d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
-                        fill="var(--orange-accent)"
-                        stroke="var(--orange-white)"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    {isSidebarOpen && <span>Food Management</span>}
-                  </Link>
+                      fill="var(--orange-accent)"
+                      stroke="var(--orange-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Food Management</span>}
+                </Link>
                 </motion.div>
               </motion.div>
               <motion.div
@@ -714,7 +780,7 @@ const DishManagement = () => {
                 className="nutrient-dropdown"
                 variants={dropdownVariants}
                 animate={
-                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                  isSidebarOpen && isNutrientDropdownOpen ? "open" : "closed"
                 }
                 initial="closed"
               >
@@ -818,7 +884,7 @@ const DishManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 25"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Users icon for age group management"
@@ -960,7 +1026,7 @@ const DishManagement = () => {
                 className="sidebar-nav-item"
               >
                 <Link
-                  to="/nutrient-specialist/disease-management"
+                  to="/nutrient-specialist/warning-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Warning Management"
                 >
@@ -970,12 +1036,12 @@ const DishManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Warning icon for warning management"
                   >
                     <path
                       d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--blue-accent)"
-                      stroke="var(--blue-white)"
+                      fill="var(--orange-accent)"
+                      stroke="var(--orange-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -989,7 +1055,7 @@ const DishManagement = () => {
                 className="sidebar-nav-item"
               >
                 <Link
-                  to="/nutrient-specialist/disease-management"
+                  to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Messenger Management"
                 >
@@ -999,12 +1065,12 @@ const DishManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Message icon for messenger management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--blue-accent)"
-                      stroke="var(--blue-white)"
+                      d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                      fill="var(--orange-accent)"
+                      stroke="var(--orange-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1081,17 +1147,17 @@ const DishManagement = () => {
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
               aria-label="Switch to sidebar page 1"
-              title="<<"
+              title="Page 1"
             >
-              {isSidebarOpen ? "<<" : "<<"}
+              {isSidebarOpen ? "Page 1" : "1"}
             </button>
             <button
               onClick={() => setCurrentSidebarPage(2)}
               className={currentSidebarPage === 2 ? "active" : ""}
               aria-label="Switch to sidebar page 2"
-              title=">>"
+              title="Page 2"
             >
-              {isSidebarOpen ? ">>" : ">>"}
+              {isSidebarOpen ? "Page 2" : "2"}
             </button>
           </motion.div>
           {user ? (
@@ -1103,7 +1169,7 @@ const DishManagement = () => {
                 <Link
                   to="/profile"
                   className="nutrient-specialist-profile-info"
-                  title={isSidebarOpen ? user.email : ""}
+                  title={isSidebarOpen ? user.email : "Profile"}
                 >
                   <svg
                     width="24"
@@ -1310,7 +1376,7 @@ const DishManagement = () => {
                               handleFoodDetailChange(
                                 food.foodId,
                                 "amount",
-                                parseFloat(e.target.value)
+                                parseFloat(e.target.value) || 0
                               )
                             }
                             placeholder="Amount"
@@ -1362,8 +1428,20 @@ const DishManagement = () => {
             <div className="section-header">
               <h2>Dish List</h2>
               <div className="nutrient-count">
-                {dishes.length} {dishes.length === 1 ? "dish" : "dishes"} found
+                {filteredDishes.length}{" "}
+                {filteredDishes.length === 1 ? "dish" : "dishes"} found
               </div>
+            </div>
+            <div className="form-group">
+              <label htmlFor="search-dishes">Search Dishes</label>
+              <input
+                id="search-dishes"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search by name or description"
+                className="search-input"
+              />
             </div>
             {loading ? (
               <div className="loading-state">
@@ -1390,60 +1468,91 @@ const DishManagement = () => {
                 <p>Create your first dish to get started</p>
               </div>
             ) : (
-              <div className="nutrient-grid">
-                {filteredDishes.map((dish) => (
-                  <motion.div
-                    key={dish.id}
-                    className="nutrient-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <div className="card-header">
-                      <h3>{dish.dishName || `Dish #${dish.id}`}</h3>
-                    </div>
-                    <div className="food-list">
-                      <h4>Foods:</h4>
-                      <ul>
-                        {Array.isArray(dish.foods) && dish.foods.length > 0 ? (
-                          dish.foods.map((food) => (
-                            <li key={food.foodId}>
-                              {food.foodName ||
-                                foods.find((f) => f.id === food.foodId)?.name ||
-                                "Unknown Food"}{" "}
-                              ({food.amount} {food.unit})
-                            </li>
-                          ))
-                        ) : (
-                          <li>No foods in this dish</li>
-                        )}
-                      </ul>
-                    </div>
-                    <div className="card-actions">
-                      <motion.button
-                        onClick={() => fetchDishById(dish.id)}
-                        className="edit-button nutrient-specialist-button primary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <span>Edit</span>
-                      </motion.button>
-                      <motion.button
-                        onClick={() => deleteDishHandler(dish.id)}
-                        className="delete-button nutrient-specialist-button secondary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <span>Delete</span>
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div className="nutrient-grid">
+                  {currentDishes.map((dish) => (
+                    <motion.div
+                      key={dish.id}
+                      className="nutrient-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="card-header">
+                        <h3>{dish.dishName || `Dish #${dish.id}`}</h3>
+                      </div>
+                      <p className="dish-description">
+                        {dish.description || "No description available"}
+                      </p>
+                      <div className="card-actions">
+                        <motion.button
+                          onClick={() => fetchDishById(dish.id)}
+                          className="edit-button nutrient-specialist-button primary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setSelectedViewDish(dish)}
+                          className="view-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          View
+                        </motion.button>
+                        <motion.button
+                          onClick={() => deleteDishHandler(dish.id)}
+                          className="delete-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Delete
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                {totalPages > 0 && (
+                  <div className="pagination-controls">
+                    <motion.button
+                      onClick={handlePreviousPage}
+                      disabled={currentPage === 1}
+                      className="nutrient-specialist-button secondary"
+                      whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
+                      whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
+                    >
+                      Previous
+                    </motion.button>
+                    <span className="page-indicator">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <motion.button
+                      onClick={handleNextPage}
+                      disabled={currentPage === totalPages}
+                      className="nutrient-specialist-button secondary"
+                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
+                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                    >
+                      Next
+                    </motion.button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
+
+        <AnimatePresence>
+          {selectedViewDish && (
+            <DishModal
+              dish={selectedViewDish}
+              onClose={() => setSelectedViewDish(null)}
+              foods={foods}
+            />
+          )}
+        </AnimatePresence>
       </motion.main>
     </div>
   );
