@@ -1,3 +1,127 @@
+/* ============ PAGE LAYOUT ============ */
+.custommealplanner-page-wrapper {
+  margin-top: -50px;
+  background: #f7fbfc;
+  font-family: var(--font-inter, "Inter", sans-serif);
+  color: var(--dark-text, #333);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+}
+
+/* ============ HEADING ============ */
+.custommealplanner-heading {
+  text-align: center;
+  margin: 60px auto 30px;
+  max-width: 900px;
+}
+
+.custommealplanner-heading h1 {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: #013F50;
+  margin-bottom: 0.5rem;
+}
+
+.custommealplanner-heading p {
+  font-size: 1.05rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ============ FORM CARD ============ */
+.custommealplanner-form {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+.custommealplanner-form:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+.custommealplanner-form label {
+  display: flex;
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #04668d;
+}
+
+/* Inputs */
+.custommealplanner-input,
+.custommealplanner-select {
+  width: 100%;
+  border: 1px solid #dbdbdb;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+  background: #f9fdff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.custommealplanner-input:focus,
+.custommealplanner-select:focus {
+  border-color: #04668d;
+  box-shadow: 0 0 6px rgba(4, 102, 141, 0.3);
+  outline: none;
+}
+
+/* Autocomplete dropdown */
+.custommealplanner-autocomplete-wrapper {
+  position: relative;
+}
+.custommealplanner-autocomplete-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 0.5rem;
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+.custommealplanner-autocomplete-list li {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.custommealplanner-autocomplete-list li:hover {
+  background: #f0f8ff;
+}
+
+/* ============ BUTTONS ============ */
+.custommealplanner-btn {
+  width: 230px;
+  background: #02808F;
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+}
+.custommealplanner-btn:hover {
+  background: #04668d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+/* Wrapper for centered button */
+.custommealplanner-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* ============ (Your original styles kept) ============ */
 .mealplanner-header {
   display: flex;
   align-items: center;
