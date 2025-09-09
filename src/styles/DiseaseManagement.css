@@ -486,6 +486,135 @@
   min-height: 80px;
 }
 
+/* Pregnancy Related Button Styles */
+.disease-management .form-group.pregnancy-related-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  position: relative;
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox {
+  display: none; /* Hide the default checkbox */
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--nutrient-specialist-light-bg), var(--nutrient-specialist-accent));
+  border: 2px solid var(--nutrient-specialist-secondary);
+  transition: all 0.2s ease-in-out;
+  user-select: none;
+  width: auto;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox-label:hover {
+  background: linear-gradient(135deg, var(--nutrient-specialist-accent), var(--nutrient-specialist-secondary));
+  border-color: var(--nutrient-specialist-primary);
+  box-shadow: 0 4px 16px rgba(46, 125, 50, 0.2);
+  transform: scale(1.02);
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox-label:focus {
+  outline: 3px solid rgba(76, 175, 80, 0.3);
+  outline-offset: 2px;
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox:checked + .pregnancy-checkbox-label {
+  background: linear-gradient(135deg, var(--nutrient-specialist-highlight), #ffb300);
+  border-color: var(--nutrient-specialist-primary);
+  color: var(--nutrient-specialist-text);
+  box-shadow: 0 4px 16px rgba(255, 202, 40, 0.3);
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox:checked + .pregnancy-checkbox-label .checkbox-icon {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+  animation: bounceIn 0.3s ease-out;
+}
+
+.disease-management .form-group.pregnancy-related-group .checkbox-icon {
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transform: scale(0.5) rotate(-45deg);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.disease-management .form-group.pregnancy-related-group .checkbox-icon path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-primary);
+  stroke-width: 2.5;
+}
+
+.disease-management .form-group.pregnancy-related-group .pregnancy-checkbox-label span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* Dark theme styles for Pregnancy Related Button */
+.disease-management.dark-theme .form-group.pregnancy-related-group .pregnancy-checkbox-label {
+  background: linear-gradient(135deg, #2e7d32, #4caf50);
+  border-color: var(--nutrient-specialist-accent);
+  color: var(--nutrient-specialist-white);
+}
+
+.disease-management.dark-theme .form-group.pregnancy-related-group .pregnancy-checkbox-label:hover {
+  background: linear-gradient(135deg, var(--nutrient-specialist-secondary), var(--nutrient-specialist-accent));
+  border-color: var(--nutrient-specialist-highlight);
+  box-shadow: 0 4px 16px rgba(165, 214, 167, 0.2);
+}
+
+.disease-management.dark-theme .form-group.pregnancy-related-group .pregnancy-checkbox:checked + .pregnancy-checkbox-label {
+  background: linear-gradient(135deg, var(--nutrient-specialist-highlight), #ffb300);
+  border-color: var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-text);
+  box-shadow: 0 4px 16px rgba(255, 202, 40, 0.3);
+}
+
+.disease-management.dark-theme .form-group.pregnancy-related-group .checkbox-icon path {
+  stroke: var(--nutrient-specialist-text);
+  fill: var(--nutrient-specialist-text);
+}
+
+/* Bounce animation for checkmark */
+@keyframes bounceIn {
+  0% { transform: scale(0.5) rotate(-45deg); opacity: 0; }
+  50% { transform: scale(1.2) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Responsive design for Pregnancy Related Button */
+@media (max-width: 480px) {
+  .disease-management .form-group.pregnancy-related-group {
+    gap: 0.4rem;
+  }
+
+  .disease-management .form-group.pregnancy-related-group .pregnancy-checkbox-label {
+    padding: 0.4rem 0.8rem;
+    border-radius: 10px;
+  }
+
+  .disease-management .form-group.pregnancy-related-group .pregnancy-checkbox-label span {
+    font-size: 0.85rem;
+  }
+
+  .disease-management .form-group.pregnancy-related-group .checkbox-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Button group */
 .disease-management .button-group {
   display: flex;
   gap: 0.75rem;
@@ -526,35 +655,26 @@
 
 .disease-management .nutrient-specialist-button.secondary {
   background: transparent;
-  color: var(--nutrient-specialist-primary);
-  border: 2px solid var(--nutrient-specialist-accent);
+  border: 1px solid var(--nutrient-specialist-accent);
+  color: var(--nutrient-specialist-text);
 }
 
 .disease-management .nutrient-specialist-button.secondary:hover:not(:disabled) {
   background: var(--nutrient-specialist-accent);
-  color: var(--nutrient-specialist-primary);
+  border-color: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-text);
   transform: translateY(-2px);
+  box-shadow: var(--nutrient-specialist-shadow-hover);
 }
 
 .disease-management .nutrient-specialist-button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
-.disease-management .nutrient-specialist-button svg {
-  width: 16px;
-  height: 16px;
-  stroke: currentColor;
-}
-
-/* Disease list section */
+/* Nutrient list section */
 .disease-management .nutrient-list-section {
-  background: var(--nutrient-specialist-white);
-  border-radius: var(--nutrient-specialist-border-radius);
-  padding: 1rem;
-  box-shadow: var(--nutrient-specialist-shadow);
-  width: 100%;
-  box-sizing: border-box;
+  margin-top: 1.5rem;
 }
 
 .disease-management .section-header {
@@ -564,18 +684,23 @@
   margin-bottom: 1rem;
 }
 
-.disease-management .nutrient-count {
-  font-size: 0.8rem;
-  background: var(--nutrient-specialist-accent);
-  padding: 0.25rem 0.75rem;
-  border-radius: 1rem;
+.disease-management .section-header h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--nutrient-specialist-primary);
 }
 
+.disease-management .nutrient-count {
+  font-size: 0.9rem;
+  color: var(--nutrient-specialist-text);
+  opacity: 0.8;
+}
+
+/* Nutrient grid */
 .disease-management .nutrient-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
-  margin-bottom: 1.5rem;
   width: 100%;
   box-sizing: border-box;
 }
@@ -585,32 +710,24 @@
   border: 1px solid var(--nutrient-specialist-accent);
   border-radius: var(--nutrient-specialist-border-radius);
   padding: 1rem;
+  box-shadow: var(--nutrient-specialist-shadow);
   transition: var(--nutrient-specialist-transition);
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .disease-management .nutrient-card:hover {
-  transform: translateY(-5px);
   box-shadow: var(--nutrient-specialist-shadow-hover);
+  transform: translateY(-5px);
 }
 
 .disease-management .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 0.75rem;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }
 
 .disease-management .card-header h3 {
-  color: var(--nutrient-specialist-primary);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
+  color: var(--nutrient-specialist-primary);
   margin: 0;
-  flex: 1;
-  min-width: 0;
 }
 
 .disease-management .disease-description {
@@ -619,21 +736,30 @@
 
 .disease-management .disease-description h4 {
   font-size: 0.9rem;
-  color: var(--nutrient-specialist-primary);
-  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--nutrient-specialist-text);
+  margin: 0 0 0.25rem 0;
 }
 
 .disease-management .disease-description p {
   font-size: 0.85rem;
   color: var(--nutrient-specialist-text);
+  opacity: 0.8;
   margin: 0;
+  word-break: break-word;
 }
 
 .disease-management .card-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
   flex-wrap: wrap;
-  width: 100%;
+}
+
+.disease-management .edit-button,
+.disease-management .delete-button {
+  flex: 1;
+  min-width: 100px;
 }
 
 /* Loading and empty states */
@@ -643,33 +769,42 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 0;
-  width: 100%;
-  box-sizing: border-box;
+  padding: 2rem;
+  text-align: center;
 }
 
-.disease-management .loading-state svg {
-  width: 2rem;
-  height: 2rem;
-  animation: spin 1s linear infinite;
-}
-
+.disease-management .loading-state svg,
 .disease-management .empty-state svg {
-  width: 3rem;
-  height: 3rem;
-  stroke: var(--nutrient-specialist-text);
-  opacity: 0.5;
+  width: 48px;
+  height: 48px;
   margin-bottom: 0.75rem;
 }
 
-.disease-management .empty-state h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+.disease-management .loading-state p,
+.disease-management .empty-state p {
+  font-size: 0.9rem;
+  color: var(--nutrient-specialist-text);
+  opacity: 0.8;
 }
 
-.disease-management .empty-state p {
-  font-size: 0.85rem;
-  opacity: 0.7;
+.disease-management .empty-state h3 {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: var(--nutrient-specialist-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.disease-management .loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Notification */
@@ -677,77 +812,63 @@
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
+  z-index: 2000;
+  min-width: 300px;
+  max-width: 400px;
+  background: var(--nutrient-specialist-white);
   border-radius: var(--nutrient-specialist-border-radius);
-  box-shadow: var(--nutrient-specialist-shadow-hover);
-  max-width: calc(100% - 2rem);
-  box-sizing: border-box;
+  box-shadow: var(--nutrient-specialist-shadow);
+  overflow: hidden;
 }
 
 .disease-management .notification.success {
-  background: var(--nutrient-specialist-secondary);
-  color: var(--nutrient-specialist-white);
+  border-left: 4px solid var(--nutrient-specialist-secondary);
 }
 
 .disease-management .notification.error {
-  background: var(--nutrient-specialist-logout);
-  color: var(--nutrient-specialist-white);
+  border-left: 4px solid var(--nutrient-specialist-logout);
+}
+
+.disease-management .notification-content {
+  padding: 1rem;
 }
 
 .disease-management .notification-content h4 {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
-  margin: 0;
+  margin: 0 0 0.5rem 0;
 }
 
 .disease-management .notification-content p {
   font-size: 0.85rem;
-  margin: 0.25rem 0 0;
-}
-
-/* Animation for loader */
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  margin: 0;
+  color: var(--nutrient-specialist-text);
 }
 
 /* Responsive design */
 @media (max-width: 768px) {
-  .disease-management .nutrient-specialist-sidebar {
-    width: 60px;
-  }
-
   .disease-management .nutrient-specialist-content {
     margin-left: 60px;
     width: calc(100% - 60px);
   }
 
-  .disease-management .nutrient-specialist-sidebar.open {
-    width: 280px;
-  }
-
-  .disease-management .nutrient-specialist-content.sidebar-closed {
-    margin-left: 60px;
-    width: calc(100% - 60px);
+  .disease-management .nutrient-specialist-sidebar {
+    width: 60px;
   }
 
   .disease-management .management-header {
     flex-direction: column;
-    align-items: flex-start;
     gap: 0.5rem;
+    align-items: flex-start;
   }
 
-  .disease-management .notification {
-    top: 0.5rem;
-    right: 0.5rem;
-    max-width: calc(100% - 1rem);
+  .disease-management .management-container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .disease-management .nutrient-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -756,7 +877,8 @@
     font-size: 1.25rem;
   }
 
-  .disease-management .form-section h2 {
+  .disease-management .form-section h2,
+  .disease-management .nutrient-list-section h2 {
     font-size: 1.25rem;
   }
 
@@ -764,7 +886,10 @@
     max-width: 100%;
   }
 
-  .disease-management .nutrient-grid {
-    grid-template-columns: 1fr;
+  .disease-management .notification {
+    min-width: 90%;
+    max-width: 90%;
+    right: 50%;
+    transform: translateX(50%);
   }
 }
