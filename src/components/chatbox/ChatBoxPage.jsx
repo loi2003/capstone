@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { getAIChatResponse } from '../../apis/aiadvise-api';
 import './ChatBoxPage.css';
 
 const ChatBoxPage = ({ isOpen, onClose }) => {
@@ -28,8 +29,9 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
     }
   }, [selectedChatId]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
+
     const userMsg = {
       id: messages.length + 1,
       text: newMessage,
@@ -39,33 +41,69 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
     setNewMessage('');
+    // Scroll to show the user's question immediately
     if (chatAreaRef.current) {
-      chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
+      chatAreaRef.current.scrollTo({
+        top: chatAreaRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
     }
     setIsTyping(true);
-    setTimeout(() => {
+
+    try {
+      // Call the AI chat API
+      const response = await getAIChatResponse(newMessage);
       const systemMsg = {
         id: messages.length + 2,
-        text: 'Message received! We will respond soon.',
+        text: response.reply || 'Sorry, I could not process your request.',
         sender: 'system',
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       const finalMessages = [...updatedMessages, systemMsg];
       setMessages(finalMessages);
-      if (chatAreaRef.current) {
-        chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
-      }
+      // Scroll to show the AI's answer after a slight delay to ensure smooth transition
+      setTimeout(() => {
+        if (chatAreaRef.current) {
+          chatAreaRef.current.scrollTo({
+            top: chatAreaRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }, 100); // Small delay to allow the UI to update
+
       // Update chat history in localStorage
       const storedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
       const currentChat = storedHistory.find((ch) => ch.id === selectedChatId) || storedHistory[storedHistory.length - 1];
       if (currentChat) {
         const updatedHistory = storedHistory.map((chat) =>
-          chat.id === currentChat.id ? { ...chat, messages: finalMessages } : chat
+          chat.id === currentChat.id
+            ? { ...chat, question: chat.question || newMessage, messages: finalMessages }
+            : chat
         );
         localStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
       }
+    } catch (error) {
+      console.error('Error sending message:', error.message);
+      const errorMsg = {
+        id: messages.length + 2,
+        text: 'Error: Could not get a response from the server.',
+        sender: 'system',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
+      const finalMessages = [...updatedMessages, errorMsg];
+      setMessages(finalMessages);
+      // Scroll to show the error message
+      setTimeout(() => {
+        if (chatAreaRef.current) {
+          chatAreaRef.current.scrollTo({
+            top: chatAreaRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }, 100);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e) => {
@@ -113,7 +151,8 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
             <option value="" disabled>Select a chat</option>
             {storedHistory.map((chat) => (
               <option key={chat.id} value={chat.id}>
-                {chat.question || 'New Chat'} - {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text.slice(0, 20) + '...' : 'No messages'}
+                {chat.question || 'New Chat'} -{' '}
+                {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text.slice(0, 20) + '...' : 'No messages'}
               </option>
             ))}
           </select>
@@ -146,7 +185,13 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
         )}
       </div>
       <div className="chatbox-input-area">
-        <form onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }} className="chatbox-input-form">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSendMessage();
+          }}
+          className="chatbox-input-form"
+        >
           <input
             type="text"
             value={newMessage}
@@ -174,7 +219,7 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
         </form>
       </div>
       <p className="chatbox-footer-note">
-        More Function ? Try our <Link to="/advice" className="chatbox-link">Advise Chat</Link> page.
+        More Function? Try our <Link to="/advice" className="chatbox-link">Advise Chat</Link> page.
       </p>
     </motion.div>
   );
