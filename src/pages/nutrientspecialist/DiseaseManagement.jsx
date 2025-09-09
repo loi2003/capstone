@@ -7,7 +7,7 @@ import {
   createDisease,
   updateDisease,
   deleteDisease,
-} from "../../apis/nutriet-api"; // Assuming this is the correct import path
+} from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/DiseaseManagement.css";
 
@@ -114,9 +114,12 @@ const DiseaseManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const diseasesResponse = await getAllDiseases(token);
-      console.log("Fetched diseases response:", diseasesResponse);
-      const diseasesData = diseasesResponse?.data || [];
+      const apiResponse = await getAllDiseases(token);
+      console.log("Fetched diseases response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to fetch diseases");
+      }
+      const diseasesData = apiResponse.data || [];
       setDiseases(Array.isArray(diseasesData) ? diseasesData : []);
     } catch (err) {
       console.error("Fetch error details:", {
@@ -131,30 +134,88 @@ const DiseaseManagement = () => {
     }
   };
 
-  const fetchDiseaseById = async (id) => {
-    console.log("Fetching disease with ID:", id);
-    setLoading(true);
-    try {
-      const data = await getDiseaseById(id, token);
-      console.log("Fetched disease data:", data);
-      setSelectedDisease(data);
-      setNewDisease({
-        name: data.name || "",
-        description: data.description || "",
-        symptoms: data.symptoms || "",
-        treatmentOptions: data.treatmentOptions || "",
-        pregnancyRelated: data.pregnancyRelated || false,
-        riskLevel: data.riskLevel || "",
-        typeOfDesease: data.typeOfDesease || "",
-      });
-      setIsEditing(true);
-    } catch (err) {
-      showNotification(`Failed to fetch disease details: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchDiseaseById = async (id) => {
+  if (!id || typeof id !== "string" || id.trim() === "") {
+    showNotification("Invalid Disease ID provided", "error");
+    return;
+  }
+  if (!token) {
+    showNotification("Authentication token missing", "error");
+    navigate("/signin", { replace: true });
+    return;
+  }
+  setLoading(true);
+  try {
+    console.log("Fetching disease with ID:", id, "Token:", token.substring(0, 10) + "...");
+    const apiResponse = await getDiseaseById(id, token);
+    console.log("Raw API response:", apiResponse);
 
+    let data;
+    // Check if response is wrapped in { error, message, data } or is the raw disease object
+    if (apiResponse && typeof apiResponse === "object" && "error" in apiResponse) {
+      // Wrapped response
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Disease not found");
+      }
+      data = apiResponse.data;
+    } else {
+      // Raw disease object
+      data = apiResponse;
+    }
+
+    // Validate the disease data
+    if (!data || typeof data !== "object" || !data.id) {
+      throw new Error("Invalid or empty response data from API");
+    }
+
+    console.log("Fetched disease data:", data);
+    setSelectedDisease(data);
+    setNewDisease({
+      name: data.name || "",
+      description: data.description || "",
+      symptoms: data.symptoms || "",
+      treatmentOptions: data.treatmentOptions || "",
+      pregnancyRelated: !!data.pregnancyRelated,
+      riskLevel: data.riskLevel || "",
+      typeOfDesease: data.typeOfDesease || "",
+    });
+    setIsEditing(true);
+  } catch (err) {
+    console.error("Fetch disease by ID error:", {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+      id,
+      token: token ? "Token present" : "Token missing",
+      axiosError: err.isAxiosError ? {
+        code: err.code,
+        request: err.request,
+        response: err.response,
+      } : null,
+    });
+
+    let errorMessage = "Failed to fetch disease";
+    if (err.message.includes("not found")) {
+      errorMessage = "Disease not found.";
+    } else if (err.response?.status === 400) {
+      errorMessage = err.response?.data?.message || "Disease not found";
+    } else if (err.response?.status === 401) {
+      errorMessage = "Session expired. Please sign in again.";
+      localStorage.removeItem("token");
+      navigate("/signin", { replace: true });
+    } else if (err.response?.status === 404) {
+      errorMessage = "Disease not found.";
+    } else if (err.code === "ERR_NETWORK") {
+      errorMessage = "Network error: Unable to connect to the server.";
+    } else {
+      errorMessage = err.response?.data?.message || err.message || "Unknown error";
+    }
+
+    showNotification(errorMessage, "error");
+  } finally {
+    setLoading(false);
+  }
+};
   const createDiseaseHandler = async () => {
     if (!newDisease.name || newDisease.name.trim() === "") {
       showNotification("Disease name is required", "error");
@@ -163,7 +224,22 @@ const DiseaseManagement = () => {
     setLoading(true);
     try {
       console.log("Creating disease with data:", newDisease);
-      await createDisease(newDisease, token);
+      const apiResponse = await createDisease(
+        {
+          name: newDisease.name,
+          description: newDisease.description || "",
+          symptoms: newDisease.symptoms || "",
+          treatmentOptions: newDisease.treatmentOptions || "",
+          pregnancyRelated: !!newDisease.pregnancyRelated,
+          riskLevel: newDisease.riskLevel || "",
+          typeOfDesease: newDisease.typeOfDesease || "",
+        },
+        token
+      );
+      console.log("Create disease response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to create disease");
+      }
       setNewDisease({
         name: "",
         description: "",
@@ -196,16 +272,39 @@ const DiseaseManagement = () => {
       showNotification("Disease name is required", "error");
       return;
     }
+    if (!selectedDisease || !selectedDisease.id) {
+      showNotification("No disease selected for update", "error");
+      return;
+    }
+    if (!token) {
+      showNotification("Authentication token missing", "error");
+      navigate("/signin", { replace: true });
+      return;
+    }
+    if (newDisease.riskLevel && !["Low", "Medium", "High"].includes(newDisease.riskLevel)) {
+      showNotification("Risk level must be Low, Medium, or High", "error");
+      return;
+    }
     setLoading(true);
     try {
-      console.log("Updating disease with ID:", selectedDisease?.id);
-      await updateDisease(
+      console.log("Updating disease with ID:", selectedDisease.id, "Data:", newDisease);
+      const apiResponse = await updateDisease(
         {
-          diseaseId: selectedDisease?.id,
-          ...newDisease,
+          diseaseId: selectedDisease.id,
+          name: newDisease.name,
+          description: newDisease.description || "",
+          symptoms: newDisease.symptoms || "",
+          treatmentOptions: newDisease.treatmentOptions || "",
+          pregnancyRelated: !!newDisease.pregnancyRelated,
+          riskLevel: newDisease.riskLevel || "",
+          typeOfDesease: newDisease.typeOfDesease || "",
         },
         token
       );
+      console.log("Update disease response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to update disease");
+      }
       setNewDisease({
         name: "",
         description: "",
@@ -220,10 +319,27 @@ const DiseaseManagement = () => {
       await fetchData();
       showNotification("Disease updated successfully", "success");
     } catch (err) {
-      showNotification(
-        `Failed to update disease: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
+      console.error("Update disease error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: err.config,
+      });
+      let errorMessage = "Failed to update disease";
+      if (err.response?.status === 400) {
+        errorMessage = err.response?.data?.message || "Invalid data provided";
+      } else if (err.response?.status === 401) {
+        errorMessage = "Session expired. Please sign in again.";
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
+      } else if (err.response?.status === 404) {
+        errorMessage = "Disease not found.";
+      } else if (err.code === "ERR_NETWORK") {
+        errorMessage = "Network error: Unable to connect to the server.";
+      } else {
+        errorMessage = err.response?.data?.message || err.message || "Unknown error";
+      }
+      showNotification(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -234,7 +350,11 @@ const DiseaseManagement = () => {
     setLoading(true);
     try {
       console.log("Deleting disease with ID:", id);
-      await deleteDisease(id, token);
+      const apiResponse = await deleteDisease(id, token);
+      console.log("Delete disease response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to delete disease");
+      }
       setSelectedDisease(null);
       setIsEditing(false);
       setNewDisease({
@@ -249,7 +369,15 @@ const DiseaseManagement = () => {
       await fetchData();
       showNotification("Disease deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete disease: ${err.message}`, "error");
+      console.error("Delete disease error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(
+        `Failed to delete disease: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -312,7 +440,9 @@ const DiseaseManagement = () => {
   const filteredDiseases = diseases.filter(
     (disease) =>
       (disease.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (disease.description || "").toLowerCase().includes(searchTerm.toLowerCase())
+      (disease.description || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
   const containerVariants = {
@@ -381,7 +511,6 @@ const DiseaseManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Sidebar (unchanged) */}
       <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
@@ -561,7 +690,7 @@ const DiseaseManagement = () => {
                       aria-label="Folder icon for food category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2xc11z"
+                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
                         fill="var(--orange-secondary)"
                         stroke="var(--orange-white)"
                         strokeWidth="1.5"
@@ -967,6 +1096,35 @@ const DiseaseManagement = () => {
                 className="sidebar-nav-item"
               >
                 <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Meal Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for disease management"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="var(--blue-accent)"
+                      stroke="var(--blue-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Meal Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Nutrient Policy"
@@ -1063,7 +1221,7 @@ const DiseaseManagement = () => {
                     aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
                       fill="var(--orange-white)"
                     />
                   </svg>
@@ -1104,7 +1262,10 @@ const DiseaseManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -1214,13 +1375,12 @@ const DiseaseManagement = () => {
                   className="textarea-field"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="disease-pregnancy">
-                  Pregnancy Related
-                </label>
+              <div className="form-group pregnancy-related-group">
+                <label htmlFor="disease-pregnancy">Pregnancy Related</label>
                 <input
                   id="disease-pregnancy"
                   type="checkbox"
+                  className="pregnancy-checkbox"
                   checked={newDisease.pregnancyRelated}
                   onChange={(e) =>
                     setNewDisease((prev) => ({
@@ -1228,14 +1388,31 @@ const DiseaseManagement = () => {
                       pregnancyRelated: e.target.checked,
                     }))
                   }
-                  className="checkbox-input"
                 />
+                <label htmlFor="disease-pregnancy" className="pregnancy-checkbox-label">
+                  <svg
+                    className="checkbox-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M20 6L9 17L4 12"
+                      stroke="var(--nutrient-specialist-primary)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>{newDisease.pregnancyRelated ? "Yes" : "No"}</span>
+                </label>
               </div>
               <div className="form-group">
                 <label htmlFor="disease-risk-level">Risk Level</label>
-                <input
+                <select
                   id="disease-risk-level"
-                  type="text"
                   value={newDisease.riskLevel}
                   onChange={(e) =>
                     setNewDisease((prev) => ({
@@ -1243,9 +1420,13 @@ const DiseaseManagement = () => {
                       riskLevel: e.target.value,
                     }))
                   }
-                  placeholder="Enter risk level (e.g., Low, Medium, High)"
                   className="input-field"
-                />
+                >
+                  <option value="">Select Risk Level</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="disease-type">Type of Disease</label>
@@ -1265,7 +1446,9 @@ const DiseaseManagement = () => {
               </div>
               <div className="button-group">
                 <motion.button
-                  onClick={isEditing ? updateDiseaseHandler : createDiseaseHandler}
+                  onClick={
+                    isEditing ? updateDiseaseHandler : createDiseaseHandler
+                  }
                   disabled={loading}
                   className="submit-button nutrient-specialist-button primary"
                   whileHover={{
@@ -1302,7 +1485,8 @@ const DiseaseManagement = () => {
             <div className="section-header">
               <h2>Disease List</h2>
               <div className="nutrient-count">
-                {diseases.length} {diseases.length === 1 ? "disease" : "diseases"} found
+                {diseases.length}{" "}
+                {diseases.length === 1 ? "disease" : "diseases"} found
               </div>
             </div>
             {loading ? (
@@ -1353,7 +1537,10 @@ const DiseaseManagement = () => {
                     </div>
                     <div className="disease-description">
                       <h4>Treatment Options:</h4>
-                      <p>{disease.treatmentOptions || "No treatment options available"}</p>
+                      <p>
+                        {disease.treatmentOptions ||
+                          "No treatment options available"}
+                      </p>
                     </div>
                     <div className="disease-description">
                       <h4>Pregnancy Related:</h4>
@@ -1373,6 +1560,7 @@ const DiseaseManagement = () => {
                         className="edit-button nutrient-specialist-button primary"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={loading}
                       >
                         <span>Edit</span>
                       </motion.button>
@@ -1381,6 +1569,7 @@ const DiseaseManagement = () => {
                         className="delete-button nutrient-specialist-button secondary"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={loading}
                       >
                         <span>Delete</span>
                       </motion.button>

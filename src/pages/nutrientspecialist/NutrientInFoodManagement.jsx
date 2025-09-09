@@ -434,6 +434,11 @@ const NutrientInFoodManagement = () => {
       x: 0,
       transition: { duration: 0.3, ease: "easeOut" },
     },
+    hover: {
+      backgroundColor: "var(--blue-secondary)",
+      transform: "translateY(-2px)",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
   };
 
   const dropdownVariants = {
@@ -532,6 +537,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/blog-management"
@@ -544,10 +550,10 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Edit icon for blog management"
+                    aria-label="Blog icon for blog management"
                   >
                     <path
-                      d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4L18.5 2.5z"
+                      d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"
                       fill="var(--nutrient-specialist-accent)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
@@ -561,6 +567,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   onClick={toggleFoodDropdown}
@@ -578,10 +585,10 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Apple icon for food management"
+                    aria-label="Food icon for food management"
                   >
                     <path
-                      d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4l2 6-6 2 6 2 2-6-2-6z"
                       fill="var(--nutrient-specialist-accent)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
@@ -624,6 +631,7 @@ const NutrientInFoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-category-management"
@@ -636,10 +644,10 @@ const NutrientInFoodManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Folder icon for food category management"
+                      aria-label="Category icon for food category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                        d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
                         fill="var(--nutrient-specialist-secondary)"
                         stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
@@ -653,6 +661,7 @@ const NutrientInFoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-management"
@@ -665,10 +674,10 @@ const NutrientInFoodManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Apple icon for food management"
+                      aria-label="Food item icon for food management"
                     >
                       <path
-                        d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
+                        d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
                         fill="var(--nutrient-specialist-accent)"
                         stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
@@ -683,6 +692,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   onClick={toggleNutrientDropdown}
@@ -703,9 +713,9 @@ const NutrientInFoodManagement = () => {
                     aria-label="Nutrient icon for nutrient management"
                   >
                     <path
-                      d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
-                      stroke="var(--nutrient-specialist-white)"
+                      d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
                       fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -748,6 +758,7 @@ const NutrientInFoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
@@ -760,10 +771,10 @@ const NutrientInFoodManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Folder icon for nutrient category management"
+                      aria-label="Category icon for nutrient category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
+                        d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
                         fill="var(--nutrient-specialist-secondary)"
                         stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
@@ -777,6 +788,7 @@ const NutrientInFoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
@@ -789,12 +801,12 @@ const NutrientInFoodManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Sprout icon for nutrient management"
+                      aria-label="Nutrient item icon for nutrient management"
                     >
                       <path
-                        d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
-                        stroke="var(--nutrient-specialist-white)"
+                        d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
                         fill="var(--nutrient-specialist-accent)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -807,6 +819,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item active"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
@@ -819,12 +832,12 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Link icon for nutrient in food management"
+                    aria-label="Nutrient in food icon"
                   >
                     <path
-                      d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"
-                      stroke="var(--nutrient-specialist-white)"
+                      d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-3 2h6v2H9v-2zm0 4h6v2H9v-2z"
                       fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -836,6 +849,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
@@ -865,6 +879,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/dish-management"
@@ -898,6 +913,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
@@ -910,11 +926,11 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for allergy category management"
+                    aria-label="Category icon for allergy category management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--nutrient-specialist-accent)"
+                      d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
+                      fill="var(--nutrient-specialist-secondary)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
@@ -927,6 +943,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/allergy-management"
@@ -939,10 +956,10 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for allergy management"
+                    aria-label="Allergy icon for allergy management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
                       fill="var(--nutrient-specialist-accent)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
@@ -956,6 +973,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/disease-management"
@@ -968,10 +986,10 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Medical icon for disease management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      d="M19 7h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3H5a2 2 0 00-2 2v6a2 2 0 002 2h3v3a2 2 0 002 2h4a2 2 0 002-2v-3h3a2 2 0 002-2V9a2 2 0 00-2-2zm-7 10v3h-2v-3H7v-2h3V9h2v3h3v2h-3z"
                       fill="var(--nutrient-specialist-accent)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
@@ -985,9 +1003,10 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
-                  to="/nutrient-specialist/disease-management"
+                  to="/nutrient-specialist/warning-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Warning Management"
                 >
@@ -997,10 +1016,10 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Warning icon for warning management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      d="M12 2l10 20H2L12 2zm0 4v8m0 4v2"
                       fill="var(--nutrient-specialist-accent)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
@@ -1014,9 +1033,40 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
-                  to="/nutrient-specialist/disease-management"
+                  to="/nutrient-specialist/meal-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Meal Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Meal icon for meal management"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 4h8v2H8v-2zm0 4h8v2H8v-2z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Meal Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Messenger Management"
                 >
@@ -1026,10 +1076,10 @@ const NutrientInFoodManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Messenger icon for messenger management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
                       fill="var(--nutrient-specialist-accent)"
                       stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
@@ -1043,6 +1093,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
@@ -1072,6 +1123,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
@@ -1103,6 +1155,7 @@ const NutrientInFoodManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
+            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1126,6 +1179,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
+                whileHover="hover"
               >
                 <Link
                   to="/profile"
@@ -1155,6 +1209,7 @@ const NutrientInFoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   className="logout-button"
@@ -1182,7 +1237,11 @@ const NutrientInFoodManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item"
+              whileHover="hover"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
