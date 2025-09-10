@@ -28,8 +28,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #e0e0e0;
-  background-image: url('https://picsum.photos/32/32?random=200');
+  background-color: #867dec;
+  background-image: url('/images/IMG_4602.PNG');
   background-size: cover;
   margin-right: 8px;
   flex-shrink: 0;
@@ -44,7 +44,7 @@
 .chatbox-info h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1c1e21;
+  color: #e3e3e3;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
