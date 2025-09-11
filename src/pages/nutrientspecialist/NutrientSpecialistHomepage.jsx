@@ -10,8 +10,16 @@ const NutrientSpecialistHomePage = () => {
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const [blueSecondary, setBlueSecondary] = useState("#4caf50"); // Fallback color
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    // Resolve the CSS variable value
+    const computedStyle = getComputedStyle(document.documentElement);
+    const color = computedStyle.getPropertyValue("--blue-secondary").trim();
+    setBlueSecondary(color || "#4caf50"); // Fallback to a default color
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -67,6 +75,20 @@ const NutrientSpecialistHomePage = () => {
     setIsFoodDropdownOpen((prev) => !prev);
   };
 
+  // Helper function to parse hex or RGB color to RGB values
+  const parseRGB = (color) => {
+    if (color.startsWith("#")) {
+      const hex = color.replace("#", "");
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      return `${r}, ${g}, ${b}`;
+    } else if (color.startsWith("rgb")) {
+      return color.match(/\d+/g).slice(0, 3).join(", ");
+    }
+    return "76, 175, 80"; // Fallback RGB values for --blue-secondary
+  };
+
   const logoVariants = {
     animate: {
       scale: [1, 1.05, 1],
@@ -108,14 +130,14 @@ const NutrientSpecialistHomePage = () => {
   };
 
   const navItemVariants = {
-    initial: { opacity: 0, x: -20 },
+    initial: { opacity: 0, x: -20, backgroundColor: `rgba(${parseRGB(blueSecondary)}, 0)` },
     animate: {
       opacity: 1,
       x: 0,
       transition: { duration: 0.3, ease: "easeOut" },
     },
     hover: {
-      backgroundColor: "var(--blue-secondary)",
+      backgroundColor: blueSecondary,
       transform: "translateY(-2px)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
@@ -727,6 +749,66 @@ const NutrientSpecialistHomePage = () => {
                     />
                   </svg>
                   {isSidebarOpen && <span>Meal Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/energy-suggestion"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Energy Suggestion"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Energy icon for energy suggestion"
+                  >
+                    <path
+                      d="M12 2l-6 9h4v7l6-9h-4V2zm-2 9h4m-4-7v3m4 3v3"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Energy Suggestion</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-suggestion"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Nutrient Suggestion"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Nutrient suggestion icon for nutrient suggestion"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4h4m-4 2v2"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient Suggestion</span>}
                 </Link>
               </motion.div>
               <motion.div
