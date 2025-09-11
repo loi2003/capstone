@@ -2,18 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  getAllMeals,
+  getMealById,
+  createMeal,
+  updateMeal,
+  deleteMeal,
   getAllDishes,
-  getDishById,
-  createDish,
-  addDishImage,
-  updateDish,
-  deleteDish,
-  getAllFoods,
-  updateFoodInDish,
-  deleteFoodInDish,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/DishManagement.css";
+import "../../styles/MealManagement.css";
 
 const LoaderIcon = () => (
   <svg
@@ -55,7 +52,7 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const DishModal = ({ dish, onClose, foods }) => {
+const MealModal = ({ meal, onClose, dishes }) => {
   return (
     <motion.div
       className="modal-overlay"
@@ -72,28 +69,18 @@ const DishModal = ({ dish, onClose, foods }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>{dish.dishName || `Dish #${dish.id}`}</h2>
-        {dish.imageUrl && (
-          <img
-            src={dish.imageUrl}
-            alt={dish.dishName || `Dish #${dish.id}`}
-            className="modal-dish-image"
-          />
-        )}
-        <p>{dish.description || "No description available"}</p>
-        <h3>Foods:</h3>
+        <h2>{meal.mealType || `Meal #${meal.id}`}</h2>
+        <h3>Dishes:</h3>
         <ul>
-          {Array.isArray(dish.foods) && dish.foods.length > 0 ? (
-            dish.foods.map((food) => (
-              <li key={food.foodId}>
-                {food.foodName ||
-                  foods.find((f) => f.id === food.foodId)?.name ||
-                  "Unknown Food"}{" "}
-                ({food.amount} {food.unit})
+          {Array.isArray(meal.dishMeals) && meal.dishMeals.length > 0 ? (
+            meal.dishMeals.map((dishMeal) => (
+              <li key={dishMeal.dishId}>
+                {dishes.find((d) => d.id === dishMeal.dishId)?.dishName ||
+                  "Unknown Dish"}
               </li>
             ))
           ) : (
-            <li>No foods in this dish</li>
+            <li>No dishes in this meal</li>
           )}
         </ul>
         <motion.button
@@ -109,17 +96,15 @@ const DishModal = ({ dish, onClose, foods }) => {
   );
 };
 
-const DishManagement = () => {
+const MealManagement = () => {
+  const [meals, setMeals] = useState([]);
   const [dishes, setDishes] = useState([]);
-  const [foods, setFoods] = useState([]);
-  const [newDish, setNewDish] = useState({
-    dishName: "",
-    description: "",
-    foodList: [],
-    image: null,
+  const [newMeal, setNewMeal] = useState({
+    mealType: "Breakfast",
+    dishMeals: [],
   });
-  const [selectedDish, setSelectedDish] = useState(null);
-  const [selectedViewDish, setSelectedViewDish] = useState(null);
+  const [selectedMeal, setSelectedMeal] = useState(null);
+  const [selectedViewMeal, setSelectedViewMeal] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -177,13 +162,13 @@ const DishManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [dishesResponse, foodsData] = await Promise.all([
+      const [mealsResponse, dishesData] = await Promise.all([
+        getAllMeals(),
         getAllDishes(),
-        getAllFoods(),
       ]);
-      const dishesData = dishesResponse?.data || [];
-      setDishes(Array.isArray(dishesData) ? dishesData : []);
-      setFoods(Array.isArray(foodsData) ? foodsData : []);
+      const mealsData = mealsResponse?.data || [];
+      setMeals(Array.isArray(mealsData) ? mealsData : []);
+      setDishes(Array.isArray(dishesData?.data) ? dishesData.data : []);
     } catch (err) {
       console.error("Fetch error details:", {
         message: err.message,
@@ -191,81 +176,60 @@ const DishManagement = () => {
         status: err.response?.status,
       });
       showNotification(`Failed to fetch data: ${err.message}`, "error");
+      setMeals([]);
       setDishes([]);
-      setFoods([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchDishById = async (id) => {
+  const fetchMealById = async (id) => {
     setLoading(true);
     try {
-      const data = await getDishById(id);
-      setSelectedDish(data);
-      setNewDish({
-        dishName: data.dishName || "",
-        description: data.description || "",
-        foodList: Array.isArray(data.foods)
-          ? data.foods.map((food) => ({
-              foodId: food.foodId,
-              unit: food.unit === "g" ? "grams" : food.unit,
-              amount: food.amount || 0,
+      const data = await getMealById(id);
+      setSelectedMeal(data);
+      setNewMeal({
+        mealType: data.mealType || "Breakfast",
+        dishMeals: Array.isArray(data.dishMeals)
+          ? data.dishMeals.map((dishMeal) => ({
+              dishId: dishMeal.dishId,
             }))
           : [],
-        image: null,
       });
       setIsEditing(true);
     } catch (err) {
-      showNotification(`Failed to fetch dish details: ${err.message}`, "error");
+      showNotification(`Failed to fetch meal details: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const createDishHandler = async () => {
-    if (!newDish.dishName || newDish.dishName.trim() === "") {
-      showNotification("Dish name is required", "error");
+  const createMealHandler = async () => {
+    if (!newMeal.mealType || newMeal.mealType.trim() === "") {
+      showNotification("Meal type is required", "error");
       return;
     }
-    if (newDish.foodList.length === 0) {
-      showNotification("Please select at least one food", "error");
-      return;
-    }
-    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
-      showNotification(
-        "Please provide valid unit and amount for all selected foods",
-        "error"
-      );
+    if (newMeal.dishMeals.length === 0) {
+      showNotification("Please select at least one dish", "error");
       return;
     }
     setLoading(true);
     try {
-      const dishResponse = await createDish({
-        dishName: newDish.dishName,
-        description: newDish.description,
-        foodList: newDish.foodList,
+      await createMeal({
+        mealType: newMeal.mealType,
+        dishMeals: newMeal.dishMeals,
       });
-      const dishId = dishResponse?.data?.id || dishResponse?.id;
-      if (!dishId) {
-        throw new Error("Dish ID not returned from create dish response");
-      }
-      if (newDish.image) {
-        await addDishImage(dishId, newDish.image);
-      }
-      setNewDish({
-        dishName: "",
-        description: "",
-        foodList: [],
-        image: null,
+      setNewMeal({
+        mealType: "Breakfast",
+        dishMeals: [],
       });
       setIsEditing(false);
       await fetchData();
-      showNotification("Dish created successfully", "success");
+      showNotification("Meal created successfully", "success");
     } catch (err) {
-      console.error("Create dish error:", err);
+      console.error("Create meal error:", err);
       showNotification(
-        `Failed to create dish: ${err.response?.data?.message || err.message}`,
+        `Failed to create meal: ${err.response?.data?.message || err.message}`,
         "error"
       );
     } finally {
@@ -273,47 +237,32 @@ const DishManagement = () => {
     }
   };
 
-  const updateDishHandler = async () => {
-    if (!newDish.dishName || newDish.dishName.trim() === "") {
-      showNotification("Dish name is required", "error");
+  const updateMealHandler = async () => {
+    if (!newMeal.mealType || newMeal.mealType.trim() === "") {
+      showNotification("Meal type is required", "error");
       return;
     }
-    if (newDish.foodList.length === 0) {
-      showNotification("Please select at least one food", "error");
-      return;
-    }
-    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
-      showNotification(
-        "Please provide valid unit and amount for all selected foods",
-        "error"
-      );
+    if (newMeal.dishMeals.length === 0) {
+      showNotification("Please select at least one dish", "error");
       return;
     }
     setLoading(true);
     try {
-      await updateDish({
-        dishId: selectedDish?.id,
-        dishName: newDish.dishName,
-        description: newDish.description,
-        foodList: newDish.foodList.map((food) => ({
-          foodId: food.foodId,
-          unit: food.unit === "grams" ? "g" : food.unit,
-          amount: food.amount,
-        })),
+      await updateMeal(selectedMeal?.id, {
+        mealType: newMeal.mealType,
+        dishMeals: newMeal.dishMeals,
       });
-      setNewDish({
-        dishName: "",
-        description: "",
-        foodList: [],
-        image: null,
+      setNewMeal({
+        mealType: "Breakfast",
+        dishMeals: [],
       });
-      setSelectedDish(null);
+      setSelectedMeal(null);
       setIsEditing(false);
       await fetchData();
-      showNotification("Dish updated successfully", "success");
+      showNotification("Meal updated successfully", "success");
     } catch (err) {
       showNotification(
-        `Failed to update dish: ${err.response?.data?.message || err.message}`,
+        `Failed to update meal: ${err.response?.data?.message || err.message}`,
         "error"
       );
     } finally {
@@ -321,101 +270,46 @@ const DishManagement = () => {
     }
   };
 
-  const deleteDishHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this dish?")) return;
+  const deleteMealHandler = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this meal?")) return;
     setLoading(true);
     try {
-      await deleteDish(id);
-      setSelectedDish(null);
+      await deleteMeal(id);
+      setSelectedMeal(null);
       setIsEditing(false);
-      setNewDish({
-        dishName: "",
-        description: "",
-        foodList: [],
-        image: null,
+      setNewMeal({
+        mealType: "Breakfast",
+        dishMeals: [],
       });
       await fetchData();
-      showNotification("Dish deleted successfully", "success");
+      showNotification("Meal deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete dish: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateFoodInDishHandler = async (food) => {
-    if (!food.unit || food.amount <= 0) {
-      showNotification("Please provide valid unit and amount", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateFoodInDish({
-        dishId: selectedDish?.id,
-        foodId: food.foodId,
-        unit: food.unit,
-        amount: food.amount,
-      });
-      showNotification("Food updated successfully", "success");
-      await fetchDishById(selectedDish?.id);
-    } catch (err) {
-      showNotification(
-        `Failed to update food: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteFoodInDishHandler = async (foodId) => {
-    if (!window.confirm("Are you sure you want to remove this food from the dish?")) return;
-    setLoading(true);
-    try {
-      await deleteFoodInDish(selectedDish?.id, foodId);
-      showNotification("Food removed successfully", "success");
-      await fetchDishById(selectedDish?.id);
-    } catch (err) {
-      showNotification(
-        `Failed to remove food: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
+      showNotification(`Failed to delete meal: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const cancelEdit = () => {
-    setNewDish({
-      dishName: "",
-      description: "",
-      foodList: [],
-      image: null,
+    setNewMeal({
+      mealType: "Breakfast",
+      dishMeals: [],
     });
-    setSelectedDish(null);
+    setSelectedMeal(null);
     setIsEditing(false);
   };
 
-  const handleFoodSelect = (foodId) => {
-    setNewDish((prev) => {
-      const currentFoods = [...prev.foodList];
-      const index = currentFoods.findIndex((food) => food.foodId === foodId);
+  const handleDishSelect = (dishId) => {
+    setNewMeal((prev) => {
+      const currentDishes = [...prev.dishMeals];
+      const index = currentDishes.findIndex((dishMeal) => dishMeal.dishId === dishId);
       if (index > -1) {
-        currentFoods.splice(index, 1);
+        currentDishes.splice(index, 1);
       } else {
-        currentFoods.push({ foodId, unit: "grams", amount: 1 });
+        currentDishes.push({ dishId });
       }
-      return { ...prev, foodList: currentFoods };
+      return { ...prev, dishMeals: currentDishes };
     });
-  };
-
-  const handleFoodDetailChange = (foodId, field, value) => {
-    setNewDish((prev) => ({
-      ...prev,
-      foodList: prev.foodList.map((food) =>
-        food.foodId === foodId ? { ...food, [field]: value } : food
-      ),
-    }));
   };
 
   const toggleSidebar = () => {
@@ -458,16 +352,15 @@ const DishManagement = () => {
     fetchData();
   }, []);
 
-  const filteredDishes = dishes.filter(
-    (dish) =>
-      (dish.dishName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (dish.description || "").toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMeals = meals.filter(
+    (meal) =>
+      (meal.mealType || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const indexOfLastDish = currentPage * itemsPerPage;
-  const indexOfFirstDish = indexOfLastDish - itemsPerPage;
-  const currentDishes = filteredDishes.slice(indexOfFirstDish, indexOfLastDish);
-  const totalPages = Math.ceil(filteredDishes.length / itemsPerPage);
+  const indexOfLastMeal = currentPage * itemsPerPage;
+  const indexOfFirstMeal = indexOfLastMeal - itemsPerPage;
+  const currentMeals = filteredMeals.slice(indexOfFirstMeal, indexOfLastMeal);
+  const totalPages = Math.ceil(filteredMeals.length / itemsPerPage);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -543,7 +436,7 @@ const DishManagement = () => {
   };
 
   return (
-    <div className="dish-management">
+    <div className="meal-management">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -1002,7 +895,7 @@ const DishManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item active"
+                className="sidebar-nav-item"
                 whileHover="hover"
               >
                 <Link
@@ -1156,7 +1049,7 @@ const DishManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="sidebar-nav-item active"
                 whileHover="hover"
               >
                 <Link
@@ -1463,218 +1356,125 @@ const DishManagement = () => {
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Manage Dishes</h1>
-            <p>Create, edit, and manage dishes composed of multiple foods</p>
+            <h1>Manage Meals</h1>
+            <p>Create, edit, and manage meals composed of multiple dishes</p>
           </div>
         </div>
 
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
-              <h2>{isEditing ? "Edit Dish" : "Add New Dish"}</h2>
+              <h2>{isEditing ? "Edit Meal" : "Add New Meal"}</h2>
             </div>
-            {foods.length === 0 && (
+            {dishes.length === 0 && (
               <p className="no-results">
-                No foods available. Please add foods first.
+                No dishes available. Please add dishes first.
               </p>
             )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="dish-name">Dish Name</label>
-                <input
-                  id="dish-name"
-                  type="text"
-                  value={newDish.dishName}
+                <label htmlFor="meal-type">Meal Type</label>
+                <select
+                  id="meal-type"
+                  value={newMeal.mealType}
                   onChange={(e) =>
-                    setNewDish((prev) => ({
+                    setNewMeal((prev) => ({
                       ...prev,
-                      dishName: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter dish name"
-                  className="input-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="dish-description">Description</label>
-                <textarea
-                  id="dish-description"
-                  value={newDish.description}
-                  onChange={(e) =>
-                    setNewDish((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter dish description"
-                  className="textarea-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="dish-image">Dish Image (Optional)</label>
-                <input
-                  id="dish-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setNewDish((prev) => ({
-                      ...prev,
-                      image: e.target.files[0] || null,
+                      mealType: e.target.value,
                     }))
                   }
                   className="input-field"
-                />
+                >
+                  <option value="Breakfast">Breakfast</option>
+                  <option value="Lunch">Lunch</option>
+                  <option value="Dinner">Dinner</option>
+                  <option value="Snack1">Snack1</option>
+                  <option value="Snack2">Snack2</option>
+                </select>
               </div>
               <div className="form-group">
-                <label htmlFor="food-selection">Select Foods</label>
-                <div className="food-selection-container">
-                  {foods.map((food) => (
+                <label htmlFor="dish-selection">Select Dishes</label>
+                <div className="dish-selection-container">
+                  {dishes.map((dish) => (
                     <motion.div
-                      key={food.id}
-                      className={`food-item ${
-                        newDish.foodList.some((f) => f.foodId === food.id)
+                      key={dish.id}
+                      className={`dish-item ${
+                        newMeal.dishMeals.some((d) => d.dishId === dish.id)
                           ? "selected"
                           : ""
                       }`}
-                      onClick={() => handleFoodSelect(food.id)}
+                      onClick={() => handleDishSelect(dish.id)}
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.98 }}
                     >
-                      <span className="food-name">{food.name}</span>
-                      {newDish.foodList.some((f) => f.foodId === food.id) && (
+                      <span className="dish-name">{dish.dishName}</span>
+                      {newMeal.dishMeals.some((d) => d.dishId === dish.id) && (
                         <span className="checkmark">✓</span>
                       )}
                     </motion.div>
                   ))}
                 </div>
-                {newDish.foodList.length > 0 && (
-                  <div className="food-details-container">
-                    <h4>Food Details</h4>
-                    {newDish.foodList.map((food) => (
-                      <div key={food.foodId} className="food-detail-item">
-                        <span>
-                          {foods.find((f) => f.id === food.foodId)?.name ||
-                            "Unknown Food"}
-                        </span>
-                        <div className="food-detail-inputs">
-                          <select
-                            value={food.unit}
-                            onChange={(e) =>
-                              handleFoodDetailChange(
-                                food.foodId,
-                                "unit",
-                                e.target.value
-                              )
-                            }
-                            className="input-field"
-                          >
-                            <option value="grams">Grams</option>
-                            <option value="cups">Cups</option>
-                            <option value="tablespoons">Tablespoons</option>
-                            <option value="teaspoons">Teaspoons</option>
-                          </select>
-                          <input
-                            type="number"
-                            value={food.amount}
-                            onChange={(e) =>
-                              handleFoodDetailChange(
-                                food.foodId,
-                                "amount",
-                                parseFloat(e.target.value) || 0
-                              )
-                            }
-                            placeholder="Amount"
-                            className="input-field"
-                            min="0"
-                          />
-                          {isEditing && (
-                            <div className="food-detail-actions">
-                              <motion.button
-                                onClick={() => updateFoodInDishHandler(food)}
-                                disabled={loading}
-                                className="nutrient-specialist-button primary"
-                                whileHover={{ scale: loading ? 1 : 1.05 }}
-                                whileTap={{ scale: loading ? 1 : 0.95 }}
-                              >
-                                Update
-                              </motion.button>
-                              <motion.button
-                                onClick={() => deleteFoodInDishHandler(food.foodId)}
-                                disabled={loading}
-                                className="nutrient-specialist-button secondary"
-                                whileHover={{ scale: loading ? 1 : 1.05 }}
-                                whileTap={{ scale: loading ? 1 : 0.95 }}
-                              >
-                                Remove
-                              </motion.button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="button-group">
+              </div>
+              <div className="button-group">
+                <motion.button
+                  onClick={isEditing ? updateMealHandler : createMealHandler}
+                  disabled={loading || dishes.length === 0}
+                  className="submit-button nutrient-specialist-button primary"
+                  whileHover={{
+                    scale: loading || dishes.length === 0 ? 1 : 1.05,
+                  }}
+                  whileTap={{
+                    scale: loading || dishes.length === 0 ? 1 : 0.95,
+                  }}
+                >
+                  {loading
+                    ? isEditing
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditing
+                    ? "Update Meal"
+                    : "Create Meal"}
+                </motion.button>
+                {isEditing && (
                   <motion.button
-                    onClick={isEditing ? updateDishHandler : createDishHandler}
-                    disabled={loading || foods.length === 0}
-                    className="submit-button nutrient-specialist-button primary"
-                    whileHover={{
-                      scale: loading || foods.length === 0 ? 1 : 1.05,
-                    }}
-                    whileTap={{
-                      scale: loading || foods.length === 0 ? 1 : 0.95,
-                    }}
+                    onClick={cancelEdit}
+                    disabled={loading}
+                    className="cancel-button nutrient-specialist-button secondary"
+                    whileHover={{ scale: loading ? 1 : 1.05 }}
+                    whileTap={{ scale: loading ? 1 : 0.95 }}
                   >
-                    {loading
-                      ? isEditing
-                        ? "Updating..."
-                        : "Creating..."
-                      : isEditing
-                      ? "Update Dish"
-                      : "Create Dish"}
+                    Cancel
                   </motion.button>
-                  {isEditing && (
-                    <motion.button
-                      onClick={cancelEdit}
-                      disabled={loading}
-                      className="cancel-button nutrient-specialist-button secondary"
-                      whileHover={{ scale: loading ? 1 : 1.05 }}
-                      whileTap={{ scale: loading ? 1 : 0.95 }}
-                    >
-                      Cancel
-                    </motion.button>
-                  )}
-                </div>
+                )}
               </div>
             </div>
           </div>
 
           <div className="nutrient-list-section">
             <div className="section-header">
-              <h2>Dish List</h2>
+              <h2>Meal List</h2>
               <div className="nutrient-count">
-                {filteredDishes.length}{" "}
-                {filteredDishes.length === 1 ? "dish" : "dishes"} found
+                {filteredMeals.length}{" "}
+                {filteredMeals.length === 1 ? "meal" : "meals"} found
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="search-dishes">Search Dishes</label>
+              <label htmlFor="search-meals">Search Meals</label>
               <input
-                id="search-dishes"
+                id="search-meals"
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name or description"
+                placeholder="Search by type"
                 className="search-input"
               />
             </div>
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
-                <p>Loading dishes...</p>
+                <p>Loading meals...</p>
               </div>
-            ) : !Array.isArray(dishes) || dishes.length === 0 ? (
+            ) : !Array.isArray(meals) || meals.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -1690,15 +1490,15 @@ const DishManagement = () => {
                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <h3>No dishes found</h3>
-                <p>Create your first dish to get started</p>
+                <h3>No meals found</h3>
+                <p>Create your first meal to get started</p>
               </div>
             ) : (
               <>
                 <div className="nutrient-grid">
-                  {currentDishes.map((dish) => (
+                  {currentMeals.map((meal) => (
                     <motion.div
-                      key={dish.id}
+                      key={meal.id}
                       className="nutrient-card"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -1706,14 +1506,26 @@ const DishManagement = () => {
                       whileHover={{ y: -5 }}
                     >
                       <div className="card-header">
-                        <h3>{dish.dishName || `Dish #${dish.id}`}</h3>
+                        <h3>{meal.mealType || `Meal #${meal.id}`}</h3>
                       </div>
-                      <p className="dish-description">
-                        {dish.description || "No description available"}
-                      </p>
+                      <div className="dish-list">
+                        <h4>Dishes:</h4>
+                        <ul>
+                          {Array.isArray(meal.dishMeals) && meal.dishMeals.length > 0 ? (
+                            meal.dishMeals.map((dishMeal) => (
+                              <li key={dishMeal.dishId}>
+                                {dishes.find((d) => d.id === dishMeal.dishId)?.dishName ||
+                                  "Unknown Dish"}
+                              </li>
+                            ))
+                          ) : (
+                            <li>No dishes</li>
+                          )}
+                        </ul>
+                      </div>
                       <div className="card-actions">
                         <motion.button
-                          onClick={() => fetchDishById(dish.id)}
+                          onClick={() => fetchMealById(meal.id)}
                           className="edit-button nutrient-specialist-button primary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1721,7 +1533,7 @@ const DishManagement = () => {
                           Edit
                         </motion.button>
                         <motion.button
-                          onClick={() => setSelectedViewDish(dish)}
+                          onClick={() => setSelectedViewMeal(meal)}
                           className="view-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1729,7 +1541,7 @@ const DishManagement = () => {
                           View
                         </motion.button>
                         <motion.button
-                          onClick={() => deleteDishHandler(dish.id)}
+                          onClick={() => deleteMealHandler(meal.id)}
                           className="delete-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1771,11 +1583,11 @@ const DishManagement = () => {
         </div>
 
         <AnimatePresence>
-          {selectedViewDish && (
-            <DishModal
-              dish={selectedViewDish}
-              onClose={() => setSelectedViewDish(null)}
-              foods={foods}
+          {selectedViewMeal && (
+            <MealModal
+              meal={selectedViewMeal}
+              onClose={() => setSelectedViewMeal(null)}
+              dishes={dishes}
             />
           )}
         </AnimatePresence>
@@ -1784,4 +1596,4 @@ const DishManagement = () => {
   );
 };
 
-export default DishManagement;
+export default MealManagement;
