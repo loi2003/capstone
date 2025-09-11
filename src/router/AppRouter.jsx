@@ -41,7 +41,7 @@ import FoodCategoryManagement from "../pages/nutrientspecialist/FoodCategoryMana
 import FoodManagement from "../pages/nutrientspecialist/FoodManagement";
 import AgeGroupManagement from "../pages/nutrientspecialist/AgeGroupManagement";
 import AllergyCategoryManagement from "../pages/nutrientspecialist/AllergyCategoryManagement";
-import AllergyManagement from "../pages/nutrientspecialist/AllergyManagement"; // Added import
+import AllergyManagement from "../pages/nutrientspecialist/AllergyManagement";
 import NutritionalGuidance from "../pages/NutritionalGuidance";
 import ProfilePage from "../pages/ProfilePage";
 import SupportPage from "../pages/SupportPage";
@@ -57,7 +57,7 @@ import RecommendedNutritionalNeeds from "../components/form/RecommendedNutrition
 import NotificationPage from "../pages/NotificationPage";
 import FoodWarning from "../components/form/FoodWarning";
 import DiseaseManagement from "../pages/nutrientspecialist/DiseaseManagement";
-
+import MealManagement from "../pages/nutrientspecialist/MealManagement";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -94,10 +94,10 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/food-management" element={<FoodManagement />} />
         <Route path="/nutrient-specialist/age-group-management" element={<AgeGroupManagement />} />
         <Route path="/nutrient-specialist/allergy-category-management" element={<AllergyCategoryManagement />} />
-        <Route path="/nutrient-specialist/allergy-management" element={<AllergyManagement />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/allergy-management" element={<AllergyManagement />} />
         <Route path="/nutrient-specialist/dish-management" element={<DishManagement />} />
-                  <Route path="/nutrient-specialist/disease-management" element={<DiseaseManagement />} />
-
+        <Route path="/nutrient-specialist/disease-management" element={<DiseaseManagement />} />
+        <Route path="/nutrient-specialist/meal-management" element={<MealManagement />} />
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
@@ -118,7 +118,7 @@ const AppRoutes = () => {
           path="/pregnancy-tracking/journal-section/edit-journal-form"
           element={<EditJournalEntryForm />}
         />
-        {/* <Route path="/system-meal-planner" element={<SystemMealPlanner />} /> */}
+         {/* <Route path="/system-meal-planner" element={<SystemMealPlanner />} /> */}
         {/* <Route path="/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} /> */}
         {/* <Route path="/nutritional-guidance-foodwarning" element={<FoodWarning />} /> */}
         <Route path="/blog-management" element={<BlogManagement />} />

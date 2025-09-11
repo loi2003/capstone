@@ -1,4 +1,3 @@
-
 .chatbox-container {
   position: fixed;
   bottom: 80px;
@@ -29,8 +28,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #e0e0e0;
-  background-image: url('https://picsum.photos/32/32?random=200');
+  background-color: #867dec;
+  background-image: url('/images/IMG_4602.PNG');
   background-size: cover;
   margin-right: 8px;
   flex-shrink: 0;
@@ -45,7 +44,7 @@
 .chatbox-info h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #1c1e21;
+  color: #e3e3e3;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -176,10 +175,17 @@
 .chatbox-time {
   display: block;
   font-size: 0.6rem;
-  color: #999;
   margin-top: 3px;
   text-align: right;
   opacity: 0.8;
+}
+
+.chatbox-message.system .chatbox-time {
+  color: #999;
+}
+
+.chatbox-message.user .chatbox-time {
+  color: #fff;
 }
 
 .chatbox-typing-indicator {
@@ -227,29 +233,23 @@
 .chatbox-input-form {
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 25px;
-  padding: 0.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: #f0f2f5;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
   width: 100%;
 }
 
 .chatbox-input {
   flex: 1;
-  padding: 0.7rem 3rem 0.7rem 1rem;
+  padding: 0.7rem 3rem 0.7rem 0;
   font-size: 0.95rem;
   border: none;
   background: transparent;
   color: #1c1e21;
   outline: none;
-  transition: all 0.2s ease;
 }
 
 .chatbox-input:focus {
-  background-color: #ffffff;
-  border-color: #0084ff;
-  box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.2);
+  background-color: transparent;
 }
 
 .chatbox-send-button {

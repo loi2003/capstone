@@ -7,7 +7,7 @@ import {
   createDisease,
   updateDisease,
   deleteDisease,
-} from "../../apis/nutriet-api"; // Assuming this is the correct import path
+} from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/DiseaseManagement.css";
 
@@ -114,9 +114,12 @@ const DiseaseManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const diseasesResponse = await getAllDiseases(token);
-      console.log("Fetched diseases response:", diseasesResponse);
-      const diseasesData = diseasesResponse?.data || [];
+      const apiResponse = await getAllDiseases(token);
+      console.log("Fetched diseases response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to fetch diseases");
+      }
+      const diseasesData = apiResponse.data || [];
       setDiseases(Array.isArray(diseasesData) ? diseasesData : []);
     } catch (err) {
       console.error("Fetch error details:", {
@@ -132,10 +135,35 @@ const DiseaseManagement = () => {
   };
 
   const fetchDiseaseById = async (id) => {
-    console.log("Fetching disease with ID:", id);
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      showNotification("Invalid Disease ID provided", "error");
+      return;
+    }
+    if (!token) {
+      showNotification("Authentication token missing", "error");
+      navigate("/signin", { replace: true });
+      return;
+    }
     setLoading(true);
     try {
-      const data = await getDiseaseById(id, token);
+      console.log("Fetching disease with ID:", id, "Token:", token.substring(0, 10) + "...");
+      const apiResponse = await getDiseaseById(id, token);
+      console.log("Raw API response:", apiResponse);
+
+      let data;
+      if (apiResponse && typeof apiResponse === "object" && "error" in apiResponse) {
+        if (apiResponse.error !== 0) {
+          throw new Error(apiResponse.message || "Disease not found");
+        }
+        data = apiResponse.data;
+      } else {
+        data = apiResponse;
+      }
+
+      if (!data || typeof data !== "object" || !data.id) {
+        throw new Error("Invalid or empty response data from API");
+      }
+
       console.log("Fetched disease data:", data);
       setSelectedDisease(data);
       setNewDisease({
@@ -143,13 +171,43 @@ const DiseaseManagement = () => {
         description: data.description || "",
         symptoms: data.symptoms || "",
         treatmentOptions: data.treatmentOptions || "",
-        pregnancyRelated: data.pregnancyRelated || false,
+        pregnancyRelated: !!data.pregnancyRelated,
         riskLevel: data.riskLevel || "",
         typeOfDesease: data.typeOfDesease || "",
       });
       setIsEditing(true);
     } catch (err) {
-      showNotification(`Failed to fetch disease details: ${err.message}`, "error");
+      console.error("Fetch disease by ID error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        id,
+        token: token ? "Token present" : "Token missing",
+        axiosError: err.isAxiosError ? {
+          code: err.code,
+          request: err.request,
+          response: err.response,
+        } : null,
+      });
+
+      let errorMessage = "Failed to fetch disease";
+      if (err.message.includes("not found")) {
+        errorMessage = "Disease not found.";
+      } else if (err.response?.status === 400) {
+        errorMessage = err.response?.data?.message || "Disease not found";
+      } else if (err.response?.status === 401) {
+        errorMessage = "Session expired. Please sign in again.";
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
+      } else if (err.response?.status === 404) {
+        errorMessage = "Disease not found.";
+      } else if (err.code === "ERR_NETWORK") {
+        errorMessage = "Network error: Unable to connect to the server.";
+      } else {
+        errorMessage = err.response?.data?.message || err.message || "Unknown error";
+      }
+
+      showNotification(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -163,7 +221,22 @@ const DiseaseManagement = () => {
     setLoading(true);
     try {
       console.log("Creating disease with data:", newDisease);
-      await createDisease(newDisease, token);
+      const apiResponse = await createDisease(
+        {
+          name: newDisease.name,
+          description: newDisease.description || "",
+          symptoms: newDisease.symptoms || "",
+          treatmentOptions: newDisease.treatmentOptions || "",
+          pregnancyRelated: !!newDisease.pregnancyRelated,
+          riskLevel: newDisease.riskLevel || "",
+          typeOfDesease: newDisease.typeOfDesease || "",
+        },
+        token
+      );
+      console.log("Create disease response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to create disease");
+      }
       setNewDisease({
         name: "",
         description: "",
@@ -196,16 +269,39 @@ const DiseaseManagement = () => {
       showNotification("Disease name is required", "error");
       return;
     }
+    if (!selectedDisease || !selectedDisease.id) {
+      showNotification("No disease selected for update", "error");
+      return;
+    }
+    if (!token) {
+      showNotification("Authentication token missing", "error");
+      navigate("/signin", { replace: true });
+      return;
+    }
+    if (newDisease.riskLevel && !["Low", "Medium", "High"].includes(newDisease.riskLevel)) {
+      showNotification("Risk level must be Low, Medium, or High", "error");
+      return;
+    }
     setLoading(true);
     try {
-      console.log("Updating disease with ID:", selectedDisease?.id);
-      await updateDisease(
+      console.log("Updating disease with ID:", selectedDisease.id, "Data:", newDisease);
+      const apiResponse = await updateDisease(
         {
-          diseaseId: selectedDisease?.id,
-          ...newDisease,
+          diseaseId: selectedDisease.id,
+          name: newDisease.name,
+          description: newDisease.description || "",
+          symptoms: newDisease.symptoms || "",
+          treatmentOptions: newDisease.treatmentOptions || "",
+          pregnancyRelated: !!newDisease.pregnancyRelated,
+          riskLevel: newDisease.riskLevel || "",
+          typeOfDesease: newDisease.typeOfDesease || "",
         },
         token
       );
+      console.log("Update disease response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to update disease");
+      }
       setNewDisease({
         name: "",
         description: "",
@@ -220,10 +316,27 @@ const DiseaseManagement = () => {
       await fetchData();
       showNotification("Disease updated successfully", "success");
     } catch (err) {
-      showNotification(
-        `Failed to update disease: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
+      console.error("Update disease error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        config: err.config,
+      });
+      let errorMessage = "Failed to update disease";
+      if (err.response?.status === 400) {
+        errorMessage = err.response?.data?.message || "Invalid data provided";
+      } else if (err.response?.status === 401) {
+        errorMessage = "Session expired. Please sign in again.";
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
+      } else if (err.response?.status === 404) {
+        errorMessage = "Disease not found.";
+      } else if (err.code === "ERR_NETWORK") {
+        errorMessage = "Network error: Unable to connect to the server.";
+      } else {
+        errorMessage = err.response?.data?.message || err.message || "Unknown error";
+      }
+      showNotification(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -234,7 +347,11 @@ const DiseaseManagement = () => {
     setLoading(true);
     try {
       console.log("Deleting disease with ID:", id);
-      await deleteDisease(id, token);
+      const apiResponse = await deleteDisease(id, token);
+      console.log("Delete disease response:", apiResponse);
+      if (apiResponse.error !== 0) {
+        throw new Error(apiResponse.message || "Failed to delete disease");
+      }
       setSelectedDisease(null);
       setIsEditing(false);
       setNewDisease({
@@ -249,7 +366,15 @@ const DiseaseManagement = () => {
       await fetchData();
       showNotification("Disease deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete disease: ${err.message}`, "error");
+      console.error("Delete disease error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(
+        `Failed to delete disease: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -297,6 +422,11 @@ const DiseaseManagement = () => {
     }
   };
 
+  const handleHomepageNavigation = () => {
+    setIsSidebarOpen(true);
+    navigate("/nutrient-specialist");
+  };
+
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth > 768);
@@ -338,14 +468,8 @@ const DiseaseManagement = () => {
   };
 
   const sidebarVariants = {
-    open: {
-      width: "280px",
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      width: "60px",
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
+    open: { width: "min(260px, 25vw)", transition: { duration: 0.3, ease: "easeOut" } },
+    closed: { width: "min(60px, 15vw)", transition: { duration: 0.3, ease: "easeIn" } },
   };
 
   const navItemVariants = {
@@ -353,6 +477,11 @@ const DiseaseManagement = () => {
     animate: {
       opacity: 1,
       x: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    hover: {
+      backgroundColor: "var(--nutrient-specialist-secondary)",
+      transform: "translateY(-2px)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
   };
@@ -381,11 +510,8 @@ const DiseaseManagement = () => {
         )}
       </AnimatePresence>
 
-      {/* Sidebar (unchanged) */}
       <motion.aside
-        className={`nutrient-specialist-sidebar ${
-          isSidebarOpen ? "open" : "closed"
-        }`}
+        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
@@ -412,8 +538,8 @@ const DiseaseManagement = () => {
               >
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
-                  fill="var(--orange-secondary)"
-                  stroke="var(--orange-primary)"
+                  fill="var(--nutrient-specialist-highlight)"
+                  stroke="var(--nutrient-specialist-primary)"
                   strokeWidth="1.5"
                 />
               </svg>
@@ -429,7 +555,7 @@ const DiseaseManagement = () => {
           >
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path
-                stroke="var(--orange-white)"
+                stroke="var(--nutrient-specialist-white)"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -454,6 +580,45 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <button
+                  onClick={handleHomepageNavigation}
+                  title="Homepage"
+                  aria-label="Navigate to homepage"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Home icon for homepage"
+                  >
+                    <path
+                      d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M9 22V12h6v10"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Homepage</span>}
+                </button>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/blog-management"
@@ -466,12 +631,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Edit icon for blog management"
+                    aria-label="Blog icon for blog management"
                   >
                     <path
-                      d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4L18.5 2.5z"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -483,6 +648,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   onClick={toggleFoodDropdown}
@@ -500,12 +666,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Apple icon for food management"
+                    aria-label="Food icon for food management"
                   >
                     <path
-                      d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4l2 6-6 2 6 2 2-6-2-6z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -523,7 +689,7 @@ const DiseaseManagement = () => {
                       }`}
                     >
                       <path
-                        stroke="var(--orange-white)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -546,6 +712,7 @@ const DiseaseManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-category-management"
@@ -558,12 +725,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Folder icon for food category management"
+                      aria-label="Category icon for food category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2xc11z"
-                        fill="var(--orange-secondary)"
-                        stroke="var(--orange-white)"
+                        d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
+                        fill="var(--nutrient-specialist-secondary)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -575,6 +742,7 @@ const DiseaseManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-management"
@@ -587,12 +755,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Apple icon for food management"
+                      aria-label="Food item icon for food management"
                     >
                       <path
-                        d="M12 20c-4 0-7-4-7-8s3-8 7-8c1 0 2 .5 3 1.5 1-.5 2-1 3-1 4 0 7 4 7 8s-3 8-7 8c-1 0-2-.5-3-1.5-1 .5-2 1-3 1zm0-15c-2 0-3 2-3 4m6 0c0-2-1-4-3-4"
-                        fill="var(--orange-accent)"
-                        stroke="var(--orange-white)"
+                        d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
+                        fill="var(--nutrient-specialist-accent)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -605,6 +773,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   onClick={toggleNutrientDropdown}
@@ -619,15 +788,15 @@ const DiseaseManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Nutrient icon for nutrient management"
                   >
                     <path
-                      d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
-                      stroke="var(--orange-white)"
-                      fill="var(--orange-accent)"
+                      d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -645,7 +814,7 @@ const DiseaseManagement = () => {
                       }`}
                     >
                       <path
-                        stroke="var(--orange-white)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -670,6 +839,7 @@ const DiseaseManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
@@ -682,12 +852,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Folder icon for nutrient category management"
+                      aria-label="Category icon for nutrient category management"
                     >
                       <path
-                        d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2v11z"
-                        fill="var(--orange-secondary)"
-                        stroke="var(--orange-white)"
+                        d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
+                        fill="var(--nutrient-specialist-secondary)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -699,6 +869,7 @@ const DiseaseManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
+                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
@@ -711,12 +882,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Sprout icon for nutrient management"
+                      aria-label="Nutrient item icon for nutrient management"
                     >
                       <path
-                        d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
-                        stroke="var(--orange-white)"
-                        fill="var(--orange-accent)"
+                        d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
+                        fill="var(--nutrient-specialist-accent)"
+                        stroke="var(--nutrient-specialist-white)"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -729,6 +900,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
@@ -744,9 +916,9 @@ const DiseaseManagement = () => {
                     aria-label="Nutrient in food icon"
                   >
                     <path
-                      d="M7 20h10M12 4v12M7 7c0-3 2-5 5-5s5 2 5 5c0 3-2 5-5 5s-5-2-5-5z"
-                      stroke="var(--orange-white)"
-                      fill="var(--orange-accent)"
+                      d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-3 2h6v2H9v-2zm0 4h6v2H9v-2z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -758,6 +930,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
@@ -774,8 +947,8 @@ const DiseaseManagement = () => {
                   >
                     <path
                       d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m14-10a4 4 0 010-8m-6 4a4 4 0 11-8 0 4 4 0 018 0zm10 13v-2a4 4 0 00-3-3.87"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -787,6 +960,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/dish-management"
@@ -803,8 +977,8 @@ const DiseaseManagement = () => {
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 8a4 4 0 014-4 4 4 0 014 4"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -820,6 +994,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
@@ -832,12 +1007,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for allergy category management"
+                    aria-label="Category icon for allergy category management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
+                      fill="var(--nutrient-specialist-secondary)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -849,6 +1024,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/allergy-management"
@@ -861,12 +1037,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for allergy management"
+                    aria-label="Allergy icon for allergy management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -877,7 +1053,8 @@ const DiseaseManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="sidebar-nav-item active"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/disease-management"
@@ -890,12 +1067,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Medical icon for disease management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      d="M19 7h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3H5a2 2 0 00-2 2v6a2 2 0 002 2h3v3a2 2 0 002 2h4a2 2 0 002-2v-3h3a2 2 0 002-2V9a2 2 0 00-2-2zm-7 10v3h-2v-3H7v-2h3V9h2v3h3v2h-3z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -907,9 +1084,10 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
-                  to="/nutrient-specialist/disease-management"
+                  to="/nutrient-specialist/warning-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Warning Management"
                 >
@@ -919,12 +1097,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Warning icon for warning management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--blue-accent)"
-                      stroke="var(--blue-white)"
+                      d="M12 2l10 20H2L12 2zm0 4v8m0 4v2"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -936,9 +1114,100 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
-                  to="/nutrient-specialist/disease-management"
+                  to="/nutrient-specialist/meal-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Meal Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Meal icon for meal management"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 4h8v2H8v-2zm0 4h8v2H8v-2z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Meal Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/energy-suggestion"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Energy Suggestion"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Energy icon for energy suggestion"
+                  >
+                    <path
+                      d="M12 2l-6 9h4v7l6-9h-4V2zm-2 9h4m-4-7v3m4 3v3"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Energy Suggestion</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-suggestion"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Nutrient Suggestion"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Nutrient suggestion icon for nutrient suggestion"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4h4m-4 2v2"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient Suggestion</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Messenger Management"
                 >
@@ -948,12 +1217,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for disease management"
+                    aria-label="Messenger icon for messenger management"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
-                      fill="var(--blue-accent)"
-                      stroke="var(--blue-white)"
+                      d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -965,6 +1234,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
@@ -974,15 +1244,15 @@ const DiseaseManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 22"
+                    viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Document icon for nutrient policy"
                   >
                     <path
                       d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -994,6 +1264,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
@@ -1010,8 +1281,8 @@ const DiseaseManagement = () => {
                   >
                     <path
                       d="M4 19.5A2.5 2.5 0 016.5 17H20m-16 0V5a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6.5"
-                      fill="var(--orange-accent)"
-                      stroke="var(--orange-white)"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1025,6 +1296,7 @@ const DiseaseManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
+            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1048,6 +1320,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
+                whileHover="hover"
               >
                 <Link
                   to="/profile"
@@ -1064,7 +1337,7 @@ const DiseaseManagement = () => {
                   >
                     <path
                       d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--orange-white)"
+                      fill="var(--nutrient-specialist-white)"
                     />
                   </svg>
                   {isSidebarOpen && (
@@ -1077,6 +1350,7 @@ const DiseaseManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
+                whileHover="hover"
               >
                 <button
                   className="logout-button"
@@ -1092,7 +1366,7 @@ const DiseaseManagement = () => {
                     aria-label="Logout icon"
                   >
                     <path
-                      stroke="var(--orange-logout)"
+                      stroke="var(--nutrient-specialist-logout)"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1104,7 +1378,11 @@ const DiseaseManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="sidebar-nav-item"
+              whileHover="hover"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -1118,7 +1396,7 @@ const DiseaseManagement = () => {
                   aria-label="Login icon"
                 >
                   <path
-                    stroke="var(--orange-white)"
+                    stroke="var(--nutrient-specialist-white)"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1214,13 +1492,12 @@ const DiseaseManagement = () => {
                   className="textarea-field"
                 />
               </div>
-              <div className="form-group">
-                <label htmlFor="disease-pregnancy">
-                  Pregnancy Related
-                </label>
+              <div className="form-group pregnancy-related-group">
+                <label htmlFor="disease-pregnancy">Pregnancy Related</label>
                 <input
                   id="disease-pregnancy"
                   type="checkbox"
+                  className="pregnancy-checkbox"
                   checked={newDisease.pregnancyRelated}
                   onChange={(e) =>
                     setNewDisease((prev) => ({
@@ -1228,14 +1505,31 @@ const DiseaseManagement = () => {
                       pregnancyRelated: e.target.checked,
                     }))
                   }
-                  className="checkbox-input"
                 />
+                <label htmlFor="disease-pregnancy" className="pregnancy-checkbox-label">
+                  <svg
+                    className="checkbox-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M20 6L9 17L4 12"
+                      stroke="var(--nutrient-specialist-primary)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>{newDisease.pregnancyRelated ? "Yes" : "No"}</span>
+                </label>
               </div>
               <div className="form-group">
                 <label htmlFor="disease-risk-level">Risk Level</label>
-                <input
+                <select
                   id="disease-risk-level"
-                  type="text"
                   value={newDisease.riskLevel}
                   onChange={(e) =>
                     setNewDisease((prev) => ({
@@ -1243,9 +1537,13 @@ const DiseaseManagement = () => {
                       riskLevel: e.target.value,
                     }))
                   }
-                  placeholder="Enter risk level (e.g., Low, Medium, High)"
                   className="input-field"
-                />
+                >
+                  <option value="">Select Risk Level</option>
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="disease-type">Type of Disease</label>
@@ -1265,7 +1563,9 @@ const DiseaseManagement = () => {
               </div>
               <div className="button-group">
                 <motion.button
-                  onClick={isEditing ? updateDiseaseHandler : createDiseaseHandler}
+                  onClick={
+                    isEditing ? updateDiseaseHandler : createDiseaseHandler
+                  }
                   disabled={loading}
                   className="submit-button nutrient-specialist-button primary"
                   whileHover={{
@@ -1302,7 +1602,8 @@ const DiseaseManagement = () => {
             <div className="section-header">
               <h2>Disease List</h2>
               <div className="nutrient-count">
-                {diseases.length} {diseases.length === 1 ? "disease" : "diseases"} found
+                {diseases.length}{" "}
+                {diseases.length === 1 ? "disease" : "diseases"} found
               </div>
             </div>
             {loading ? (
@@ -1353,7 +1654,10 @@ const DiseaseManagement = () => {
                     </div>
                     <div className="disease-description">
                       <h4>Treatment Options:</h4>
-                      <p>{disease.treatmentOptions || "No treatment options available"}</p>
+                      <p>
+                        {disease.treatmentOptions ||
+                          "No treatment options available"}
+                      </p>
                     </div>
                     <div className="disease-description">
                       <h4>Pregnancy Related:</h4>
@@ -1373,6 +1677,7 @@ const DiseaseManagement = () => {
                         className="edit-button nutrient-specialist-button primary"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={loading}
                       >
                         <span>Edit</span>
                       </motion.button>
@@ -1381,6 +1686,7 @@ const DiseaseManagement = () => {
                         className="delete-button nutrient-specialist-button secondary"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={loading}
                       >
                         <span>Delete</span>
                       </motion.button>

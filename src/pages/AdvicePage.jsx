@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import MainLayout from '../layouts/MainLayout';
 import { getCurrentUser } from '../apis/authentication-api';
+import { getAIChatResponse } from '../apis/aiadvise-api';
 import '../styles/AdvicePage.css';
 
 const AdvicePage = () => {
@@ -12,16 +13,23 @@ const AdvicePage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [showStaffTypePrompt, setShowStaffTypePrompt] = useState(false); // State for staff type prompt
-  const [selectedStaffType, setSelectedStaffType] = useState(null); // State for selected staff type
+  const [showStaffTypePrompt, setShowStaffTypePrompt] = useState(false);
+  const [selectedStaffType, setSelectedStaffType] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
-  const [aiComparison, setAiComparison] = useState(null); // State for AI comparison response
+  const [aiComparison, setAiComparison] = useState(null);
+  const [selectedChatId, setSelectedChatId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const chatsPerPage = 3;
   const chatContainerRef = useRef(null);
-  const historyContainerRef = useRef(null);
-  const staffPromptRef = useRef(null); // Ref for focus trapping
+  const staffPromptRef = useRef(null);
+  const inputFormRef = useRef(null);
 
-  // Check authentication status
+  // Check authentication status and load chat history
   useEffect(() => {
+    // Data retrieval: Loading chat history from localStorage
+    const storedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+    setChatHistory(storedHistory);
+
     const checkAuthStatus = async () => {
       try {
         const token = localStorage.getItem('token');
@@ -45,26 +53,26 @@ const AdvicePage = () => {
     checkAuthStatus();
   }, []);
 
-  // Auto-scroll to bottom of chat and history
+  // Auto-scroll to the latest message in chat container
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    if (chatContainerRef.current && messages.length > 0) {
+      const latestMessage = chatContainerRef.current.querySelector(`.advice-message:nth-child(${messages.length})`);
+      if (latestMessage) {
+        latestMessage.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
     }
-    if (historyContainerRef.current) {
-      historyContainerRef.current.scrollTop = historyContainerRef.current.scrollHeight;
-    }
-  }, [messages, chatHistory]);
+  }, [messages]);
 
   // Disable scrolling and trap focus when staff type prompt is shown
   useEffect(() => {
     if (showStaffTypePrompt) {
-      document.body.style.overflow = 'hidden'; // Disable page scrolling
-      staffPromptRef.current?.focus(); // Set initial focus to prompt
+      document.body.style.overflow = 'hidden';
+      staffPromptRef.current?.focus();
     } else {
-      document.body.style.overflow = ''; // Restore scrolling
+      document.body.style.overflow = '';
     }
     return () => {
-      document.body.style.overflow = ''; // Cleanup on unmount
+      document.body.style.overflow = '';
     };
   }, [showStaffTypePrompt]);
 
@@ -96,80 +104,212 @@ const AdvicePage = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
-    const userMessage = { text: input, sender: 'user', timestamp: new Date() };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-    setAiComparison(null); // Clear comparison when sending a new message
 
-    if (messages.length === 0 && activeMode === 'ai') {
-      setChatHistory((prev) => [
-        ...prev,
-        { id: Date.now(), question: input, messages: [...messages, userMessage] },
-      ]);
+    let currentChatId = selectedChatId;
+    let storedHistory = JSON.parse(localStorage.getItem('chatHistory') || '[]');
+
+    // If no chat is selected, create a new chat
+    if (currentChatId === null) {
+      currentChatId = Date.now();
+      const newChat = { id: currentChatId, question: input, messages: [] };
+      storedHistory.push(newChat);
+      // Data storage: Saving new chat to localStorage
+      localStorage.setItem('chatHistory', JSON.stringify(storedHistory));
+      setChatHistory(storedHistory);
+      setSelectedChatId(currentChatId);
+      // Adjust current page to show the new chat
+      setCurrentPage(Math.ceil(storedHistory.length / chatsPerPage));
     }
 
+    const userMessage = {
+      id: messages.length + 1,
+      text: input,
+      sender: 'user',
+      time: new Date().toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    };
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInput('');
+    setIsLoading(true);
+    setAiComparison(null);
+
+    // Update chat history in state and localStorage
+    const updatedHistory = storedHistory.map((chat) =>
+      chat.id === currentChatId
+        ? { ...chat, question: chat.question || input, messages: updatedMessages }
+        : chat
+    );
+    setChatHistory(updatedHistory);
+    // Data storage: Updating chat history in localStorage
+    localStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
+
     if (activeMode === 'ai') {
-      setTimeout(() => {
-        const responseText = `AI Response: Here's advice for your question: "${input}". This is a simulated response for demonstration.`;
-        const newMessage = { text: responseText, sender: 'ai', timestamp: new Date() };
-        setMessages((prev) => [...prev, newMessage]);
-        setChatHistory((prev) =>
-          prev.map((chat) =>
-            chat.id === (prev.length ? prev[prev.length - 1].id : null)
-              ? { ...chat, messages: [...chat.messages, newMessage] }
-              : chat
-          )
+      try {
+        // Call the AI chat API
+        const response = await getAIChatResponse(input);
+        const aiMessage = {
+          id: messages.length + 2,
+          text: response.reply || 'Sorry, I could not process your request.',
+          sender: 'ai',
+          time: new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+        const finalMessages = [...updatedMessages, aiMessage];
+        setMessages(finalMessages);
+
+        // Update chat history
+        const newHistory = updatedHistory.map((chat) =>
+          chat.id === currentChatId
+            ? { ...chat, messages: finalMessages }
+            : chat
         );
-        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+        setChatHistory(newHistory);
+        // Data storage: Updating chat history with AI response in localStorage
+        localStorage.setItem('chatHistory', JSON.stringify(newHistory));
         setIsLoading(false);
-      }, 1000);
+      } catch (error) {
+        console.error('Error sending message:', error.message);
+        const errorMessage = {
+          id: messages.length + 2,
+          text: 'Error: Could not get a response from the server.',
+          sender: 'ai',
+          time: new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        };
+        const finalMessages = [...updatedMessages, errorMessage];
+        setMessages(finalMessages);
+
+        // Update chat history with error
+        const newHistory = updatedHistory.map((chat) =>
+          chat.id === currentChatId
+            ? { ...chat, messages: finalMessages }
+            : chat
+        );
+        setChatHistory(newHistory);
+        // Data storage: Updating chat history with error message in localStorage
+        localStorage.setItem('chatHistory', JSON.stringify(newHistory));
+        setIsLoading(false);
+      }
     } else {
       try {
         setTimeout(() => {
           const staffLabel = selectedStaffType === 'nutrition' ? 'Nutrition Staff' : 'Health Staff';
           const responseText = `${staffLabel} Response: Your question has been submitted to our team. Expect a reply soon!`;
-          const newMessage = { text: responseText, sender: 'staff', timestamp: new Date(), staffType: selectedStaffType };
-          setMessages((prev) => [...prev, newMessage]);
-          setChatHistory((prev) =>
-            prev.map((chat) =>
-              chat.id === (prev.length ? prev[prev.length - 1].id : null)
-                ? { ...chat, messages: [...chat.messages, newMessage] }
-                : chat
-            )
+          const staffMessage = {
+            id: messages.length + 2,
+            text: responseText,
+            sender: 'staff',
+            time: new Date().toLocaleString('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            staffType: selectedStaffType,
+          };
+          const finalMessages = [...updatedMessages, staffMessage];
+          setMessages(finalMessages);
+
+          // Update chat history
+          const newHistory = updatedHistory.map((chat) =>
+            chat.id === currentChatId
+              ? { ...chat, messages: finalMessages }
+              : chat
           );
-          localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+          setChatHistory(newHistory);
+          // Data storage: Updating chat history with staff response in localStorage
+          localStorage.setItem('chatHistory', JSON.stringify(newHistory));
           setIsLoading(false);
         }, 1000);
       } catch (error) {
         console.error('Error submitting to staff:', error);
-        setMessages((prev) => [
-          ...prev,
-          { text: 'Error: Could not submit your question. Please try again.', sender: 'staff', timestamp: new Date(), staffType: selectedStaffType },
-        ]);
+        const errorMessage = {
+          id: messages.length + 2,
+          text: 'Error: Could not submit your question. Please try again.',
+          sender: 'staff',
+          time: new Date().toLocaleString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          staffType: selectedStaffType,
+        };
+        const finalMessages = [...updatedMessages, errorMessage];
+        setMessages(finalMessages);
+
+        // Update chat history with error
+        const newHistory = updatedHistory.map((chat) =>
+          chat.id === currentChatId
+            ? { ...chat, messages: finalMessages }
+            : chat
+        );
+        setChatHistory(newHistory);
+        // Data storage: Updating chat history with error message in localStorage
+        localStorage.setItem('chatHistory', JSON.stringify(newHistory));
         setIsLoading(false);
       }
     }
   };
 
   // Compare to AI Chat
-  const compareToAiChat = () => {
+  const compareToAiChat = async () => {
     const lastUserMessage = messages.filter((msg) => msg.sender === 'user').slice(-1)[0];
     const lastStaffResponse = messages.filter((msg) => msg.sender === 'staff').slice(-1)[0];
     if (!lastUserMessage) return;
 
     setIsLoading(true);
-    setTimeout(() => {
-      const aiResponseText = `AI Comparison Response: Here's how AI would answer "${lastUserMessage.text}": This is a simulated AI response for comparison.`;
+    try {
+      const response = await getAIChatResponse(lastUserMessage.text);
       setAiComparison({
         userMessage: lastUserMessage.text,
-        aiResponse: aiResponseText,
+        aiResponse: response.reply || 'Sorry, I could not process your request.',
         staffResponse: lastStaffResponse ? lastStaffResponse.text : 'No staff response yet.',
         staffType: lastStaffResponse ? lastStaffResponse.staffType : selectedStaffType,
-        timestamp: new Date(),
+        time: new Date().toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
       });
       setIsLoading(false);
-    }, 1000);
+    } catch (error) {
+      console.error('Error comparing to AI:', error.message);
+      setAiComparison({
+        userMessage: lastUserMessage.text,
+        aiResponse: 'Error: Could not get AI response.',
+        staffResponse: lastStaffResponse ? lastStaffResponse.text : 'No staff response yet.',
+        staffType: lastStaffResponse ? lastStaffResponse.staffType : selectedStaffType,
+        time: new Date().toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      });
+      setIsLoading(false);
+    }
   };
 
   // Switch between AI and Staff modes
@@ -179,16 +319,18 @@ const AdvicePage = () => {
         setShowLoginPrompt(true);
         return;
       }
-      setShowStaffTypePrompt(true); // Show staff type prompt
+      setShowStaffTypePrompt(true);
       return;
     }
     setActiveMode(mode);
     setMessages([]);
     setInput('');
-    setAiComparison(null); // Clear comparison when switching modes
+    setAiComparison(null);
     setShowLoginPrompt(false);
     setShowStaffTypePrompt(false);
     setSelectedStaffType(null);
+    setSelectedChatId(null);
+    setCurrentPage(1); // Reset to first page when switching modes
   };
 
   // Handle staff type selection
@@ -200,17 +342,30 @@ const AdvicePage = () => {
     setAiComparison(null);
     setShowStaffTypePrompt(false);
     setShowLoginPrompt(false);
+    setSelectedChatId(null);
+    setCurrentPage(1); // Reset to first page
   };
 
   // Start new chat
   const startNewChat = () => {
+    const newChat = { id: Date.now(), question: '', messages: [] };
     setMessages([]);
     setInput('');
-    setAiComparison(null); // Clear comparison when starting new chat
-    setSelectedStaffType(null); // Clear staff type
-    const newChat = { id: Date.now(), question: '', messages: [] };
-    setChatHistory((prev) => [...prev, newChat]);
-    localStorage.setItem('chatHistory', JSON.stringify([...chatHistory, newChat]));
+    setAiComparison(null);
+    setSelectedStaffType(null);
+    setSelectedChatId(newChat.id);
+    setChatHistory((prev) => {
+      const newHistory = [...prev, newChat];
+      // Data storage: Saving new chat to localStorage
+      localStorage.setItem('chatHistory', JSON.stringify(newHistory));
+      // Set page to show the new chat
+      setCurrentPage(Math.ceil(newHistory.length / chatsPerPage));
+      return newHistory;
+    });
+    // Scroll page to bottom (input form)
+    setTimeout(() => {
+      inputFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, 0);
   };
 
   // Load chat history
@@ -218,10 +373,76 @@ const AdvicePage = () => {
     const chat = chatHistory.find((ch) => ch.id === chatId);
     if (chat) {
       setMessages(chat.messages || []);
-      setAiComparison(null); // Clear comparison when loading history
-      // Set staff type based on the last staff message in the chat
+      setSelectedChatId(chatId);
+      setAiComparison(null);
       const lastStaffMessage = chat.messages.filter((msg) => msg.sender === 'staff').slice(-1)[0];
       setSelectedStaffType(lastStaffMessage ? lastStaffMessage.staffType : null);
+      setActiveMode(lastStaffMessage ? 'staff' : 'ai');
+      // Scroll chat container to bottom smoothly
+      setTimeout(() => {
+        if (chatContainerRef.current && chat.messages.length > 0) {
+          chatContainerRef.current.scrollTo({
+            top: chatContainerRef.current.scrollHeight,
+            behavior: 'smooth',
+          });
+        }
+      }, 100);
+    }
+  };
+
+  // Delete chat
+  const deleteChat = (chatId) => {
+    // Save current scroll position of the history container
+    const historyContainer = document.querySelector('.advice-history-container');
+    const currentScrollTop = historyContainer?.scrollTop || 0;
+
+    // Filter out the chat to be deleted
+    const updatedHistory = chatHistory.filter((chat) => chat.id !== chatId);
+
+    // Update state and localStorage
+    setChatHistory(updatedHistory);
+    localStorage.setItem('chatHistory', JSON.stringify(updatedHistory));
+
+    // If the deleted chat is currently selected, clear the chat container
+    if (selectedChatId === chatId) {
+      setMessages([]);
+      setSelectedChatId(null);
+      setAiComparison(null);
+      setSelectedStaffType(null);
+      setActiveMode('ai');
+    }
+
+    // Adjust pagination if necessary
+    const newTotalPages = Math.ceil(updatedHistory.length / chatsPerPage);
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(newTotalPages);
+    } else if (updatedHistory.length === 0) {
+      setCurrentPage(1);
+    }
+
+    // Restore scroll position after animation completes
+    setTimeout(() => {
+      if (historyContainer) {
+        historyContainer.scrollTop = currentScrollTop;
+      }
+    }, 300); // Match the exit animation duration (0.3s)
+  };
+
+  // Pagination controls
+  const totalPages = Math.ceil(chatHistory.length / chatsPerPage);
+  const startIndex = (currentPage - 1) * chatsPerPage;
+  const endIndex = startIndex + chatsPerPage;
+  const currentChats = chatHistory.slice(startIndex, endIndex);
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
   };
 
@@ -240,38 +461,124 @@ const AdvicePage = () => {
             >
               New Chat
             </motion.button>
-            <div className="advice-history-container" ref={historyContainerRef}>
+            <div className="advice-history-container">
               {chatHistory.length === 0 ? (
                 <p className="advice-empty-message">No history yet.</p>
               ) : (
-                chatHistory.map((chat) => (
-                  <motion.div
-                    key={chat.id}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="advice-history-item"
-                    onClick={() => loadChatHistory(chat.id)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <span className="advice-history-sender">
-                      {chat.question || 'New Chat'}:
-                    </span>
-                    <span className="advice-history-text">
-                      {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text.slice(0, 50) + '...' : 'No messages yet'}
-                    </span>
-                    <span className="advice-history-timestamp">
-                      {chat.messages.length > 0
-                        ? new Date(chat.messages[chat.messages.length - 1].timestamp).toLocaleTimeString([], {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })
-                        : new Date(chat.id).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </motion.div>
-                ))
+                <AnimatePresence mode="wait">
+                  {currentChats.map((chat) => (
+                    <motion.div
+                      key={chat.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10, transition: { duration: 0.3 } }}
+                      transition={{ duration: 0.3 }}
+                      className={`advice-history-item ${selectedChatId === chat.id ? 'selected' : ''}`}
+                    >
+                      <div className="advice-history-content" onClick={() => loadChatHistory(chat.id)}>
+                        <span className="advice-history-sender">
+                          {chat.question || 'New Chat'}:
+                        </span>
+                        <span className="advice-history-text">
+                          {chat.messages.length > 0 ? chat.messages[chat.messages.length - 1].text.slice(0, 50) + '...' : 'No messages yet'}
+                        </span>
+                        <span className="advice-history-timestamp">
+                          {chat.messages.length > 0
+                            ? chat.messages[chat.messages.length - 1].time
+                            : new Date(chat.id).toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                        </span>
+                      </div>
+                      <motion.button
+                        className="advice-delete-button"
+                        onClick={() => deleteChat(chat.id)}
+                        whileHover={{ scale: 1.2, rotate: 15 }}
+                        whileTap={{ scale: 0.9 }}
+                        aria-label={`Delete chat: ${chat.question || 'New Chat'}`}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          className="advice-delete-icon"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4M4 7h16"
+                          />
+                        </svg>
+                      </motion.button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
               )}
             </div>
+            {totalPages > 1 && (
+              <div className="advice-pagination">
+                <motion.button
+                  className="advice-pagination-button advice-pagination-previous"
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  whileHover={{ scale: 1.1, boxShadow: '0 0 8px rgba(255, 77, 79, 0.5)' }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  aria-label="Go to previous page"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="advice-pagination-icon"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Prev
+                </motion.button>
+                <span className="advice-pagination-info">
+                  {currentPage}/{totalPages}
+                </span>
+                <motion.button
+                  className="advice-pagination-button advice-pagination-next"
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  whileHover={{ scale: 1.1, boxShadow: '0 0 8px rgba(255, 77, 79, 0.5)' }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                  aria-label="Go to next page"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="advice-pagination-icon"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </motion.button>
+              </div>
+            )}
           </div>
 
           {/* Main Content */}
@@ -284,7 +591,13 @@ const AdvicePage = () => {
               className="advice-header"
             >
               <h1 className="advice-title">
-                {activeMode === 'ai' ? 'AI Advice Chat' : `${selectedStaffType === 'nutrition' ? 'Nutrition' : 'Health'} Staff Advice Chat`}
+                {activeMode === 'ai' ? (
+                  <>
+                    <span className="advice-avatar" /> AI Advice Chat
+                  </>
+                ) : (
+                  `${selectedStaffType === 'nutrition' ? 'Nutrition' : 'Health'} Staff Advice Chat`
+                )}
               </h1>
               <p className="advice-description">
                 {activeMode === 'ai'
@@ -347,13 +660,15 @@ const AdvicePage = () => {
                   </Link>{' '}
                   to access Staff Advice.
                 </p>
-                <button
+                <motion.button
                   className="advice-popup-close"
                   onClick={() => setShowLoginPrompt(false)}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   aria-label="Close login prompt"
                 >
                   Close
-                </button>
+                </motion.button>
               </motion.div>
             )}
 
@@ -410,55 +725,52 @@ const AdvicePage = () => {
                   Start chatting by typing your question below!
                 </p>
               )}
-              {messages.map((msg, index) => (
+              {messages.map((msg) => (
                 <motion.div
-                  key={index}
+                  key={msg.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={`advice-message ${
-                    msg.sender === 'user' ? 'message-user' : 'message-bot'
-                  }`}
+                  className={`advice-message ${msg.sender === 'user' ? 'message-user' : msg.sender === 'ai' ? 'message-ai' : 'message-staff'}`}
                 >
+                  {msg.sender === 'ai' && <span className="advice-avatar" />}
                   <div
                     className={`advice-message-content ${
-                      msg.sender === 'user'
-                        ? 'bg-user'
-                        : msg.sender === 'ai'
-                        ? 'bg-ai'
-                        : 'bg-staff'
+                      msg.sender === 'user' ? 'bg-user' : msg.sender === 'ai' ? 'bg-ai' : 'bg-staff'
                     }`}
                   >
                     <p>{msg.text}</p>
-                    <span className="advice-message-timestamp">
-                      {new Date(msg.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                    <span className="advice-message-timestamp">{msg.time}</span>
                   </div>
                 </motion.div>
               ))}
               {isLoading && (
-                <div className="advice-message message-bot">
-                  <div className="advice-message-content bg-ai">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={`advice-message ${activeMode === 'ai' ? 'message-ai' : 'message-staff'}`}
+                >
+                  {activeMode === 'ai' && <span className="advice-avatar" />}
+                  <div className="advice-message-content typing">
                     <div className="advice-typing">
                       <span className="dot"></span>
                       <span className="dot"></span>
                       <span className="dot"></span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* Input Form */}
             {(activeMode === 'ai' || (activeMode === 'staff' && isLoggedIn)) && (
-              <form onSubmit={handleSendMessage} className="advice-input-form">
+              <form ref={inputFormRef} onSubmit={handleSendMessage} className="advice-input-form">
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(e)}
                   placeholder="Ask a question..."
                   className="advice-input"
                   required
@@ -481,7 +793,7 @@ const AdvicePage = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M5 13l4 4L19 7"
+                      d="M22 2L11 13 M22 2L15 22L11 13L2 9L22 2Z"
                     />
                   </svg>
                 </motion.button>
@@ -539,23 +851,13 @@ const AdvicePage = () => {
                       <td>
                         <div className="advice-message-content bg-staff">
                           <p>{aiComparison.staffResponse}</p>
-                          <span className="advice-message-timestamp">
-                            {new Date(aiComparison.timestamp).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
+                          <span className="advice-message-timestamp">{aiComparison.time}</span>
                         </div>
                       </td>
                       <td>
                         <div className="advice-message-content bg-ai">
                           <p>{aiComparison.aiResponse}</p>
-                          <span className="advice-message-timestamp">
-                            {new Date(aiComparison.timestamp).toLocaleTimeString([], {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </span>
+                          <span className="advice-message-timestamp">{aiComparison.time}</span>
                         </div>
                       </td>
                     </tr>

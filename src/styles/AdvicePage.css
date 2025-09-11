@@ -38,6 +38,7 @@
   top: 1.5rem;
   height: calc(100vh - 100px);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .advice-history-title {
@@ -69,6 +70,8 @@
 .advice-history-container {
   max-height: 80vh;
   overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 .advice-history-item {
@@ -79,15 +82,32 @@
   background: #f9f9f9;
   border-radius: 8px;
   transition: background 0.2s ease;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .advice-history-item:hover {
   background: #e6f0ff;
 }
 
+.advice-history-item.selected {
+  background: #e0e0e0;
+}
+
+.advice-history-content {
+  flex: 1;
+  cursor: pointer;
+  padding-right: 2rem; /* Prevent overlap with delete button */
+}
+
 .advice-history-sender {
   font-weight: 500;
   color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 40px);
 }
 
 .advice-history-text {
@@ -95,12 +115,132 @@
   color: #333333;
   margin-top: 0.3rem;
   word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-width: calc(100% - 40px);
 }
 
 .advice-history-timestamp {
   font-size: 0.75rem;
   color: #999999;
   margin-top: 0.3rem;
+  white-space: nowrap;
+}
+
+/* Delete Button Styling */
+.advice-delete-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: linear-gradient(135deg, #ff4d4f, #ff8c00); /* Fiery red-orange gradient */
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+  opacity: 0.7; /* Slightly transparent by default */
+}
+
+.advice-history-item:hover .advice-delete-button,
+.advice-delete-button:focus {
+  opacity: 1; /* Fully visible on hover or focus */
+  box-shadow: 0 0 8px rgba(255, 77, 79, 0.5); /* Fiery glow effect */
+}
+
+.advice-delete-button:hover {
+  background: linear-gradient(135deg, #cc0000, #e67e00); /* Darker gradient on hover */
+}
+
+.advice-delete-button:focus {
+  outline: 2px solid #ff4d4f; /* Accessible focus outline */
+  outline-offset: 2px;
+}
+
+.advice-delete-icon {
+  width: 16px;
+  height: 16px;
+  color: #ffffff; /* White icon for contrast against fiery background */
+  transition: transform 0.2s ease;
+}
+
+.advice-delete-button:hover .advice-delete-icon {
+  transform: scale(1.1); /* Slight scale-up for emphasis */
+}
+
+/* Pagination Styling */
+.advice-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  padding: 0.4rem;
+  gap: 0.5rem; /* Reduced gap for compact layout */
+}
+
+.advice-pagination-button {
+  background: linear-gradient(135deg, #ff4d4f, #ff8c00); /* Fiery gradient */
+  color: #ffffff;
+  padding: 0.4rem 0.8rem; /* Smaller padding */
+  border: none;
+  border-radius: 10px; /* Slightly smaller radius */
+  font-size: 0.8rem; /* Smaller font */
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem; /* Smaller gap between icon and text */
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.advice-pagination-button:hover {
+  background: linear-gradient(135deg, #cc0000, #e67e00); /* Darker gradient on hover */
+  box-shadow: 0 0 8px rgba(255, 77, 79, 0.5); /* Fiery glow */
+}
+
+.advice-pagination-button:focus {
+  outline: 2px solid #ff4d4f;
+  outline-offset: 2px;
+}
+
+.advice-pagination-button:disabled {
+  background: #d1d5db;
+  color: #666666;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.advice-pagination-icon {
+  width: 14px; /* Smaller icon */
+  height: 14px;
+  color: #ffffff;
+  transition: transform 0.2s ease;
+}
+
+.advice-pagination-button:hover .advice-pagination-icon {
+  transform: scale(1.1); /* Slight scale-up for emphasis */
+}
+
+.advice-pagination-button:disabled .advice-pagination-icon {
+  color: #666666;
+}
+
+.advice-pagination-info {
+  font-size: 0.8rem; /* Smaller font */
+  font-weight: 500;
+  color: #1a1a1a;
+  background: #ffffff;
+  padding: 0.3rem 0.6rem; /* Smaller padding */
+  border-radius: 6px; /* Smaller radius */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 /* Main Content Styling */
@@ -124,12 +264,26 @@
   font-weight: 600;
   color: #1a1a1a;
   margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .advice-description {
   font-size: 1.1rem;
   color: #666666;
   line-height: 1.6;
+}
+
+.advice-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-image: url('/images/IMG_4602.PNG');
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
 }
 
 /* Mode Navigation Styling */
@@ -383,6 +537,7 @@
 /* Message Styling */
 .advice-message {
   display: flex;
+  align-items: flex-start;
   margin-bottom: 1rem;
 }
 
@@ -390,8 +545,20 @@
   justify-content: flex-end;
 }
 
-.message-bot {
+.message-ai,
+.message-staff {
   justify-content: flex-start;
+}
+
+.advice-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-image: url('/images/IMG_4602.PNG');
+  background-size: cover;
+  background-position: center;
+  margin-right: 0.5rem;
+  flex-shrink: 0;
 }
 
 .advice-message-content {
@@ -403,22 +570,27 @@
   position: relative;
 }
 
-.bg-user {
+.advice-message-content.bg-user {
   background: #0084ff;
   color: #ffffff;
   border-bottom-right-radius: 4px;
 }
 
-.bg-ai {
+.advice-message-content.bg-ai {
   background: #e6f0ff;
   color: #1a1a1a;
   border-bottom-left-radius: 4px;
 }
 
-.bg-staff {
+.advice-message-content.bg-staff {
   background: #d1fae5;
   color: #1a1a1a;
   border-bottom-left-radius: 4px;
+}
+
+.advice-message-content.typing {
+  background: transparent;
+  padding: 0;
 }
 
 .advice-message-timestamp {
@@ -429,6 +601,10 @@
   opacity: 0.8;
 }
 
+.advice-message-content.bg-user .advice-message-timestamp {
+  color: #ffffff;
+}
+
 /* Typing Animation */
 .advice-typing {
   display: flex;
@@ -436,7 +612,7 @@
   padding: 0.6rem 0;
 }
 
-.dot {
+.advice-typing .dot {
   width: 7px;
   height: 7px;
   background: #666666;
@@ -444,17 +620,21 @@
   animation: typing 1.2s infinite;
 }
 
-.dot:nth-child(2) {
+.advice-typing .dot:nth-child(2) {
   animation-delay: 0.2s;
 }
 
-.dot:nth-child(3) {
+.advice-typing .dot:nth-child(3) {
   animation-delay: 0.4s;
 }
 
 @keyframes typing {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 /* Input Form Styling */
@@ -548,6 +728,7 @@
 
   .advice-history-container {
     max-height: 200px;
+    overflow-x: hidden;
   }
 
   .advice-main-content {
@@ -622,6 +803,42 @@
     padding: 0.7rem;
     font-size: 0.95rem;
   }
+
+  .advice-delete-button {
+    top: 0.4rem;
+    right: 0.4rem;
+    width: 24px;
+    height: 24px;
+    opacity: 1; /* Always visible on smaller screens for touch */
+  }
+
+  .advice-delete-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .advice-history-content {
+    padding-right: 1.8rem;
+  }
+
+  .advice-pagination-button {
+    padding: 0.3rem 0.6rem; /* Smaller padding */
+    font-size: 0.75rem; /* Smaller font */
+  }
+
+  .advice-pagination-icon {
+    width: 12px; /* Smaller icon */
+    height: 12px;
+  }
+
+  .advice-pagination-info {
+    font-size: 0.75rem; /* Smaller font */
+    padding: 0.25rem 0.5rem; /* Smaller padding */
+  }
+
+  .advice-pagination {
+    gap: 0.4rem; /* Tighter gap */
+  }
 }
 
 @media (max-width: 480px) {
@@ -686,5 +903,40 @@
   .advice-staff-type-cancel {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
+  }
+
+  .advice-delete-button {
+    top: 0.3rem;
+    right: 0.3rem;
+    width: 22px;
+    height: 22px;
+  }
+
+  .advice-delete-icon {
+    width: 12px;
+    height: 12px;
+  }
+
+  .advice-history-content {
+    padding-right: 1.5rem;
+  }
+
+  .advice-pagination-button {
+    padding: 0.25rem 0.5rem; /* Even smaller padding */
+    font-size: 0.7rem; /* Smaller font */
+  }
+
+  .advice-pagination-icon {
+    width: 10px; /* Smaller icon */
+    height: 10px;
+  }
+
+  .advice-pagination-info {
+    font-size: 0.7rem; /* Smaller font */
+    padding: 0.2rem 0.4rem; /* Smaller padding */
+  }
+
+  .advice-pagination {
+    gap: 0.3rem; /* Tighter gap */
   }
 }
