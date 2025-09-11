@@ -964,6 +964,83 @@ export const deleteDish = async (dishId) => {
     throw error;
   }
 };
+// Add these to the existing nutriet-api.js file
+
+export const updateFoodInDish = async (foodData) => {
+  try {
+    if (!foodData.dishId || foodData.dishId === "") {
+      throw new Error("Dish ID is null or empty");
+    }
+    if (!foodData.foodId || foodData.foodId === "") {
+      throw new Error("Food ID is null or empty");
+    }
+    if (!foodData.unit || foodData.unit === "") {
+      throw new Error("Unit is required");
+    }
+    if (foodData.amount <= 0) {
+      throw new Error("Amount must be greater than 0");
+    }
+
+    const payload = {
+      foodId: foodData.foodId,
+      dishId: foodData.dishId,
+      unit: foodData.unit === "grams" ? "g" : foodData.unit,
+      amount: parseFloat(foodData.amount),
+    };
+
+    console.log("Sending update food in dish request with payload:", payload);
+
+    const response = await apiClient.put(`/api/Dish/update-food-in-dish`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Update food in dish response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating food in dish:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const deleteFoodInDish = async (dishId, foodId) => {
+  try {
+    if (!dishId || dishId === "") {
+      throw new Error("Dish ID is null or empty");
+    }
+    if (!foodId || foodId === "") {
+      throw new Error("Food ID is null or empty");
+    }
+
+    console.log("Sending delete food in dish request for dishId:", dishId, "foodId:", foodId);
+
+    const response = await apiClient.delete(`/api/Dish/delete-food-in-dish-by-food-id`, {
+      params: {
+        dishId,
+        foodId,
+      },
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Delete food in dish response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting food in dish:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
 
 export const getAllAllergyCategories = async (token) => {
   try {
@@ -1379,6 +1456,164 @@ export const deleteDisease = async (diseaseId, token) => {
     return response.data; // Expected response: { error: 0, message: null, data: null }
   } catch (error) {
     console.error("Error deleting disease:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+// Meal Management APIs
+export const createMeal = async (mealData) => {
+  try {
+    if (!mealData.mealType || mealData.mealType.trim() === "") {
+      throw new Error("Meal type is required");
+    }
+    if (!mealData.dishMeals || mealData.dishMeals.length === 0) {
+      throw new Error("At least one dish is required");
+    }
+    if (mealData.dishMeals.some((dish) => !dish.dishId || dish.dishId === "")) {
+      throw new Error("All dishes must have a valid dishId");
+    }
+
+    const payload = {
+      mealType: mealData.mealType,
+      dishMeals: mealData.dishMeals.map((dish) => ({
+        dishId: dish.dishId,
+      })),
+    };
+
+    console.log("Sending create meal request with payload:", payload);
+
+    const response = await apiClient.post(`/api/meal/add-meal`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Create meal response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating meal:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const updateMeal = async (mealId, mealData) => {
+  try {
+    if (!mealId || mealId === "") {
+      throw new Error("Meal ID is null or empty");
+    }
+    if (!mealData.mealType || mealData.mealType.trim() === "") {
+      throw new Error("Meal type is required");
+    }
+    if (!mealData.dishMeals || mealData.dishMeals.length === 0) {
+      throw new Error("At least one dish is required");
+    }
+    if (mealData.dishMeals.some((dish) => !dish.dishId || dish.dishId === "")) {
+      throw new Error("All dishes must have a valid dishId");
+    }
+
+    const payload = {
+      mealType: mealData.mealType,
+      dishMeals: mealData.dishMeals.map((dish) => ({
+        dishId: dish.dishId,
+      })),
+    };
+
+    console.log("Sending update meal request with payload:", payload);
+
+    const response = await apiClient.put(`/api/meal/update-meal/${mealId}`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Update meal response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating meal:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const deleteMeal = async (mealId) => {
+  try {
+    if (!mealId || mealId === "") {
+      throw new Error("Meal ID is null or empty");
+    }
+
+    console.log("Sending delete meal request for mealId:", mealId);
+
+    const response = await apiClient.delete(`/api/meal/delete-meal/${mealId}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Delete meal response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting meal:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const getMealById = async (mealId) => {
+  try {
+    if (!mealId || mealId === "") {
+      throw new Error("Meal ID is null or empty");
+    }
+
+    console.log("Fetching meal with ID:", mealId);
+
+    const response = await apiClient.get(`/api/meal/view-meal-by-id`, {
+      params: {
+        mealId: mealId,
+      },
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Get meal by ID response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching meal by ID:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const getAllMeals = async () => {
+  try {
+    const response = await apiClient.get(`/api/meal/view-all-meals`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Get all meals response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all meals:", {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
