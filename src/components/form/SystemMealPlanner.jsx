@@ -243,10 +243,21 @@ const SystemMealPlanner = () => {
           ],
         },
         {
-          type: "Snack",
+          type: "Snack 1",
           dishes: [
             {
               name: "Greek Yogurt",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+              calories: 180,
+            },
+          ],
+        },
+        {
+          type: "Snack 2",
+          dishes: [
+            {
+              name: "Greek Yogurt2",
               image:
                 "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 180,
@@ -304,10 +315,21 @@ const SystemMealPlanner = () => {
           ],
         },
         {
-          type: "Snack",
+          type: "Snack 1",
           dishes: [
             {
               name: "Apple Slices",
+              image:
+                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+              calories: 80,
+            },
+          ],
+        },
+        {
+          type: "Snack 2",
+          dishes: [
+            {
+              name: "Apple Slices2",
               image:
                 "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
               calories: 80,
@@ -327,9 +349,51 @@ const SystemMealPlanner = () => {
     setGeneratedPlan(mode === "day" ? staticMealsDay : staticMealsWeek);
   };
 
+  const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [visibleDays, setVisibleDays] = useState(3); // Number of days visible at once
+
+  // Handle responsive visible days count
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setVisibleDays(1); // Mobile: show 1 day
+      } else if (window.innerWidth < 1024) {
+        setVisibleDays(2); // Tablet: show 2 days
+      } else {
+        setVisibleDays(3); // Desktop: show 3 days
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handlePrevDay = () => {
+    setCurrentDayIndex((prev) =>
+      prev > 0 ? prev - 1 : Math.max(0, generatedPlan.length - visibleDays)
+    );
+  };
+
+  const handleNextDay = () => {
+    setCurrentDayIndex((prev) =>
+      prev < generatedPlan.length - visibleDays ? prev + 1 : 0
+    );
+  };
+
+  // // Reset carousel when generating new plan
+  // const handleGenerate = () => {
+  //   if (mode === "day" && !day) {
+  //     setError("Please select a day before submitting.");
+  //     return;
+  //   }
+  //   setError("");
+  //   setCurrentDayIndex(0); // Reset carousel position
+  //   setGeneratedPlan(mode === "day" ? staticMealsDay : staticMealsWeek);
+  // };
+
   return (
     <div className="mealplanner-page-wrapper">
-
       <div className="mealplanner-heading">
         <h1>System Meal Planner</h1>
         <p>Enter your details and choose to generate by day or by week.</p>
@@ -484,11 +548,10 @@ const SystemMealPlanner = () => {
         </div>
         <div className="mealplanner-btn-wrapper">
           <button className="mealplanner-btn" onClick={handleGenerate}>
-          Suggest Meal Plan
-        </button>
+            Suggest Meal Plan
+          </button>
         </div>
 
-        
         {error && (
           <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>
         )}
@@ -515,7 +578,7 @@ const SystemMealPlanner = () => {
                 <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
                   Suggested Meals for {week}
                   {day && ` - Day ${day}`} <br />
-                  <span style={{ fontSize: "1.1rem"}}>
+                  <span style={{ fontSize: "1.1rem" }}>
                     Total Calories: <strong>{totalCalories} kcal</strong>
                   </span>
                 </h2>
@@ -553,14 +616,14 @@ const SystemMealPlanner = () => {
 
       {generatedPlan && mode === "week" && (
         <div className="mealplanner-output">
-           {weekViewMode === "list" && <h2>Weekly Suggested Meals</h2>}
+          {weekViewMode === "list" && <h2>Weekly Suggested Meals</h2>}
 
           {/* Week List */}
           {weekViewMode === "list" &&
             generatedPlan?.map((day, idx) => (
               <div key={idx} className="week-day-card">
                 <div className="week-day-header">
-                  <div className="header-title">
+                  <div className="mealplanner-header-title">
                     <h3>{day.day}</h3>
                   </div>
                   <div className="header-action">
@@ -596,9 +659,7 @@ const SystemMealPlanner = () => {
           {/* Day Detail */}
           {weekViewMode === "dayDetail" && selectedDayDetail && (
             <div className="mealplanner-output">
-              <div className="mealplanner-output-header">
-
-              </div>
+              <div className="mealplanner-output-header"></div>
               {(() => {
                 const totalCalories =
                   selectedDayDetail?.meals?.reduce((mealSum, meal) => {
@@ -613,7 +674,7 @@ const SystemMealPlanner = () => {
                 return (
                   <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
                     Meals for {selectedDayDetail?.day || "Unknown"} <br />
-                    <span style={{ fontSize: "1.1rem"}}>
+                    <span style={{ fontSize: "1.1rem" }}>
                       Total Calories: <strong>{totalCalories} kcal</strong>
                     </span>
                   </h2>
@@ -666,7 +727,7 @@ const SystemMealPlanner = () => {
                   <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
                     {selectedMealDetail.day.day} –{" "}
                     {selectedMealDetail.meal.type} <br />
-                    <span style={{ fontSize: "1.1rem"}}>
+                    <span style={{ fontSize: "1.1rem" }}>
                       Total Calories: <strong>{totalCalories} kcal</strong>
                     </span>
                   </h2>

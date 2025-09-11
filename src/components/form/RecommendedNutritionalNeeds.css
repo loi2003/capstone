@@ -9,6 +9,7 @@
 
 /* Page layout */
 .nutritionalneeds-page {
+  margin-top: -60px;
   background: #f7fbfc;
   font-family: var(--font-inter, "Inter", sans-serif);
   min-height: 100vh;

@@ -7,11 +7,12 @@ import "./RecommendedNutritionalNeeds.css";
 const RecommendedNutritionalNeeds = () => {
   const [week, setWeek] = useState(1);
   const [dob, setDob] = useState("");
+  const [activityLevel, setActivityLevel] = useState(1);
   const [savedDob, setSavedDob] = useState("");
   const [nutrients, setNutrients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const token = localStorage.getItem("token"); 
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -207,18 +208,54 @@ const RecommendedNutritionalNeeds = () => {
       </div>
     ),
   };
+  // Custom display names for vitamins
+  const vitaminDisplayNames = {
+    folate: "Vitamin B9 (Folate)",
+    vitaminA: "Vitamin A",
+    vitaminD: "Vitamin D",
+    vitaminE: "Vitamin E",
+    vitaminK: "Vitamin K",
+    vitaminB1: "Vitamin B1",
+    vitaminB2: "Vitamin B2",
+    vitaminB6: "Vitamin B6",
+    vitaminB12: "Vitamin B12",
+    vitaminC: "Vitamin C",
+    choline: "Choline",
+  };
+
+  // Fallback: convert camelCase to Title Case
+  const formatVitaminName = (key) => {
+    if (vitaminDisplayNames[key]) return vitaminDisplayNames[key];
+    // fallback: insert space before capital letters and capitalize
+    return key
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (char) => char.toUpperCase())
+      .trim();
+  };
+
+  const formatName = (str) => {
+    if (!str) return "";
+    // Insert space before capital letters and capitalize first letters
+    return str
+      .replace(/([A-Z])/g, " $1") // Add space before uppercase
+      .replace(/^./, (char) => char.toUpperCase()) // Capitalize first letter
+      .trim();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setNutrients([]);
+    setLoading(true);
 
     if (!week || !dob) {
       setError("Please enter both gestational week and date of birth.");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
+      // Update user DOB if changed
       if (dob && dob !== savedDob) {
         await editUserProfile({ dateOfBirth: dob });
 
@@ -232,14 +269,64 @@ const RecommendedNutritionalNeeds = () => {
         setSavedDob(dob);
       }
 
-      const data = await getEssentialNutritionalNeeds({
+      // Fetch nutritional needs
+      const rawData = await getEssentialNutritionalNeeds({
         currentWeek: week,
         dateOfBirth: dob,
+        activityLevel: activityLevel || 1,
       });
 
-      setNutrients(data || []);
+      console.log("API data:", rawData); // Debugging
+
+      // Transform backend data into table format with capitalized names
+      const formattedData = [
+        {
+          category: "Energy",
+          items: [
+            {
+              name: "Total Demanded Energy",
+              value: rawData.totalDemanedEnergy,
+              unit: "kcal",
+            },
+          ],
+        },
+        {
+          category: "P:L:G Substances",
+          items: Object.keys(rawData.plgSubstances || {}).map((key) => ({
+            name: formatName(key),
+            value: rawData.plgSubstances[key].demand,
+            unit: rawData.plgSubstances[key].unit,
+          })),
+        },
+        {
+          category: "Minerals",
+          items: Object.keys(rawData.minerals || {}).map((key) => ({
+            name: formatName(key),
+            value: rawData.minerals[key].demand,
+            unit: rawData.minerals[key].unit,
+          })),
+        },
+        {
+          category: "Vitamins",
+          items: Object.keys(rawData.vitamins || {}).map((key) => ({
+            name: formatVitaminName(key),
+            value: rawData.vitamins[key].demand,
+            unit: rawData.vitamins[key].unit,
+          })),
+        },
+        {
+          category: "Other Information",
+          items: Object.keys(rawData.otherInformation || {}).map((key) => ({
+            name: formatName(key),
+            value: rawData.otherInformation[key].demand,
+            unit: rawData.otherInformation[key].unit,
+          })),
+        },
+      ];
+
+      setNutrients(formattedData);
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error fetching nutritional needs:", err);
       setError("Failed to fetch nutritional needs. Please try again.");
     } finally {
       setLoading(false);
@@ -276,6 +363,15 @@ const RecommendedNutritionalNeeds = () => {
             onChange={(e) => setDob(e.target.value)}
             max={new Date().toISOString().split("T")[0]}
           />
+          <label>Activity Level</label>
+          <select
+            value={activityLevel}
+            onChange={(e) => setActivityLevel(Number(e.target.value))}
+          >
+            <option value={1}>1 (Light)</option>
+            <option value={2}>2 (Moderate)</option>
+          </select>
+
           <button type="submit" disabled={loading}>
             {loading ? "Loading..." : "Get Nutritional Needs"}
           </button>

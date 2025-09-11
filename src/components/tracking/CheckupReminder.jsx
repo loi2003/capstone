@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 const CheckupReminder = ({ token, userId, appointments = [] }) => {
   const [recommendedReminders, setRecommendedReminders] = useState([]);
   const [emergencyReminders, setEmergencyReminders] = useState([]);
-  const [selectedTrimester, setSelectedTrimester] = useState("all");
+  const [selectedTrimester, setSelectedTrimester] = useState("first");
   const navigate = useNavigate();
 
   const getDateFromWeek = (lmpDate, weekNumber) => {
