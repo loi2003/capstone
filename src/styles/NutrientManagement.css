@@ -28,6 +28,7 @@
   --nutrient-specialist-shadow-hover: 0 8px 24px rgba(46, 125, 50, 0.15);
   --nutrient-specialist-border-radius: 8px;
   --nutrient-specialist-transition: all 0.3s ease;
+  --blue-secondary: #4caf50; /* Added to match --nutrient-specialist-secondary for animation */
 }
 
 /* Dark theme */
