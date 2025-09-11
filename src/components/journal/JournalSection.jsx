@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { NotificationContext } from "../../contexts/NotificationContext";
 import { Link, useNavigate } from "react-router-dom";
 import {
   getJournalByGrowthDataId,
@@ -21,6 +22,15 @@ const JournalSection = ({
   const [currentWeek, setCurrentWeek] = useState(null);
 
   const [entries, setEntries] = useState(journalEntries || []);
+  const { notifications } = useContext(NotificationContext);
+
+  useEffect(() => {
+    const lastMsg = notifications[notifications.length - 1];
+    if (lastMsg?.type === "Journal") {
+      const journal = lastMsg.payload;
+      setEntries((prev) => [...prev, journal]);
+    }
+  }, [notifications]);
   const [errors, setErrors] = useState({});
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
@@ -165,6 +175,7 @@ const JournalSection = ({
       </div>
     );
   }
+  
 
   return (
     <div className="journal-section">

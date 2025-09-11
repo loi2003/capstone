@@ -11,6 +11,8 @@ const CustomMealPlanner = () => {
   const [diseases, setDiseases] = useState("");
   const [preferredFood, setPreferredFood] = useState(""); // <-- maps to favouriteDishId
 
+  const [activeImageIndices, setActiveImageIndices] = useState({});
+
   const [error, setError] = useState("");
 
   // Dropdown control
@@ -42,6 +44,22 @@ const CustomMealPlanner = () => {
     "Blueberries",
     "Quinoa",
   ];
+  const [generatedMenus, setGeneratedMenus] = useState([]);
+
+  // called after API returns data
+  const handleApiSuccess = (menus) => {
+    setGeneratedMenus(menus.slice(0, 2)); // first 2 menus
+  };
+
+  const handleGenerateMore = () => {
+    // Append 2 more menus (from API again or cached pool)
+    setGeneratedMenus((prev) => [...prev, ...newMenus]);
+  };
+
+  const handleNewMenu = () => {
+    setGeneratedMenus([]);
+    // optionally reset form too
+  };
 
   // close dropdowns
   useEffect(() => {
@@ -99,16 +117,76 @@ const CustomMealPlanner = () => {
     }
     setError("");
 
-    console.log("Submitting custom meal request:", {
+    const payload = {
       stage,
       dateOfBirth,
       type,
       numberOfDishes,
       allergyIds: allergies ? [allergies] : [],
       diseaseIds: diseases ? [diseases] : [],
-      favouriteDishId: preferredFood || null, // <-- map preferred food here
-    });
+      favouriteDishId: preferredFood || null,
+    };
+
+    console.log("Submitting custom meal request:", payload);
+
+    const mockMenus = [
+      {
+        dishes: [
+          {
+            name: "Shrimp Congee",
+            image:
+              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          },
+          {
+            name: "English Breakfast",
+            image:
+              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          },
+          {
+            name: "Watermelons",
+            image:
+              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          },
+        ],
+      },
+      {
+        dishes: [
+          {
+            name: "Haiyanese Chicken Rice",
+            image:
+              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          },
+          {
+            name: "Seaweeds Soup",
+            image:
+              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          },
+          {
+            name: "Orange",
+            image:
+              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          },
+        ],
+      },
+    ];
+
+    setGeneratedMenus(mockMenus);
   };
+
+  const handleSetActiveImage = (menuIndex, imageIndex) => {
+    setActiveImageIndices((prev) => ({
+      ...prev,
+      [menuIndex]: imageIndex,
+    }));
+  };
+
+  useEffect(() => {
+    const initialIndices = {};
+    generatedMenus.forEach((menu, menuIndex) => {
+      initialIndices[menuIndex] = 0; // Start with first image for each menu
+    });
+    setActiveImageIndices(initialIndices);
+  }, [generatedMenus, numberOfDishes]);
 
   return (
     <div className="custommealplanner-page-wrapper">
@@ -280,6 +358,94 @@ const CustomMealPlanner = () => {
           <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>
         )}
       </div>
+      {generatedMenus.length > 0 && (
+        <div className="custommealplanner-output">
+          <div className="custommealplanner-menu-grid">
+            {generatedMenus.map((menu, menuIndex) => {
+              const activeIdx = activeImageIndices[menuIndex] || 0;
+
+              return (
+                <div key={menuIndex} className="custommealplanner-menu-card">
+                  <div className="custommealplanner-menu-header">
+                    <span className="custommealplanner-menu-label">
+                      Menu {menuIndex + 1}
+                    </span>
+                    <span className="custommealplanner-menu-counter">
+                      {numberOfDishes} dishes
+                    </span>
+                  </div>
+
+                  <div className="custommealplanner-menu-image-container">
+                    <img
+                      src={menu.dishes[activeIdx]?.image}
+                      alt={menu.dishes[activeIdx]?.name}
+                      className="custommealplanner-menu-main-image"
+                    />
+
+                    <div className="custommealplanner-carousel-dots">
+                      {menu.dishes
+                        .slice(0, numberOfDishes)
+                        .map((dish, index) => (
+                          <span
+                            key={index}
+                            className={`custommealplanner-dot ${
+                              index === activeIdx ? "active" : ""
+                            }`}
+                            onClick={() =>
+                              handleSetActiveImage(menuIndex, index)
+                            }
+                          />
+                        ))}
+                    </div>
+                  </div>
+
+                  <h3 className="custommealplanner-menu-title">
+                    {menu.dishes[activeIdx]?.name}
+                  </h3>
+
+                  <div className="custommealplanner-thumbnails">
+                    {menu.dishes.slice(0, numberOfDishes).map((dish, index) => (
+                      <div
+                        key={index}
+                        className="custommealplanner-thumbnail-item"
+                        onClick={() => handleSetActiveImage(menuIndex, index)}
+                      >
+                        <img
+                          src={dish.image}
+                          alt={dish.name}
+                          className={`custommealplanner-thumbnail ${
+                            index === activeIdx ? "active" : ""
+                          }`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <button className="custommealplanner-detail-btn">
+                    View Details
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="custommealplanner-menu-actions">
+            <button
+              className="custommealplanner-btn secondary"
+              onClick={handleGenerateMore}
+            >
+              See More Menus
+            </button>
+            <button
+              className="custommealplanner-btn primary"
+              onClick={handleNewMenu}
+            >
+              Generate New Custom Menus
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
