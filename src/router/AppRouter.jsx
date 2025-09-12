@@ -1,3 +1,4 @@
+
 import React, { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "../contexts/ThemeContext";
@@ -58,6 +59,7 @@ import NotificationPage from "../pages/NotificationPage";
 import FoodWarning from "../components/form/FoodWarning";
 import DiseaseManagement from "../pages/nutrientspecialist/DiseaseManagement";
 import MealManagement from "../pages/nutrientspecialist/MealManagement";
+import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -99,6 +101,7 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/disease-management" element={<DiseaseManagement />} />
         <Route path="/nutrient-specialist/meal-management" element={<MealManagement />} />
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
+        <Route path="/nutrient-specialist/warning-management" element={<WarningManagement />} />
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />

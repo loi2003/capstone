@@ -1,17 +1,13 @@
+/* NutrientInFoodManagement.css */
+
+/* Reset styles */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-.nutrient-in-food-management {
-  font-family: 'Roboto', sans-serif;
-  background-color: var(--nutrient-specialist-light-bg);
-  color: var(--nutrient-specialist-text);
-  min-height: 100vh;
-  line-height: 1.6;
-}
-
+/* Root variables for consistent theming */
 :root {
   --nutrient-specialist-primary: #2e7d32;
   --nutrient-specialist-secondary: #4caf50;
@@ -27,6 +23,7 @@
   --nutrient-specialist-transition: all 0.3s ease;
 }
 
+/* Dark theme variables */
 body.dark-theme {
   background: #1a3c34;
   color: var(--nutrient-specialist-white);
@@ -63,6 +60,16 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
   color: var(--nutrient-specialist-white);
 }
 
+/* Main container */
+.nutrient-in-food-management {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--nutrient-specialist-light-bg);
+  color: var(--nutrient-specialist-text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Sidebar styles */
 .nutrient-in-food-management .nutrient-specialist-sidebar {
   background: linear-gradient(180deg, var(--nutrient-specialist-primary), var(--nutrient-specialist-accent));
   color: var(--nutrient-specialist-white);
@@ -76,8 +83,7 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
   max-width: 280px;
   display: flex;
   flex-direction: column;
-    overflow-y: hidden; /* Prevent scrolling */
-
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .nutrient-in-food-management .nutrient-specialist-sidebar.open {
@@ -460,6 +466,7 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
   stroke: var(--nutrient-specialist-white);
 }
 
+/* Main content */
 .nutrient-in-food-management .nutrient-specialist-content {
   flex: 1;
   margin-left: 280px;
@@ -727,6 +734,71 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
   padding: 1rem;
 }
 
+/* Pagination styles */
+.nutrient-in-food-management .pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.nutrient-in-food-management .pagination-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: var(--nutrient-specialist-border-radius);
+  cursor: pointer;
+  transition: var(--nutrient-specialist-transition);
+  background: transparent;
+  color: var(--nutrient-specialist-primary);
+  border: 2px solid var(--nutrient-specialist-accent);
+}
+
+.nutrient-in-food-management .pagination-button:hover,
+.nutrient-in-food-management .pagination-button:focus {
+  background: var(--nutrient-specialist-accent);
+  color: var(--nutrient-specialist-primary);
+  transform: translateY(-2px);
+}
+
+.nutrient-in-food-management .pagination-button:disabled {
+  background: #ccc;
+  color: #666;
+  border-color: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.nutrient-in-food-management .pagination-info {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--nutrient-specialist-text);
+}
+
+body.dark-theme .nutrient-in-food-management .pagination-button {
+  color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-accent);
+}
+
+body.dark-theme .nutrient-in-food-management .pagination-button:hover,
+body.dark-theme .nutrient-in-food-management .pagination-button:focus {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-in-food-management .pagination-button:disabled {
+  background: #444;
+  color: #777;
+  border-color: #444;
+}
+
+body.dark-theme .nutrient-in-food-management .pagination-info {
+  color: var(--nutrient-specialist-white);
+}
+
+/* Responsive design */
 @media (max-width: 1024px) {
   .nutrient-in-food-management .nutrient-specialist-sidebar {
     max-width: 240px;
@@ -833,6 +905,16 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
     height: 12px;
     min-width: 12px;
   }
+  .nutrient-in-food-management .pagination-controls {
+    gap: 0.5rem;
+  }
+  .nutrient-in-food-management .pagination-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  .nutrient-in-food-management .pagination-info {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -935,5 +1017,15 @@ body.dark-theme .nutrient-in-food-management .nutrient-specialist-profile-email 
     width: 10px;
     height: 10px;
     min-width: 10px;
+  }
+  .nutrient-in-food-management .pagination-controls {
+    gap: 0.3rem;
+  }
+  .nutrient-in-food-management .pagination-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  .nutrient-in-food-management .pagination-info {
+    font-size: 0.8rem;
   }
 }

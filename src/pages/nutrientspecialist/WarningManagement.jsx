@@ -2,18 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  getAllDishes,
-  getDishById,
-  createDish,
-  addDishImage,
-  updateDish,
-  deleteDish,
+  getAllDiseases,
+  getAllAllergies,
   getAllFoods,
-  updateFoodInDish,
-  deleteFoodInDish,
+  createWarningFoodForDisease,
+  createWarningFoodForAllergy,
+  removeRecommendOrWarningFoodForDisease,
+  removeRecommendOrWarningFoodForAllergy,
+  viewWarningFoods,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/DishManagement.css";
+import "../../styles/WarningManagement.css";
 
 const LoaderIcon = () => (
   <svg
@@ -38,6 +37,7 @@ const Notification = ({ message, type }) => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
+
   return (
     <motion.div
       className={`notification ${type}`}
@@ -54,7 +54,7 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const DishModal = ({ dish, onClose, foods }) => {
+const WarningModal = ({ warning, onClose, foods }) => {
   return (
     <motion.div
       className="modal-overlay"
@@ -71,30 +71,11 @@ const DishModal = ({ dish, onClose, foods }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>{dish.dishName || `Dish #${dish.id}`}</h2>
-        {dish.imageUrl && (
-          <img
-            src={dish.imageUrl}
-            alt={dish.dishName || `Dish #${dish.id}`}
-            className="modal-dish-image"
-          />
-        )}
-        <p>{dish.description || "No description available"}</p>
-        <h3>Foods:</h3>
-        <ul>
-          {Array.isArray(dish.foods) && dish.foods.length > 0 ? (
-            dish.foods.map((food) => (
-              <li key={food.foodId}>
-                {food.foodName ||
-                  foods.find((f) => f.id === food.foodId)?.name ||
-                  "Unknown Food"}{" "}
-                ({food.amount} {food.unit})
-              </li>
-            ))
-          ) : (
-            <li>No foods in this dish</li>
-          )}
-        </ul>
+        <h2>Warning Food Details</h2>
+        <h3>Food: {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}</h3>
+        <p><strong>Type:</strong> {warning.type}</p>
+        <p><strong>Related ID:</strong> {warning.relatedId}</p>
+        <p><strong>Description:</strong> {warning.description || "No description provided"}</p>
         <motion.button
           onClick={onClose}
           className="nutrient-specialist-button primary"
@@ -108,31 +89,29 @@ const DishModal = ({ dish, onClose, foods }) => {
   );
 };
 
-const DishManagement = () => {
-  const [dishes, setDishes] = useState([]);
+const WarningManagement = () => {
+  const [diseases, setDiseases] = useState([]);
+  const [allergies, setAllergies] = useState([]);
   const [foods, setFoods] = useState([]);
-  const [newDish, setNewDish] = useState({
-    dishName: "",
-    description: "",
-    foodList: [],
-    image: null,
+  const [warnings, setWarnings] = useState([]);
+  const [newWarning, setNewWarning] = useState({
+    type: "Disease",
+    relatedId: "",
+    warningFoodDtos: [],
   });
-  const [selectedDish, setSelectedDish] = useState(null);
-  const [selectedViewDish, setSelectedViewDish] = useState(null);
+  const [selectedWarning, setSelectedWarning] = useState(null);
+  const [selectedViewWarning, setSelectedViewWarning] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
-  const [foodSearchTerm, setFoodSearchTerm] = useState("");
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [currentFoodPage, setCurrentFoodPage] = useState(1);
   const itemsPerPage = 6;
-  const foodsPerPage = 50;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -176,273 +155,181 @@ const DishManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [dishesResponse, foodsData] = await Promise.all([
-        getAllDishes(),
-        getAllFoods(),
-      ]);
-      const dishesData = dishesResponse?.data || [];
-      setDishes(Array.isArray(dishesData) ? dishesData : []);
-      setFoods(Array.isArray(foodsData) ? foodsData : []);
-    } catch (err) {
-      console.error("Fetch error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
-      setDishes([]);
-      setFoods([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchData = async () => {
+  setLoading(true);
+  try {
+    const [diseasesResponse, allergiesResponse, foodsResponse] = await Promise.all([
+      getAllDiseases(token),
+      getAllAllergies(token),
+      getAllFoods(),
+    ]);
 
-  const fetchDishById = async (id) => {
-    setLoading(true);
-    try {
-      const data = await getDishById(id);
-      setSelectedDish(data);
-      setNewDish({
-        dishName: data.dishName || "",
-        description: data.description || "",
-        foodList: Array.isArray(data.foods)
-          ? data.foods.map((food) => ({
-              foodId: food.foodId,
-              unit: food.unit === "g" ? "grams" : food.unit,
-              amount: food.amount || 0,
-            }))
-          : [],
-        image: null,
-      });
-      setIsEditing(true);
-      return data;
-    } catch (err) {
-      showNotification(`Failed to fetch dish details: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Handle diseases response
+    const diseasesData = Array.isArray(diseasesResponse?.data?.data)
+      ? diseasesResponse.data.data
+      : Array.isArray(diseasesResponse?.data)
+      ? diseasesResponse.data
+      : [];
 
-  const createDishHandler = async () => {
-    if (!newDish.dishName || newDish.dishName.trim() === "") {
-      showNotification("Dish name is required", "error");
+    // Handle allergies response
+    const allergiesData = Array.isArray(allergiesResponse?.data?.data)
+      ? allergiesResponse.data.data
+      : Array.isArray(allergiesResponse?.data)
+      ? allergiesResponse.data
+      : [];
+
+    // Handle foods response (direct array from API)
+    const foodsData = Array.isArray(foodsResponse)
+      ? foodsResponse
+      : [];
+
+    // Log for debugging
+    console.log("Foods response:", foodsResponse);
+    console.log("Foods data:", foodsData);
+
+    setDiseases(diseasesData);
+    setAllergies(allergiesData);
+    setFoods(foodsData);
+
+    // Fetch warnings only if there are diseases or allergies
+    if (diseasesData.length > 0 || allergiesData.length > 0) {
+      const diseaseIds = diseasesData.map((disease) => disease.id);
+      const allergyIds = allergiesData.map((allergy) => allergy.id);
+      const warningsResponse = await viewWarningFoods({
+        allergyIds,
+        diseaseIds,
+      });
+
+      // Handle warnings response
+      const warningsData = Array.isArray(warningsResponse?.data?.data)
+        ? warningsResponse.data.data
+        : Array.isArray(warningsResponse?.data)
+        ? warningsResponse.data
+        : [];
+      setWarnings(warningsData);
+    } else {
+      setWarnings([]);
+    }
+  } catch (err) {
+    console.error("Fetch error details:", {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+    });
+    showNotification(`Failed to fetch data: ${err.message}`, "error");
+    setDiseases([]);
+    setAllergies([]);
+    setFoods([]);
+    setWarnings([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const createWarningHandler = async () => {
+    if (!newWarning.type || newWarning.type.trim() === "") {
+      showNotification("Type is required", "error");
       return;
     }
-    if (newDish.foodList.length === 0) {
+    if (!newWarning.relatedId || newWarning.relatedId.trim() === "") {
+      showNotification("Related ID (Disease or Allergy) is required", "error");
+      return;
+    }
+    if (newWarning.warningFoodDtos.length === 0) {
       showNotification("Please select at least one food", "error");
       return;
     }
-    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
-      showNotification(
-        "Please provide valid unit and amount for all selected foods",
-        "error"
-      );
-      return;
-    }
     setLoading(true);
     try {
-      const dishResponse = await createDish({
-        dishName: newDish.dishName,
-        description: newDish.description,
-        foodList: newDish.foodList,
-      });
-      const dishId = dishResponse?.data?.id || dishResponse?.id;
-      if (!dishId) {
-        throw new Error("Dish ID not returned from create dish response");
+      if (newWarning.type === "Disease") {
+        await createWarningFoodForDisease({
+          diseaseId: newWarning.relatedId,
+          warningFoodDtos: newWarning.warningFoodDtos,
+        });
+      } else {
+        await createWarningFoodForAllergy({
+          allergyId: newWarning.relatedId,
+          warningFoodDtos: newWarning.warningFoodDtos,
+        });
       }
-      if (newDish.image) {
-        await addDishImage(dishId, newDish.image);
+      setNewWarning({
+        type: "Disease",
+        relatedId: "",
+        warningFoodDtos: [],
+      });
+      setIsEditing(false);
+      await fetchData();
+      showNotification("Warning created successfully", "success");
+    } catch (err) {
+      console.error("Create warning error:", err);
+      showNotification(
+        `Failed to create warning: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteWarningHandler = async (warning) => {
+    if (!window.confirm("Are you sure you want to delete this warning?")) return;
+    setLoading(true);
+    try {
+      if (warning.type === "Disease") {
+        await removeRecommendOrWarningFoodForDisease({
+          foodId: warning.foodId,
+          diseaseId: warning.relatedId,
+        });
+      } else {
+        await removeRecommendOrWarningFoodForAllergy({
+          foodId: warning.foodId,
+          allergyId: warning.relatedId,
+        });
       }
-      setNewDish({
-        dishName: "",
-        description: "",
-        foodList: [],
-        image: null,
-      });
+      setSelectedWarning(null);
       setIsEditing(false);
-      await fetchData();
-      showNotification("Dish created successfully", "success");
-    } catch (err) {
-      console.error("Create dish error:", err);
-      showNotification(
-        `Failed to create dish: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateDishHandler = async () => {
-    if (!newDish.dishName || newDish.dishName.trim() === "") {
-      showNotification("Dish name is required", "error");
-      return;
-    }
-    if (newDish.foodList.length === 0) {
-      showNotification("Please select at least one food", "error");
-      return;
-    }
-    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
-      showNotification(
-        "Please provide valid unit and amount for all selected foods",
-        "error"
-      );
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateDish({
-        dishId: selectedDish?.id,
-        dishName: newDish.dishName,
-        description: newDish.description,
-        foodList: newDish.foodList.map((food) => ({
-          foodId: food.foodId,
-          unit: food.unit === "grams" ? "g" : food.unit,
-          amount: food.amount,
-        })),
-      });
-      setNewDish({
-        dishName: "",
-        description: "",
-        foodList: [],
-        image: null,
-      });
-      setSelectedDish(null);
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Dish updated successfully", "success");
-    } catch (err) {
-      showNotification(
-        `Failed to update dish: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteDishHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this dish?")) return;
-    setLoading(true);
-    try {
-      await deleteDish(id);
-      setSelectedDish(null);
-      setIsEditing(false);
-      setNewDish({
-        dishName: "",
-        description: "",
-        foodList: [],
-        image: null,
+      setNewWarning({
+        type: "Disease",
+        relatedId: "",
+        warningFoodDtos: [],
       });
       await fetchData();
-      showNotification("Dish deleted successfully", "success");
+      showNotification("Warning deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete dish: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateFoodInDishHandler = async (food) => {
-    if (!food.unit || food.amount <= 0) {
-      showNotification("Please provide valid unit and amount", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateFoodInDish({
-        dishId: selectedDish?.id,
-        foodId: food.foodId,
-        unit: food.unit,
-        amount: food.amount,
-      });
-      showNotification("Food updated successfully", "success");
-      const updatedDish = await fetchDishById(selectedDish?.id);
-      setDishes((prev) =>
-        prev.map((dish) => (dish.id === updatedDish?.id ? updatedDish : dish))
-      );
-    } catch (err) {
-      showNotification(
-        `Failed to update food: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteFoodInDishHandler = async (foodId) => {
-    if (
-      !window.confirm("Are you sure you want to remove this food from the dish?")
-    )
-      return;
-    setLoading(true);
-    try {
-      await deleteFoodInDish(selectedDish?.id, foodId);
-      showNotification("Food removed successfully", "success");
-      const updatedDish = await fetchDishById(selectedDish?.id);
-      setDishes((prev) =>
-        prev.map((dish) => (dish.id === updatedDish?.id ? updatedDish : dish))
-      );
-    } catch (err) {
-      showNotification(
-        `Failed to remove food: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
+      showNotification(`Failed to delete warning: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const cancelEdit = () => {
-    setNewDish({
-      dishName: "",
-      description: "",
-      foodList: [],
-      image: null,
+    setNewWarning({
+      type: "Disease",
+      relatedId: "",
+      warningFoodDtos: [],
     });
-    setSelectedDish(null);
+    setSelectedWarning(null);
     setIsEditing(false);
   };
 
-  const handleFoodSelect = async (foodId) => {
-  if (isEditing) {
-    const isSelected = newDish.foodList.some(
-      (food) => food.foodId === foodId
-    );
-    if (isSelected) {
-      await deleteFoodInDishHandler(foodId);
-    } else {
-      setNewDish((prev) => ({
-        ...prev,
-        foodList: [...prev.foodList, { foodId, unit: "grams", amount: 1 }],
-      }));
-    }
-  } else {
-    setNewDish((prev) => {
-      const currentFoods = [...prev.foodList];
-      const index = currentFoods.findIndex(
-        (food) => food.foodId === foodId
-      );
+  const handleFoodSelect = (foodId) => {
+    setNewWarning((prev) => {
+      const currentFoods = [...prev.warningFoodDtos];
+      const index = currentFoods.findIndex((food) => food.foodId === foodId);
       if (index > -1) {
         currentFoods.splice(index, 1);
       } else {
-        currentFoods.push({ foodId, unit: "grams", amount: 1 });
+        currentFoods.push({ foodId, description: "" });
       }
-      return { ...prev, foodList: currentFoods };
+      return { ...prev, warningFoodDtos: currentFoods };
     });
-  }
-};
+  };
 
-
-  const handleFoodDetailChange = (foodId, field, value) => {
-    setNewDish((prev) => ({
+  const handleFoodDescriptionChange = (foodId, description) => {
+    setNewWarning((prev) => ({
       ...prev,
-      foodList: prev.foodList.map((food) =>
-        food.foodId === foodId ? { ...food, [field]: value } : food
+      warningFoodDtos: prev.warningFoodDtos.map((food) =>
+        food.foodId === foodId ? { ...food, description } : food
       ),
     }));
   };
@@ -487,30 +374,16 @@ const DishManagement = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    setCurrentFoodPage(1);
-  }, [foodSearchTerm]);
+  const filteredWarnings = warnings.filter(
+    (warning) =>
+      (warning.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      foods.find((f) => f.id === warning.foodId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  const filteredDishes = dishes.filter(
-    (dish) =>
-      (dish.dishName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (dish.description || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  const indexOfLastDish = currentPage * itemsPerPage;
-  const indexOfFirstDish = indexOfLastDish - itemsPerPage;
-  const currentDishes = filteredDishes.slice(
-    indexOfFirstDish,
-    indexOfLastDish
-  );
-  const totalPages = Math.ceil(filteredDishes.length / itemsPerPage);
-
-  const filteredFoods = foods.filter((food) =>
-    (food.name || "").toLowerCase().includes(foodSearchTerm.toLowerCase())
-  );
-  const totalFoodPages = Math.ceil(filteredFoods.length / foodsPerPage);
-  const indexOfLastFood = currentFoodPage * foodsPerPage;
-  const indexOfFirstFood = indexOfLastFood - foodsPerPage;
-  const currentFoods = filteredFoods.slice(indexOfFirstFood, indexOfLastFood);
+  const indexOfLastWarning = currentPage * itemsPerPage;
+  const indexOfFirstWarning = indexOfLastWarning - itemsPerPage;
+  const currentWarnings = filteredWarnings.slice(indexOfFirstWarning, indexOfLastWarning);
+  const totalPages = Math.ceil(filteredWarnings.length / itemsPerPage);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -521,18 +394,6 @@ const DishManagement = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePreviousFoodPage = () => {
-    if (currentFoodPage > 1) {
-      setCurrentFoodPage(currentFoodPage - 1);
-    }
-  };
-
-  const handleNextFoodPage = () => {
-    if (currentFoodPage < totalFoodPages) {
-      setCurrentFoodPage(currentFoodPage + 1);
     }
   };
 
@@ -598,7 +459,7 @@ const DishManagement = () => {
   };
 
   return (
-    <div className="dish-management">
+    <div className="warning-management">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -1056,7 +917,7 @@ const DishManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item active"
+                className="sidebar-nav-item"
                 whileHover="hover"
               >
                 <Link
@@ -1180,7 +1041,7 @@ const DishManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="sidebar-nav-item active"
                 whileHover="hover"
               >
                 <Link
@@ -1516,14 +1377,14 @@ const DishManagement = () => {
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Manage Dishes</h1>
-            <p>Create, edit, and manage dishes composed of multiple foods</p>
+            <h1>Manage Warning Foods</h1>
+            <p>Manage foods to avoid for specific diseases or allergies</p>
           </div>
         </div>
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
-              <h2>{isEditing ? "Edit Dish" : "Add New Dish"}</h2>
+              <h2>{isEditing ? "Edit Warning" : "Add New Warning"}</h2>
             </div>
             {foods.length === 0 && (
               <p className="no-results">
@@ -1532,244 +1393,153 @@ const DishManagement = () => {
             )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="dish-name">Dish Name</label>
-                <input
-                  id="dish-name"
-                  type="text"
-                  value={newDish.dishName}
+                <label htmlFor="warning-type">Warning Type</label>
+                <select
+                  id="warning-type"
+                  value={newWarning.type}
                   onChange={(e) =>
-                    setNewDish((prev) => ({
+                    setNewWarning((prev) => ({
                       ...prev,
-                      dishName: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter dish name"
-                  className="input-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="dish-description">Description</label>
-                <textarea
-                  id="dish-description"
-                  value={newDish.description}
-                  onChange={(e) =>
-                    setNewDish((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter dish description"
-                  className="textarea-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="dish-image">Dish Image (Optional)</label>
-                <input
-                  id="dish-image"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) =>
-                    setNewDish((prev) => ({
-                      ...prev,
-                      image: e.target.files[0] || null,
+                      type: e.target.value,
+                      relatedId: "",
                     }))
                   }
                   className="input-field"
-                />
+                >
+                  <option value="Disease">Disease</option>
+                  <option value="Allergy">Allergy</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="related-id">
+                  {newWarning.type === "Disease" ? "Select Disease" : "Select Allergy"}
+                </label>
+                <select
+                  id="related-id"
+                  value={newWarning.relatedId}
+                  onChange={(e) =>
+                    setNewWarning((prev) => ({
+                      ...prev,
+                      relatedId: e.target.value,
+                    }))
+                  }
+                  className="input-field"
+                >
+                  <option value="">Select {newWarning.type}</option>
+                  {(newWarning.type === "Disease" ? diseases : allergies).map((item) => (
+                    <option key={item.id} value={item.id}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="food-selection">Select Foods</label>
-                <div className="form-group">
-                  <label htmlFor="search-foods">Search Foods</label>
-                  <input
-                    id="search-foods"
-                    type="text"
-                    value={foodSearchTerm}
-                    onChange={(e) => setFoodSearchTerm(e.target.value)}
-                    placeholder="Search by name"
-                    className="search-input"
-                  />
-                </div>
                 <div className="food-selection-container">
-                  {currentFoods.map((food) => (
-                    <motion.div
-                      key={food.id}
-                      className={`food-item ${
-                        newDish.foodList.some((f) => f.foodId === food.id)
-                          ? "selected"
-                          : ""
-                      }`}
-                      onClick={() => handleFoodSelect(food.id)}
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      <span className="food-name">{food.name}</span>
-                      {newDish.foodList.some((f) => f.foodId === food.id) && (
-                        <span className="checkmark">✓</span>
-                      )}
-                    </motion.div>
-                  ))}
-                </div>
-                {totalFoodPages > 1 && (
-                  <div className="pagination-controls food-pagination-controls">
-                    <motion.button
-                      onClick={handlePreviousFoodPage}
-                      disabled={currentFoodPage === 1}
-                      className="pagination-button"
-                      whileHover={{ scale: currentFoodPage === 1 ? 1 : 1.05 }}
-                      whileTap={{ scale: currentFoodPage === 1 ? 1 : 0.95 }}
-                    >
-                      Previous
-                    </motion.button>
-                    <span className="pagination-info">
-                      Page {currentFoodPage} of {totalFoodPages}
-                    </span>
-                    <motion.button
-                      onClick={handleNextFoodPage}
-                      disabled={currentFoodPage === totalFoodPages}
-                      className="pagination-button"
-                      whileHover={{
-                        scale: currentFoodPage === totalFoodPages ? 1 : 1.05,
-                      }}
-                      whileTap={{
-                        scale: currentFoodPage === totalFoodPages ? 1 : 0.95,
-                      }}
-                    >
-                      Next
-                    </motion.button>
-                  </div>
-                )}
-                {newDish.foodList.length > 0 && (
-                  <div className="food-details-container">
-                    <h4>Food Details</h4>
-                    {newDish.foodList.map((food) => (
-                      <div key={food.foodId} className="food-detail-item">
-                        <span>
-                          {foods.find((f) => f.id === food.foodId)?.name ||
-                            "Unknown Food"}
-                        </span>
-                        <div className="food-detail-inputs">
-                          <select
-                            value={food.unit}
-                            onChange={(e) =>
-                              handleFoodDetailChange(
-                                food.foodId,
-                                "unit",
-                                e.target.value
-                              )
-                            }
-                            className="input-field"
-                          >
-                            <option value="grams">Grams</option>
-                            <option value="cups">Cups</option>
-                            <option value="tablespoons">Tablespoons</option>
-                            <option value="teaspoons">Teaspoons</option>
-                          </select>
-                          <input
-                            type="number"
-                            value={food.amount}
-                            onChange={(e) =>
-                              handleFoodDetailChange(
-                                food.foodId,
-                                "amount",
-                                parseFloat(e.target.value) || 0
-                              )
-                            }
-                            placeholder="Amount"
-                            className="input-field"
-                            min="0"
-                          />
-                          {isEditing && (
-                            <div className="food-detail-actions">
-                              <motion.button
-                                onClick={() => updateFoodInDishHandler(food)}
-                                disabled={loading}
-                                className="nutrient-specialist-button primary"
-                                whileHover={{ scale: loading ? 1 : 1.05 }}
-                                whileTap={{ scale: loading ? 1 : 0.95 }}
-                              >
-                                Update
-                              </motion.button>
-                              <motion.button
-                                onClick={() =>
-                                  deleteFoodInDishHandler(food.foodId)
-                                }
-                                disabled={loading}
-                                className="nutrient-specialist-button secondary"
-                                whileHover={{ scale: loading ? 1 : 1.05 }}
-                                whileTap={{ scale: loading ? 1 : 0.95 }}
-                              >
-                                Remove
-                              </motion.button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div className="button-group">
-                  <motion.button
-                    onClick={
-                      isEditing ? updateDishHandler : createDishHandler
-                    }
-                    disabled={loading || foods.length === 0}
-                    className="submit-button nutrient-specialist-button primary"
-                    whileHover={{
-                      scale: loading || foods.length === 0 ? 1 : 1.05,
-                    }}
-                    whileTap={{
-                      scale: loading || foods.length === 0 ? 1 : 0.95,
-                    }}
-                  >
-                    {loading
-                      ? isEditing
-                        ? "Updating..."
-                        : "Creating..."
-                      : isEditing
-                      ? "Update Dish"
-                      : "Create Dish"}
-                  </motion.button>
-                  {isEditing && (
-                    <motion.button
-                      onClick={cancelEdit}
-                      disabled={loading}
-                      className="cancel-button nutrient-specialist-button secondary"
-                      whileHover={{ scale: loading ? 1 : 1.05 }}
-                      whileTap={{ scale: loading ? 1 : 0.95 }}
-                    >
-                      Cancel
-                    </motion.button>
+                  {foods.length === 0 ? (
+                    <p>No foods available to select. Please ensure foods are added in the database.</p>
+                  ) : (
+                    foods.map((food) => (
+                      <motion.div
+                        key={food.id}
+                        className={`food-item ${
+                          newWarning.warningFoodDtos.some((f) => f.foodId === food.id)
+                            ? "selected"
+                            : ""
+                        }`}
+                        onClick={() => handleFoodSelect(food.id)}
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <span className="food-name">{food.name}</span>
+                        {newWarning.warningFoodDtos.some((f) => f.foodId === food.id) && (
+                          <span className="checkmark">✓</span>
+                        )}
+                      </motion.div>
+                    ))
                   )}
                 </div>
               </div>
+              <div className="food-details-container">
+                <h4>Food Descriptions</h4>
+                {newWarning.warningFoodDtos.length === 0 ? (
+                  <p>No foods selected.</p>
+                ) : (
+                  newWarning.warningFoodDtos.map((food) => (
+                    <div key={food.foodId} className="food-detail-item">
+                      <span>{foods.find((f) => f.id === food.foodId)?.name || "Unknown Food"}</span>
+                      <div className="food-detail-inputs">
+                        <input
+                          type="text"
+                          value={food.description}
+                          onChange={(e) => handleFoodDescriptionChange(food.foodId, e.target.value)}
+                          placeholder="Description"
+                          className="input-field"
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+              <div className="button-group">
+                <motion.button
+                  onClick={createWarningHandler}
+                  disabled={loading || foods.length === 0}
+                  className="submit-button nutrient-specialist-button primary"
+                  whileHover={{
+                    scale: loading || foods.length === 0 ? 1 : 1.05,
+                  }}
+                  whileTap={{
+                    scale: loading || foods.length === 0 ? 1 : 0.95,
+                  }}
+                >
+                  {loading
+                    ? isEditing
+                      ? "Updating..."
+                      : "Creating..."
+                    : isEditing
+                    ? "Update Warning"
+                    : "Create Warning"}
+                </motion.button>
+                {isEditing && (
+                  <motion.button
+                    onClick={cancelEdit}
+                    disabled={loading}
+                    className="cancel-button nutrient-specialist-button secondary"
+                    whileHover={{ scale: loading ? 1 : 1.05 }}
+                    whileTap={{ scale: loading ? 1 : 0.95 }}
+                  >
+                    Cancel
+                  </motion.button>
+                )}
+              </div>
             </div>
           </div>
-          <div className="nutrient-list-section">
+          <div className="warning-list-section">
             <div className="section-header">
-              <h2>Dish List</h2>
-              <div className="nutrient-count">
-                {filteredDishes.length}{" "}
-                {filteredDishes.length === 1 ? "dish" : "dishes"} found
+              <h2>Warning List</h2>
+              <div className="warning-count">
+                {filteredWarnings.length}{" "}
+                {filteredWarnings.length === 1 ? "warning" : "warnings"} found
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="search-dishes">Search Dishes</label>
+              <label htmlFor="search-warnings">Search Warnings</label>
               <input
-                id="search-dishes"
+                id="search-warnings"
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name or description"
+                placeholder="Search by type or food name"
                 className="search-input"
               />
             </div>
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
-                <p>Loading dishes...</p>
+                <p>Loading warnings...</p>
               </div>
-            ) : !Array.isArray(dishes) || dishes.length === 0 ? (
+            ) : !Array.isArray(warnings) || warnings.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -1785,38 +1555,32 @@ const DishManagement = () => {
                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <h3>No dishes found</h3>
-                <p>Create your first dish to get started</p>
+                <h3>No warnings found</h3>
+                <p>Create your first warning to get started</p>
               </div>
             ) : (
               <>
-                <div className="nutrient-grid">
-                  {currentDishes.map((dish) => (
+                <div className="warning-grid">
+                  {currentWarnings.map((warning, index) => (
                     <motion.div
-                      key={dish.id}
-                      className="nutrient-card"
+                      key={`${warning.foodId}-${warning.relatedId}`}
+                      className="warning-card"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                       whileHover={{ y: -5 }}
                     >
                       <div className="card-header">
-                        <h3>{dish.dishName || `Dish #${dish.id}`}</h3>
+                        <h3>{foods.find((f) => f.id === warning.foodId)?.name || `Warning #${index + 1}`}</h3>
                       </div>
-                      <p className="dish-description">
-                        {dish.description || "No description available"}
-                      </p>
+                      <div className="warning-details">
+                        <p><strong>Type:</strong> {warning.type}</p>
+                        <p><strong>Related:</strong> {(warning.type === "Disease" ? diseases : allergies).find((item) => item.id === warning.relatedId)?.name || "Unknown"}</p>
+                        <p><strong>Description:</strong> {warning.description || "No description"}</p>
+                      </div>
                       <div className="card-actions">
                         <motion.button
-                          onClick={() => fetchDishById(dish.id)}
-                          className="edit-button nutrient-specialist-button primary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          Edit
-                        </motion.button>
-                        <motion.button
-                          onClick={() => setSelectedViewDish(dish)}
+                          onClick={() => setSelectedViewWarning(warning)}
                           className="view-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1824,7 +1588,7 @@ const DishManagement = () => {
                           View
                         </motion.button>
                         <motion.button
-                          onClick={() => deleteDishHandler(dish.id)}
+                          onClick={() => deleteWarningHandler(warning)}
                           className="delete-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1840,25 +1604,21 @@ const DishManagement = () => {
                     <motion.button
                       onClick={handlePreviousPage}
                       disabled={currentPage === 1}
-                      className="pagination-button"
+                      className="nutrient-specialist-button secondary"
                       whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
                       whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
                     >
                       Previous
                     </motion.button>
-                    <span className="pagination-info">
+                    <span className="page-indicator">
                       Page {currentPage} of {totalPages}
                     </span>
                     <motion.button
                       onClick={handleNextPage}
                       disabled={currentPage === totalPages}
-                      className="pagination-button"
-                      whileHover={{
-                        scale: currentPage === totalPages ? 1 : 1.05,
-                      }}
-                      whileTap={{
-                        scale: currentPage === totalPages ? 1 : 0.95,
-                      }}
+                      className="nutrient-specialist-button secondary"
+                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
+                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
                     >
                       Next
                     </motion.button>
@@ -1869,10 +1629,10 @@ const DishManagement = () => {
           </div>
         </div>
         <AnimatePresence>
-          {selectedViewDish && (
-            <DishModal
-              dish={selectedViewDish}
-              onClose={() => setSelectedViewDish(null)}
+          {selectedViewWarning && (
+            <WarningModal
+              warning={selectedViewWarning}
+              onClose={() => setSelectedViewWarning(null)}
               foods={foods}
             />
           )}
@@ -1882,4 +1642,4 @@ const DishManagement = () => {
   );
 };
 
-export default DishManagement;
+export default WarningManagement;
