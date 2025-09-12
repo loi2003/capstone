@@ -1020,27 +1020,24 @@ export const deleteFoodInDish = async (dishId, foodId) => {
 
     console.log("Sending delete food in dish request for dishId:", dishId, "foodId:", foodId);
 
-    const response = await apiClient.delete(`/api/Dish/delete-food-in-dish-by-food-id`, {
-      params: {
-        dishId,
-        foodId,
-      },
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    const response = await apiClient.put(
+      `/api/Dish/delete-food-in-dish-by-food-id`,
+      null, // no request body
+      {
+        params: { dishId, foodId },
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
 
-    console.log("Delete food in dish response:", response.data);
     return response.data;
   } catch (error) {
-    console.error("Error deleting food in dish:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    });
+    console.error("Error deleting food in dish:", error);
     throw error;
   }
 };
+
 
 export const getAllAllergyCategories = async (token) => {
   try {
@@ -1622,6 +1619,7 @@ export const getAllMeals = async () => {
   }
 };
 // Warning Food Management APIs
+// Warning Food Management APIs
 export const createWarningFoodForDisease = async (warningData) => {
   try {
     if (!warningData.diseaseId || warningData.diseaseId === "") {
@@ -1633,7 +1631,6 @@ export const createWarningFoodForDisease = async (warningData) => {
     if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
       throw new Error("All warning foods must have a valid foodId");
     }
-
     const payload = {
       diseaseId: warningData.diseaseId,
       warningFoodDtos: warningData.warningFoodDtos.map((food) => ({
@@ -1641,15 +1638,13 @@ export const createWarningFoodForDisease = async (warningData) => {
         description: food.description || "",
       })),
     };
-
     console.log("Sending create warning food for disease request with payload:", payload);
-    const response = await apiClient.post(`/api/food/create-warning-food-for-disease`, payload, {
+    const response = await apiClient.put(`/api/food/create-warning-food-for-disease`, payload, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
     });
-
     console.log("Create warning food for disease response:", response.data);
     return response.data;
   } catch (error) {
@@ -1670,20 +1665,17 @@ export const removeRecommendOrWarningFoodForDisease = async (foodDiseaseData) =>
     if (!foodDiseaseData.diseaseId || foodDiseaseData.diseaseId === "") {
       throw new Error("Disease ID is null or empty");
     }
-
     const payload = {
       foodId: foodDiseaseData.foodId,
       diseaseId: foodDiseaseData.diseaseId,
     };
-
     console.log("Sending remove recommend or warning food for disease request with payload:", payload);
-    const response = await apiClient.post(`/api/food/remove-recommend-or-warning-food-for-disease`, payload, {
+    const response = await apiClient.put(`/api/food/remove-recommend-or-warning-food-for-disease`, payload, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
     });
-
     console.log("Remove recommend or warning food for disease response:", response.data);
     return response.data;
   } catch (error) {
@@ -1704,20 +1696,17 @@ export const removeRecommendOrWarningFoodForAllergy = async (foodAllergyData) =>
     if (!foodAllergyData.allergyId || foodAllergyData.allergyId === "") {
       throw new Error("Allergy ID is null or empty");
     }
-
     const payload = {
       foodId: foodAllergyData.foodId,
       allergyId: foodAllergyData.allergyId,
     };
-
     console.log("Sending remove recommend or warning food for allergy request with payload:", payload);
-    const response = await apiClient.post(`/api/food/remove-recommend-or-warning-food-for-allergy`, payload, {
+    const response = await apiClient.put(`/api/food/remove-recommend-or-warning-food-for-allergy`, payload, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
     });
-
     console.log("Remove recommend or warning food for allergy response:", response.data);
     return response.data;
   } catch (error) {
@@ -1741,7 +1730,6 @@ export const createWarningFoodForAllergy = async (warningData) => {
     if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
       throw new Error("All warning foods must have a valid foodId");
     }
-
     const payload = {
       allergyId: warningData.allergyId,
       warningFoodDtos: warningData.warningFoodDtos.map((food) => ({
@@ -1749,15 +1737,13 @@ export const createWarningFoodForAllergy = async (warningData) => {
         description: food.description || "",
       })),
     };
-
     console.log("Sending create warning food for allergy request with payload:", payload);
-    const response = await apiClient.post(`/api/food/create-warning-food-for-allergy`, payload, {
+    const response = await apiClient.put(`/api/food/create-warning-food-for-allergy`, payload, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
     });
-
     console.log("Create warning food for allergy response:", response.data);
     return response.data;
   } catch (error) {
@@ -1776,7 +1762,6 @@ export const viewWarningFoods = async (filterData) => {
       allergyIds: filterData.allergyIds || [],
       diseaseIds: filterData.diseaseIds || [],
     };
-
     console.log("Sending view warning foods request with payload:", payload);
     const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
       headers: {
@@ -1784,7 +1769,6 @@ export const viewWarningFoods = async (filterData) => {
         Accept: "application/json",
       },
     });
-
     console.log("View warning foods response:", response.data);
     return response.data;
   } catch (error) {

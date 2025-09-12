@@ -59,6 +59,8 @@ const NutrientInFoodManagement = () => {
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
   const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1); // New state for current page
+  const itemsPerPage = 10; // Number of items per page
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -130,6 +132,7 @@ const NutrientInFoodManagement = () => {
       setFoods(foodsData);
       setFoodNutrients(foodNutrientData);
       setFilteredFoodNutrients(foodNutrientData);
+      setCurrentPage(1); // Reset to first page on data fetch
     } catch (err) {
       console.error("Fetch data error:", err.response?.data || err.message);
       showNotification(`Failed to fetch data: ${err.message}`, "error");
@@ -147,6 +150,7 @@ const NutrientInFoodManagement = () => {
         item.foodName.toLowerCase().includes(query)
     );
     setFilteredFoodNutrients(filtered);
+    setCurrentPage(1); // Reset to first page on search
   };
 
   const addFoodNutrientHandler = async () => {
@@ -398,6 +402,24 @@ const NutrientInFoodManagement = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredFoodNutrients.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFoodNutrients = filteredFoodNutrients.slice(startIndex, endIndex);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
 
   const logoVariants = {
     animate: {
@@ -954,7 +976,6 @@ const NutrientInFoodManagement = () => {
           )}
           {currentSidebarPage === 2 && (
             <>
-       
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
@@ -1105,7 +1126,7 @@ const NutrientInFoodManagement = () => {
                   {isSidebarOpen && <span>Meal Management</span>}
                 </Link>
               </motion.div>
-                     <motion.div
+              <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
                 whileHover="hover"
@@ -1621,65 +1642,90 @@ const NutrientInFoodManagement = () => {
                 </p>
               </div>
             ) : (
-              <div className="nutrient-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Nutrient</th>
-                      <th>Food</th>
-                      <th>Nutrient Equivalent</th>
-                      <th>Unit</th>
-                      <th>Amount per Unit</th>
-                      <th>Total Weight</th>
-                      <th>Food Equivalent</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredFoodNutrients.map((item) => (
-                      <motion.tr
-                        key={item.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <td>{item.nutrientName}</td>
-                        <td>{item.foodName}</td>
-                        <td>{item.nutrientEquivalent || "N/A"}</td>
-                        <td>{item.unit || "N/A"}</td>
-                        <td>{item.amountPerUnit || "N/A"}</td>
-                        <td>{item.totalWeight || "N/A"}</td>
-                        <td>{item.foodEquivalent || "N/A"}</td>
-                        <td className="action-buttons">
-                          <motion.button
-                            onClick={() => editFoodNutrientHandler(item)}
-                            className="edit-button nutrient-specialist-button primary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            aria-label={`Edit ${item.nutrientName} in ${item.foodName}`}
-                          >
-                            <span>Edit</span>
-                          </motion.button>
-                          <motion.button
-                            onClick={() =>
-                              deleteFoodNutrientHandler(
-                                item.foodId,
-                                item.nutrientId
-                              )
-                            }
-                            className="delete-button nutrient-specialist-button secondary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            aria-label={`Delete ${item.nutrientName} in ${item.foodName}`}
-                          >
-                            <span>Delete</span>
-                          </motion.button>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                <div className="nutrient-table">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Nutrient</th>
+                        <th>Food</th>
+                        <th>Nutrient Equivalent</th>
+                        <th>Unit</th>
+                        <th>Amount per Unit</th>
+                        <th>Total Weight</th>
+                        <th>Food Equivalent</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedFoodNutrients.map((item) => (
+                        <motion.tr
+                          key={item.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          <td>{item.nutrientName}</td>
+                          <td>{item.foodName}</td>
+                          <td>{item.nutrientEquivalent || "N/A"}</td>
+                          <td>{item.unit || "N/A"}</td>
+                          <td>{item.amountPerUnit || "N/A"}</td>
+                          <td>{item.totalWeight || "N/A"}</td>
+                          <td>{item.foodEquivalent || "N/A"}</td>
+                          <td className="action-buttons">
+                            <motion.button
+                              onClick={() => editFoodNutrientHandler(item)}
+                              className="edit-button nutrient-specialist-button primary"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              aria-label={`Edit ${item.nutrientName} in ${item.foodName}`}
+                            >
+                              <span>Edit</span>
+                            </motion.button>
+                            <motion.button
+                              onClick={() =>
+                                deleteFoodNutrientHandler(
+                                  item.foodId,
+                                  item.nutrientId
+                                )
+                              }
+                              className="delete-button nutrient-specialist-button secondary"
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                              aria-label={`Delete ${item.nutrientName} in ${item.foodName}`}
+                            >
+                              <span>Delete</span>
+                            </motion.button>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="pagination-controls">
+                  <motion.button
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                    className="pagination-button nutrient-specialist-button secondary"
+                    whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
+                    whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
+                  >
+                    Previous
+                  </motion.button>
+                  <span className="pagination-info">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <motion.button
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                    className="pagination-button nutrient-specialist-button secondary"
+                    whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
+                    whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                  >
+                    Next
+                  </motion.button>
+                </div>
+              </>
             )}
           </div>
         </div>
