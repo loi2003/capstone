@@ -1621,3 +1621,178 @@ export const getAllMeals = async () => {
     throw error;
   }
 };
+// Warning Food Management APIs
+export const createWarningFoodForDisease = async (warningData) => {
+  try {
+    if (!warningData.diseaseId || warningData.diseaseId === "") {
+      throw new Error("Disease ID is null or empty");
+    }
+    if (!warningData.warningFoodDtos || warningData.warningFoodDtos.length === 0) {
+      throw new Error("At least one warning food is required");
+    }
+    if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
+      throw new Error("All warning foods must have a valid foodId");
+    }
+
+    const payload = {
+      diseaseId: warningData.diseaseId,
+      warningFoodDtos: warningData.warningFoodDtos.map((food) => ({
+        foodId: food.foodId,
+        description: food.description || "",
+      })),
+    };
+
+    console.log("Sending create warning food for disease request with payload:", payload);
+    const response = await apiClient.post(`/api/food/create-warning-food-for-disease`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Create warning food for disease response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating warning food for disease:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const removeRecommendOrWarningFoodForDisease = async (foodDiseaseData) => {
+  try {
+    if (!foodDiseaseData.foodId || foodDiseaseData.foodId === "") {
+      throw new Error("Food ID is null or empty");
+    }
+    if (!foodDiseaseData.diseaseId || foodDiseaseData.diseaseId === "") {
+      throw new Error("Disease ID is null or empty");
+    }
+
+    const payload = {
+      foodId: foodDiseaseData.foodId,
+      diseaseId: foodDiseaseData.diseaseId,
+    };
+
+    console.log("Sending remove recommend or warning food for disease request with payload:", payload);
+    const response = await apiClient.post(`/api/food/remove-recommend-or-warning-food-for-disease`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Remove recommend or warning food for disease response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error removing recommend or warning food for disease:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const removeRecommendOrWarningFoodForAllergy = async (foodAllergyData) => {
+  try {
+    if (!foodAllergyData.foodId || foodAllergyData.foodId === "") {
+      throw new Error("Food ID is null or empty");
+    }
+    if (!foodAllergyData.allergyId || foodAllergyData.allergyId === "") {
+      throw new Error("Allergy ID is null or empty");
+    }
+
+    const payload = {
+      foodId: foodAllergyData.foodId,
+      allergyId: foodAllergyData.allergyId,
+    };
+
+    console.log("Sending remove recommend or warning food for allergy request with payload:", payload);
+    const response = await apiClient.post(`/api/food/remove-recommend-or-warning-food-for-allergy`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Remove recommend or warning food for allergy response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error removing recommend or warning food for allergy:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const createWarningFoodForAllergy = async (warningData) => {
+  try {
+    if (!warningData.allergyId || warningData.allergyId === "") {
+      throw new Error("Allergy ID is null or empty");
+    }
+    if (!warningData.warningFoodDtos || warningData.warningFoodDtos.length === 0) {
+      throw new Error("At least one warning food is required");
+    }
+    if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
+      throw new Error("All warning foods must have a valid foodId");
+    }
+
+    const payload = {
+      allergyId: warningData.allergyId,
+      warningFoodDtos: warningData.warningFoodDtos.map((food) => ({
+        foodId: food.foodId,
+        description: food.description || "",
+      })),
+    };
+
+    console.log("Sending create warning food for allergy request with payload:", payload);
+    const response = await apiClient.post(`/api/food/create-warning-food-for-allergy`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Create warning food for allergy response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating warning food for allergy:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const viewWarningFoods = async (filterData) => {
+  try {
+    const payload = {
+      allergyIds: filterData.allergyIds || [],
+      diseaseIds: filterData.diseaseIds || [],
+    };
+
+    console.log("Sending view warning foods request with payload:", payload);
+    const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("View warning foods response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching warning foods:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
