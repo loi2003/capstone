@@ -38,7 +38,6 @@ const Notification = ({ message, type }) => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -125,12 +124,15 @@ const DishManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
+  const [foodSearchTerm, setFoodSearchTerm] = useState("");
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentFoodPage, setCurrentFoodPage] = useState(1);
   const itemsPerPage = 6;
+  const foodsPerPage = 50;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -216,6 +218,7 @@ const DishManagement = () => {
         image: null,
       });
       setIsEditing(true);
+      return data;
     } catch (err) {
       showNotification(`Failed to fetch dish details: ${err.message}`, "error");
     } finally {
@@ -357,7 +360,10 @@ const DishManagement = () => {
         amount: food.amount,
       });
       showNotification("Food updated successfully", "success");
-      await fetchDishById(selectedDish?.id);
+      const updatedDish = await fetchDishById(selectedDish?.id);
+      setDishes((prev) =>
+        prev.map((dish) => (dish.id === updatedDish?.id ? updatedDish : dish))
+      );
     } catch (err) {
       showNotification(
         `Failed to update food: ${err.response?.data?.message || err.message}`,
@@ -369,12 +375,18 @@ const DishManagement = () => {
   };
 
   const deleteFoodInDishHandler = async (foodId) => {
-    if (!window.confirm("Are you sure you want to remove this food from the dish?")) return;
+    if (
+      !window.confirm("Are you sure you want to remove this food from the dish?")
+    )
+      return;
     setLoading(true);
     try {
       await deleteFoodInDish(selectedDish?.id, foodId);
       showNotification("Food removed successfully", "success");
-      await fetchDishById(selectedDish?.id);
+      const updatedDish = await fetchDishById(selectedDish?.id);
+      setDishes((prev) =>
+        prev.map((dish) => (dish.id === updatedDish?.id ? updatedDish : dish))
+      );
     } catch (err) {
       showNotification(
         `Failed to remove food: ${err.response?.data?.message || err.message}`,
@@ -396,10 +408,25 @@ const DishManagement = () => {
     setIsEditing(false);
   };
 
-  const handleFoodSelect = (foodId) => {
+  const handleFoodSelect = async (foodId) => {
+  if (isEditing) {
+    const isSelected = newDish.foodList.some(
+      (food) => food.foodId === foodId
+    );
+    if (isSelected) {
+      await deleteFoodInDishHandler(foodId);
+    } else {
+      setNewDish((prev) => ({
+        ...prev,
+        foodList: [...prev.foodList, { foodId, unit: "grams", amount: 1 }],
+      }));
+    }
+  } else {
     setNewDish((prev) => {
       const currentFoods = [...prev.foodList];
-      const index = currentFoods.findIndex((food) => food.foodId === foodId);
+      const index = currentFoods.findIndex(
+        (food) => food.foodId === foodId
+      );
       if (index > -1) {
         currentFoods.splice(index, 1);
       } else {
@@ -407,7 +434,9 @@ const DishManagement = () => {
       }
       return { ...prev, foodList: currentFoods };
     });
-  };
+  }
+};
+
 
   const handleFoodDetailChange = (foodId, field, value) => {
     setNewDish((prev) => ({
@@ -458,16 +487,30 @@ const DishManagement = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    setCurrentFoodPage(1);
+  }, [foodSearchTerm]);
+
   const filteredDishes = dishes.filter(
     (dish) =>
       (dish.dishName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dish.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const indexOfLastDish = currentPage * itemsPerPage;
   const indexOfFirstDish = indexOfLastDish - itemsPerPage;
-  const currentDishes = filteredDishes.slice(indexOfFirstDish, indexOfLastDish);
+  const currentDishes = filteredDishes.slice(
+    indexOfFirstDish,
+    indexOfLastDish
+  );
   const totalPages = Math.ceil(filteredDishes.length / itemsPerPage);
+
+  const filteredFoods = foods.filter((food) =>
+    (food.name || "").toLowerCase().includes(foodSearchTerm.toLowerCase())
+  );
+  const totalFoodPages = Math.ceil(filteredFoods.length / foodsPerPage);
+  const indexOfLastFood = currentFoodPage * foodsPerPage;
+  const indexOfFirstFood = indexOfLastFood - foodsPerPage;
+  const currentFoods = filteredFoods.slice(indexOfFirstFood, indexOfLastFood);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -478,6 +521,18 @@ const DishManagement = () => {
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePreviousFoodPage = () => {
+    if (currentFoodPage > 1) {
+      setCurrentFoodPage(currentFoodPage - 1);
+    }
+  };
+
+  const handleNextFoodPage = () => {
+    if (currentFoodPage < totalFoodPages) {
+      setCurrentFoodPage(currentFoodPage + 1);
     }
   };
 
@@ -552,7 +607,6 @@ const DishManagement = () => {
           />
         )}
       </AnimatePresence>
-
       <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
@@ -1452,7 +1506,6 @@ const DishManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
       <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
@@ -1467,7 +1520,6 @@ const DishManagement = () => {
             <p>Create, edit, and manage dishes composed of multiple foods</p>
           </div>
         </div>
-
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
@@ -1527,8 +1579,19 @@ const DishManagement = () => {
               </div>
               <div className="form-group">
                 <label htmlFor="food-selection">Select Foods</label>
+                <div className="form-group">
+                  <label htmlFor="search-foods">Search Foods</label>
+                  <input
+                    id="search-foods"
+                    type="text"
+                    value={foodSearchTerm}
+                    onChange={(e) => setFoodSearchTerm(e.target.value)}
+                    placeholder="Search by name"
+                    className="search-input"
+                  />
+                </div>
                 <div className="food-selection-container">
-                  {foods.map((food) => (
+                  {currentFoods.map((food) => (
                     <motion.div
                       key={food.id}
                       className={`food-item ${
@@ -1547,6 +1610,35 @@ const DishManagement = () => {
                     </motion.div>
                   ))}
                 </div>
+                {totalFoodPages > 1 && (
+                  <div className="pagination-controls food-pagination-controls">
+                    <motion.button
+                      onClick={handlePreviousFoodPage}
+                      disabled={currentFoodPage === 1}
+                      className="pagination-button"
+                      whileHover={{ scale: currentFoodPage === 1 ? 1 : 1.05 }}
+                      whileTap={{ scale: currentFoodPage === 1 ? 1 : 0.95 }}
+                    >
+                      Previous
+                    </motion.button>
+                    <span className="pagination-info">
+                      Page {currentFoodPage} of {totalFoodPages}
+                    </span>
+                    <motion.button
+                      onClick={handleNextFoodPage}
+                      disabled={currentFoodPage === totalFoodPages}
+                      className="pagination-button"
+                      whileHover={{
+                        scale: currentFoodPage === totalFoodPages ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: currentFoodPage === totalFoodPages ? 1 : 0.95,
+                      }}
+                    >
+                      Next
+                    </motion.button>
+                  </div>
+                )}
                 {newDish.foodList.length > 0 && (
                   <div className="food-details-container">
                     <h4>Food Details</h4>
@@ -1599,7 +1691,9 @@ const DishManagement = () => {
                                 Update
                               </motion.button>
                               <motion.button
-                                onClick={() => deleteFoodInDishHandler(food.foodId)}
+                                onClick={() =>
+                                  deleteFoodInDishHandler(food.foodId)
+                                }
                                 disabled={loading}
                                 className="nutrient-specialist-button secondary"
                                 whileHover={{ scale: loading ? 1 : 1.05 }}
@@ -1616,7 +1710,9 @@ const DishManagement = () => {
                 )}
                 <div className="button-group">
                   <motion.button
-                    onClick={isEditing ? updateDishHandler : createDishHandler}
+                    onClick={
+                      isEditing ? updateDishHandler : createDishHandler
+                    }
                     disabled={loading || foods.length === 0}
                     className="submit-button nutrient-specialist-button primary"
                     whileHover={{
@@ -1649,7 +1745,6 @@ const DishManagement = () => {
               </div>
             </div>
           </div>
-
           <div className="nutrient-list-section">
             <div className="section-header">
               <h2>Dish List</h2>
@@ -1745,21 +1840,25 @@ const DishManagement = () => {
                     <motion.button
                       onClick={handlePreviousPage}
                       disabled={currentPage === 1}
-                      className="nutrient-specialist-button secondary"
+                      className="pagination-button"
                       whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
                       whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
                     >
                       Previous
                     </motion.button>
-                    <span className="page-indicator">
+                    <span className="pagination-info">
                       Page {currentPage} of {totalPages}
                     </span>
                     <motion.button
                       onClick={handleNextPage}
                       disabled={currentPage === totalPages}
-                      className="nutrient-specialist-button secondary"
-                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
-                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                      className="pagination-button"
+                      whileHover={{
+                        scale: currentPage === totalPages ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: currentPage === totalPages ? 1 : 0.95,
+                      }}
                     >
                       Next
                     </motion.button>
@@ -1769,7 +1868,6 @@ const DishManagement = () => {
             )}
           </div>
         </div>
-
         <AnimatePresence>
           {selectedViewDish && (
             <DishModal

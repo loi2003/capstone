@@ -51,6 +51,7 @@
 .dish-management.dark-theme .card-header h3,
 .dish-management.dark-theme .management-header h1,
 .dish-management.dark-theme .page-indicator,
+.dish-management.dark-theme .pagination-info,
 .dish-management.dark-theme .chart-section h2 {
   color: var(--nutrient-specialist-white);
 }
@@ -78,6 +79,23 @@
 .dish-management.dark-theme .logo-svg-container svg path {
   stroke: var(--nutrient-specialist-accent);
   fill: var(--nutrient-specialist-highlight);
+}
+
+.dish-management.dark-theme .pagination-button {
+  background: #2e7d32;
+  color: var(--nutrient-specialist-white);
+  border: 1px solid #4caf50;
+}
+
+.dish-management.dark-theme .pagination-button:hover:not(:disabled) {
+  background: var(--nutrient-specialist-secondary);
+  border-color: var(--nutrient-specialist-accent);
+}
+
+.dish-management.dark-theme .pagination-button:disabled {
+  background: #1a3c34;
+  color: #6b7280;
+  border-color: #6b7280;
 }
 
 /* Sidebar */
@@ -555,6 +573,10 @@
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 0.5rem;
   margin-top: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid var(--nutrient-specialist-accent);
+  border-radius: var(--nutrient-specialist-border-radius);
+  overflow-y: hidden; /* Prevent vertical scrolling */
 }
 
 .dish-management .food-item {
@@ -624,6 +646,11 @@
 .dish-management .food-detail-inputs select,
 .dish-management .food-detail-inputs input {
   flex: 1;
+}
+
+.dish-management .food-detail-actions {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .dish-management .button-group {
@@ -782,6 +809,48 @@
   width: 100%;
 }
 
+/* Pagination */
+.dish-management .pagination-controls,
+.dish-management .food-pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.dish-management .pagination-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--nutrient-specialist-accent);
+  border-radius: var(--nutrient-specialist-border-radius);
+  background: var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-text);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.dish-management .pagination-button:hover:not(:disabled) {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-primary);
+  transform: translateY(-2px);
+}
+
+.dish-management .pagination-button:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border-color: var(--nutrient-specialist-accent);
+}
+
+.dish-management .pagination-info {
+  font-size: 0.85rem;
+  color: var(--nutrient-specialist-text);
+}
+
 /* Loading and empty states */
 .dish-management .loading-state,
 .dish-management .empty-state {
@@ -816,21 +885,6 @@
 .dish-management .empty-state p {
   font-size: 0.85rem;
   opacity: 0.7;
-}
-
-/* Pagination */
-.dish-management .pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.dish-management .page-indicator {
-  font-size: 0.85rem;
-  color: var(--nutrient-specialist-text);
 }
 
 /* Notification */
@@ -1040,6 +1094,40 @@
     max-width: 90%;
     padding: 1rem;
   }
+
+  .dish-management .food-selection-container {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .dish-management .food-detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dish-management .food-detail-inputs {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .dish-management .food-detail-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .dish-management .pagination-controls,
+  .dish-management .food-pagination-controls {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .dish-management .pagination-button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .dish-management .nutrient-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1054,14 +1142,6 @@
 
   .dish-management .nutrient-specialist-button {
     max-width: 100%;
-  }
-
-  .dish-management .nutrient-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .dish-management .food-selection-container {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
   }
 
   .dish-management .modal-content {
