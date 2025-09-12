@@ -525,6 +525,28 @@
   box-shadow: 0 6px 20px rgba(2, 128, 143, 0.35);
 }
 
+.custommealplanner-autocomplete-list {
+  max-height: 200px;   /* adjust as needed */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  z-index: 1000; /* so it stays above other elements */
+}
+
+.custommealplanner-autocomplete-list li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.custommealplanner-autocomplete-list li:hover {
+  background: #f0f0f0;
+}
+
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .custommealplanner-menu-grid {

@@ -43,27 +43,27 @@ const SystemMealPlanner = () => {
   const diseaseRef = useRef(null);
   const preferredFoodRef = useRef(null);
 
-  const allergyOptions = ["Peanuts", "Dairy", "Shellfish", "Gluten", "Soy"];
-  const diseaseOptions = [
-    "Diabetes",
-    "Hypertension",
-    "Heart Disease",
-    "Asthma",
-    "Thyroid Disorder",
-  ];
-  const preferredFoodOptions = [
-    "Salmon",
-    "Spinach",
-    "Chicken",
-    "Avocado",
-    "Broccoli",
-    "Oats",
-    "Eggs",
-    "Tofu",
-    "Blueberries",
-    "Quinoa",
-    // add more or load from API later
-  ];
+  // const allergyOptions = ["Peanuts", "Dairy", "Shellfish", "Gluten", "Soy"];
+  // const diseaseOptions = [
+  //   "Diabetes",
+  //   "Hypertension",
+  //   "Heart Disease",
+  //   "Asthma",
+  //   "Thyroid Disorder",
+  // ];
+  // const preferredFoodOptions = [
+  //   "Salmon",
+  //   "Spinach",
+  //   "Chicken",
+  //   "Avocado",
+  //   "Broccoli",
+  //   "Oats",
+  //   "Eggs",
+  //   "Tofu",
+  //   "Blueberries",
+  //   "Quinoa",
+  //   // add more or load from API later
+  // ];
 
   // Close dropdowns if clicked outside
   useEffect(() => {
@@ -412,7 +412,7 @@ const SystemMealPlanner = () => {
         </select>
 
         {/* Allergy autocomplete */}
-        <label>Allergies</label>
+        {/* <label>Allergies</label>
         <div className="mealplanner-autocomplete-wrapper" ref={allergyRef}>
           <input
             type="text"
@@ -438,10 +438,10 @@ const SystemMealPlanner = () => {
                 ))}
             </ul>
           )}
-        </div>
+        </div> */}
 
         {/* Disease autocomplete */}
-        <label>Chronic Diseases</label>
+        {/* <label>Chronic Diseases</label>
         <div className="mealplanner-autocomplete-wrapper" ref={diseaseRef}>
           <input
             type="text"
@@ -465,7 +465,7 @@ const SystemMealPlanner = () => {
                 ))}
             </ul>
           )}
-        </div>
+        </div> */}
 
         {/* Toggle Day/Week with checkboxes */}
         <div
@@ -516,7 +516,7 @@ const SystemMealPlanner = () => {
           </div>
         )}
         {/* Preferred foods autocomplete */}
-        <label>Preferred Foods</label>
+        {/* <label>Preferred Foods</label>
         <div
           className="mealplanner-autocomplete-wrapper"
           ref={preferredFoodRef}
@@ -545,7 +545,7 @@ const SystemMealPlanner = () => {
                 ))}
             </ul>
           )}
-        </div>
+        </div> */}
         <div className="mealplanner-btn-wrapper">
           <button className="mealplanner-btn" onClick={handleGenerate}>
             Suggest Meal Plan
@@ -601,9 +601,9 @@ const SystemMealPlanner = () => {
                           {/* <button>
                             <FaSyncAlt /> Change Dish
                           </button> */}
-                          <button>
+                          {/* <button>
                             <FaInfoCircle /> Nutrition Information
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     </div>
@@ -702,9 +702,9 @@ const SystemMealPlanner = () => {
                             {/* <button>
                               <FaSyncAlt /> Change Dish
                             </button> */}
-                            <button>
+                            {/* <button>
                               <FaInfoCircle /> Dish information
-                            </button>
+                            </button> */}
                           </div>
                         </div>
                       </div>
@@ -754,9 +754,9 @@ const SystemMealPlanner = () => {
                           {/* <button>
                             <FaSyncAlt /> Change Dish
                           </button> */}
-                          <button>
+                          {/* <button>
                             <FaInfoCircle /> Nutrition Information
-                          </button>
+                          </button> */}
                         </div>
                       </div>
                     </div>
