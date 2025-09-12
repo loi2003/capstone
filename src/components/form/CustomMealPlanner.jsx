@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
+import { viewMealsSuggestion } from "../../apis/meal-api";
+import { FaSyncAlt, FaInfoCircle, FaUtensils } from "react-icons/fa";
 import "./CustomMealPlanner.css";
+import { getCurrentUser } from "../../apis/authentication-api";
+import { viewAllDiseases } from "../../apis/disease-api";
+import { viewAllAllergies } from "../../apis/allergy-api";
+import { viewAllDishes } from "../../apis/dish-api";
 
 const CustomMealPlanner = () => {
+  const token = localStorage.getItem("token");
   const [stage, setStage] = useState(1);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [type, setType] = useState("");
@@ -12,6 +19,11 @@ const CustomMealPlanner = () => {
   const [preferredFood, setPreferredFood] = useState(""); // <-- maps to favouriteDishId
 
   const [activeImageIndices, setActiveImageIndices] = useState({});
+  const [allergyOptions, setAllergyOptions] = useState([]);
+  const [diseaseOptions, setDiseaseOptions] = useState([]);
+  const [preferredFoodOptions, setPreferredFoodOptions] = useState([]);
+  const [preferredFoodInput, setPreferredFoodInput] = useState("");
+  const [selectedPreferredFoodId, setSelectedPreferredFoodId] = useState(null);
 
   const [error, setError] = useState("");
 
@@ -20,40 +32,58 @@ const CustomMealPlanner = () => {
   const [showDiseaseList, setShowDiseaseList] = useState(false);
   const [showPreferredFoodList, setShowPreferredFoodList] = useState(false);
 
+  const [allergyInput, setAllergyInput] = useState("");
+  const [selectedAllergyId, setSelectedAllergyId] = useState(null);
+  const [diseaseInput, setDiseaseInput] = useState("");
+  const [selectedDiseaseId, setSelectedDiseaseId] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const allergyRes = await viewAllAllergies(token);
+        setAllergyOptions(allergyRes.data.data || []);
+
+        const diseaseRes = await viewAllDiseases(token);
+        setDiseaseOptions(diseaseRes.data.data || []);
+
+        const res = await viewAllDishes(token);
+        setPreferredFoodOptions(res.data.data || []);
+      } catch (err) {
+        console.error("Error fetching allergies/diseases/prefered foods:", err);
+      }
+    };
+
+    fetchData();
+  }, [token]);
+
   const allergyRef = useRef(null);
   const diseaseRef = useRef(null);
   const preferredFoodRef = useRef(null);
-
-  const allergyOptions = ["Peanuts", "Dairy", "Shellfish", "Gluten", "Soy"];
-  const diseaseOptions = [
-    "Diabetes",
-    "Hypertension",
-    "Heart Disease",
-    "Asthma",
-    "Thyroid Disorder",
-  ];
-  const preferredFoodOptions = [
-    "Salmon",
-    "Spinach",
-    "Chicken",
-    "Avocado",
-    "Broccoli",
-    "Oats",
-    "Eggs",
-    "Tofu",
-    "Blueberries",
-    "Quinoa",
-  ];
   const [generatedMenus, setGeneratedMenus] = useState([]);
+  const [savedDob, setSavedDob] = useState(""); // store from profile
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (token) {
+        try {
+          const response = await getCurrentUser(token);
+          if (response.data?.data?.dateOfBirth) {
+            const formattedDob = response.data.data.dateOfBirth.split("T")[0];
+            setDateOfBirth(formattedDob);
+            setSavedDob(formattedDob);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user DOB:", error);
+        }
+      }
+    };
+
+    fetchUser();
+  }, [token]);
 
   // called after API returns data
   const handleApiSuccess = (menus) => {
     setGeneratedMenus(menus.slice(0, 2)); // first 2 menus
-  };
-
-  const handleGenerateMore = () => {
-    // Append 2 more menus (from API again or cached pool)
-    setGeneratedMenus((prev) => [...prev, ...newMenus]);
   };
 
   const handleNewMenu = () => {
@@ -106,71 +136,84 @@ const CustomMealPlanner = () => {
     }
   }, [type]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!type) {
       setError("Please select a meal type.");
       return;
     }
-    if (!dateOfBirth) {
-      setError("Please enter your date of birth.");
-      return;
-    }
+    // if (!dateOfBirth) {
+    //   setError("Please enter your date of birth.");
+    //   return;
+    // }
     setError("");
 
     const payload = {
       stage,
-      dateOfBirth,
+      dateOfBirth: savedDob || dateOfBirth || null,
       type,
       numberOfDishes,
       allergyIds: allergies ? [allergies] : [],
       diseaseIds: diseases ? [diseases] : [],
-      favouriteDishId: preferredFood || null,
+      favouriteDishId: selectedPreferredFoodId || null,
     };
 
     console.log("Submitting custom meal request:", payload);
 
-    const mockMenus = [
-      {
-        dishes: [
-          {
-            name: "Shrimp Congee",
-            image:
-              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          },
-          {
-            name: "English Breakfast",
-            image:
-              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          },
-          {
-            name: "Watermelons",
-            image:
-              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          },
-        ],
-      },
-      {
-        dishes: [
-          {
-            name: "Haiyanese Chicken Rice",
-            image:
-              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          },
-          {
-            name: "Seaweeds Soup",
-            image:
-              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          },
-          {
-            name: "Orange",
-            image:
-              "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          },
-        ],
-      },
-    ];
+    try {
+      // Call API twice in parallel to get 2 different menus
+      const [menu1, menu2] = await Promise.all([
+        viewMealsSuggestion(payload),
+        viewMealsSuggestion(payload),
+      ]);
 
-    setGeneratedMenus(mockMenus);
+      const menus = [menu1, menu2].map((menu) => ({
+        dishes: menu.data.dishes.map((d) => ({
+          name: d.dishName,
+          image:
+            d.imageUrl ||
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          calories: d.calories,
+          description: d.description,
+        })),
+      }));
+
+      setGeneratedMenus(menus);
+    } catch (err) {
+      console.error("Error generating menus", err);
+      setError("Failed to generate menus.");
+    }
+  };
+
+  const handleGenerateMore = async () => {
+    if (generatedMenus.length >= 4) return; // max 4 menus
+
+    try {
+      const response = await viewMealsSuggestion({
+        stage,
+        dateOfBirth,
+        type,
+        numberOfDishes,
+        allergyIds: allergies ? [allergies] : [],
+        diseaseIds: diseases ? [diseases] : [],
+        favouriteDishId: preferredFood || null,
+      });
+
+      const newMenu = {
+        dishes: response.data.dishes.map((d) => ({
+          name: d.dishName,
+          image:
+            d.imageUrl ||
+            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+          calories: d.calories,
+          description: d.description,
+        })),
+      };
+
+      setGeneratedMenus((prev) => [...prev, newMenu]);
+    } catch (err) {
+      console.error("Error fetching more menus:", err);
+      setError("Could not fetch more menus.");
+    }
   };
 
   const handleSetActiveImage = (menuIndex, imageIndex) => {
@@ -187,6 +230,8 @@ const CustomMealPlanner = () => {
     });
     setActiveImageIndices(initialIndices);
   }, [generatedMenus, numberOfDishes]);
+
+  const [selectedMenu, setSelectedMenu] = useState(null);
 
   return (
     <div className="custommealplanner-page-wrapper">
@@ -261,24 +306,32 @@ const CustomMealPlanner = () => {
         >
           <input
             type="text"
-            value={allergies}
+            value={allergyInput}
             onChange={(e) => {
-              setAllergies(e.target.value);
+              setAllergyInput(e.target.value);
               setShowAllergyList(true);
+              setSelectedAllergyId(null); // reset if typing again
             }}
-            placeholder="Optional - Type to search e.g. peanuts"
+            placeholder="Optional - Type allergy name"
             className="custommealplanner-input"
             onFocus={() => setShowAllergyList(true)}
           />
-          {showAllergyList && allergies && (
+          {showAllergyList && allergyInput && (
             <ul className="custommealplanner-autocomplete-list">
               {allergyOptions
                 .filter((a) =>
-                  a.toLowerCase().includes(allergies.toLowerCase())
+                  a.name.toLowerCase().includes(allergyInput.toLowerCase())
                 )
-                .map((a, i) => (
-                  <li key={i} onClick={() => setAllergies(a)}>
-                    {a}
+                .map((a) => (
+                  <li
+                    key={a.id}
+                    onClick={() => {
+                      setAllergyInput(a.name); // show name in box
+                      setSelectedAllergyId(a.id); // store ID for API
+                      setShowAllergyList(false);
+                    }}
+                  >
+                    {a.name}
                   </li>
                 ))}
             </ul>
@@ -293,22 +346,32 @@ const CustomMealPlanner = () => {
         >
           <input
             type="text"
-            value={diseases}
+            value={diseaseInput}
             onChange={(e) => {
-              setDiseases(e.target.value);
+              setDiseaseInput(e.target.value);
               setShowDiseaseList(true);
+              setSelectedDiseaseId(null);
             }}
-            placeholder="Optional - Type to search e.g. diabetes"
+            placeholder="Optional - Type disease name"
             className="custommealplanner-input"
             onFocus={() => setShowDiseaseList(true)}
           />
-          {showDiseaseList && diseases && (
+          {showDiseaseList && diseaseInput && (
             <ul className="custommealplanner-autocomplete-list">
               {diseaseOptions
-                .filter((d) => d.toLowerCase().includes(diseases.toLowerCase()))
-                .map((d, i) => (
-                  <li key={i} onClick={() => setDiseases(d)}>
-                    {d}
+                .filter((d) =>
+                  d.name.toLowerCase().includes(diseaseInput.toLowerCase())
+                )
+                .map((d) => (
+                  <li
+                    key={d.id}
+                    onClick={() => {
+                      setDiseaseInput(d.name);
+                      setSelectedDiseaseId(d.id);
+                      setShowDiseaseList(false);
+                    }}
+                  >
+                    {d.name}
                   </li>
                 ))}
             </ul>
@@ -316,31 +379,41 @@ const CustomMealPlanner = () => {
         </div>
 
         {/* Preferred Foods (maps to favouriteDishId) */}
-        <label>Preferred Food</label>
+        <label>Choose your Favorite Dish!</label>
         <div
           className="custommealplanner-autocomplete-wrapper"
           ref={preferredFoodRef}
         >
           <input
             type="text"
-            value={preferredFood}
+            value={preferredFoodInput}
             onChange={(e) => {
-              setPreferredFood(e.target.value);
+              setPreferredFoodInput(e.target.value);
               setShowPreferredFoodList(true);
+              setSelectedPreferredFoodId(null);
             }}
-            placeholder="Optional - Type to search e.g. salmon, spinach"
+            placeholder="Optional - Type to search e.g. Rice, Beef"
             className="custommealplanner-input"
             onFocus={() => setShowPreferredFoodList(true)}
           />
-          {showPreferredFoodList && preferredFood && (
+          {showPreferredFoodList && preferredFoodInput && (
             <ul className="custommealplanner-autocomplete-list">
               {preferredFoodOptions
                 .filter((f) =>
-                  f.toLowerCase().includes(preferredFood.toLowerCase())
+                  f.dishName
+                    .toLowerCase()
+                    .includes(preferredFoodInput.toLowerCase())
                 )
-                .map((f, i) => (
-                  <li key={i} onClick={() => setPreferredFood(f)}>
-                    {f}
+                .map((f) => (
+                  <li
+                    key={f.id}
+                    onClick={() => {
+                      setPreferredFoodInput(f.dishName);
+                      setSelectedPreferredFoodId(f.id);
+                      setShowPreferredFoodList(false);
+                    }}
+                  >
+                    {f.dishName}
                   </li>
                 ))}
             </ul>
@@ -358,92 +431,159 @@ const CustomMealPlanner = () => {
           <p style={{ color: "#e74c3c", marginTop: "0.5rem" }}>{error}</p>
         )}
       </div>
+
       {generatedMenus.length > 0 && (
         <div className="custommealplanner-output">
-          <div className="custommealplanner-menu-grid">
-            {generatedMenus.map((menu, menuIndex) => {
-              const activeIdx = activeImageIndices[menuIndex] || 0;
+          {selectedMenu ? (
+            // 🔹 DETAILS VIEW
+            <div className="custommealplanner-mealplanner-output">
+              {(() => {
+                const totalCalories =
+                  selectedMenu.dishes?.reduce(
+                    (sum, dish) => sum + (dish?.calories || 0),
+                    0
+                  ) || 0;
 
-              return (
-                <div key={menuIndex} className="custommealplanner-menu-card">
-                  <div className="custommealplanner-menu-header">
-                    <span className="custommealplanner-menu-label">
-                      Menu {menuIndex + 1}
+                return (
+                  <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
+                    Menu Details <br />
+                    <span style={{ fontSize: "1.1rem" }}>
+                      Total Calories:{" "}
+                      <strong>{totalCalories.toFixed(1)} kcal</strong>
                     </span>
-                    <span className="custommealplanner-menu-counter">
-                      {numberOfDishes} dishes
-                    </span>
-                  </div>
+                  </h2>
+                );
+              })()}
 
-                  <div className="custommealplanner-menu-image-container">
-                    <img
-                      src={menu.dishes[activeIdx]?.image}
-                      alt={menu.dishes[activeIdx]?.name}
-                      className="custommealplanner-menu-main-image"
-                    />
-
-                    <div className="custommealplanner-carousel-dots">
-                      {menu.dishes
-                        .slice(0, numberOfDishes)
-                        .map((dish, index) => (
-                          <span
-                            key={index}
-                            className={`custommealplanner-dot ${
-                              index === activeIdx ? "active" : ""
-                            }`}
-                            onClick={() =>
-                              handleSetActiveImage(menuIndex, index)
-                            }
-                          />
-                        ))}
-                    </div>
-                  </div>
-
-                  <h3 className="custommealplanner-menu-title">
-                    {menu.dishes[activeIdx]?.name}
-                  </h3>
-
-                  <div className="custommealplanner-thumbnails">
-                    {menu.dishes.slice(0, numberOfDishes).map((dish, index) => (
-                      <div
-                        key={index}
-                        className="custommealplanner-thumbnail-item"
-                        onClick={() => handleSetActiveImage(menuIndex, index)}
-                      >
-                        <img
-                          src={dish.image}
-                          alt={dish.name}
-                          className={`custommealplanner-thumbnail ${
-                            index === activeIdx ? "active" : ""
-                          }`}
-                        />
+              <div className="custommealplanner-meal-card">
+                <div className="custommealplanner-meal-dishes">
+                  {selectedMenu.dishes?.map((dish, i) => (
+                    <div key={i} className="custommealplanner-dish-card">
+                      <img src={dish.image} alt={dish.name} />
+                      <div className="custommealplanner-dish-info">
+                        <h4>{dish.name}</h4>
+                        <p>{dish.calories.toFixed(1)} kcal</p>
+                        <div className="custommealplanner-meal-actions">
+                          {/* <button>
+                            <FaInfoCircle /> Nutrition Information
+                          </button> */}
+                        </div>
                       </div>
-                    ))}
-                  </div>
-
-                  <button className="custommealplanner-detail-btn">
-                    View Details
-                  </button>
+                    </div>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
+              </div>
 
-          {/* Action Buttons */}
-          <div className="custommealplanner-menu-actions">
-            <button
-              className="custommealplanner-btn secondary"
-              onClick={handleGenerateMore}
-            >
-              See More Menus
-            </button>
-            <button
-              className="custommealplanner-btn primary"
-              onClick={handleNewMenu}
-            >
-              Generate New Custom Menus
-            </button>
-          </div>
+              <div style={{ textAlign: "center", marginTop: "1rem" }}>
+                <button
+                  className="custommealplanner-btn secondary"
+                  onClick={() => setSelectedMenu(null)}
+                >
+                  Back to Menus
+                </button>
+              </div>
+            </div>
+          ) : (
+            // 🔹 MENUS VIEW
+            <>
+              <div className="custommealplanner-menu-grid">
+                {generatedMenus.map((menu, menuIndex) => {
+                  const activeIdx = activeImageIndices[menuIndex] || 0;
+
+                  return (
+                    <div
+                      key={menuIndex}
+                      className="custommealplanner-menu-card"
+                    >
+                      <div className="custommealplanner-menu-header">
+                        <span className="custommealplanner-menu-label">
+                          Menu {menuIndex + 1}
+                        </span>
+                        <span className="custommealplanner-menu-counter">
+                          {numberOfDishes} dishes
+                        </span>
+                      </div>
+
+                      <div className="custommealplanner-menu-image-container">
+                        <img
+                          src={menu.dishes[activeIdx]?.image}
+                          alt={menu.dishes[activeIdx]?.name}
+                          className="custommealplanner-menu-main-image"
+                        />
+
+                        <div className="custommealplanner-carousel-dots">
+                          {menu.dishes
+                            .slice(0, numberOfDishes)
+                            .map((dish, index) => (
+                              <span
+                                key={index}
+                                className={`custommealplanner-dot ${
+                                  index === activeIdx ? "active" : ""
+                                }`}
+                                onClick={() =>
+                                  handleSetActiveImage(menuIndex, index)
+                                }
+                              />
+                            ))}
+                        </div>
+                      </div>
+
+                      <h3 className="custommealplanner-menu-title">
+                        {menu.dishes[activeIdx]?.name}
+                      </h3>
+
+                      <div className="custommealplanner-thumbnails">
+                        {menu.dishes
+                          .slice(0, numberOfDishes)
+                          .map((dish, index) => (
+                            <div
+                              key={index}
+                              className="custommealplanner-thumbnail-item"
+                              onClick={() =>
+                                handleSetActiveImage(menuIndex, index)
+                              }
+                            >
+                              <img
+                                src={dish.image}
+                                alt={dish.name}
+                                className={`custommealplanner-thumbnail ${
+                                  index === activeIdx ? "active" : ""
+                                }`}
+                              />
+                            </div>
+                          ))}
+                      </div>
+
+                      <button
+                        className="custommealplanner-detail-btn"
+                        onClick={() => setSelectedMenu(menu)}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="custommealplanner-menu-actions">
+                {generatedMenus.length < 4 && (
+                  <button
+                    className="custommealplanner-btn secondary"
+                    onClick={handleGenerateMore}
+                  >
+                    See More Menus
+                  </button>
+                )}
+                <button
+                  className="custommealplanner-btn primary"
+                  onClick={handleNewMenu}
+                >
+                  Generate New Custom Menus
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </div>

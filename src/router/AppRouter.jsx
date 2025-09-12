@@ -121,9 +121,9 @@ const AppRoutes = () => {
           path="/pregnancy-tracking/journal-section/edit-journal-form"
           element={<EditJournalEntryForm />}
         />
-         {/* <Route path="/system-meal-planner" element={<SystemMealPlanner />} /> */}
-        {/* <Route path="/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} /> */}
-        {/* <Route path="/nutritional-guidance-foodwarning" element={<FoodWarning />} /> */}
+        <Route path="/pregnancy-tracking/system-meal-planner" element={<SystemMealPlanner />} />
+        <Route path="/pregnancy-tracking/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
+        <Route path="/pregnancy-tracking/nutritional-guidance-foodwarning" element={<FoodWarning />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
