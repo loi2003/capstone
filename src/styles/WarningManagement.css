@@ -1,0 +1,883 @@
+.warning-management {
+  --nutrient-specialist-primary: #2e7d32;
+  --nutrient-specialist-secondary: #4caf50;
+  --nutrient-specialist-accent: #a5d6a7;
+  --nutrient-specialist-highlight: #ffca28;
+  --nutrient-specialist-light-bg: #e8f5e9;
+  --nutrient-specialist-white: #ffffff;
+  --nutrient-specialist-text: #1a3c34;
+  --nutrient-specialist-logout: #d32f2f;
+  --nutrient-specialist-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
+  --nutrient-specialist-shadow-hover: 0 8px 24px rgba(46, 125, 50, 0.15);
+  --nutrient-specialist-border-radius: 8px;
+  --nutrient-specialist-transition: all 0.3s ease;
+
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--nutrient-specialist-light-bg);
+  color: var(--nutrient-specialist-text);
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Dark theme */
+.warning-management.dark-theme,
+.warning-management.dark-theme .nutrient-specialist-content,
+.warning-management.dark-theme .management-header,
+.warning-management.dark-theme .form-section,
+.warning-management.dark-theme .form-card,
+.warning-management.dark-theme .warning-list-section,
+.warning-management.dark-theme .warning-card {
+  background: #1a3c34;
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management.dark-theme .input-field,
+.warning-management.dark-theme .textarea-field,
+.warning-management.dark-theme .search-input,
+.warning-management.dark-theme select,
+.warning-management.dark-theme .checkbox-input {
+  background: #2e7d32;
+  color: var(--nutrient-specialist-white);
+  border-color: #4caf50;
+}
+
+.warning-management.dark-theme .form-group label,
+.warning-management.dark-theme .section-header h2,
+.warning-management.dark-theme .card-header h3,
+.warning-management.dark-theme .management-header h1,
+.warning-management.dark-theme .page-indicator {
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management.dark-theme .management-header p {
+  color: var(--nutrient-specialist-accent);
+}
+
+.warning-management.dark-theme .nutrient-specialist-sidebar,
+.warning-management.dark-theme .sidebar-nav a,
+.warning-management.dark-theme .sidebar-nav button,
+.warning-management.dark-theme .nutrient-specialist-profile-info,
+.warning-management.dark-theme .nutrient-specialist-profile-email {
+  background: #1a3c34;
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management.dark-theme .sidebar-nav a:hover,
+.warning-management.dark-theme .sidebar-nav button:hover,
+.warning-management.dark-theme .nutrient-specialist-profile-info:hover {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management.dark-theme .logo-svg-container svg path {
+  stroke: var(--nutrient-specialist-accent);
+  fill: var(--nutrient-specialist-highlight);
+}
+
+/* Sidebar */
+.warning-management .nutrient-specialist-sidebar {
+  background: linear-gradient(180deg, var(--nutrient-specialist-primary), var(--nutrient-specialist-accent));
+  color: var(--nutrient-specialist-white);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  box-shadow: var(--nutrient-specialist-shadow);
+  z-index: 1000;
+  transition: var(--nutrient-specialist-transition);
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.warning-management .nutrient-specialist-sidebar.open {
+  width: 280px;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed {
+  width: 60px;
+}
+
+.warning-management .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-header {
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  gap: 0.5rem;
+}
+
+.warning-management .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.warning-management .logo-text {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--nutrient-specialist-white);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .logo-text {
+  display: none;
+}
+
+.warning-management .logo-svg-container {
+  display: inline-flex;
+}
+
+.warning-management .logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .logo-svg-container svg {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+}
+
+.warning-management .logo-svg-container svg path {
+  stroke: var(--nutrient-specialist-primary);
+  fill: var(--nutrient-specialist-highlight);
+}
+
+.warning-management .sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--nutrient-specialist-white);
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-toggle {
+  margin: 0 auto;
+}
+
+.warning-management .sidebar-toggle:hover,
+.warning-management .sidebar-toggle:focus {
+  background: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-primary);
+}
+
+.warning-management .sidebar-toggle svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: none;
+}
+
+.warning-management .sidebar-toggle:hover svg path,
+.warning-management .sidebar-toggle:focus svg path {
+  stroke: var(--nutrient-specialist-primary);
+}
+
+.warning-management .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  flex-grow: 1;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-nav {
+  padding: 0;
+  gap: 0.5rem;
+}
+
+.warning-management .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-nav-item {
+  justify-content: center;
+}
+
+.warning-management .sidebar-nav a,
+.warning-management .sidebar-nav button,
+.warning-management .nutrient-specialist-profile-info {
+  color: var(--nutrient-specialist-white);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-nav a,
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-nav button,
+.warning-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info {
+  padding: 0.5rem 0;
+  justify-content: center;
+}
+
+.warning-management .sidebar-nav a svg,
+.warning-management .sidebar-nav button svg,
+.warning-management .nutrient-specialist-profile-info svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-nav a span,
+.warning-management .nutrient-specialist-sidebar.closed .sidebar-nav button span,
+.warning-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-email {
+  display: none;
+}
+
+.warning-management .sidebar-nav a svg path,
+.warning-management .sidebar-nav button svg path,
+.warning-management .nutrient-specialist-profile-info svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-accent);
+}
+
+.warning-management .sidebar-nav a:hover,
+.warning-management .sidebar-nav button:hover,
+.warning-management .nutrient-specialist-profile-info:hover {
+  background: var(--nutrient-specialist-secondary);
+  transform: translateY(-2px);
+}
+
+.warning-management .sidebar-nav a:hover svg path,
+.warning-management .sidebar-nav button:hover svg path,
+.warning-management .nutrient-specialist-profile-info:hover svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-white);
+}
+
+.warning-management .sidebar-nav-item.active,
+.warning-management .sidebar-nav-item.active:hover {
+  background: var(--nutrient-specialist-secondary);
+}
+
+.warning-management .food-dropdown,
+.warning-management .nutrient-dropdown {
+  overflow: hidden;
+}
+
+.warning-management .food-dropdown-item,
+.warning-management .nutrient-dropdown-item {
+  padding-left: 1.5rem;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .food-dropdown-item,
+.warning-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item {
+  padding-left: 0;
+}
+
+.warning-management .dropdown-icon {
+  margin-left: auto;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.warning-management .dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.warning-management .nutrient-specialist-profile-section {
+  margin-top: auto;
+}
+
+.warning-management .nutrient-specialist-profile-email {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .logout-button svg path {
+  stroke: var(--nutrient-specialist-logout);
+  fill: none;
+}
+
+.warning-management .logout-button:hover svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-white);
+}
+
+.warning-management .page-switcher {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.warning-management .page-switcher button {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--nutrient-specialist-white);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: var(--nutrient-specialist-border-radius);
+  cursor: pointer;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.warning-management .page-switcher button.active {
+  background: var(--nutrient-specialist-secondary);
+}
+
+.warning-management .page-switcher button:hover {
+  background: var(--nutrient-specialist-secondary);
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .page-switcher {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.warning-management .nutrient-specialist-sidebar.closed .page-switcher button {
+  padding: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+/* Main content */
+.warning-management .nutrient-specialist-content {
+  flex: 1;
+  margin-left: 280px;
+  transition: margin-left var(--nutrient-specialist-transition);
+  padding: 1rem;
+  width: calc(100% - 280px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.warning-management .nutrient-specialist-content.sidebar-closed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Header */
+.warning-management .management-header {
+  background: var(--nutrient-specialist-white);
+  padding: 1.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  box-shadow: var(--nutrient-specialist-shadow);
+  margin-bottom: 1.5rem;
+}
+
+.warning-management .header-content h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .header-content p {
+  font-size: 1rem;
+  color: var(--nutrient-specialist-text);
+  opacity: 0.7;
+  margin: 0.25rem 0 0;
+}
+
+/* Form section */
+.warning-management .management-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .warning-management .management-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.warning-management .form-section,
+.warning-management .warning-list-section {
+  background: var(--nutrient-specialist-white);
+  border-radius: var(--nutrient-specialist-border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--nutrient-specialist-shadow);
+}
+
+.warning-management .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.warning-management .section-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--nutrient-specialist-text);
+  margin: 0;
+}
+
+.warning-management .warning-count {
+  font-size: 0.9rem;
+  color: var(--nutrient-specialist-text);
+  opacity: 0.7;
+}
+
+.warning-management .form-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.warning-management .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.warning-management .form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .input-field,
+.warning-management .textarea-field,
+.warning-management .search-input,
+.warning-management select {
+  padding: 0.5rem;
+  border: 1px solid var(--nutrient-specialist-accent);
+  border-radius: var(--nutrient-specialist-border-radius);
+  font-size: 0.9rem;
+  transition: var(--nutrient-specialist-transition);
+  background: var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .input-field:focus,
+.warning-management .textarea-field:focus,
+.warning-management .search-input:focus,
+.warning-management select:focus {
+  border-color: var(--nutrient-specialist-secondary);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.warning-management .textarea-field {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.warning-management .food-selection-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--nutrient-specialist-accent);
+  border-radius: var(--nutrient-specialist-border-radius);
+}
+
+.warning-management .food-item {
+  padding: 0.5rem;
+  border: 1px solid var(--nutrient-specialist-accent);
+  border-radius: var(--nutrient-specialist-border-radius);
+  cursor: pointer;
+  transition: var(--nutrient-specialist-transition);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.warning-management .food-item:hover {
+  background: var(--nutrient-specialist-light-bg);
+}
+
+.warning-management .food-item.selected {
+  background: var(--nutrient-specialist-accent);
+  border-color: var(--nutrient-specialist-secondary);
+}
+
+.warning-management .food-name {
+  font-size: 0.85rem;
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .checkmark {
+  color: var(--nutrient-specialist-secondary);
+  font-weight: bold;
+}
+
+.warning-management .food-details-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.warning-management .food-details-container h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.warning-management .food-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.warning-management .food-detail-inputs {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.warning-management .food-detail-inputs input {
+  flex: 1;
+}
+
+.warning-management .no-results {
+  text-align: center;
+  color: var(--nutrient-specialist-text);
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.warning-management .button-group {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.warning-management .nutrient-specialist-button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--nutrient-specialist-border-radius);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.warning-management .nutrient-specialist-button.primary {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .nutrient-specialist-button.primary:hover:not(:disabled) {
+  background: var(--nutrient-specialist-primary);
+}
+
+.warning-management .nutrient-specialist-button.secondary {
+  background: var(--nutrient-specialist-accent);
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .nutrient-specialist-button.secondary:hover:not(:disabled) {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .nutrient-specialist-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Warning list */
+.warning-management .warning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.warning-management .warning-card {
+  background: var(--nutrient-specialist-white);
+  border-radius: var(--nutrient-specialist-border-radius);
+  box-shadow: var(--nutrient-specialist-shadow);
+  padding: 1rem;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.warning-management .warning-card:hover {
+  box-shadow: var(--nutrient-specialist-shadow-hover);
+}
+
+.warning-management .card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .warning-details p {
+  font-size: 0.85rem;
+  margin: 0.25rem 0;
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.warning-management .view-button,
+.warning-management .delete-button {
+  flex: 1;
+}
+
+.warning-management .delete-button {
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .delete-button:hover {
+  background: #b71c1c;
+}
+
+/* Pagination */
+.warning-management .pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.warning-management .page-indicator {
+  font-size: 0.9rem;
+  color: var(--nutrient-specialist-text);
+}
+
+/* Modal */
+.warning-management .modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.warning-management .modal-content {
+  background: var(--nutrient-specialist-white);
+  padding: 1.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--nutrient-specialist-shadow);
+}
+
+.warning-management.dark-theme .modal-content {
+  background: #2e7d32;
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .modal-content h2 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem;
+}
+
+.warning-management .modal-content h3 {
+  font-size: 1.2rem;
+  margin: 0.5rem 0;
+}
+
+.warning-management .modal-content p {
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.warning-management .modal-content button {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/* Loading and empty states */
+.warning-management .loading-state,
+.warning-management .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+}
+
+.warning-management .loading-state svg,
+.warning-management .empty-state svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 1rem;
+}
+
+.warning-management .loading-state p,
+.warning-management .empty-state p {
+  font-size: 0.9rem;
+  color: var(--nutrient-specialist-text);
+  opacity: 0.7;
+}
+
+.warning-management .empty-state h3 {
+  font-size: 1.1rem;
+  margin: 0 0 0.5rem;
+  color: var(--nutrient-specialist-text);
+}
+
+.warning-management .loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Notification */
+.warning-management .notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1001;
+  padding: 0.75rem 1rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  box-shadow: var(--nutrient-specialist-shadow);
+  max-width: 300px;
+}
+
+.warning-management .notification.success {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .notification.error {
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+}
+
+.warning-management .notification-content h4 {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.warning-management .notification-content p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .warning-management .nutrient-specialist-sidebar {
+    width: 60px;
+  }
+
+  .warning-management .nutrient-specialist-content {
+    margin-left: 60px;
+    width: calc(100% - 60px);
+  }
+
+  .warning-management .management-header {
+    padding: 1rem;
+  }
+
+  .warning-management .header-content h1 {
+    font-size: 1.5rem;
+  }
+
+  .warning-management .management-container {
+    grid-template-columns: 1fr;
+  }
+
+  .warning-management .warning-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .warning-management .form-section,
+  .warning-management .warning-list-section {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .warning-management .header-content h1 {
+    font-size: 1.25rem;
+  }
+
+  .warning-management .header-content p {
+    font-size: 0.85rem;
+  }
+
+  .warning-management .form-group label {
+    font-size: 0.85rem;
+  }
+
+  .warning-management .input-field,
+  .warning-management .textarea-field,
+  .warning-management .search-input,
+  .warning-management select {
+    font-size: 0.85rem;
+  }
+
+  .warning-management .nutrient-specialist-button {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .warning-management .food-selection-container {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+
+  .warning-management .modal-content {
+    padding: 1rem;
+  }
+
+  .warning-management .modal-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .warning-management .modal-content h3 {
+    font-size: 1rem;
+  }
+
+  .warning-management .modal-content p {
+    font-size: 0.85rem;
+  }
+}
