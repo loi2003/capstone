@@ -1,22 +1,35 @@
-import React, { createContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import * as signalR from "@microsoft/signalr";
+import apiClient from "../apis/url-api";
 
 export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
-  const [connection, setConnection] = useState(null);
+  const connectionRef = useRef(null);
   const [notifications, setNotifications] = useState([]);
 
   const addNotification = useCallback((msg) => {
-    setNotifications((prev) => [...prev, msg]);
+    setNotifications((prev) => {
+      // optional: prevent duplicates if server sends same message twice
+      if (prev.some((n) => n.id && n.id === msg.id)) return prev;
+      return [...prev, msg];
+    });
   }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
 
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`https://localhost:7045/hub/notificationHub?userId=${userId}`, {
+    const baseUrl = apiClient.defaults.baseURL;
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${baseUrl}/hub/notificationHub?userId=${userId}`, {
         withCredentials: true,
         transport:
           signalR.HttpTransportType.WebSockets |
@@ -26,23 +39,38 @@ export const NotificationProvider = ({ children }) => {
       .withAutomaticReconnect()
       .build();
 
-    newConnection.on("ReceiveNotification", (msg) => {
-      console.log("Received:", msg);
-      addNotification(msg); 
+    connection.on("ReceiveNotification", (msg) => {
+      console.log("Notification received:", msg);
+      addNotification(msg);
     });
 
-    newConnection
+    connection
       .start()
       .then(() => console.log("SignalR connected"))
-      .catch((err) => console.error(err));
+      .catch((err) =>
+        console.error("Failed to connect to SignalR:", err.message)
+      );
 
-    setConnection(newConnection);
+    connectionRef.current = connection;
 
-    return () => newConnection.stop();
+    return () => {
+      connection
+        .stop()
+        .then(() => console.log("SignalR disconnected"))
+        .catch((err) => console.error("Error stopping SignalR:", err));
+    };
   }, [addNotification]);
 
+  const contextValue = useMemo(
+    () => ({
+      connection: connectionRef.current,
+      notifications,
+    }),
+    [notifications]
+  );
+
   return (
-    <NotificationContext.Provider value={{ connection, notifications }}>
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
   );

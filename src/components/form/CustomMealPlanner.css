@@ -1,6 +1,6 @@
 /* ============ PAGE LAYOUT ============ */
 .custommealplanner-page-wrapper {
-  margin-top: -50px;
+  margin-top: -45px;
   background: #f7fbfc;
   font-family: var(--font-inter, "Inter", sans-serif);
   color: var(--dark-text, #333);
@@ -16,10 +16,12 @@
 }
 
 .custommealplanner-heading h1 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: #013F50;
-  margin-bottom: 0.5rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: #013f50;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);
+  letter-spacing: -0.5px;
 }
 
 .custommealplanner-heading p {
@@ -387,6 +389,163 @@
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(2, 128, 143, 0.4);
 }
+
+.custommealplanner-mealplanner-output {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+}
+
+.custommealplanner-mealplanner-output h2 {
+  text-align: center;
+  color: #013f50;
+  margin-bottom: 2.5rem;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(1, 63, 80, 0.1);
+}
+
+.custommealplanner-mealplanner-output h2 span {
+  display: block;
+  margin-top: 0.5rem;
+  color: #02808f;
+  font-weight: 600;
+  text-shadow: none;
+}
+
+
+.custommealplanner-meal-dishes {
+  width: 1100px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.custommealplanner-meal-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 12px rgba(0, 0, 0, 0.04);
+  margin-bottom: 2.5rem;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+}
+
+.custommealplanner-meal-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.custommealplanner-dish-card {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 253, 255, 0.8) 0%,
+    rgba(240, 248, 255, 0.6) 100%
+  );
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(4, 102, 141, 0.08);
+}
+
+.custommealplanner-dish-card img {
+  width: 320px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.custommealplanner-dish-card:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+
+.custommealplanner-dish-info {
+  flex: 1;
+}
+
+.custommealplanner-dish-info h4 {
+  font-size: 1.4rem;
+  color: #04668d;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.custommealplanner-dish-info p {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+
+/* Enhanced meal action buttons */
+.custommealplanner-meal-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.custommealplanner-meal-actions button {
+  flex: 1;
+  min-width: 200px;
+  background: #02808f;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 12px rgba(2, 128, 143, 0.25);
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+}
+
+.custommealplanner-meal-actions button:hover {
+  background: #04668d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(2, 128, 143, 0.35);
+}
+
+.custommealplanner-autocomplete-list {
+  max-height: 200px;   /* adjust as needed */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  z-index: 1000; /* so it stays above other elements */
+}
+
+.custommealplanner-autocomplete-list li {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.custommealplanner-autocomplete-list li:hover {
+  background: #f0f0f0;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
