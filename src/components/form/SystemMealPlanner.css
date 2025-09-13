@@ -42,12 +42,11 @@
 }
 
 .mealplanner-heading p {
-  font-size: 1.1rem;
-  color: #555;
-  line-height: 1.7;
-  font-weight: 400;
-  max-width: 600px;
-  margin: 0 auto;
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
 }
 
 /* ============ FORM CARD ============ */
@@ -300,7 +299,7 @@
 
 /* ============ ENHANCED OUTPUT CARDS ============ */
 .mealplanner-output {
-  max-width: 1300px;
+  max-width: 1250px;
   margin: 0 auto;
   padding: 1rem 2rem;
 }
@@ -370,7 +369,7 @@
 }
 
 .meal-dishes {
-  width: 1200px;
+  width: 1150px;
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -384,6 +383,7 @@
     rgba(249, 253, 255, 0.8) 0%,
     rgba(240, 248, 255, 0.6) 100%
   );
+  width: 1050px;
   border-radius: 1.25rem;
   padding: 1.5rem;
   display: flex;
@@ -503,7 +503,7 @@
   z-index: 1;
 }
 
-.mealplanner-header-title h3{
+.mealplanner-header-title h3 {
   color: #013f50;
   letter-spacing: -0.5px;
   text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);

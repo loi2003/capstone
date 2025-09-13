@@ -25,9 +25,11 @@
 }
 
 .custommealplanner-heading p {
-  font-size: 1.05rem;
-  color: #666;
-  line-height: 1.6;
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
 }
 
 /* ============ FORM CARD ============ */
@@ -37,20 +39,21 @@
   background: #ffffff;
   padding: 2rem;
   border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
 .custommealplanner-form:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
 }
 
 .custommealplanner-form label {
   display: flex;
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
-  font-size: 1rem;
+  margin: 1.5rem 0 0.75rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: #04668d;
+  letter-spacing: -0.2px;
 }
 
 /* Inputs */
@@ -86,7 +89,7 @@
   position: absolute;
   width: 100%;
   z-index: 10;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
 }
 .custommealplanner-autocomplete-list li {
   padding: 0.6rem 1rem;
@@ -100,7 +103,7 @@
 /* ============ BUTTONS ============ */
 .custommealplanner-btn {
   width: 230px;
-  background: #02808F;
+  background: #02808f;
   border-radius: 0.6rem;
   padding: 0.9rem 1.5rem;
   font-size: 1rem;
@@ -113,7 +116,7 @@
 .custommealplanner-btn:hover {
   background: #04668d;
   transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
 }
 
 /* Wrapper for centered button */
@@ -161,14 +164,14 @@
 .custommealplanner-menu-card {
   background: #ffffff;
   border-radius: 1.5rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   transition: all 0.4s ease;
   position: relative;
 }
 .custommealplanner-menu-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
 }
 
 /* Menu Header */
@@ -229,7 +232,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.5);
+  background: rgba(255, 255, 255, 0.5);
   transition: all 0.3s ease;
   cursor: pointer;
 }
@@ -242,7 +245,7 @@
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
   width: 40px;
@@ -257,7 +260,7 @@
   opacity: 1;
 }
 .custommealplanner-carousel-btn:hover {
-  background: rgba(0,0,0,0.7);
+  background: rgba(0, 0, 0, 0.7);
 }
 .custommealplanner-carousel-btn.prev {
   left: 15px;
@@ -300,20 +303,20 @@
 }
 
 .custommealplanner-thumbnail.active {
-  border-color: #02808F !important;
+  border-color: #02808f !important;
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(2, 128, 143, 0.4);
 }
 
 .custommealplanner-thumbnail:hover {
-  border-color: #02808F;
+  border-color: #02808f;
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(60, 117, 231, 0.3);
 }
 
 /* Enhanced Detail Button */
 .custommealplanner-detail-btn {
-  background: #02808F;
+  background: #02808f;
   color: #ffffff;
   border: none;
   border-radius: 0;
@@ -342,7 +345,7 @@
   left: 100%;
 } */
 .custommealplanner-detail-btn:hover {
-  background: #04668D;
+  background: #04668d;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(60, 94, 231, 0.4);
 }
@@ -356,7 +359,7 @@
 }
 
 .custommealplanner-btn.primary {
-  background: #02808F;
+  background: #02808f;
   border: none;
   color: white;
   padding: 1rem 2.5rem;
@@ -367,15 +370,15 @@
   transition: all 0.3s ease;
 }
 .custommealplanner-btn.primary:hover {
-  background: #04668D;
+  background: #04668d;
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(2, 128, 143, 0.4);
 }
 
 .custommealplanner-btn.secondary {
   background: transparent;
-  border: 2px solid #02808F;
-  color: #02808F;
+  border: 2px solid #02808f;
+  color: #02808f;
   padding: 1rem 2.5rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -384,7 +387,7 @@
   transition: all 0.3s ease;
 }
 .custommealplanner-btn.secondary:hover {
-  background: #04668D;
+  background: #04668d;
   color: white;
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(2, 128, 143, 0.4);
@@ -413,7 +416,6 @@
   font-weight: 600;
   text-shadow: none;
 }
-
 
 .custommealplanner-meal-dishes {
   width: 1100px;
@@ -470,7 +472,6 @@
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
 }
 
-
 .custommealplanner-dish-info {
   flex: 1;
 }
@@ -489,7 +490,6 @@
   font-weight: 600;
   margin-bottom: 1rem;
 }
-
 
 /* Enhanced meal action buttons */
 .custommealplanner-meal-actions {
@@ -526,7 +526,7 @@
 }
 
 .custommealplanner-autocomplete-list {
-  max-height: 200px;   /* adjust as needed */
+  max-height: 200px; /* adjust as needed */
   overflow-y: auto;
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -546,7 +546,6 @@
   background: #f0f0f0;
 }
 
-
 /* Responsive Design */
 @media (max-width: 768px) {
   .custommealplanner-menu-grid {
@@ -559,7 +558,7 @@
     align-items: center;
     gap: 1rem;
   }
-  
+
   .custommealplanner-btn.primary,
   .custommealplanner-btn.secondary {
     width: 80%;

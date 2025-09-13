@@ -342,7 +342,7 @@ const RecommendedNutritionalNeeds = () => {
 
       <div className="nutritionalneeds-form-container">
         <form className="nutritionalneeds-form" onSubmit={handleSubmit}>
-          <label>Gestational Week</label>
+          <label>Gestational Week (Stage)</label>
           <select
             value={week}
             onChange={(e) => setWeek(Number(e.target.value))}
