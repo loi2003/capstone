@@ -1780,3 +1780,163 @@ export const viewWarningFoods = async (filterData) => {
     throw error;
   }
 };
+// EnergySuggestion Management APIs
+export const getAllEnergySuggestions = async () => {
+  try {
+    const response = await apiClient.get(`/api/EnergySuggestion/GetAll`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    console.log("Get all energy suggestions response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error fetching all energy suggestions:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+export const getEnergySuggestionById = async (energySuggestionId, token) => {
+  try {
+    if (!energySuggestionId || energySuggestionId === "") {
+      throw new Error("Energy Suggestion ID is null or empty");
+    }
+    console.log("Fetching energy suggestion with ID:", energySuggestionId);
+    const headers = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const response = await apiClient.get(`/api/EnergySuggestion/GetById`, {
+      params: {
+        enegrySuggestionId: energySuggestionId, // Use the correct parameter name as per Swagger
+      },
+      headers,
+      timeout: 60000, // Keep timeout
+    });
+    console.log("Get energy suggestion by ID response:", response.data);
+    if (!response.data) {
+      console.warn("No data found for the given ID");
+      return null; // Return null for graceful handling
+    }
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching energy suggestion by ID:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
+export const createEnergySuggestion = async (energySuggestionData, token) => {
+  try {
+    if (!energySuggestionData.ageGroupId || energySuggestionData.ageGroupId.trim() === "") {
+      throw new Error("Age Group ID is null or empty");
+    }
+    if (![1, 2].includes(Number(energySuggestionData.activityLevel))) {
+      throw new Error("Activity Level must be 1 (Light) or 2 (Moderate)");
+    }
+    if (
+      energySuggestionData.additionalCalories &&
+      ![50, 250, 450].includes(Number(energySuggestionData.additionalCalories))
+    ) {
+      throw new Error("Additional Calories must be 50, 250, or 450");
+    }
+    if (!energySuggestionData.baseCalories || isNaN(energySuggestionData.baseCalories) || Number(energySuggestionData.baseCalories) <= 0) {
+      throw new Error("Base Calories must be a positive number");
+    }
+
+    const payload = {
+      activityLevel: Number(energySuggestionData.activityLevel),
+      baseCalories: Number(energySuggestionData.baseCalories),
+      trimester: Number(energySuggestionData.trimester) || 0,
+      additionalCalories: Number(energySuggestionData.additionalCalories) || 0,
+      ageGroupId: energySuggestionData.ageGroupId,  // Keep as string (UUID/GUID)
+    };
+
+    console.log("Creating energy suggestion with payload:", payload);
+
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.post(
+      `/api/EnergySuggestion/Create`,
+      payload,
+      { headers }
+    );
+
+    console.log("Create energy suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating energy suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
+export const updateEnergySuggestion = async (energySuggestionData, token) => {
+  try {
+    if (!energySuggestionData.id || energySuggestionData.id === "") {
+      throw new Error("Energy Suggestion ID is null or empty");
+    }
+    if (!energySuggestionData.ageGroupId || energySuggestionData.ageGroupId === "") {
+      throw new Error("Age Group ID is null or empty");
+    }
+    if (![1, 2].includes(Number(energySuggestionData.activityLevel))) {
+      throw new Error("Activity Level must be 1 (Light) or 2 (Moderate)");
+    }
+    if (
+      energySuggestionData.additionalCalories &&
+      ![50, 250, 450].includes(Number(energySuggestionData.additionalCalories))
+    ) {
+      throw new Error("Additional Calories must be 50, 250, or 450");
+    }
+    if (!energySuggestionData.baseCalories || isNaN(energySuggestionData.baseCalories) || Number(energySuggestionData.baseCalories) <= 0) {
+      throw new Error("Base Calories must be a positive number");
+    }
+    console.log("Updating energy suggestion with data:", energySuggestionData);
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const response = await apiClient.put(
+      `/api/EnergySuggestion/Update`,
+      {
+        id: energySuggestionData.id,
+        activityLevel: Number(energySuggestionData.activityLevel) || 0,
+        baseCalories: Number(energySuggestionData.baseCalories) || 0,
+        trimester: Number(energySuggestionData.trimester) || 0,
+        additionalCalories: Number(energySuggestionData.additionalCalories) || 0,
+        ageGroupId: energySuggestionData.ageGroupId,
+      },
+      { headers }
+    );
+    console.log("Update energy suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating energy suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
