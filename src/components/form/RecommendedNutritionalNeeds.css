@@ -31,9 +31,11 @@
   letter-spacing: -0.5px;
 }
 .nutritionalneeds-heading p {
-  font-size: 1.05rem;
-  color: #666;
-  line-height: 1.6;
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
 }
 
 /* ============ PAGE LAYOUT ============ */
@@ -61,10 +63,11 @@
 
 .nutritionalneeds-form label {
   display: flex;
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
-  font-size: 1rem;
+  margin: 1.5rem 0 0.75rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: #04668d;
+  letter-spacing: -0.2px;
 }
 
 .nutritionalneeds-form input,
@@ -165,7 +168,6 @@
   vertical-align: middle;
 }
 
-
 /* .nutritionalneeds-table td {
 } */
 
@@ -217,7 +219,7 @@
   text-align: left;
   padding: 8px;
   border-radius: 6px;
-  border: 1px solid #02808F;
+  border: 1px solid #02808f;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 
   position: absolute;
@@ -234,12 +236,12 @@
 .tooltip-text::after {
   content: "";
   position: absolute;
-  top: 100%;  /* 👈 position arrow below the tooltip */
+  top: 100%; /* 👈 position arrow below the tooltip */
   left: 50%;
   transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
-  border-color: #02808F transparent transparent transparent;
+  border-color: #02808f transparent transparent transparent;
 }
 
 /* Show on hover */

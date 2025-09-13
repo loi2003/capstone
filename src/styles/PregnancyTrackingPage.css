@@ -7,14 +7,14 @@
   --color-text: #848785;
   --light-text: #faf9f5;
   --dark-text: #013f50;
-  --nguyen-primary-bg: #04668D;
+  --nguyen-primary-bg: #04668d;
   --white-text: #fafafa;
   --nguyen-accent-color: #038474;
-  --co-1: #04668D;
-  --co-2: #02808F;
-  --co-3: #00A996;
-  --co-4: #03C39A;
-  --co-5: #F0F3BE;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f0f3be;
 }
 
 .overview-header h2 {
@@ -27,7 +27,11 @@
 }
 
 .overview-header p {
-  color: #666;
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
 }
 
 .pregnancy-tracking-page {
@@ -271,7 +275,7 @@
   border: 1px solid #ddd;
   border-radius: 8px;
   min-width: 200px;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   z-index: 20;
   padding: 0.25rem 0;
 }
@@ -310,9 +314,8 @@
   /* border-left: 3px solid var(--nguyen-accent-color); */
 }
 
-
 .bbm-icon {
-  color: #046A8D;
+  color: #046a8d;
   width: 36px;
   height: 36px;
 }
@@ -361,9 +364,8 @@
   border-radius: 12px;
   padding: 1rem;
   margin-top: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-
 
 .contact-icon {
   position: fixed;

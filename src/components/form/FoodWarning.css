@@ -1,0 +1,261 @@
+.foodwarning-wrapper {
+  max-width: 1200px;
+  margin-top: -45px;
+  margin: -3rem auto;
+  padding: 1rem;
+  font-family: var(--font-inter, "Inter", sans-serif);
+  color: var(--dark-text, #333);
+}
+
+/* Heading */
+.foodwarning-title {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: #013f50;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);
+  letter-spacing: -0.5px;
+}
+
+
+.foodwarning-title h1 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: #013f50;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);
+  letter-spacing: -0.5px;
+}
+
+.foodwarning-title span {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
+}
+
+/* ============ FORM ============ */
+.foodwarning-form {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+}
+.foodwarning-form:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.foodwarning-form label {
+  display: flex;
+  margin: 1.5rem 0 0.75rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #04668d;
+  letter-spacing: -0.2px;
+}
+
+/* Inputs */
+.foodwarning-input {
+  width: 100%;
+  border: 1px solid #dbdbdb;
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+  background: #f9fdff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.foodwarning-input:focus {
+  border-color: #04668d;
+  box-shadow: 0 0 6px rgba(4, 102, 141, 0.3);
+  outline: none;
+}
+
+/* Autocomplete dropdown */
+.foodwarning-autocomplete-wrapper {
+  position: relative;
+}
+
+.foodwarning-autocomplete-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 0.5rem;
+  position: absolute;
+  width: 100%;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  max-height: 200px;
+  overflow-y: auto;
+}
+.foodwarning-autocomplete-list li {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.foodwarning-autocomplete-list li:hover {
+  background: #f0f8ff;
+}
+
+/* Submit button */
+.foodwarning-btn-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.foodwarning-btn {
+  width: 230px;
+  background: #02808f;
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  border: none;
+  transition: all 0.3s ease;
+}
+.foodwarning-btn:hover {
+  background: #04668d;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* ============ CARDS ============ */
+.foodwarning-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+}
+
+.foodwarning-card {
+  background: #ffffff;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.4s ease;
+  position: relative;
+}
+.foodwarning-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.15);
+}
+
+.foodwarning-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+
+.foodwarning-info {
+  padding: 1rem 1.5rem;
+}
+
+.foodwarning-info h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  color: #04668d;
+  font-weight: 700;
+}
+
+.foodwarning-description {
+  font-size: 0.95rem;
+  color: #555;
+  margin-bottom: 1rem;
+}
+
+/* Allergy & Disease sections */
+.foodwarning-section {
+  margin-top: 1rem;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+}
+
+.foodwarning-section.allergy {
+  background: #f0f8ff;
+  border: 1px solid #02808f;
+}
+
+.foodwarning-section.disease {
+  background: #fff8e1;
+  border: 1px solid #fbc02d;
+}
+
+.foodwarning-section h4 {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #013f50;
+}
+
+.foodwarning-section ul {
+  padding-left: 1.2rem;
+  margin: 0;
+}
+
+.foodwarning-section li {
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+/* ============ SELECTED TAGS (chips) ============ */
+.foodwarning-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.foodwarning-tag {
+  background: #e6f7f9;
+  color: #02808f;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9rem;
+  border: 1px solid #02808f;
+  box-shadow: 0 2px 6px rgba(2, 128, 143, 0.15);
+  transition: all 0.2s ease;
+}
+
+.foodwarning-tag:hover {
+  background: #02808f;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(2, 128, 143, 0.25);
+}
+
+.foodwarning-tag button {
+  background: transparent;
+  border: none;
+  margin-left: 6px;
+  font-size: 1rem;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.foodwarning-tag button:hover {
+  transform: scale(1.2);
+}
+/* Responsive */
+@media (max-width: 768px) {
+  .foodwarning-form {
+    padding: 1.5rem;
+  }
+  .foodwarning-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}

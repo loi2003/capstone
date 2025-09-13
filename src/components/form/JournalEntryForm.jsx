@@ -629,6 +629,7 @@ const JournalEntryForm = ({ onError }) => {
               name="BloodSugarLevelMgDl"
               value={formData.BloodSugarLevelMgDl || ""}
               onChange={handleChange}
+              placeholder="Optional - Can enter if you want to track blood sugar level"
               className={errors.BloodSugarLevelMgDl ? "error" : ""}
             />
             {errors.BloodSugarLevelMgDl && (

@@ -1,8 +1,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./SystemMealPlanner.css";
 import { FaSyncAlt, FaInfoCircle, FaUtensils } from "react-icons/fa";
+import { viewMenuSuggestionByTrimester } from "../../apis/meal-api";
 
 const SystemMealPlanner = () => {
+  const dayNames = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
   const [week, setWeek] = useState("Week 1");
   const [day, setDay] = useState("");
   const [allergies, setAllergies] = useState("");
@@ -115,238 +126,85 @@ const SystemMealPlanner = () => {
     setShowPreferredFoodList(false);
   };
 
-  const staticMealsDay = [
-    {
-      type: "Breakfast",
-      dishes: [
-        {
-          name: "Grilled Cheese Sandwich",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 250,
-        },
-        {
-          name: "Avocado",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 120,
-        },
-        {
-          name: "Milk",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 150,
-        },
-      ],
-    },
-    {
-      type: "Lunch",
-      dishes: [
-        {
-          name: "Grilled Salmon",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 350,
-        },
-        {
-          name: "Brown Rice",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 200,
-        },
-      ],
-    },
-    {
-      type: "Dinner",
-      dishes: [
-        {
-          name: "Chicken Soup",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 300,
-        },
-        {
-          name: "Spinach Salad",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 100,
-        },
-      ],
-    },
-    {
-      type: "Snack",
-      dishes: [
-        {
-          name: "Greek Yogurt",
-          image:
-            "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-          calories: 180,
-        },
-      ],
-    },
-  ];
+  // Reorder days: start from Monday
+  const reorderDays = (days) => {
+    const order = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+    return days.sort(
+      (a, b) => order.indexOf(a.dayOfWeek) - order.indexOf(b.dayOfWeek)
+    );
+  };
 
-  // Static weekly meal
-  const staticMealsWeek = [
-    {
-      day: "Monday",
-      meals: [
-        {
-          type: "Breakfast",
-          dishes: [
-            {
-              name: "Grilled Cheese Sandwich",
+  const handleGenerate = async () => {
+    try {
+      setError("");
+      setGeneratedPlan(null);
+
+      const weekNumber = parseInt(week.replace("Week ", ""), 10);
+      const res = await viewMenuSuggestionByTrimester({ stage: weekNumber });
+      const data = res?.data;
+
+      if (!data?.days) {
+        setError("No data returned for this week.");
+        return;
+      }
+
+      // Reorder days so Monday is first
+      const orderedDays = reorderDays(data.days);
+
+      if (mode === "day") {
+        const dayIndex = Number(day) - 1;
+        const dayData = orderedDays[dayIndex];
+
+        if (!dayData) {
+          setError("No meal plan available for selected day.");
+          return;
+        }
+
+        const transformedDay = dayData.meals.map((meal) => ({
+          type: meal.mealType,
+          dishes: meal.dishes
+            .sort((a, b) => b.calories - a.calories) // sort dishes descending
+            .map((dish) => ({
+              name: dish.dishName,
               image:
+                dish.imageUrl ||
                 "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 250,
-            },
-            {
-              name: "Avocado",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 120,
-            },
-          ],
-        },
-        {
-          type: "Lunch",
-          dishes: [
-            {
-              name: "Grilled Salmon",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 350,
-            },
-            {
-              name: "Brown Rice",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 200,
-            },
-          ],
-        },
-        {
-          type: "Dinner",
-          dishes: [
-            {
-              name: "Chicken Soup",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 300,
-            },
-            {
-              name: "Spinach Salad",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 100,
-            },
-          ],
-        },
-        {
-          type: "Snack 1",
-          dishes: [
-            {
-              name: "Greek Yogurt",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 180,
-            },
-          ],
-        },
-        {
-          type: "Snack 2",
-          dishes: [
-            {
-              name: "Greek Yogurt2",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 180,
-            },
-          ],
-        },
-      ],
-    },
-    {
-      day: "Tuesday",
-      meals: [
-        {
-          type: "Breakfast",
-          dishes: [
-            {
-              name: "Oatmeal",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 200,
-            },
-            {
-              name: "Banana",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 100,
-            },
-          ],
-        },
-        {
-          type: "Lunch",
-          dishes: [
-            {
-              name: "Grilled Chicken",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 300,
-            },
-            {
-              name: "Quinoa Salad",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 220,
-            },
-          ],
-        },
-        {
-          type: "Dinner",
-          dishes: [
-            {
-              name: "Beef Stir Fry",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 400,
-            },
-          ],
-        },
-        {
-          type: "Snack 1",
-          dishes: [
-            {
-              name: "Apple Slices",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 80,
-            },
-          ],
-        },
-        {
-          type: "Snack 2",
-          dishes: [
-            {
-              name: "Apple Slices2",
-              image:
-                "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
-              calories: 80,
-            },
-          ],
-        },
-      ],
-    },
-  ];
-  const handleGenerate = () => {
-    if (mode === "day" && !day) {
-      setError("Please select a day before submitting.");
-      return;
+              calories: Number(dish.calories.toFixed(1)),
+            })),
+        }));
+
+        setGeneratedPlan(transformedDay);
+      } else {
+        const transformedWeek = orderedDays.map((day) => ({
+          day: day.dayOfWeek,
+          meals: day.meals.map((meal) => ({
+            type: meal.mealType,
+            dishes: meal.dishes
+              .sort((a, b) => b.calories - a.calories) // sort dishes descending
+              .map((dish) => ({
+                name: dish.dishName,
+                image:
+                  dish.imageUrl ||
+                  "https://images.pexels.com/photos/30945514/pexels-photo-30945514.jpeg",
+                calories: Number(dish.calories.toFixed(1)),
+              })),
+          })),
+        }));
+
+        setGeneratedPlan(transformedWeek);
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch meal suggestions. Please try again.");
     }
-
-    setError(""); // clear previous errors
-    setGeneratedPlan(mode === "day" ? staticMealsDay : staticMealsWeek);
   };
 
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
@@ -380,17 +238,11 @@ const SystemMealPlanner = () => {
       prev < generatedPlan.length - visibleDays ? prev + 1 : 0
     );
   };
-
-  // // Reset carousel when generating new plan
-  // const handleGenerate = () => {
-  //   if (mode === "day" && !day) {
-  //     setError("Please select a day before submitting.");
-  //     return;
-  //   }
-  //   setError("");
-  //   setCurrentDayIndex(0); // Reset carousel position
-  //   setGeneratedPlan(mode === "day" ? staticMealsDay : staticMealsWeek);
-  // };
+  useEffect(() => {
+    if (day) {
+      setGeneratedPlan(null); // clear old menu
+    }
+  }, [day]);
 
   return (
     <div className="mealplanner-page-wrapper">
@@ -400,7 +252,7 @@ const SystemMealPlanner = () => {
       </div>
 
       <div className="mealplanner-form">
-        <label>Gestational Week</label>
+        <label>Gestational Week  (Stage)</label>
         <select
           value={week}
           onChange={(e) => setWeek(e.target.value)}
@@ -506,15 +358,24 @@ const SystemMealPlanner = () => {
                 className="mealplanner-select"
               >
                 <option value="">-- Choose a Day --</option>
-                {[...Array(7)].map((_, i) => (
+                {[
+                  "Monday",
+                  "Tuesday",
+                  "Wednesday",
+                  "Thursday",
+                  "Friday",
+                  "Saturday",
+                  "Sunday",
+                ].map((dayName, i) => (
                   <option key={i + 1} value={i + 1}>
-                    Day {i + 1}
+                    {dayName}
                   </option>
                 ))}
               </select>
             </label>
           </div>
         )}
+
         {/* Preferred foods autocomplete */}
         {/* <label>Preferred Foods</label>
         <div
@@ -577,9 +438,10 @@ const SystemMealPlanner = () => {
               return (
                 <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
                   Suggested Meals for {week}
-                  {day && ` - Day ${day}`} <br />
+                  {day && ` - ${dayNames[day - 1]}`} <br />
                   <span style={{ fontSize: "1.1rem" }}>
-                    Total Calories: <strong>{totalCalories} kcal</strong>
+                    Total Calories:{" "}
+                    <strong>{totalCalories.toFixed(1)} kcal</strong>
                   </span>
                 </h2>
               );
@@ -596,7 +458,7 @@ const SystemMealPlanner = () => {
                       <img src={dish.image} alt={dish.name} />
                       <div className="dish-info">
                         <h4>{dish.name}</h4>
-                        <p>{dish.calories} kcal</p>
+                        <p>{dish.calories.toFixed(1)} kcal</p>
                         <div className="meal-actions">
                           {/* <button>
                             <FaSyncAlt /> Change Dish
@@ -675,7 +537,8 @@ const SystemMealPlanner = () => {
                   <h2 style={{ textAlign: "center", marginBottom: "1rem" }}>
                     Meals for {selectedDayDetail?.day || "Unknown"} <br />
                     <span style={{ fontSize: "1.1rem" }}>
-                      Total Calories: <strong>{totalCalories} kcal</strong>
+                      Total Calories:{" "}
+                      <strong>{totalCalories.toFixed(1)} kcal</strong>
                     </span>
                   </h2>
                 );
@@ -697,7 +560,7 @@ const SystemMealPlanner = () => {
                         <img src={dish.image} alt={dish.name} />
                         <div className="dish-info">
                           <h4>{dish.name}</h4>
-                          <p>{dish.calories} kcal</p>
+                          <p>{dish.calories.toFixed(1)} kcal</p>
                           <div className="meal-actions">
                             {/* <button>
                               <FaSyncAlt /> Change Dish
@@ -728,7 +591,8 @@ const SystemMealPlanner = () => {
                     {selectedMealDetail.day.day} –{" "}
                     {selectedMealDetail.meal.type} <br />
                     <span style={{ fontSize: "1.1rem" }}>
-                      Total Calories: <strong>{totalCalories} kcal</strong>
+                      Total Calories:{" "}
+                      <strong>{totalCalories.toFixed(1)} kcal</strong>
                     </span>
                   </h2>
                 );
@@ -749,7 +613,7 @@ const SystemMealPlanner = () => {
                       <img src={dish.image} alt={dish.name} />
                       <div className="dish-info">
                         <h4>{dish.name}</h4>
-                        <p>{dish.calories} kcal</p>
+                        <p>{dish.calories.toFixed(1)} kcal</p>
                         <div className="meal-actions">
                           {/* <button>
                             <FaSyncAlt /> Change Dish
