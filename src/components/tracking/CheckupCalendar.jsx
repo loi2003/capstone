@@ -134,8 +134,8 @@ const CheckupCalendar = ({ reminders = [], appointments = [] }) => {
           reminderClass = "reminder-end";
         else reminderClass = "reminder-middle";
 
-        if (remindersForDay.some((r) => r.type === "urgent"))
-          reminderClass += " urgent";
+        if (remindersForDay.some((r) => r.type === "emergency"))
+          reminderClass += " emergency";
         else if (remindersForDay.some((r) => r.type === "recommended"))
           reminderClass += " recommended";
 
@@ -159,6 +159,7 @@ const CheckupCalendar = ({ reminders = [], appointments = [] }) => {
           onClick={() => handleDayClick(dateObj, true)}
         >
           {day}
+          {isToday && <span className="today-marker">Present Day</span>}
         </div>
       );
     }
@@ -175,6 +176,7 @@ const CheckupCalendar = ({ reminders = [], appointments = [] }) => {
         );
       }
     }
+
     return cells;
   };
 
@@ -229,7 +231,7 @@ const CheckupCalendar = ({ reminders = [], appointments = [] }) => {
           ● Upcoming Appointment
         </span>
         <span className="instruction recommended">● Recommended Checkup</span>
-        <span className="instruction urgent">● Urgent</span>
+        <span className="instruction emergency">● Emergency</span>
       </div>
 
       {selectedItems.length > 0 && (
@@ -237,7 +239,8 @@ const CheckupCalendar = ({ reminders = [], appointments = [] }) => {
           {selectedItems.map((item, idx) => {
             let cardClass = "reminder-item";
             if (item.itemType === "reminder") {
-              cardClass += item.type === "urgent" ? " urgent" : " recommended";
+              cardClass +=
+                item.type === "emergency" ? " emergency" : " recommended";
             } else if (item.itemType === "appointment") {
               cardClass += " appointment";
             }

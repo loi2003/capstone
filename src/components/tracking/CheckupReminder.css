@@ -118,11 +118,11 @@
 }
 
 
-.book-btn.urgent {
+.book-btn.emergency {
   background: #d32f2f;
 }
 
-.book-btn.urgent:hover {
+.book-btn.emergency:hover {
   background: #b71c1c;
 }
 
@@ -134,6 +134,21 @@
 .outside-btn:hover {
   background: #e0e0e0;
 }
+
+.reminder-trimester-filter {
+  margin: 10px 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reminder-trimester-filter select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
 
 /* Responsive */
 @media (max-width: 768px) {

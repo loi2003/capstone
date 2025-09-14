@@ -4,6 +4,7 @@
   min-height: 100vh;
   background: var(--color-general);
 }
+
 .nutrition-heading {
   max-width: 1500px;
   margin: 80px auto 0 auto;
@@ -41,6 +42,7 @@
   padding: 1rem;
   box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
 }
+
 .nutrition-sidebar h3 {
   display: flex;
   justify-content: center;
@@ -143,7 +145,6 @@
 .highlight-box:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
-  
 }
 
 .nutrient-grid {
@@ -168,9 +169,11 @@
 .nutrient-card h4{
   color: #04668D;
 }
+
 .nutrient-card-source {
   margin-top: 5px;
 }
+
 .nutrient-header {
   display: flex;
   align-items: center;
@@ -214,6 +217,7 @@
   flex-shrink: 0;
   font-size: 1.2rem;
 }
+
 .icon-check {
   color: #72a7db;
   flex-shrink: 0;
@@ -242,4 +246,33 @@ h3 {
   color: var(--nguyen-primary-bg);
   font-size: 1.2rem;
   font-weight: 700;
+}
+
+.contact-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #2563eb;
+  color: #ffffff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.contact-icon:hover {
+  background-color: #1e40af;
+}
+
+@media (max-width: 600px) {
+  .contact-icon {
+    width: 50px;
+    height: 50px;
+  }
 }

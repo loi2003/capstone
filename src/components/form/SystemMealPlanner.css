@@ -8,283 +8,655 @@
   padding-bottom: 3rem;
 }
 
+/* .mealplanner-page-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(1, 63, 80, 0.05) 0%, rgba(2, 128, 143, 0.03) 100%);
+  z-index: 0;
+} */
+
+.mealplanner-page-wrapper > * {
+  position: relative;
+  z-index: 1;
+}
+
 /* ============ HEADING ============ */
 .mealplanner-heading {
   text-align: center;
-  margin: 60px auto 30px;
+  margin: 80px auto 40px;
   max-width: 900px;
+  padding: 0 2rem;
 }
 
 .mealplanner-heading h1 {
-  font-size: 2.4rem;
-  font-weight: 700;
-  color: #04668d;
-  margin-bottom: 0.5rem;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: #013f50;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);
+  letter-spacing: -0.5px;
 }
 
 .mealplanner-heading p {
-  font-size: 1.05rem;
-  color: #666;
-  line-height: 1.6;
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
 }
 
 /* ============ FORM CARD ============ */
 .mealplanner-form {
   max-width: 800px;
-  margin: 0 auto 2rem;
-  background: #ffffff;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
+  margin: 0 auto 3rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 3rem 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  /* margin-left: 2rem;
+  margin-right: 2rem; */
 }
+
+@media (max-width: 768px) {
+  .mealplanner-form {
+    margin-left: 1rem;
+    margin-right: 1rem;
+    padding: 2rem 1.5rem;
+  }
+}
+
 .mealplanner-form:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .mealplanner-form label {
   display: flex;
-  margin: 1rem 0 0.5rem;
-  font-weight: 600;
-  font-size: 1rem;
+  margin: 1.5rem 0 0.75rem;
+  font-weight: 700;
+  font-size: 1.05rem;
   color: #04668d;
+  letter-spacing: -0.2px;
 }
 
-/* Inputs */
+.mealplanner-form label:first-child {
+  margin-top: 0;
+}
+
+/* Enhanced Inputs */
 .mealplanner-input,
 .mealplanner-select {
   width: 100%;
-  border: 1px solid #dbdbdb;
-  border-radius: 0.6rem;
-  padding: 0.8rem 1rem;
-  background: #f9fdff;
+  border: 2px solid #e8f0f2;
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  background: rgba(249, 253, 255, 0.8);
   font-size: 1rem;
-  transition: all 0.3s ease;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .mealplanner-input:focus,
 .mealplanner-select:focus {
   border-color: #04668d;
-  box-shadow: 0 0 6px rgba(4, 102, 141, 0.3);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(4, 102, 141, 0.1),
+    0 4px 16px rgba(4, 102, 141, 0.15);
   outline: none;
+  transform: translateY(-1px);
 }
 
-/* Autocomplete dropdown */
+.mealplanner-input::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* Enhanced Autocomplete */
 .mealplanner-autocomplete-wrapper {
   position: relative;
 }
+
 .mealplanner-autocomplete-list {
   list-style: none;
   margin: 0;
-  padding: 0.5rem 0;
-  border: 1px solid #ddd;
-  background: white;
-  border-radius: 0.5rem;
+  padding: 0.75rem 0;
+  border: 2px solid #e8f0f2;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  border-radius: 1rem;
   position: absolute;
   width: 100%;
-  z-index: 10;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-}
-.mealplanner-autocomplete-list li {
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.mealplanner-autocomplete-list li:hover {
-  background: #f0f8ff;
+  z-index: 100;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  animation: slideDown 0.2s ease-out;
+  border-top: none;
+  margin-top: -1rem;
+  padding-top: 1rem;
 }
 
-/* ============ BUTTONS ============ */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mealplanner-autocomplete-list li {
+  padding: 0.875rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.mealplanner-autocomplete-list li:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(4, 102, 141, 0.08) 0%,
+    rgba(2, 128, 143, 0.05) 100%
+  );
+  border-left-color: #04668d;
+  transform: translateX(4px);
+}
+
+/* Enhanced Radio Buttons */
+.mealplanner-form > div[style*="display: flex"] {
+  background: rgba(4, 102, 141, 0.05);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 2px solid rgba(4, 102, 141, 0.1);
+  gap: 2rem !important;
+  justify-content: center;
+}
+
+.mealplanner-form input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.75rem;
+  accent-color: #04668d;
+  transform: scale(1.2);
+}
+
+.mealplanner-form label:has(input[type="radio"]) {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.mealplanner-form label:has(input[type="radio"]:checked) {
+  background: rgba(4, 102, 141, 0.1);
+  color: #013f50;
+}
+
+/* Day selector enhancement */
+.mealplanner-form > div[style*="marginTop: 1rem"] {
+  background: rgba(249, 253, 255, 0.6);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(4, 102, 141, 0.15);
+}
+
+/* ============ ENHANCED BUTTONS ============ */
 .mealplanner-btn,
 .mealplanner-detail-btn {
-  width: 230px;
-  background: #02808F;
-  border-radius: 0.6rem;
-  padding: 0.9rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
+  background: #02808f;
+  border-radius: 1rem;
+  /* width: 100px; */
+  padding: 1rem 1.8rem;
+  font-size: 1.05rem;
+  font-weight: 700;
   cursor: pointer;
   color: #fff;
   border: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    /* 0 4px 16px rgba(2, 128, 143, 0.3), */ 0 2px 8px
+    rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.3px;
+  /* text-transform: uppercase; */
+  font-size: 0.95rem;
+  position: relative;
+  overflow: hidden;
 }
+
+/* .mealplanner-btn::before,
+.mealplanner-detail-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #04668d;
+  transition: left 0.6s;
+} */
+
+/* .mealplanner-btn:hover::before,
+.mealplanner-detail-btn:hover::before {
+  left: 100%;
+} */
+
 .mealplanner-btn:hover,
 .mealplanner-detail-btn:hover {
   background: #04668d;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+  transform: translateY(-3px);
+  box-shadow: 
+    /* 0 8px 24px rgba(2, 128, 143, 0.4), */ 0 4px 16px
+    rgba(0, 0, 0, 0.15);
+}
+
+.mealplanner-btn:active,
+.mealplanner-detail-btn:active {
+  transform: translateY(-1px);
 }
 
 /* Smaller detail button */
 .mealplanner-detail-btn {
-  padding: 0.6rem 1rem;
-  font-size: 0.9rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 0.85rem;
   width: auto;
+  box-shadow: 0 3px 12px rgba(2, 128, 143, 0.25), 0 1px 6px rgba(0, 0, 0, 0.08);
 }
 
-/* Wrapper for centered button */
+/* Enhanced button wrapper */
 .mealplanner-btn-wrapper {
   display: flex;
   justify-content: center;
-  margin-top: 1rem;
+  margin-top: 2.5rem;
+}
+
+.mealplanner-btn-wrapper .mealplanner-btn {
+  width: 280px;
 }
 
 /* Back button container */
 .back-btn-wrapper {
   display: flex;
   justify-content: flex-end;
-  margin: 1rem 0;
+  margin: 1.5rem 0 2rem;
 }
 
-/* ============ OUTPUT CARDS ============ */
+.mealplanner-btn {
+  width: 250px;
+}
+
+/* ============ ENHANCED OUTPUT CARDS ============ */
 .mealplanner-output {
-  max-width: 1200px;
+  max-width: 1250px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1rem 2rem;
 }
 
 .mealplanner-output h2 {
   text-align: center;
-  color: #013F50;
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
+  color: #013f50;
+  margin-bottom: 2.5rem;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 8px rgba(1, 63, 80, 0.1);
 }
 
-/* ============ MEAL CARD ============ */
-.meal-card {
-  background: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
+.mealplanner-output h2 span {
+  display: block;
+  margin-top: 0.5rem;
+  color: #02808f;
+  font-weight: 600;
+  text-shadow: none;
 }
+
+/* ============ ENHANCED MEAL CARDS ============ */
+.meal-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 12px rgba(0, 0, 0, 0.04);
+  margin-bottom: 2.5rem;
+  padding: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+}
+
 .meal-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .meal-header {
-  background: #02808F;
-  color: #fff;
-  padding: 0.8rem 1.2rem;
-  border-radius: 0.8rem 0.8rem 0 0;
-  text-align: center;
-  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #dee2e6;
 }
+
+/* .meal-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
+} */
+
 .meal-header h3 {
-  margin: 0;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: bold;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #6c757d;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
 }
 
-/* Dish card */
-.dish-card {
-  background: #f9fdff;
-  border-radius: 0.8rem;
-  padding: 1rem;
+.meal-dishes {
+  width: 1150px;
+  padding: 2rem;
   display: flex;
+  flex-direction: column;
   gap: 1.5rem;
-  align-items: center;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.dish-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.dish-card img {
-  width: 300px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 0.6rem;
-}
-.dish-info h4 {
-  font-size: 1.2rem;
-  color: #04668d;
-  margin-bottom: 0.4rem;
-}
-.dish-info p {
-  font-size: 0.95rem;
-  color: #555;
 }
 
-/* Dish action buttons */
-.meal-actions {
-  margin-top: 0.8rem;
+/* Enhanced dish cards */
+.dish-card {
+  background: linear-gradient(
+    135deg,
+    rgba(249, 253, 255, 0.8) 0%,
+    rgba(240, 248, 255, 0.6) 100%
+  );
+  width: 1050px;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
   display: flex;
-  gap: 0.6rem;
-  flex-wrap: wrap;
-}
-.meal-actions button {
-  flex: 1;
-  min-width: 180px;
-  background: #02808F;
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-  font-weight: 600;
-  display: flex;
+  gap: 2rem;
   align-items: center;
-  gap: 0.4rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(4, 102, 141, 0.08);
+}
+
+/* .dish-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(4, 102, 141, 0.1);
+  border-color: rgba(4, 102, 141, 0.2);
+} */
+
+.dish-card img {
+  width: 320px;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
 }
+
+.dish-card:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+}
+
+.dish-info {
+  flex: 1;
+}
+
+.dish-info h4 {
+  font-size: 1.4rem;
+  color: #04668d;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.dish-info p {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+/* Enhanced meal action buttons */
+.meal-actions {
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.meal-actions button {
+  flex: 1;
+  min-width: 200px;
+  background: #02808f;
+  color: white;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  cursor: pointer;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 12px rgba(2, 128, 143, 0.25);
+  font-size: 0.95rem;
+  letter-spacing: 0.2px;
+}
+
 .meal-actions button:hover {
   background: #04668d;
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(2, 128, 143, 0.35);
 }
 
-/* ============ WEEKLY VIEW ============ */
+/* ============ ENHANCED WEEKLY VIEW ============ */
 .week-day-card {
-  background: #ffffff;
-  border-radius: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-  padding: 1rem;
-  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 12px rgba(0, 0, 0, 0.04);
+  padding: 2rem;
+  margin-bottom: 2.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.week-day-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
 .week-day-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid rgba(4, 102, 141, 0.1);
+}
+
+.mealplanner-header-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.mealplanner-header-title h3 {
+  color: #013f50;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);
 }
 .week-meal-grid {
   display: grid;
-  margin-top: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
 }
+
 .week-meal-card {
-  background: #fbfeff;
-  border-radius: 0.8rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  padding: 0.8rem;
+  background: linear-gradient(
+    135deg,
+    rgba(251, 254, 255, 0.9) 0%,
+    rgba(240, 248, 255, 0.7) 100%
+  );
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  padding: 1.25rem;
   text-align: center;
-  transition: transform 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(4, 102, 141, 0.08);
 }
+
 .week-meal-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(4, 102, 141, 0.15);
+  border-color: rgba(4, 102, 141, 0.2);
 }
+
 .week-meal-card img {
   width: 100%;
-  height: 140px;
+  height: 160px;
   object-fit: cover;
-  border-radius: 0.5rem;
-  margin-bottom: 0.6rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
+
+.week-meal-card:hover img {
+  transform: scale(1.05);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
+}
+
 .week-meal-card h4 {
-  font-size: 1rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
   color: #04668d;
-  margin: 0;
+  margin: 0 0 1rem 0;
+  letter-spacing: -0.2px;
 }
 
 .mealplanner-detail-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
+}
+
+/* ============ RESPONSIVE DESIGN ============ */
+@media (max-width: 768px) {
+  .mealplanner-output {
+    padding: 1rem;
+  }
+
+  .dish-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+
+  .dish-card img {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .meal-actions {
+    justify-content: center;
+  }
+
+  .meal-actions button {
+    min-width: 160px;
+  }
+
+  .week-day-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .week-meal-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .mealplanner-detail-wrapper {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* ============ LOADING STATES & MICRO-INTERACTIONS ============ */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.mealplanner-btn:disabled,
+.mealplanner-detail-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Enhanced focus states for accessibility */
+.mealplanner-btn:focus-visible,
+.mealplanner-detail-btn:focus-visible,
+.mealplanner-input:focus-visible,
+.mealplanner-select:focus-visible {
+  outline: 3px solid rgba(4, 102, 141, 0.5);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for all interactive elements */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced error styling */
+.mealplanner-form p[style*="color: #e74c3c"] {
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+  font-weight: 600;
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }

@@ -14,10 +14,11 @@
     "@emotion/react": "^11.14.0",
     "@emotion/style": "^0.8.0",
     "@emotion/styled": "^11.14.0",
+    "@microsoft/signalr": "^9.0.6",
     "@mui/material": "^7.1.0",
     "@react-oauth/google": "^0.12.2",
     "axios": "^1.9.0",
-    "chart.js": "^4.4.9",
+    "chart.js": "^4.5.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.20.1",
     "install": "^0.13.0",
@@ -30,6 +31,7 @@
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.6.0",
     "reacticon": "^0.0.1",
+    "recharts": "^3.1.2",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

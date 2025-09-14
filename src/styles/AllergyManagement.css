@@ -1,0 +1,900 @@
+/* Allergy Management Styles */
+.allergy-management {
+  --blue-primary: #1e88e5;
+  --blue-secondary: #42a5f5;
+  --blue-accent: #90caf9;
+  --blue-highlight: #0288d1;
+  --blue-light-bg: #e3f2fd;
+  --blue-white: #ffffff;
+  --blue-text: #0d47a1;
+  --blue-logout: #d32f2f;
+  --blue-shadow: 0 4px 12px rgba(30, 136, 229, 0.1);
+  --blue-shadow-hover: 0 8px 24px rgba(30, 136, 229, 0.15);
+  --blue-border-radius: 8px;
+  --blue-transition: all 0.3s ease;
+  --sidebar-width-open: min(260px, 25vw);
+  --sidebar-width-closed: min(60px, 15vw);
+  --nutrient-specialist-primary: #ffffff; /* Added for logo */
+  --nutrient-specialist-accent: #a5d6a7; /* Added for logo dark theme */
+  --nutrient-specialist-highlight: #ffca28; /* Added for logo dark theme */
+
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--blue-light-bg);
+  color: var(--blue-text);
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Dark theme */
+.allergy-management.dark-theme,
+.allergy-management.dark-theme .nutrient-specialist-content,
+.allergy-management.dark-theme .management-header,
+.allergy-management.dark-theme .form-section,
+.allergy-management.dark-theme .form-card,
+.allergy-management.dark-theme .category-list-section,
+.allergy-management.dark-theme .category-card,
+.allergy-management.dark-theme .chart-section {
+  background: #1a3c5e;
+  color: var(--blue-white);
+}
+
+.allergy-management.dark-theme .input-field,
+.allergy-management.dark-theme .textarea-field,
+.allergy-management.dark-theme .search-input,
+.allergy-management.dark-theme select,
+.allergy-management.dark-theme .checkbox-input,
+.allergy-management.dark-theme .chart-filter-select {
+  background: #2a4b6e;
+  color: var(--blue-white);
+  border-color: #3a5b7e;
+}
+
+.allergy-management.dark-theme .form-group label,
+.allergy-management.dark-theme .section-header h2,
+.allergy-management.dark-theme .card-header h3,
+.allergy-management.dark-theme .management-header h1,
+.allergy-management.dark-theme .page-indicator,
+.allergy-management.dark-theme .card-description,
+.allergy-management.dark-theme .nutrient-specialist-profile-email {
+  color: var(--blue-white);
+}
+
+.allergy-management.dark-theme .card-description {
+  color: #b3e5fc;
+}
+
+.allergy-management.dark-theme .highlight-field {
+  background: #2a4b6e;
+  color: #b3e5fc;
+}
+
+.allergy-management.dark-theme .highlight-field:hover {
+  background: #3a5b7e;
+}
+
+.allergy-management.dark-theme .management-header p {
+  color: var(--blue-accent);
+}
+
+.allergy-management.dark-theme .nutrient-specialist-sidebar,
+.allergy-management.dark-theme .sidebar-nav a,
+.allergy-management.dark-theme .sidebar-nav button,
+.allergy-management.dark-theme .nutrient-specialist-profile-info,
+.allergy-management.dark-theme .nutrient-specialist-profile-email {
+  background: #1a3c5e;
+  color: var(--blue-white);
+}
+
+.allergy-management.dark-theme .sidebar-nav a:hover,
+.allergy-management.dark-theme .sidebar-nav button:hover,
+.allergy-management.dark-theme .nutrient-specialist-profile-info:hover {
+  background: var(--blue-secondary);
+  color: var(--blue-white);
+}
+
+.allergy-management.dark-theme .logo-svg-container svg path {
+  stroke: var(--nutrient-specialist-accent); /* Updated for dark theme */
+  fill: var(--nutrient-specialist-highlight); /* Updated for dark theme */
+}
+
+/* Sidebar */
+.allergy-management .nutrient-specialist-sidebar {
+  background: linear-gradient(180deg, var(--blue-primary), var(--blue-accent));
+  color: var(--blue-white);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  box-shadow: var(--blue-shadow);
+  z-index: 1000;
+  transition: var(--blue-transition);
+  max-width: 260px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden; /* Prevent scrolling */
+}
+
+.allergy-management .nutrient-specialist-sidebar.open {
+  width: var(--sidebar-width-open);
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed {
+  width: var(--sidebar-width-closed);
+}
+
+.allergy-management .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-header {
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  gap: 0.5rem;
+}
+
+.allergy-management .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.allergy-management .logo-text {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--blue-white);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .logo-text {
+  display: none;
+}
+
+.allergy-management .logo-svg-container {
+  display: inline-flex;
+}
+
+.allergy-management .logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .logo-svg-container svg {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+}
+
+.allergy-management .logo-svg-container svg path {
+  stroke: var(--nutrient-specialist-primary); /* Updated to match nutrient-specialist-homepage */
+  fill: none; /* Updated to match nutrient-specialist-homepage */
+}
+
+.allergy-management .sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--blue-white);
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--blue-transition);
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-toggle {
+  margin: 0 auto;
+}
+
+.allergy-management .sidebar-toggle:hover,
+.allergy-management .sidebar-toggle:focus {
+  background: var(--blue-white);
+  border-color: var(--blue-primary);
+}
+
+.allergy-management .sidebar-toggle svg path {
+  stroke: var(--blue-white);
+  fill: none;
+}
+
+.allergy-management .sidebar-toggle:hover svg path,
+.allergy-management .sidebar-toggle:focus svg path {
+  stroke: var(--blue-primary);
+}
+
+.allergy-management .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  flex-grow: 1;
+  flex-shrink: 0;
+  overflow-y: hidden; /* Prevent scrolling */
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav {
+  padding: 0;
+  gap: 0.5rem;
+}
+
+.allergy-management .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav-item {
+  justify-content: center;
+}
+
+.allergy-management .sidebar-nav a,
+.allergy-management .sidebar-nav button,
+.allergy-management .nutrient-specialist-profile-info {
+  color: var(--blue-white);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: var(--blue-border-radius);
+  transition: var(--blue-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav a,
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav button,
+.allergy-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info {
+  padding: 0.5rem 0;
+  justify-content: center;
+}
+
+.allergy-management .sidebar-nav a svg,
+.allergy-management .sidebar-nav button svg,
+.allergy-management .nutrient-specialist-profile-info svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav a span,
+.allergy-management .nutrient-specialist-sidebar.closed .sidebar-nav button span,
+.allergy-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-email {
+  display: none;
+}
+
+.allergy-management .sidebar-nav a svg path,
+.allergy-management .sidebar-nav button svg path,
+.allergy-management .nutrient-specialist-profile-info svg path {
+  stroke: var(--blue-white);
+  fill: var(--blue-accent);
+}
+
+.allergy-management .sidebar-nav a:hover,
+.allergy-management .sidebar-nav button:hover,
+.allergy-management .nutrient-specialist-profile-info:hover {
+  background: var(--blue-secondary);
+  transform: translateY(-2px);
+}
+
+.allergy-management .sidebar-nav a:hover svg path,
+.allergy-management .sidebar-nav button:hover svg path,
+.allergy-management .nutrient-specialist-profile-info:hover svg path {
+  stroke: var(--blue-white);
+  fill: var(--blue-white);
+}
+
+.allergy-management .food-dropdown,
+.allergy-management .nutrient-dropdown {
+  overflow: hidden;
+}
+
+.allergy-management .food-dropdown-item,
+.allergy-management .nutrient-dropdown-item {
+  padding-left: 1.5rem;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .food-dropdown-item,
+.allergy-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item {
+  padding-left: 0;
+}
+
+.allergy-management .dropdown-icon {
+  margin-left: auto;
+  transition: var(--blue-transition);
+}
+
+.allergy-management .dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.allergy-management .nutrient-specialist-profile-section {
+  margin-top: auto;
+}
+
+.allergy-management .nutrient-specialist-profile-email {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--blue-white);
+}
+
+.allergy-management .logout-button svg path {
+  stroke: var(--blue-logout);
+  fill: none;
+}
+
+.allergy-management .logout-button:hover svg path {
+  stroke: var(--blue-white);
+  fill: var(--blue-white);
+}
+
+.allergy-management .page-switcher {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.allergy-management .page-switcher button {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--blue-white);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: var(--blue-border-radius);
+  cursor: pointer;
+  transition: var(--blue-transition);
+}
+
+.allergy-management .page-switcher button.active {
+  background: var(--blue-secondary);
+}
+
+.allergy-management .page-switcher button:hover {
+  background: var(--blue-secondary);
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .page-switcher {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.allergy-management .nutrient-specialist-sidebar.closed .page-switcher button {
+  padding: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+/* Main content */
+.allergy-management .nutrient-specialist-content {
+  flex: 1;
+  margin-left: var(--sidebar-width-open);
+  transition: margin-left var(--blue-transition);
+  padding: 1rem;
+  width: calc(100% - var(--sidebar-width-open));
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.allergy-management .nutrient-specialist-content.sidebar-closed {
+  margin-left: var(--sidebar-width-closed);
+  width: calc(100% - var(--sidebar-width-closed));
+}
+
+/* Content wrapper for form and chart */
+.allergy-management .content-wrapper {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.allergy-management .form-section,
+.allergy-management .chart-section {
+  flex: 1;
+  min-width: 300px;
+  width: 100%; /* Ensure full width within content-wrapper */
+}
+
+/* Header */
+.allergy-management .management-header {
+  background: var(--blue-white);
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--blue-accent);
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--blue-border-radius);
+  margin-bottom: 1.5rem;
+}
+
+.allergy-management .management-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: var(--blue-text);
+  margin: 0;
+}
+
+.allergy-management .management-header p {
+  font-size: 0.9rem;
+  color: var(--blue-highlight);
+  margin: 0.25rem 0 0;
+}
+
+/* Form section */
+.allergy-management .form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 300px; /* Maintain minimum width for consistency with chart-section */
+  width: 100%; /* Ensure it takes full available width */
+}
+
+/* Form card */
+.allergy-management .form-card {
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  box-shadow: var(--blue-shadow);
+  padding: 1.5rem;
+  width: 100%; /* Ensure it fills the form-section */
+  box-sizing: border-box; /* Prevent padding from causing overflow */
+}
+
+.allergy-management .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.allergy-management .form-group label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--blue-text);
+}
+
+.allergy-management .input-field,
+.allergy-management .textarea-field,
+.allergy-management .chart-filter-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--blue-accent);
+  border-radius: var(--blue-border-radius);
+  font-size: 0.9rem;
+  background: var(--blue-white);
+  color: var(--blue-text);
+  transition: var(--blue-transition);
+  box-sizing: border-box;
+}
+
+.allergy-management .input-field:focus,
+.allergy-management .textarea-field:focus,
+.allergy-management .chart-filter-select:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
+}
+
+.allergy-management .textarea-field {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.allergy-management .button-section {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.allergy-management .nutrient-specialist-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: var(--blue-border-radius);
+  cursor: pointer;
+  transition: var(--blue-transition);
+  border: none;
+}
+
+.allergy-management .nutrient-specialist-button.primary {
+  background: var(--blue-primary);
+  color: var(--blue-white);
+}
+
+.allergy-management .nutrient-specialist-button.secondary {
+  background: var(--blue-light-bg);
+  color: var(--blue-text);
+  border: 1px solid var(--blue-accent);
+}
+
+.allergy-management .nutrient-specialist-button:hover {
+  box-shadow: var(--blue-shadow-hover);
+}
+
+.allergy-management .nutrient-specialist-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Chart section */
+.allergy-management .chart-section {
+  flex: 1;
+  min-width: 300px;
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  box-shadow: var(--blue-shadow);
+  padding: 1.5rem;
+}
+
+.allergy-management .chart-container {
+  position: relative;
+  height: 300px;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.allergy-management .chart-filter-select {
+  width: auto;
+  max-width: 200px;
+  align-self: flex-end;
+}
+
+.allergy-management .empty-chart-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  background: var(--blue-light-bg);
+  border-radius: var(--blue-border-radius);
+  text-align: center;
+  color: var(--blue-text);
+}
+
+.allergy-management .dark-theme .empty-chart-state {
+  background: #2a4b6e;
+  color: var(--blue-white);
+}
+
+.allergy-management .empty-chart-state p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+/* Category list section */
+.allergy-management .category-list-section {
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  box-shadow: var(--blue-shadow);
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.allergy-management .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.allergy-management .section-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--blue-text);
+  margin: 0;
+}
+
+.allergy-management .category-count {
+  font-size: 0.9rem;
+  color: var(--blue-highlight);
+}
+
+.allergy-management .search-section {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.allergy-management .search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 1px solid var(--blue-accent);
+  border-radius: var(--blue-border-radius);
+  font-size: 0.9rem;
+  background: var(--blue-white);
+  color: var(--blue-text);
+  transition: var(--blue-transition);
+}
+
+.allergy-management .search-input:focus {
+  outline: none;
+  border-color: var(--blue-primary);
+  box-shadow: 0 0 0 3px rgba(30, 136, 229, 0.2);
+}
+
+.allergy-management .search-section .icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--blue-text);
+}
+
+.allergy-management .dark-theme .search-section .icon {
+  color: var(--blue-white);
+}
+
+.allergy-management .category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.allergy-management .category-card {
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  box-shadow: var(--blue-shadow);
+  padding: 1rem;
+  transition: var(--blue-transition);
+}
+
+.allergy-management .category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--blue-shadow-hover);
+}
+
+.allergy-management .card-header {
+  margin-bottom: 0.75rem;
+}
+
+.allergy-management .card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--blue-text);
+  margin: 0;
+}
+
+.allergy-management .card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.allergy-management .card-description {
+  font-size: 0.85rem;
+  color: var(--blue-text);
+  margin: 0;
+}
+
+.allergy-management .card-divider {
+  height: 1px;
+  background: var(--blue-accent);
+  margin: 1rem 0;
+}
+
+.allergy-management .card-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.allergy-management .pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.allergy-management .page-indicator {
+  font-size: 0.9rem;
+  color: var(--blue-text);
+}
+
+.allergy-management .loading-state,
+.allergy-management .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: var(--blue-text);
+}
+
+.allergy-management .dark-theme .loading-state,
+.allergy-management .dark-theme .empty-state {
+  color: var(--blue-white);
+}
+
+.allergy-management .loading-state .icon.loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.allergy-management .empty-state svg {
+  margin-bottom: 1rem;
+}
+
+.allergy-management .empty-state h3 {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+}
+
+.allergy-management .empty-state p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* Notification */
+.allergy-management .notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  background: var(--blue-white);
+  border-radius: var(--blue-border-radius);
+  box-shadow: var(--blue-shadow);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: 300px;
+}
+
+.allergy-management .notification.success {
+  border-left: 4px solid var(--blue-primary);
+}
+
+.allergy-management .notification.error {
+  border-left: 4px solid var(--blue-logout);
+}
+
+.allergy-management .notification-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.allergy-management .notification-content h4 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--blue-text);
+}
+
+.allergy-management .notification-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--blue-text);
+}
+
+.allergy-management .dark-theme .notification {
+  background: #2a4b6e;
+}
+
+.allergy-management .dark-theme .notification-content h4,
+.allergy-management .dark-theme .notification-content p {
+  color: var(--blue-white);
+}
+
+/* Error message */
+.allergy-management .error-message {
+  color: var(--blue-logout);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.allergy-management .dark-theme .error-message {
+  color: #ff6b6b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .allergy-management .nutrient-specialist-sidebar {
+    width: var(--sidebar-width-closed);
+  }
+
+  .allergy-management .nutrient-specialist-content {
+    margin-left: var(--sidebar-width-closed);
+    width: calc(100% - var(--sidebar-width-closed));
+  }
+
+  .allergy-management .nutrient-specialist-content.sidebar-closed {
+    margin-left: var(--sidebar-width-closed);
+  }
+
+  .allergy-management .content-wrapper {
+    flex-direction: column;
+  }
+
+  .allergy-management .form-section,
+  .allergy-management .chart-section {
+    min-width: 100%;
+  }
+
+  .allergy-management .chart-container {
+    max-width: 100%;
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .allergy-management .management-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .allergy-management .section-header h2 {
+    font-size: 1.1rem;
+  }
+
+  .allergy-management .category-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .allergy-management .nutrient-specialist-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .allergy-management .chart-filter-select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .allergy-management .form-group label {
+    font-size: 0.85rem;
+  }
+
+  .allergy-management .input-field,
+  .allergy-management .textarea-field,
+  .allergy-management .chart-filter-select {
+    font-size: 0.85rem;
+    padding: 0.5rem;
+  }
+
+  .allergy-management .form-section {
+    min-width: 100%;
+  }
+
+  .allergy-management .form-card {
+    padding: 1rem;
+  }
+
+  .allergy-management .notification {
+    max-width: 90%;
+    right: 0.5rem;
+    top: 0.5rem;
+  }
+}

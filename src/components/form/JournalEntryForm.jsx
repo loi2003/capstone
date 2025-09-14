@@ -35,10 +35,12 @@ const JournalEntryForm = ({ onError }) => {
   const [modalImage, setModalImage] = useState(null);
   const [modalImageType, setModalImageType] = useState(null);
   const [modalImageIndex, setModalImageIndex] = useState(null);
-  
+
   const token = localStorage.getItem("token");
   const growthDataId = new URLSearchParams(location.search).get("growthDataId");
   const entryId = new URLSearchParams(location.search).get("entryId");
+  const ultrasoundClinicWeeks = [12, 20, 28, 36]; // adjust as needed
+  const bloodTestClinicWeeks = [4, 12, 24, 28]; // adjust as needed
 
   useEffect(() => {
     console.log("GrowthDataId:", growthDataId);
@@ -147,9 +149,9 @@ const JournalEntryForm = ({ onError }) => {
         ...prev,
         [name]: [...prev[name], ...previews].slice(0, 2),
       }));
-      
+
       // Reset the file input to allow re-uploading after removal
-      e.target.value = '';
+      e.target.value = "";
     } else {
       setFormData((prev) => {
         const newData = { ...prev, [name]: value };
@@ -165,7 +167,7 @@ const JournalEntryForm = ({ onError }) => {
   const handleRemoveImage = (type, index) => {
     // Clean up object URLs to prevent memory leaks
     const previewUrl = imagePreviews[type][index];
-    if (previewUrl && previewUrl.startsWith('blob:')) {
+    if (previewUrl && previewUrl.startsWith("blob:")) {
       URL.revokeObjectURL(previewUrl);
     }
 
@@ -201,17 +203,17 @@ const JournalEntryForm = ({ onError }) => {
 
   const replaceImage = (type, index) => {
     // Create a temporary file input to select new image
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.multiple = false;
-    
+
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file && file.size <= 5 * 1024 * 1024) {
         // Clean up old object URL
         const oldPreviewUrl = imagePreviews[type][index];
-        if (oldPreviewUrl && oldPreviewUrl.startsWith('blob:')) {
+        if (oldPreviewUrl && oldPreviewUrl.startsWith("blob:")) {
           URL.revokeObjectURL(oldPreviewUrl);
         }
 
@@ -233,10 +235,10 @@ const JournalEntryForm = ({ onError }) => {
         // Update modal if it's currently showing this image
         setModalImage(newPreview);
       } else if (file) {
-        alert('File size must be less than 5MB');
+        alert("File size must be less than 5MB");
       }
     };
-    
+
     input.click();
   };
 
@@ -256,6 +258,8 @@ const JournalEntryForm = ({ onError }) => {
 
   const validateForm = () => {
     const newErrors = {};
+
+    // Week validation
     if (
       !formData.CurrentWeek ||
       isNaN(Number(formData.CurrentWeek)) ||
@@ -264,20 +268,85 @@ const JournalEntryForm = ({ onError }) => {
     ) {
       newErrors.CurrentWeek = "Current week must be a number between 1 and 40";
     }
-    if (!formData.Note) {
+
+    // Note validation
+    if (!formData.Note?.trim()) {
       newErrors.Note = "Note is required";
     }
+
+    // Weight validation
     if (
-      formData.CurrentWeight &&
-      (isNaN(Number(formData.CurrentWeight)) ||
-        Number(formData.CurrentWeight) < 30 ||
-        Number(formData.CurrentWeight) > 200)
+      !formData.CurrentWeight ||
+      isNaN(Number(formData.CurrentWeight)) ||
+      Number(formData.CurrentWeight) < 30 ||
+      Number(formData.CurrentWeight) > 200
     ) {
       newErrors.CurrentWeight =
         "Current weight must be a number between 30 and 200 kg";
     }
-    console.log("FormData before validation:", formData);
-    console.log("Validation Errors:", newErrors);
+
+    // Blood Pressure validation (as you had before)
+    const systolic = Number(formData.SystolicBP);
+    const diastolic = Number(formData.DiastolicBP);
+
+    if (
+      (formData.SystolicBP && !formData.DiastolicBP) ||
+      (!formData.SystolicBP && formData.DiastolicBP)
+    ) {
+      if (!formData.SystolicBP) newErrors.SystolicBP = "Enter Systolic BP too.";
+      if (!formData.DiastolicBP)
+        newErrors.DiastolicBP = "Enter Diastolic BP too.";
+    } else if (formData.SystolicBP && formData.DiastolicBP) {
+      if (isNaN(systolic) || systolic < 90 || systolic > 250) {
+        newErrors.SystolicBP = "Systolic BP must be between 90 and 250 mmHg.";
+      }
+      if (isNaN(diastolic) || diastolic < 40 || diastolic > 150) {
+        newErrors.DiastolicBP = "Diastolic BP must be between 40 and 150 mmHg.";
+      }
+      if (
+        !newErrors.SystolicBP &&
+        !newErrors.DiastolicBP &&
+        systolic <= diastolic
+      ) {
+        newErrors.SystolicBP = "Systolic BP must be higher than Diastolic BP.";
+        newErrors.DiastolicBP = "Diastolic BP must be lower than Systolic BP.";
+      }
+    }
+
+    // Heart Rate validation (optional, but if entered must be valid)
+    if (formData.HeartRateBPM) {
+      const hr = Number(formData.HeartRateBPM);
+      if (isNaN(hr) || hr < 30 || hr > 200) {
+        newErrors.HeartRateBPM =
+          "Heart rate must be a number between 30 and 200 BPM.";
+      }
+    }
+
+    // Blood Sugar validation (only if on clinic week)
+    if (bloodTestClinicWeeks.includes(Number(formData.CurrentWeek))) {
+      if (formData.BloodSugarLevelMgDl) {
+        const sugar = Number(formData.BloodSugarLevelMgDl);
+        if (isNaN(sugar) || sugar < 30 || sugar > 500) {
+          newErrors.BloodSugarLevelMgDl =
+            "Blood sugar must be a number between 30 and 500 mg/dL.";
+        }
+      }
+    }
+    // Images (optional, but check constraints)
+    if (formData.RelatedImages?.length > 2) {
+      newErrors.RelatedImages = "You can upload up to 2 related images.";
+    }
+    if (ultrasoundClinicWeeks.includes(Number(formData.CurrentWeek))) {
+      if (formData.UltraSoundImages?.length > 2) {
+        newErrors.UltraSoundImages =
+          "You can upload up to 2 ultrasound images.";
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+    newErrors.submit = "Failed to submit journal entry, please recheck your input.";
+  }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -310,7 +379,7 @@ const JournalEntryForm = ({ onError }) => {
         : await createJournalEntry(journalData, token);
 
       console.log("API Response:", response);
-      if (response.data?.error !== 0) {
+      if (!response.data || response.data.error > 0) {
         throw new Error(
           response.data?.message || "Failed to submit journal entry"
         );
@@ -354,7 +423,7 @@ const JournalEntryForm = ({ onError }) => {
                 alt={`Preview ${index + 1}`}
                 className="journal-entry-preview-image"
                 onClick={() => openImageModal(preview, type, index)}
-                style={{ cursor: 'pointer' }}
+                style={{ cursor: "pointer" }}
               />
               {/* <button
                 type="button"
@@ -458,49 +527,64 @@ const JournalEntryForm = ({ onError }) => {
             <span className="error-message">{errors.CurrentWeight}</span>
           )}
         </div>
-        <div className="entry-form-section">
-          <label htmlFor="systolicBP">
-            Systolic Blood Pressure (mmHg)
-            <span
-              className="entry-info-tooltip"
-              title="Normal range is 90-140 mmHg. Enter if you've checked recently."
-            >
-              ⓘ
-            </span>
-          </label>
-          <input
-            type="number"
-            id="systolicBP"
-            name="SystolicBP"
-            value={formData.SystolicBP || ""}
-            onChange={handleChange}
-            min="50"
-            max="250"
-            placeholder="Optional - Can enter if you want to track blood pressure"
-          />
-        </div>
+        <div className="entry-form-group">
+          <h4 className="entry-form-title">Blood Pressure Tracking</h4>
 
-        <div className="entry-form-section">
-          <label htmlFor="diastolicBP">
-            Diastolic Blood Pressure (mmHg)
-            <span
-              className="entry-info-tooltip"
-              title="The normal range is 60-90 mmHg. Enter if you've checked recently."
-            >
-              ⓘ
-            </span>
-          </label>
-          <input
-            type="number"
-            id="diastolicBP"
-            name="DiastolicBP"
-            value={formData.DiastolicBP || ""}
-            onChange={handleChange}
-            min="30"
-            max="150"
-            placeholder="Optional - Can enter if you want to track blood pressure"
-          />
+          <div className="entry-form-section">
+            <label htmlFor="systolicBP">
+              Systolic (mmHg){" "}
+              <span
+                className="entry-info-tooltip"
+                title="Systolic BP normally sits at 90-120 mmHg."
+              >
+                ⓘ
+              </span>
+            </label>
+            <input
+              type="number"
+              id="systolicBP"
+              name="SystolicBP"
+              value={formData.SystolicBP || ""}
+              onChange={handleChange}
+              placeholder="Optional - Need to enter both Systolic and Diastolic BP to track blood pressure"
+              className={errors.SystolicBP ? "error" : ""}
+            />
+            {errors.SystolicBP && (
+              <span className="error-message">{errors.SystolicBP}</span>
+            )}
+          </div>
+
+          <div className="entry-form-section" style={{ marginTop: "1rem" }}>
+            <label htmlFor="diastolicBP">
+              Diastolic (mmHg){" "}
+              <span
+                className="entry-info-tooltip"
+                title="Diastolic BP normally sits at 60-90 mmHg."
+              >
+                ⓘ
+              </span>
+            </label>
+            <input
+              type="number"
+              id="diastolicBP"
+              name="DiastolicBP"
+              value={formData.DiastolicBP || ""}
+              onChange={handleChange}
+              placeholder="Optional - Need to enter both Systolic and Diastolic BP to track blood pressure"
+              className={errors.DiastolicBP ? "error" : ""}
+            />
+            {errors.DiastolicBP && (
+              <span className="error-message">{errors.DiastolicBP}</span>
+            )}
+          </div>
         </div>
+        {/* <div className="entry-form-section journal-entry-info-note">
+          <p>
+            Blood pressure tracking is optional, but it's recommended to monitor
+            it during pregnancy. Please ensure both systolic and diastolic
+            values are entered together for accurate tracking.
+          </p>
+        </div> */}
 
         <div className="entry-form-section">
           <label htmlFor="heartRateBPM">
@@ -519,33 +603,51 @@ const JournalEntryForm = ({ onError }) => {
             name="HeartRateBPM"
             value={formData.HeartRateBPM || ""}
             onChange={handleChange}
-            min="30"
-            max="200"
             placeholder="Optional - Can enter if you want to track heart rate"
+            className={errors.HeartRateBPM ? "error" : ""}
           />
+          {errors.HeartRateBPM && (
+            <span className="error-message">{errors.HeartRateBPM}</span>
+          )}
         </div>
 
-        <div className="entry-form-section">
-          <label htmlFor="bloodSugarLevelMgDl">
-            Blood Sugar Level (mg/dL)
-            <span
-              className="entry-info-tooltip"
-              title="Blood sugar level is typically between 70-130 mg/dL before meals"
-            >
-              ⓘ
-            </span>
-          </label>
-          <input
-            type="number"
-            id="bloodSugarLevelMgDl"
-            name="BloodSugarLevelMgDl"
-            value={formData.BloodSugarLevelMgDl || ""}
-            onChange={handleChange}
-            min="30"
-            max="500"
-            placeholder="Optional - Enter if you've checked recently."
-          />
-        </div>
+        {/* Blood Sugar Level - only on clinic weeks */}
+        {bloodTestClinicWeeks.includes(Number(formData.CurrentWeek)) && (
+          <div className="entry-form-section">
+            <label htmlFor="bloodSugarLevelMgDl">
+              Blood Sugar Level (mg/dL)
+              <span
+                className="entry-info-tooltip"
+                title="Blood sugar level is typically between 70-130 mg/dL before meals"
+              >
+                ⓘ
+              </span>
+            </label>
+            <input
+              type="number"
+              id="bloodSugarLevelMgDl"
+              name="BloodSugarLevelMgDl"
+              value={formData.BloodSugarLevelMgDl || ""}
+              onChange={handleChange}
+              placeholder="Optional - Can enter if you want to track blood sugar level"
+              className={errors.BloodSugarLevelMgDl ? "error" : ""}
+            />
+            {errors.BloodSugarLevelMgDl && (
+              <span className="error-message">
+                {errors.BloodSugarLevelMgDl}
+              </span>
+            )}
+          </div>
+        )}
+        {!bloodTestClinicWeeks.includes(Number(formData.CurrentWeek)) && (
+          <div className="entry-form-section journal-entry-info-note">
+            <p>
+              Blood sugar tracking is only available on clinic weeks (4, 12, 24,
+              28). It's highly recommended to perform OGTT to prevent pregnancy
+              diabetes.
+            </p>
+          </div>
+        )}
 
         <SymptomsAndMood
           selectedMood={formData.MoodNotes}
@@ -565,8 +667,22 @@ const JournalEntryForm = ({ onError }) => {
         />
 
         <ImagePreviewSection type="RelatedImages" label="Related Images" />
-        <ImagePreviewSection type="UltraSoundImages" label="Ultrasound Images" />
+        {/* Ultrasound Images - only on clinic weeks */}
+        {ultrasoundClinicWeeks.includes(Number(formData.CurrentWeek)) && (
+          <ImagePreviewSection
+            type="UltraSoundImages"
+            label="Ultrasound Images"
+          />
+        )}
       </div>
+      {!ultrasoundClinicWeeks.includes(Number(formData.CurrentWeek)) && (
+        <div className="entry-form-section journal-entry-info-note">
+          <p>
+            Ultrasound tracking is only available on clinic weeks (12, 20, 28,
+            36).
+          </p>
+        </div>
+      )}
 
       <div className="entry-form-actions">
         <button
@@ -592,11 +708,16 @@ const JournalEntryForm = ({ onError }) => {
       {/* Image Preview Modal */}
       {modalImage && (
         <div className="image-modal-overlay" onClick={closeModal}>
-          <div className="image-modal-content" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="image-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="image-modal-header">
               <h4>
-                {modalImageType === 'RelatedImages' ? 'Related Image' : 'Ultrasound Image'} 
-                {' '}({modalImageIndex + 1})
+                {modalImageType === "RelatedImages"
+                  ? "Related Image"
+                  : "Ultrasound Image"}{" "}
+                ({modalImageIndex + 1})
               </h4>
               <button className="image-modal-close" onClick={closeModal}>
                 <FaTimes />
@@ -606,13 +727,13 @@ const JournalEntryForm = ({ onError }) => {
               <img src={modalImage} alt="Full size preview" />
             </div>
             <div className="image-modal-actions">
-              <button 
+              <button
                 className="image-modal-replace-btn"
                 onClick={() => replaceImage(modalImageType, modalImageIndex)}
               >
                 Replace Image
               </button>
-              <button 
+              <button
                 className="image-modal-remove-btn"
                 onClick={() => {
                   handleRemoveImage(modalImageType, modalImageIndex);

@@ -7,12 +7,33 @@
   --color-text: #848785;
   --light-text: #faf9f5;
   --dark-text: #013f50;
-  --co-1: #04668D;
-  --co-2: #02808F;
-  --co-3: #00A996;
-  --co-4: #03C39A;
-  --co-5: #F0F3BE;
+  --nguyen-primary-bg: #04668d;
+  --white-text: #fafafa;
+  --nguyen-accent-color: #038474;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f0f3be;
 }
+
+.overview-header h2 {
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 800;
+  color: #013f50;
+  margin-bottom: 1rem;
+  text-shadow: 0 2px 4px rgba(1, 63, 80, 0.1);
+  letter-spacing: -0.5px;
+}
+
+.overview-header p {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #02808f;
+}
+
 .pregnancy-tracking-page {
   min-height: 100vh;
   display: flex;
@@ -47,8 +68,8 @@
 .loading-spinner {
   width: 32px;
   height: 32px;
-  border: 3px solid var(--light-bg);
-  border-top: 3px solid var(--nguyen-accent-color);
+  border: 3px solid var(--color-general);
+  border-top: 3px solid var(--color-accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -71,13 +92,13 @@
 
 .loading-container p,
 .error-container p {
-  color: var(--nguyen-accent-color);
+  color: var(--color-accent);
   font-size: 1.1rem;
 }
 
 /* Error States */
 .error-container h2 {
-  color: var(--nguyen-primary-bg);
+  color: var(--color-main);
   margin-bottom: 1rem;
 }
 
@@ -86,7 +107,7 @@
 }
 
 .retry-btn {
-  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808F);
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808f);
   color: var(--white-text);
   border: none;
   padding: 0.75rem 1.5rem;
@@ -94,12 +115,12 @@
   font-size: 1rem;
   cursor: pointer;
   margin-top: 1rem;
-  transition: var(--transition);
+  transition: all 0.3s ease;
 }
 
 .retry-btn:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 /* Welcome Section */
@@ -117,15 +138,14 @@
 }
 
 .tracking-welcome-header h1 {
-  color: var(--nguyen-primary-bg);
-  
+  color: #013f50;
   font-size: 2.5rem;
   margin-bottom: 1rem;
   font-weight: 700;
 }
 
 .tracking-welcome-header p {
-  color: var(--nguyen-accent-color);
+  color: #666;
   font-size: 1.2rem;
   line-height: 1.6;
 }
@@ -140,9 +160,9 @@
 /* Biometric Section */
 .biometric-section {
   background: var(--white);
-  border-radius: var(--border-radius);
+  border-radius: 8px;
   padding: 2rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .biometric-cards {
@@ -159,12 +179,12 @@
   padding: 1.5rem;
   background: var(--light-bg);
   border-radius: 8px;
-  transition: var(--transition);
+  transition: all 0.3s ease;
 }
 
 .biometric-card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
 
 .metric-icon {
@@ -179,13 +199,15 @@
 .metric-value {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--nguyen-primary-bg);
+  color: var(--color-main);
 }
 
 .metric-label {
+  margin-top: 0.2rem;
   font-size: 0.9rem;
   color: var(--nguyen-accent-color);
 }
+
 .nav-tabs {
   margin-top: 2rem;
   display: flex;
@@ -194,7 +216,9 @@
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 2rem;
-  box-shadow: var(--shadow);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: visible;
+  transition: background 0.3s, color 0.3s;
 }
 
 .tab {
@@ -212,26 +236,86 @@
 
 .tab:hover {
   background-color: white;
-  color: #067DAD;
+  color: #067dad;
   /* transform: translateY(-2px);
   box-shadow: var(--shadow-hover); */
 }
 
 .tab.active {
-  background-color: var(--white);
+  background-color: var(--color-general);
   color: var(--color-main);
   font-weight: 700;
-  border-bottom: 3px solid #067DAD;
+  border-bottom: 3px solid #067dad;
 }
 
 .tab.active:hover {
   background-color: var(--color-main);
-  color: var(--white);
+  color: var(--light-text);
   font-weight: 700;
   border-bottom: 3px solid white;
 }
 
+/* Keep Meal Planner highlighted while hovering its submenu */
+.tab.dropdown:hover > .tab,
+.tab.dropdown:has(.dropdown-menu:hover) > .tab {
+  background-color: white;
+  color: #067dad;
+}
+
+.tab.dropdown {
+  position: relative;
+  transition: background 0.3s, color 0.3s;
+}
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-width: 200px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  z-index: 20;
+  padding: 0.25rem 0;
+}
+
+/* Show on hover */
+.tab.dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* Subtab buttons */
+.dropdown-menu button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--dark-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-left: 3px solid transparent;
+}
+
+/* Hover effect */
+.dropdown-menu button:hover {
+  background: var(--color-general);
+  color: var(--color-main);
+  border-left: 3px solid var(--color-main);
+}
+
+/* Active subtab */
+.dropdown-menu button.active {
+  background: var(--color-main);
+  color: var(--light-text);
+  /* border-left: 3px solid var(--nguyen-accent-color); */
+}
+
 .bbm-icon {
+  color: #046a8d;
   width: 36px;
   height: 36px;
 }
@@ -239,14 +323,71 @@
 .mood-selector {
   flex-wrap: nowrap;
 }
-
-@media (max-width: 600px) {
-  .tab {
-    font-size: 0.9rem;
-    padding: 0.75rem 0;
-  }
+.biometric-card.abnormal {
+  border: 2px solid var(--color-accent); /* red warning */
+  background: #ffeaea;
 }
 
+.biometric-card.abnormal .metric-value {
+  color: var(--color-accent);
+}
+.abnormal-alert-box {
+  background: #fff3f3;
+  border: 2px solid #e63946;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: #b71c1c;
+  font-size: 0.95rem;
+}
+
+.abnormal-alert-box strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #e63946;
+}
+/* .abnormal-alert-box p {
+  color: #038474;
+} */
+
+.abnormal-alert-box ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.abnormal-alert-box li {
+  margin-bottom: 0.3rem;
+}
+
+.weight-chart-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-top: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.contact-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #2563eb;
+  color: #ffffff;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.contact-icon:hover {
+  background-color: #1e40af;
+}
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -271,12 +412,22 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
+  .tab {
+    font-size: 0.9rem;
+    padding: 0.75rem 0;
+  }
+
   .welcome-header h1 {
     font-size: 1.5rem;
   }
 
   .biometric-section {
     padding: 1.5rem;
+  }
+
+  .contact-icon {
+    width: 50px;
+    height: 50px;
   }
 }

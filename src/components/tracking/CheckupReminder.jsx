@@ -1,103 +1,155 @@
 import { useState, useEffect } from "react";
 import CheckupCalendar from "./CheckupCalendar";
 import "./CheckupReminder.css";
-
-const formatDate = (dateStr) => {
-  return new Date(dateStr).toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-};
-
-const getWeekNumber = (dateStr) => {
-  const date = new Date(dateStr);
-  const start = new Date(date.getFullYear(), 0, 1);
-  const diff =
-    date - start +
-    (start.getTimezoneOffset() - date.getTimezoneOffset()) * 60000;
-  return Math.floor(diff / (7 * 24 * 60 * 60 * 1000)) + 1;
-};
+import { getAllTailoredCheckupRemindersForGrowthData } from "../../apis/tailored-checkup-reminder-api";
+import { ViewAllRecommendedCheckupReminders } from "../../apis/recommended-checkup-reminder-api";
+import { useNavigate } from "react-router-dom";
 
 const CheckupReminder = ({ token, userId, appointments = [] }) => {
   const [recommendedReminders, setRecommendedReminders] = useState([]);
   const [emergencyReminders, setEmergencyReminders] = useState([]);
+  const [selectedTrimester, setSelectedTrimester] = useState("first");
+  const navigate = useNavigate();
+
+  const getDateFromWeek = (lmpDate, weekNumber) => {
+    const start = new Date(lmpDate);
+    const daysToAdd = (weekNumber - 1) * 7;
+    start.setDate(start.getDate() + daysToAdd);
+    return start;
+  };
 
   useEffect(() => {
-    setRecommendedReminders([
-      {
-        id: 1,
-        title: "Second Trimester Checkup",
-        startDate: "2025-08-11",
-        endDate: "2025-08-21",
-        note: "Book a general prenatal checkup for the 16th week.",
-        type: "recommended",
-      },
-      {
-        id: 2,
-        title: "Glucose Screening",
-        startDate: "2025-09-05",
-        endDate: "2025-09-11",
-        note: "Check blood sugar level for gestational diabetes.",
-        type: "recommended",
-      },
-    ]);
+    const lmpDateStr = localStorage.getItem("lmpDate");
+    const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date();
 
-    setEmergencyReminders([
-      {
-        id: 3,
-        title: "High Blood Sugar Alert",
-        startDate: "2025-08-12",
-        endDate: "2025-08-20",
-        note: "Your recent journal entry showed high glucose levels. Book an urgent checkup.",
-        type: "urgent",
-      },
-    ]);
+    const fetchRecommendedReminders = async () => {
+      try {
+        const growthDataId = localStorage.getItem("growthDataId");
+        if (!token || !growthDataId) return;
+
+        const apiResponse = await ViewAllRecommendedCheckupReminders(
+          growthDataId,
+          token
+        );
+
+        const remindersArray = Array.isArray(apiResponse.data?.data)
+          ? apiResponse.data.data
+          : [];
+
+        const mappedRecommended = remindersArray.map((r) => {
+          const startDate = getDateFromWeek(lmpDate, r.recommendedStartWeek);
+          const endDate = getDateFromWeek(lmpDate, r.recommendedEndWeek);
+
+          return {
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            startDate,
+            endDate,
+            startWeek: r.recommendedStartWeek,
+            endWeek: r.recommendedEndWeek,
+            note: r.note,
+            type: "recommended",
+          };
+        });
+
+        setRecommendedReminders(mappedRecommended);
+      } catch (err) {
+        console.error("Failed to fetch recommended reminders:", err);
+      }
+    };
+
+    const fetchEmergencyReminders = async () => {
+      try {
+        const growthDataId = localStorage.getItem("growthDataId");
+        if (!token || !growthDataId) return;
+
+        const apiResponse = await getAllTailoredCheckupRemindersForGrowthData(
+          growthDataId,
+          token
+        );
+
+        const remindersArray = Array.isArray(apiResponse.data)
+          ? apiResponse.data
+          : [];
+
+        const mappedEmergency = remindersArray
+          .filter((r) => r.type === "Emergency" && r.isActive === 1)
+          .map((r) => {
+            const startDate = getDateFromWeek(lmpDate, r.recommendedStartWeek);
+            const endDate = getDateFromWeek(lmpDate, r.recommendedEndWeek);
+
+            return {
+              id: r.id,
+              title: r.title,
+              startDate,
+              endDate,
+              startWeek: r.recommendedStartWeek,
+              endWeek: r.recommendedEndWeek,
+              note: r.description,
+              type: "emergency",
+            };
+          });
+
+        setEmergencyReminders(mappedEmergency);
+      } catch (err) {
+        console.error("Failed to fetch tailored reminders:", err);
+      }
+    };
+
+    fetchRecommendedReminders();
+    fetchEmergencyReminders();
   }, [token, userId]);
 
+  const filterByTrimester = (reminder) => {
+    if (selectedTrimester === "all") return true;
+    if (selectedTrimester === "first") return reminder.startWeek <= 13;
+    if (selectedTrimester === "second")
+      return reminder.startWeek >= 14 && reminder.startWeek <= 27;
+    if (selectedTrimester === "third") return reminder.startWeek >= 28;
+    return true;
+  };
+
   const handleBookInside = (reminder) => {
-    alert(`Booking inside platform for: ${reminder.title}`);
+    navigate("/clinic/list");
   };
 
   const handleBookOutside = (reminder) => {
     alert(`Booking outside platform for: ${reminder.title}`);
   };
 
-  const renderReminderCard = (reminder, isUrgent = false) => {
-    return (
-      <div
-        key={reminder.id}
-        className={`reminder-card ${isUrgent ? "red" : "blue"}`}
-      >
-        <div className="reminder-info">
-          <h5>{reminder.title}</h5>
-          <div className="reminder-date">
-            {formatDate(reminder.startDate)} – {formatDate(reminder.endDate)}
-            <br />
-            Week {getWeekNumber(reminder.startDate)} – Week{" "}
-            {getWeekNumber(reminder.endDate)}
-          </div>
-          <p className="reminder-note">{reminder.note}</p>
-        </div>
-        <div className="reminder-actions">
-          <button
-            className={`book-btn ${isUrgent ? "urgent" : ""}`}
-            onClick={() => handleBookInside(reminder)}
-          >
-            {isUrgent ? "Book Urgently" : "Schedule Consultation"}
-          </button>
-          {/* {!isUrgent && (
-            <button
-              className="outside-btn"
-              onClick={() => handleBookOutside(reminder)}
-            >
-              Book Outside
-            </button>
-          )} */}
-        </div>
-      </div>
-    );
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
+
+  const renderReminderCard = (reminder, isUrgent = false) => (
+    <div
+      key={reminder.id}
+      className={`reminder-card ${isUrgent ? "red" : "blue"}`}
+    >
+      <div className="reminder-info">
+        <h5>{reminder.title}</h5>
+        <div className="reminder-date">
+          Week {reminder.startWeek} – Week {reminder.endWeek}
+          <br />
+          {formatDate(reminder.startDate)} – {formatDate(reminder.endDate)}
+        </div>
+        <p className="reminder-note">{reminder.note}</p>
+      </div>
+      <div className="reminder-actions">
+        <button
+          className={`book-btn ${isUrgent ? "emergency" : ""}`}
+          onClick={() => handleBookInside(reminder)}
+        >
+          {isUrgent ? "Book Urgently" : "Schedule Consultation"}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="checkup-reminder">
@@ -111,8 +163,24 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
 
       <div className="reminder-section">
         <h3>Recommended Checkup</h3>
+
+        <div className="reminder-trimester-filter">
+          <label>Show: </label>
+          <select
+            value={selectedTrimester}
+            onChange={(e) => setSelectedTrimester(e.target.value)}
+          >
+            <option value="all">All Trimesters</option>
+            <option value="first">First Trimester</option>
+            <option value="second">Second Trimester</option>
+            <option value="third">Third Trimester</option>
+          </select>
+        </div>
+
         {recommendedReminders.length > 0 ? (
-          recommendedReminders.map((reminder) => renderReminderCard(reminder))
+          recommendedReminders
+            .filter(filterByTrimester)
+            .map((reminder) => renderReminderCard(reminder))
         ) : (
           <p className="empty-text">No recommended reminders at this time.</p>
         )}

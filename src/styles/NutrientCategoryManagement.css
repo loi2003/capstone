@@ -1,7 +1,21 @@
-/* NutrientCategoryManagement.css */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-/* Scope custom properties to the component */
 .nutrient-category-management {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--nutrient-specialist-light-bg);
+  color: var(--nutrient-specialist-text);
+  min-height: 100vh;
+  line-height: 1.6;
+  max-width: 100vw;
+  overflow-x: hidden;
+  display: flex;
+}
+
+:root {
   --nutrient-specialist-primary: #2e7d32;
   --nutrient-specialist-secondary: #4caf50;
   --nutrient-specialist-accent: #a5d6a7;
@@ -14,63 +28,77 @@
   --nutrient-specialist-shadow-hover: 0 8px 24px rgba(46, 125, 50, 0.15);
   --nutrient-specialist-border-radius: 8px;
   --nutrient-specialist-transition: all 0.3s ease;
-  --nutrient-specialist-sidebar-open: min(320px, 30vw);
-  --nutrient-specialist-sidebar-closed: min(80px, 20vw);
-
-  display: flex;
-  min-height: 100vh;
-  font-family: 'Roboto', sans-serif;
-  background-color: var(--nutrient-specialist-light-bg);
-  color: var(--nutrient-specialist-text);
-  max-width: 100vw;
-  overflow-x: hidden;
-  box-sizing: border-box;
 }
 
-/* Dark theme scoped to component */
-.nutrient-category-management.dark-theme,
-.nutrient-category-management.dark-theme .nutrient-specialist-content,
-.nutrient-category-management.dark-theme .management-header,
-.nutrient-category-management.dark-theme .chart-section,
-.nutrient-category-management.dark-theme .form-section,
-.nutrient-category-management.dark-theme .form-card,
-.nutrient-category-management.dark-theme .category-list-section,
-.nutrient-category-management.dark-theme .category-card {
+/* Dark theme */
+body.dark-theme .nutrient-category-management,
+body.dark-theme .nutrient-category-management .nutrient-specialist-sidebar,
+body.dark-theme .nutrient-category-management .nutrient-specialist-content,
+body.dark-theme .nutrient-category-management .management-header,
+body.dark-theme .nutrient-category-management .chart-section,
+body.dark-theme .nutrient-category-management .form-section,
+body.dark-theme .nutrient-category-management .form-card,
+body.dark-theme .nutrient-category-management .category-list-section,
+body.dark-theme .nutrient-category-management .category-card {
   background: #2e4b47;
   color: var(--nutrient-specialist-white);
 }
 
-.nutrient-category-management.dark-theme .input-field,
-.nutrient-category-management.dark-theme .textarea-field,
-.nutrient-category-management.dark-theme .search-input {
+body.dark-theme .nutrient-category-management .input-field,
+body.dark-theme .nutrient-category-management .textarea-field,
+body.dark-theme .nutrient-category-management .search-input {
   background: #3a5a56;
   color: var(--nutrient-specialist-white);
   border-color: #4a6a66;
 }
 
-.nutrient-category-management.dark-theme .form-group label,
-.nutrient-category-management.dark-theme .section-header h2,
-.nutrient-category-management.dark-theme .card-header h3,
-.nutrient-category-management.dark-theme .management-header h1,
-.nutrient-category-management.dark-theme .page-indicator {
+body.dark-theme .nutrient-category-management .form-group label,
+body.dark-theme .nutrient-category-management .section-header h2,
+body.dark-theme .nutrient-category-management .card-header h3,
+body.dark-theme .nutrient-category-management .management-header h1,
+body.dark-theme .nutrient-category-management .page-indicator {
   color: var(--nutrient-specialist-white);
 }
 
-.nutrient-category-management.dark-theme .card-description,
-.nutrient-category-management.dark-theme .management-header p {
+body.dark-theme .nutrient-category-management .card-description,
+body.dark-theme .nutrient-category-management .management-header p {
   color: #e0f2e9;
 }
 
-.nutrient-category-management.dark-theme .nutrient-specialist-button.primary {
+body.dark-theme .nutrient-category-management .nutrient-specialist-button.primary {
   color: var(--nutrient-specialist-primary);
 }
 
-.nutrient-category-management.dark-theme .nutrient-specialist-button.primary:hover:not(:disabled) {
+body.dark-theme .nutrient-category-management .nutrient-specialist-button.primary:hover:not(:disabled) {
   color: var(--nutrient-specialist-white);
 }
 
-.nutrient-category-management.dark-theme .nutrient-specialist-button svg {
+body.dark-theme .nutrient-category-management .nutrient-specialist-button svg {
   stroke: currentColor;
+}
+
+body.dark-theme .nutrient-category-management .sidebar-nav a,
+body.dark-theme .nutrient-category-management .sidebar-nav button {
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-category-management .sidebar-nav a:hover,
+body.dark-theme .nutrient-category-management .sidebar-nav button:hover {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-category-management .nutrient-specialist-profile-info {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.dark-theme .nutrient-category-management .nutrient-specialist-profile-email {
+  color: var(--nutrient-specialist-white);
+}
+
+body.dark-theme .nutrient-category-management .nutrient-badge {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--nutrient-specialist-white);
 }
 
 /* Sidebar */
@@ -84,17 +112,19 @@
   box-shadow: var(--nutrient-specialist-shadow);
   z-index: 1000;
   transition: var(--nutrient-specialist-transition);
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-width: 100vw;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+    overflow-y: hidden; /* Prevent scrolling */
+
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.open {
-  width: var(--nutrient-specialist-sidebar-open);
+  width: 280px;
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.closed {
-  width: var(--nutrient-specialist-sidebar-closed);
+  width: 60px;
 }
 
 .nutrient-category-management .sidebar-header {
@@ -104,56 +134,61 @@
   padding: 0.75rem;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
-  width: 100%;
-  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-header {
   flex-direction: column;
-  padding: 1rem 0.5rem;
-  gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  gap: 0.5rem;
 }
 
 .nutrient-category-management .logo {
   display: flex;
   align-items: center;
   text-decoration: none;
-  gap: 10px;
+  gap: 8px;
   max-width: 100%;
 }
 
-.nutrient-category-management .logo span {
-  font-size: 1.25rem;
+.nutrient-category-management .logo-text {
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--nutrient-specialist-white);
+  letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 85%;
+  max-width: 200px;
 }
 
-.nutrient-category-management .nutrient-specialist-sidebar.closed .logo span {
+.nutrient-category-management .nutrient-specialist-sidebar.closed .logo-text {
   display: none;
 }
 
+.nutrient-category-management .logo-svg-container {
+  display: inline-flex;
+}
+
 .nutrient-category-management .logo-svg-container svg {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.closed .logo-svg-container svg {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
 }
 
 .nutrient-category-management .sidebar-toggle {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--nutrient-specialist-white);
-  padding: 8px;
-  width: 36px;
-  height: 36px;
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -173,6 +208,7 @@
 
 .nutrient-category-management .sidebar-toggle svg path {
   stroke: var(--nutrient-specialist-white);
+  fill: none;
 }
 
 .nutrient-category-management .sidebar-toggle:hover svg path,
@@ -183,86 +219,305 @@
 .nutrient-category-management .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0 1rem;
-  width: 100%;
-  box-sizing: border-box;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  flex-grow: 1;
+  flex-shrink: 0;
+  overflow-y: hidden; /* Prevent scrolling */
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav {
   padding: 0;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .nutrient-category-management .sidebar-nav-item {
   display: flex;
   align-items: center;
-  width: 100%;
+  justify-content: flex-start;
 }
 
 .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav-item {
   justify-content: center;
 }
 
-.nutrient-category-management .sidebar-nav a {
+.nutrient-category-management .sidebar-nav a,
+.nutrient-category-management .sidebar-nav button {
   color: var(--nutrient-specialist-white);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.75rem;
+  padding: 0.5rem;
   border-radius: var(--nutrient-specialist-border-radius);
   transition: var(--nutrient-specialist-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   width: 100%;
-  box-sizing: border-box;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
-.nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav a {
-  padding: 0.75rem 0;
+.nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav a,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav button {
+  padding: 0.5rem 0;
   justify-content: center;
 }
 
-.nutrient-category-management .sidebar-nav a svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.nutrient-category-management .sidebar-nav a svg,
+.nutrient-category-management .sidebar-nav button svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
 }
 
-.nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav a span {
+.nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav a span,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav button span {
   display: none;
 }
 
-.nutrient-category-management .sidebar-nav a:hover {
+.nutrient-category-management .sidebar-nav a:hover,
+.nutrient-category-management .sidebar-nav button:hover {
   background: var(--nutrient-specialist-secondary);
   transform: translateY(-2px);
 }
 
-.nutrient-category-management .sidebar-nav a:hover svg path {
+.nutrient-category-management .sidebar-nav a:hover svg path,
+.nutrient-category-management .sidebar-nav button:hover svg path {
   stroke: var(--nutrient-specialist-white);
   fill: var(--nutrient-specialist-white);
 }
 
-.nutrient-category-management .sidebar-nav-item.active a {
+.nutrient-category-management .sidebar-nav-item.active a,
+.nutrient-category-management .sidebar-nav-item.active button {
   background: var(--nutrient-specialist-secondary);
+}
+
+.nutrient-category-management .nutrient-dropdown,
+.nutrient-category-management .food-dropdown {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.nutrient-category-management .nutrient-dropdown-item,
+.nutrient-category-management .food-dropdown-item {
+  padding-left: 1.5rem;
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown-item {
+  padding-left: 0;
+  justify-content: center;
+}
+
+.nutrient-category-management .nutrient-dropdown-item a,
+.nutrient-category-management .food-dropdown-item a {
+  color: var(--nutrient-specialist-white);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item a,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown-item a {
+  padding: 0.4rem 0;
+  justify-content: center;
+}
+
+.nutrient-category-management .nutrient-dropdown-item a svg,
+.nutrient-category-management .food-dropdown-item a svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item a span,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown-item a span {
+  display: none;
+}
+
+.nutrient-category-management .nutrient-dropdown-item a:hover,
+.nutrient-category-management .food-dropdown-item a:hover {
+  background: var(--nutrient-specialist-secondary);
+  transform: translateY(-2px);
+}
+
+.nutrient-category-management .nutrient-dropdown-item a:hover svg path,
+.nutrient-category-management .food-dropdown-item a:hover svg path {
+  stroke: var(--nutrient-specialist-white);
+  fill: var(--nutrient-specialist-white);
+}
+
+.nutrient-category-management .nutrient-dropdown-item.active a,
+.nutrient-category-management .food-dropdown-item.active a {
+  background: var(--nutrient-specialist-secondary);
+}
+
+.nutrient-category-management .nutrient-dropdown-toggle,
+.nutrient-category-management .food-dropdown-toggle {
+  display: flex;
+  color: var(--nutrient-specialist-white);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-toggle,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown-toggle {
+  display: none;
+}
+
+.nutrient-category-management .nutrient-dropdown-toggle svg:not(.dropdown-icon),
+.nutrient-category-management .food-dropdown-toggle svg:not(.dropdown-icon) {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.nutrient-category-management .nutrient-dropdown-toggle .dropdown-icon,
+.nutrient-category-management .food-dropdown-toggle .dropdown-icon {
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  margin-left: auto;
+  transition: transform var(--nutrient-specialist-transition);
+}
+
+.nutrient-category-management .nutrient-dropdown-toggle .dropdown-icon.open,
+.nutrient-category-management .food-dropdown-toggle .dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown,
+.nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown {
+  display: block;
+  height: auto;
+  opacity: 1;
+}
+
+.nutrient-category-management .nutrient-specialist-profile-section {
+  margin-top: auto;
+  padding-bottom: 0.75rem;
+}
+
+.nutrient-category-management .nutrient-specialist-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: var(--nutrient-specialist-border-radius);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--nutrient-specialist-white);
+  font-size: 0.9rem;
+  font-weight: 600;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info {
+  padding: 0.5rem 0;
+  justify-content: center;
+}
+
+.nutrient-category-management .nutrient-specialist-profile-info svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info span {
+  display: none;
+}
+
+.nutrient-category-management .nutrient-specialist-profile-info:hover .nutrient-specialist-profile-email {
+  text-decoration: underline;
+}
+
+.nutrient-category-management .logout-button {
+  background: rgba(211, 47, 47, 0.1);
+  color: var(--nutrient-specialist-logout);
+  font-weight: 600;
+  padding: 0.5rem;
+  border: 1px solid var(--nutrient-specialist-logout);
+  border-radius: var(--nutrient-specialist-border-radius);
+  transition: var(--nutrient-specialist-transition);
+}
+
+.nutrient-category-management .nutrient-specialist-sidebar.closed .logout-button {
+  padding: 0.5rem 0;
+  justify-content: center;
+}
+
+.nutrient-category-management .logout-button svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.nutrient-category-management .logout-button:hover,
+.nutrient-category-management .logout-button:focus {
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+  transform: translateY(-2px);
+}
+
+.nutrient-category-management .logout-button svg path {
+  stroke: var(--nutrient-specialist-logout);
+}
+
+.nutrient-category-management .logout-button:hover svg path,
+.nutrient-category-management .logout-button:focus svg path {
+  stroke: var(--nutrient-specialist-white);
 }
 
 /* Main content */
 .nutrient-category-management .nutrient-specialist-content {
   flex: 1;
-  margin-left: var(--nutrient-specialist-sidebar-open);
-  transition: margin-left var(--nutrient-specialist-transition);
+  margin-left: 280px;
   padding: 1rem;
-  width: calc(100vw - var(--nutrient-specialist-sidebar-open));
-  max-width: 100%;
+  transition: margin-left var(--nutrient-specialist-transition);
+  width: calc(100% - 280px);
   box-sizing: border-box;
   overflow-x: hidden;
 }
 
 .nutrient-category-management .nutrient-specialist-content.sidebar-closed {
-  margin-left: var(--nutrient-specialist-sidebar-closed);
-  width: calc(100vw - var(--nutrient-specialist-sidebar-closed));
+  margin-left: 60px;
+  width: calc(100% - 60px);
 }
 
 /* Header */
@@ -279,23 +534,17 @@
 }
 
 .nutrient-category-management .management-header h1 {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
   color: var(--nutrient-specialist-primary);
   font-size: 1.5rem;
   font-weight: 600;
-}
-
-.nutrient-category-management .management-header h1 svg {
-  width: 28px;
-  height: 28px;
+  margin: 0;
 }
 
 .nutrient-category-management .management-header p {
   color: var(--nutrient-specialist-text);
   font-size: 0.9rem;
   opacity: 0.8;
+  margin: 0;
 }
 
 /* Management container */
@@ -313,8 +562,7 @@
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  transition聆听
-transition: var(--nutrient-specialist-transition);
+  transition: var(--nutrient-specialist-transition);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -571,57 +819,27 @@ transition: var(--nutrient-specialist-transition);
   background: var(--nutrient-specialist-accent);
   color: var(--nutrient-specialist-primary);
   font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.75rem;
   border-radius: 1rem;
 }
 
 .nutrient-category-management .card-description {
-  color: var(--nutrient-specialist-text);
   font-size: 0.85rem;
-  line-height: 1.4;
+  color: var(--nutrient-specialist-text);
   margin-bottom: 1rem;
+  opacity: 0.8;
 }
 
 .nutrient-category-management .card-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-/* Loading and empty states */
-.nutrient-category-management .loading-state,
-.nutrient-category-management .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem 0;
-  width: 100%;
-  max-width: 100%;
-}
-
-.nutrient-category-management .loading-state svg {
-  width: 2rem;
-  height: 2rem;
-  animation: spin 1s linear infinite;
-}
-
-.nutrient-category-management .empty-state svg {
-  width: 3rem;
-  height: 3rem;
-  stroke: var(--nutrient-specialist-text);
-  opacity: 0.5;
-  margin-bottom: 0.75rem;
-}
-
-.nutrient-category-management .empty-state h3 {
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.nutrient-category-management .empty-state p {
-  font-size: 0.85rem;
-  opacity: 0.7;
+.nutrient-category-management .edit-button,
+.nutrient-category-management .delete-button {
+  flex: 1;
+  min-width: 100px;
 }
 
 /* Pagination */
@@ -629,16 +847,56 @@ transition: var(--nutrient-specialist-transition);
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 0.75rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-  width: 100%;
-  max-width: 100%;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.nutrient-category-management .pagination-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.nutrient-category-management .pagination-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .nutrient-category-management .page-indicator {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--nutrient-specialist-text);
+}
+
+/* Empty and loading states */
+.nutrient-category-management .empty-state,
+.nutrient-category-management .loading-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.nutrient-category-management .empty-state h3 {
+  color: var(--nutrient-specialist-primary);
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.nutrient-category-management .empty-state p {
+  color: var(--nutrient-specialist-text);
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.nutrient-category-management .loading-state p {
+  color: var(--nutrient-specialist-primary);
+  font-size: 1rem;
+}
+
+.nutrient-category-management .loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--nutrient-specialist-primary);
 }
 
 /* Notification */
@@ -646,246 +904,312 @@ transition: var(--nutrient-specialist-transition);
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1rem;
+  background: var(--nutrient-specialist-white);
   border-radius: var(--nutrient-specialist-border-radius);
-  box-shadow: var(--nutrient-specialist-shadow-hover);
-  max-width: 90%;
+  box-shadow: var(--nutrient-specialist-shadow);
+  padding: 1rem;
+  z-index: 2000;
+  max-width: 300px;
 }
 
 .nutrient-category-management .notification.success {
-  background: var(--nutrient-specialist-secondary);
-  color: var(--nutrient-specialist-white);
+  border-left: 4px solid var(--nutrient-specialist-secondary);
 }
 
 .nutrient-category-management .notification.error {
-  background: var(--nutrient-specialist-logout);
-  color: var(--nutrient-specialist-white);
-}
-
-.nutrient-category-management .notification-icon svg {
-  width: 1.5rem;
-  height: 1.5rem;
+  border-left: 4px solid var(--nutrient-specialist-logout);
 }
 
 .nutrient-category-management .notification-content h4 {
-  font-size: 0.95rem;
-  font-weight: 600;
+  color: var(--nutrient-specialist-primary);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .nutrient-category-management .notification-content p {
+  color: var(--nutrient-specialist-text);
   font-size: 0.85rem;
 }
 
-/* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive adjustments */
+/* Responsive design */
 @media (max-width: 1024px) {
+  .nutrient-category-management .nutrient-specialist-sidebar {
+    max-width: 240px;
+  }
   .nutrient-category-management .nutrient-specialist-sidebar.open {
-    width: min(280px, 25vw);
+    width: 240px;
   }
-
   .nutrient-category-management .nutrient-specialist-content {
-    margin-left: min(280px, 25vw);
-    width: calc(100vw - min(280px, 25vw));
-    max-width: 100%;
+    margin-left: 240px;
+    width: calc(100% - 240px);
   }
-
   .nutrient-category-management .nutrient-specialist-content.sidebar-closed {
-    margin-left: var(--nutrient-specialist-sidebar-closed);
-    width: calc(100vw - var(--nutrient-specialist-sidebar-closed));
-    max-width: 100%;
+    margin-left: 60px;
+    width: calc(100% - 60px);
   }
-
-  .nutrient-category-management .category-grid {
-    grid-template-columns: repeat(auto-fill, minmax(min(250px, 100%), 1fr));
-  }
-
-  .nutrient-category-management .management-container {
-    padding: 1rem;
+  .nutrient-category-management .logo-text {
+    max-width: 160px;
   }
 }
 
 @media (max-width: 768px) {
   .nutrient-category-management .nutrient-specialist-sidebar {
-    width: var(--nutrient-specialist-sidebar-closed);
+    max-width: 200px;
   }
-
   .nutrient-category-management .nutrient-specialist-sidebar.open {
-    width: min(240px, 25vw);
+    width: 200px;
   }
-
   .nutrient-category-management .nutrient-specialist-content {
-    margin-left: var(--nutrient-specialist-sidebar-closed);
-    width: calc(100vw - var(--nutrient-specialist-sidebar-closed));
+    margin-left: 200px;
     padding: 0.75rem;
-    max-width: 100%;
+    width: calc(100% - 200px);
   }
-
-  .nutrient-category-management .nutrient-specialist-content.sidebar-open {
-    margin-left: min(240px, 25vw);
-    width: calc(100vw - min(240px, 25vw));
-    max-width: 100%;
+  .nutrient-category-management .nutrient-specialist-content.sidebar-closed {
+    margin-left: 60px;
+    width: calc(100% - 60px);
   }
-
   .nutrient-category-management .management-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.75rem;
-    padding: 0.75rem;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
   }
-
   .nutrient-category-management .management-header h1 {
     font-size: 1.25rem;
   }
-
-  .nutrient-category-management .management-header h1 svg {
-    width: 24px;
-    height: 24px;
+  .nutrient-category-management .management-header p {
+    font-size: 0.85rem;
   }
-
-  .nutrient-category-management .management-container {
-    padding: 0.75rem;
+  .nutrient-category-management .chart-container {
+    height: 200px;
   }
-
-  .nutrient-category-management .chart-section,
   .nutrient-category-management .form-section,
+  .nutrient-category-management .chart-section,
   .nutrient-category-management .category-list-section {
     padding: 0.75rem;
   }
-
-  .nutrient-category-management .form-card {
-    padding: 0.75rem;
-  }
-
   .nutrient-category-management .category-grid {
     grid-template-columns: 1fr;
   }
-
-  .nutrient-category-management .button-group,
-  .nutrient-category-management .card-actions {
+  .nutrient-category-management .button-group {
     flex-direction: column;
+    gap: 0.5rem;
   }
-
   .nutrient-category-management .nutrient-specialist-button {
     max-width: 100%;
   }
-
-  .nutrient-category-management .pagination-controls {
-    flex-direction: column;
-    gap: 0.5rem;
+  .nutrient-category-management .logo-text {
+    font-size: 1rem;
+    max-width: 140px;
+  }
+  .nutrient-category-management .nutrient-dropdown-item,
+  .nutrient-category-management .food-dropdown-item {
+    padding-left: 1rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item,
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown-item {
+    padding-left: 0;
+  }
+  .nutrient-category-management .nutrient-dropdown-item a svg,
+  .nutrient-category-management .food-dropdown-item a svg {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+  }
+  .nutrient-category-management .sidebar-nav a,
+  .nutrient-category-management .sidebar-nav button {
+    font-size: 0.85rem;
+    padding: 0.4rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav a,
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav button {
+    padding: 0.4rem 0;
+  }
+  .nutrient-category-management .sidebar-nav a svg,
+  .nutrient-category-management .sidebar-nav button svg {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+  }
+  .nutrient-category-management .nutrient-specialist-profile-info {
+    font-size: 0.85rem;
+    padding: 0.4rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info {
+    padding: 0.4rem 0;
+  }
+  .nutrient-category-management .nutrient-specialist-profile-info svg {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+  }
+  .nutrient-category-management .logout-button {
+    padding: 0.4rem;
+    font-size: 0.85rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .logout-button {
+    padding: 0.4rem 0;
+  }
+  .nutrient-category-management .logout-button svg {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+  }
+  .nutrient-category-management .nutrient-dropdown-toggle,
+  .nutrient-category-management .food-dropdown-toggle {
+    padding: 0.4rem;
+    font-size: 0.85rem;
+  }
+  .nutrient-category-management .nutrient-dropdown-toggle .dropdown-icon,
+  .nutrient-category-management .food-dropdown-toggle .dropdown-icon {
+    width: 12px;
+    height: 12px;
+    min-width: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .nutrient-category-management .nutrient-specialist-sidebar {
-    width: var(--nutrient-specialist-sidebar-closed);
+    max-width: 180px;
   }
-
   .nutrient-category-management .nutrient-specialist-sidebar.open {
-    width: min(220px, 25vw);
+    width: 180px;
   }
-
   .nutrient-category-management .nutrient-specialist-content {
-    margin-left: var(--nutrient-specialist-sidebar-closed);
-    width: calc(100vw - var(--nutrient-specialist-sidebar-closed));
+    margin-left: 180px;
     padding: 0.5rem;
-    max-width: 100%;
+    width: calc(100% - 180px);
   }
-
-  .nutrient-category-management .nutrient-specialist-content.sidebar-open {
-    margin-left: min(220px, 25vw);
-    width: calc(100vw - min(220px, 25vw));
-    max-width: 100%;
+  .nutrient-category-management .nutrient-specialist-content.sidebar-closed {
+    margin-left: 60px;
+    width: calc(100% - 60px);
   }
-
   .nutrient-category-management .sidebar-header {
     padding: 0.5rem;
+    gap: 0.3rem;
   }
-
-  .nutrient-category-management .logo span {
-    font-size: 1rem;
-    max-width: 150px;
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-header {
+    padding: 0.5rem 0;
+    gap: 0.3rem;
   }
-
+  .nutrient-category-management .logo-text {
+    font-size: 0.9rem;
+    max-width: 120px;
+  }
   .nutrient-category-management .logo-svg-container svg {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
+    min-width: 30px;
   }
-
   .nutrient-category-management .nutrient-specialist-sidebar.closed .logo-svg-container svg {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+  }
+  .nutrient-category-management .sidebar-toggle {
     width: 28px;
     height: 28px;
+    padding: 5px;
   }
-
-  .nutrient-category-management .sidebar-toggle {
-    width: 32px;
-    height: 32px;
-    padding: 6px;
+  .nutrient-category-management .sidebar-toggle svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
   }
-
-  .nutrient-category-management .sidebar-nav a {
-    font-size: 0.9rem;
-    padding: 0.5rem;
+  .nutrient-category-management .sidebar-nav a,
+  .nutrient-category-management .sidebar-nav button {
+    font-size: 0.8rem;
+    padding: 0.3rem;
   }
-
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav a,
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .sidebar-nav button {
+    padding: 0.3rem 0;
+  }
+  .nutrient-category-management .sidebar-nav a svg,
+  .nutrient-category-management .sidebar-nav button svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+  }
+  .nutrient-category-management .nutrient-specialist-profile-info {
+    padding: 0.3rem;
+    font-size: 0.8rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-specialist-profile-info {
+    padding: 0.3rem 0;
+  }
+  .nutrient-category-management .nutrient-specialist-profile-info svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+  }
+  .nutrient-category-management .nutrient-specialist-profile-email {
+    font-size: 0.8rem;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+  .nutrient-category-management .logout-button {
+    padding: 0.3rem;
+    font-size: 0.8rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .logout-button {
+    padding: 0.3rem 0;
+  }
+  .nutrient-category-management .logout-button svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+  }
+  .nutrient-category-management .nutrient-dropdown-item,
+  .nutrient-category-management .food-dropdown-item {
+    padding-left: 0.75rem;
+  }
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .nutrient-dropdown-item,
+  .nutrient-category-management .nutrient-specialist-sidebar.closed .food-dropdown-item {
+    padding-left: 0;
+  }
+  .nutrient-category-management .nutrient-dropdown-item a svg,
+  .nutrient-category-management .food-dropdown-item a svg {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+  }
+  .nutrient-category-management .nutrient-dropdown-toggle,
+  .nutrient-category-management .food-dropdown-toggle {
+    padding: 0.3rem;
+    font-size: 0.8rem;
+  }
+  .nutrient-category-management .nutrient-dropdown-toggle .dropdown-icon,
+  .nutrient-category-management .food-dropdown-toggle .dropdown-icon {
+    width: 10px;
+    height: 10px;
+    min-width: 10px;
+  }
   .nutrient-category-management .management-header h1 {
     font-size: 1.1rem;
   }
-
-  .nutrient-category-management .management-header p {
-    font-size: 0.8rem;
-  }
-
   .nutrient-category-management .section-header h2 {
     font-size: 1.1rem;
   }
-
   .nutrient-category-management .form-group label {
     font-size: 0.8rem;
   }
-
   .nutrient-category-management .input-field,
   .nutrient-category-management .textarea-field,
   .nutrient-category-management .search-input {
     font-size: 0.85rem;
     padding: 0.5rem;
   }
-
-  .nutrient-category-management .search-section svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .nutrient-category-management .chart-container {
-    height: 200px;
-  }
-
   .nutrient-category-management .nutrient-specialist-button {
+    padding: 0.5rem 1rem;
     font-size: 0.85rem;
-    padding: 0.5rem;
   }
-
-  .nutrient-category-management .category-card {
-    padding: 0.75rem;
+  .nutrient-category-management .pagination-controls {
+    flex-direction: column;
+    gap: 0.5rem;
   }
-
-  .nutrient-category-management .card-header h3 {
-    font-size: 0.9rem;
-  }
-
-  .nutrient-category-management .card-description {
-    font-size: 0.8rem;
-  }
-
-  .nutrient-category-management .notification {
-    max-width: 95%;
-    padding: 0.5rem;
+  .nutrient-category-management .pagination-button {
+    width: 100%;
+    max-width: 100%;
   }
 }

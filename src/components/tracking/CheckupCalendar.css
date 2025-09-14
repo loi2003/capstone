@@ -16,6 +16,17 @@
   gap: 0.5rem;
   margin-bottom: 0.8rem;
 }
+.calendar-day.today {
+  display: flex;
+  flex-direction: column;
+}
+.calendar-day.today .today-marker {
+  display: flex;
+  font-size: 0.7rem;
+  color: white; /* or another highlight color */
+  margin-top: 2px;
+  font-weight: bold;
+}
 
 .calendar-header select {
   padding: 0.3rem 0.6rem;
@@ -182,6 +193,7 @@
 
 .calendar-instruction {
   margin-bottom: 0.5rem;
+  margin-top: 1rem;
   font-size: 1rem;
   font-weight: bold;
   display: flex;
@@ -204,7 +216,7 @@
   color: #038474;
 }
 
-.instruction.urgent {
+.instruction.emergency {
   color: #e74c3c;
 }
 
@@ -219,7 +231,7 @@
   color: white;
 }
 
-.calendar-day.urgent {
+.calendar-day.emergency {
   background: #e74c3c;
   color: white;
 }
@@ -238,14 +250,14 @@
   opacity: 0.5;
 }
 
-/* Urgent & Recommended colors applied on top */
-.calendar-day.reminder-start.urgent,
-.calendar-day.reminder-end.urgent {
+/* emergency & Recommended colors applied on top */
+.calendar-day.reminder-start.emergency,
+.calendar-day.reminder-end.emergency {
   background: #e74c3c;
   color: white;
 }
 
-.calendar-day.reminder-middle.urgent {
+.calendar-day.reminder-middle.emergency {
   background: rgba(231, 76, 60, 0.4);
 }
 
@@ -296,7 +308,7 @@
 .reminder-item.recommended {
   border-left-color: #038474;
 }
-.reminder-item.urgent {
+.reminder-item.emergency {
   border-left-color: #e74c3c;
 }
 .reminder-item.appointment {
