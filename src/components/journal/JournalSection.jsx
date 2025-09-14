@@ -22,8 +22,8 @@ const JournalSection = ({
   const [currentWeek, setCurrentWeek] = useState(null);
 
   const [entries, setEntries] = useState(journalEntries || []);
-  const { notifications } = useContext(NotificationContext);
-
+  const { notifications, showNotification } = useContext(NotificationContext);
+  
   useEffect(() => {
     const lastMsg = notifications[notifications.length - 1];
     if (lastMsg?.type === "Journal") {
@@ -85,12 +85,11 @@ const JournalSection = ({
     try {
       await deleteJournal(journalId, token);
       setEntries(entries.filter((entry) => entry.id !== journalId));
+      showNotification("Journal deleted successfully!", "success");
     } catch (error) {
-      console.error("Error deleting journal:", error);
       const errorMessage =
         error.response?.data?.message || "Failed to delete journal";
-      setErrors({ submit: errorMessage });
-      onError?.(errorMessage);
+      showNotification(errorMessage, "error");
     }
   };
 
@@ -175,7 +174,6 @@ const JournalSection = ({
       </div>
     );
   }
-  
 
   return (
     <div className="journal-section">

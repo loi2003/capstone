@@ -3,6 +3,7 @@ import { viewFoodWarnings } from "../../apis/food-api";
 import { viewAllAllergies } from "../../apis/allergy-api";
 import { viewAllDiseases } from "../../apis/disease-api";
 import "./FoodWarning.css";
+import LoadingOverlay from "../popup/LoadingOverlay";
 
 const FoodWarning = () => {
   const token = localStorage.getItem("token");
@@ -38,7 +39,7 @@ const FoodWarning = () => {
         const diseaseRes = await viewAllDiseases(token);
         setDiseaseOptions(diseaseRes.data.data || []);
       } catch (err) {
-        console.error("Error fetching allergy/disease options:", err);
+        // console.error("Error fetching allergy/disease options:", err);
       }
     };
     fetchOptions();
@@ -63,7 +64,7 @@ const FoodWarning = () => {
       allergyIds: selectedAllergies.map((a) => a.id),
       diseaseIds: selectedDiseases.map((d) => d.id),
     };
-    console.log("Submitting payload:", payload);
+    // console.log("Submitting payload:", payload);
 
     if (payload.allergyIds.length === 0 && payload.diseaseIds.length === 0) {
       setError("Please select at least one allergy or disease.");
@@ -82,6 +83,7 @@ const FoodWarning = () => {
       setError("Unable to fetch food warnings.");
     } finally {
       setLoading(false);
+      // console.log("Stopping loading");
     }
   };
 
@@ -95,6 +97,7 @@ const FoodWarning = () => {
 
   return (
     <div className="foodwarning-wrapper">
+      <LoadingOverlay show={loading} />
       <h1 className="foodwarning-title">
         Food Warnings
         <span>Find foods unsafe for your conditions</span>

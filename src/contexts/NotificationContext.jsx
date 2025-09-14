@@ -1,3 +1,4 @@
+// NotificationContext.jsx
 import React, {
   createContext,
   useEffect,
@@ -13,14 +14,25 @@ export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const connectionRef = useRef(null);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]); // SignalR messages
+  const [toasts, setToasts] = useState([]); // Local toast notifications
 
   const addNotification = useCallback((msg) => {
     setNotifications((prev) => {
-      // optional: prevent duplicates if server sends same message twice
       if (prev.some((n) => n.id && n.id === msg.id)) return prev;
       return [...prev, msg];
     });
+  }, []);
+
+  const showNotification = useCallback((message, type = "info") => {
+    const id = Date.now();
+    const newToast = { id, message, type };
+    setToasts((prev) => [...prev, newToast]);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 3000);
   }, []);
 
   useEffect(() => {
@@ -31,10 +43,6 @@ export const NotificationProvider = ({ children }) => {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${baseUrl}/hub/notificationHub?userId=${userId}`, {
         withCredentials: true,
-        transport:
-          signalR.HttpTransportType.WebSockets |
-          signalR.HttpTransportType.ServerSentEvents |
-          signalR.HttpTransportType.LongPolling,
       })
       .withAutomaticReconnect()
       .build();
@@ -54,10 +62,9 @@ export const NotificationProvider = ({ children }) => {
     connectionRef.current = connection;
 
     return () => {
-      connection
-        .stop()
-        .then(() => console.log("SignalR disconnected"))
-        .catch((err) => console.error("Error stopping SignalR:", err));
+      connection.stop().catch((err) =>
+        console.error("Error stopping SignalR:", err)
+      );
     };
   }, [addNotification]);
 
@@ -65,8 +72,10 @@ export const NotificationProvider = ({ children }) => {
     () => ({
       connection: connectionRef.current,
       notifications,
+      toasts,
+      showNotification,
     }),
-    [notifications]
+    [notifications, toasts, showNotification]
   );
 
   return (

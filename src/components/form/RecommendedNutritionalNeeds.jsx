@@ -3,6 +3,7 @@ import { editUserProfile, getCurrentUser } from "../../apis/authentication-api";
 import { getEssentialNutritionalNeeds } from "../../apis/nutrient-suggestion-api";
 import { formatDateForInput } from "../../utils/date";
 import "./RecommendedNutritionalNeeds.css";
+import LoadingOverlay from "../popup/LoadingOverlay";
 
 const RecommendedNutritionalNeeds = () => {
   const [week, setWeek] = useState(1);
@@ -335,6 +336,7 @@ const RecommendedNutritionalNeeds = () => {
 
   return (
     <div className="nutritionalneeds-page">
+      <LoadingOverlay show={loading} />
       <div className="nutritionalneeds-heading">
         <h1>Recommended Nutritional Needs</h1>
         <p>Enter your gestational week and date of birth to see your needs.</p>
