@@ -723,3 +723,157 @@
 .create-online-consultation-section .create-online-consultation-btn:active {
   transform: translateY(0);
 }
+
+.table-user-online-consultation-container {
+  overflow-x: auto;
+}
+
+.table-user-online-consultation {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
+}
+
+.table-user-online-consultation th {
+  background: #4a7421;
+  color: white;
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease;
+}
+
+.table-user-online-consultation td {
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+.table-user-online-consultation tr:hover {
+  background-color: #f8f9fa;
+}
+
+.user-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7dd87f, #4a7c59);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.user-details {
+  flex: 1;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #2d5a3d;
+  margin-bottom: 3px;
+  font-size: 0.92rem;
+}
+
+.user-email {
+  font-size: 0.92rem;
+  color: #7dd87f;
+}
+
+.no-user-online-consultation-results-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+  opacity: 0.5;
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loading-spinner {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #7dd87f;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+.user-online-consultation-container {
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-width: 0;
+  animation: slideUp 0.6s ease-out;
+  align-items: stretch;
+  padding-bottom: 24px;
+  margin-left: 270px;
+}
+
+.modal-overlay .user-online-consultation-form-content .table-user-online-consultation-container {
+  padding: 20px;
+}
+
+.user-online-consultation-container .form-header .btn {
+  float: right;
+  font-size: 2em;
+  border: none;
+  font-weight: bold;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0 12px;
+  width: fit-content;
+}
+
+.modal-overlay .consultation-container .form-header .btn {
+  float: right;
+  font-size: 2em;
+  border: none;
+  font-weight: bold;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 0 12px;
+  width: fit-content;
+}
+
+.onlineConsultation-pagination-btn {
+  background: linear-gradient(135deg, #2e7d32 0%, #4caf50 50%, #66bb6a 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: fit-content;
+}
+
+.onlineConsultation-pagination-btn:hover {
+  background: linear-gradient(135deg, #1b5e20 0%, #388e3c 50%, #4caf50 100%);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

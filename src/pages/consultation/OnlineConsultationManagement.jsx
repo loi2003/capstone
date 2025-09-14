@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import { viewConsultantByUserId } from "../../apis/consultant-api";
+import { viewConsultantByUserId, getAllUsers } from "../../apis/consultant-api";
 import {
   getAllOnlineConsultationsByConsultantId,
   updateOnlineConsultation,
   softDeleteOnlineConsultation,
   createOnlineConsultation,
+  getOnlineConsultationById,
 } from "../../apis/online-consultation-api";
 import "../../styles/OnlineConsultationManagement.css";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
@@ -36,6 +37,23 @@ const OnlineConsultationManagement = () => {
   const [editLoading, setEditLoading] = useState(false);
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [userListLoading, setUserListLoading] = useState(true);
+  const [showUserListModal, setShowUserListModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const sortedConsultations = consultations
+    .slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const totalItems = sortedConsultations.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedConsultations = sortedConsultations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const [createForm, setCreateForm] = useState({
     Trimester: "",
@@ -84,6 +102,22 @@ const OnlineConsultationManagement = () => {
     };
     fetchUserAndConsultant();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setUserListLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const users = await getAllUsers(token);
+        // Ensure users is always an array
+        setUserList(Array.isArray(users) ? users : users?.data || []);
+      } catch (err) {
+        setUserList([]);
+      }
+      setUserListLoading(false);
+    };
+    fetchUsers();
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -158,26 +192,35 @@ const OnlineConsultationManagement = () => {
   };
 
   // --- Edit Modal Logic ---
-  const handleEditClick = (item) => {
-    setEditForm({
-      Id: item.id,
-      Trimester: item.trimester ?? "",
-      Date: item.date ? item.date.slice(0, 16) : "",
-      GestationalWeek: item.gestationalWeek ?? "",
-      Summary: item.summary ?? "",
-      ConsultantNote: item.consultantNote ?? "",
-      UserNote: item.userNote ?? "",
-      VitalSigns: item.vitalSigns ?? "",
-      Recommendations: item.recommendations ?? "",
-      Attachments: item.attachments || [],
-    });
-    setShowEditModal(true);
+  const handleEditClick = async (item) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await getOnlineConsultationById(item.id, token);
+      const data = res?.data || res;
+      // Step 1: Load all data including existing attachments
+      setEditForm({
+        Id: data.id,
+        Trimester: data.trimester ?? "",
+        Date: data.date ? data.date.slice(0, 16) : "",
+        GestationalWeek: data.gestationalWeek ?? "",
+        Summary: data.summary ?? "",
+        ConsultantNote: data.consultantNote ?? "",
+        UserNote: data.userNote ?? "",
+        VitalSigns: data.vitalSigns ?? "",
+        Recommendations: data.recommendations ?? "",
+        Attachments: Array.isArray(data.attachments) ? data.attachments : [],
+        selectedAttachments: [],
+        user: data.user || null,
+      });
+      setShowEditModal(true);
+    } catch (err) {
+      alert("Failed to load consultation details.", err.message);
+    }
   };
 
   const handleEditChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const { type, files } = e.target;
     if (type === "file") {
-      // Only update the selected files, do not add to the list yet
       setEditForm((prev) => ({
         ...prev,
         selectedAttachments: Array.from(files),
@@ -185,7 +228,7 @@ const OnlineConsultationManagement = () => {
     } else {
       setEditForm((prev) => ({
         ...prev,
-        [name]: value,
+        [e.target.name]: e.target.value,
       }));
     }
   };
@@ -201,23 +244,15 @@ const OnlineConsultationManagement = () => {
     }));
   };
 
-  const handleRemoveAttachment = (idx) => {
-    setEditForm((prev) => ({
-      ...prev,
-      Attachments: prev.Attachments.filter((_, i) => i !== idx),
-    }));
-  };
-
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!editForm.Summary || !editForm.Summary.trim()) {
-      alert("Summary is required.");
-      setEditLoading(false);
-      return;
-    }
     setEditLoading(true);
 
-    // Use PascalCase keys to match backend [FromForm] DTO
+    // Only send File objects (binary) in Attachments
+    const filesToSend = editForm.Attachments.filter(
+      (file) => file instanceof File
+    );
+
     const payload = {
       Id: editForm.Id,
       Trimester: Number(editForm.Trimester),
@@ -228,29 +263,12 @@ const OnlineConsultationManagement = () => {
       UserNote: editForm.UserNote,
       VitalSigns: editForm.VitalSigns,
       Recommendations: editForm.Recommendations,
-      Attachments: editForm.Attachments,
+      Attachments: filesToSend, // Only File objects for upload
     };
 
     try {
-      await updateOnlineConsultation(payload);
-      setConsultations((prev) =>
-        prev.map((c) =>
-          c.id === editForm.Id
-            ? {
-                ...c,
-                trimester: Number(editForm.Trimester),
-                date: editForm.Date,
-                gestationalWeek: Number(editForm.GestationalWeek),
-                summary: editForm.Summary,
-                consultantNote: editForm.ConsultantNote,
-                userNote: editForm.UserNote,
-                vitalSigns: editForm.VitalSigns,
-                recommendations: editForm.Recommendations,
-                attachments: editForm.Attachments,
-              }
-            : c
-        )
-      );
+      const token = localStorage.getItem("token");
+      await updateOnlineConsultation(payload, token);
       setShowEditModal(false);
     } catch (err) {
       alert("Failed to update consultation.", err.message);
@@ -302,11 +320,28 @@ const OnlineConsultationManagement = () => {
     }));
   };
 
+  // const handleOpenCreateFlow = () => {
+  //   setShowUserListModal(true);
+  //   setSelectedUser(null);
+  // };
+
+  // const handleSelectUser = (user) => {
+  //   setSelectedUser(user);
+  //   setShowUserListModal(false);
+  //   setShowCreateModal(true);
+  // };
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     if (!createForm.Summary || !createForm.Summary.trim()) {
-      alert("Summary is required.");
+      setErrorMessage("Summary is required.");
+      setTimeout(() => setErrorMessage(""), 3000);
+      return;
+    }
+    if (!selectedUser) {
+      setErrorMessage("Please select a user.");
+      setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
     try {
@@ -315,7 +350,7 @@ const OnlineConsultationManagement = () => {
           ...createForm,
           Attachments: createForm.Attachments,
           ConsultantId: consultant?.id,
-          UserId: user?.id,
+          UserId: selectedUser?.id,
         },
         token
       );
@@ -337,13 +372,60 @@ const OnlineConsultationManagement = () => {
         Attachments: [],
         selectedAttachments: [],
       });
+      setSuccessMessage("Create Consultation Successful!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      alert("Failed to create consultation.", err.message);
+      setErrorMessage("Create Consultation Fail!");
+      setTimeout(() => setErrorMessage(""), 3000);
     }
   };
 
   return (
     <div className="consultant-homepage">
+      {(successMessage || errorMessage) && (
+        <div
+          className={`notification-popup ${
+            errorMessage ? "notification-error" : "notification-success"
+          }`}
+          style={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            zIndex: 9999,
+            background: errorMessage ? "#ffe6e6" : "#e6ffed",
+            color: errorMessage ? "#d32f2f" : "#2d5a3d",
+            border: errorMessage ? "1px solid #d32f2f" : "1px solid #34C759",
+            borderRadius: "8px",
+            padding: "12px 24px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            fontWeight: 500,
+          }}
+        >
+          <span className="notification-icon">
+            {errorMessage ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                  fill="#EF4444"
+                />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  fill="#34C759"
+                />
+              </svg>
+            )}
+          </span>
+          <span className="notification-message">
+            {errorMessage || successMessage}
+          </span>
+        </div>
+      )}
       <motion.aside
         className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
@@ -362,7 +444,7 @@ const OnlineConsultationManagement = () => {
               whileHover="hover"
               className="logo-svg-container"
             >
-              <svg
+              {/* <svg
                 width="48"
                 height="48"
                 viewBox="0 0 24 24"
@@ -402,13 +484,13 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
             </motion.div>
             {isSidebarOpen && (
               <span className="logo-text">Consultant Panel</span>
             )}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title">Consultant Tools</h2>}
+          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -450,7 +532,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Dashboard"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -490,7 +572,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>📊</span>
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
@@ -500,7 +583,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Schedule"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -516,7 +599,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>📅</span>
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
@@ -526,7 +610,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Clients"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -542,7 +626,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>👥</span>
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
@@ -552,7 +637,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Support"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -568,7 +653,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>❓</span>
               {isSidebarOpen && <span>Support</span>}
             </Link>
           </motion.div>
@@ -580,7 +666,7 @@ const OnlineConsultationManagement = () => {
                 navigate("/consultation/online-consultation-management")
               }
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -596,8 +682,38 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>💻</span>
               {isSidebarOpen && <span>Online Consultation</span>}
+            </button>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <button
+              className="sidebar-action-button"
+              title="Add Consultation"
+              onClick={() =>
+                navigate("/consultation/offline-consultation-management")
+              }
+            >
+              {/* <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Plus icon for add consultation"
+              >
+                <path
+                  d="M12 5v14m-7-7h14"
+                  fill="var(--consultant-background)"
+                  stroke="var(--consultant-light-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg> */}
+              <span>🏥</span>
+              {isSidebarOpen && <span>Offline Consultation</span>}
             </button>
           </motion.div>
           {user ? (
@@ -709,20 +825,48 @@ const OnlineConsultationManagement = () => {
           <div className="create-online-consultation-section">
             <button
               className="create-online-consultation-btn"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => setShowUserListModal(true)}
             >
               <span>➕</span>
               Add Online Consultation
             </button>
           </div>
-          {showCreateModal && (
+          {showCreateModal && selectedUser && (
             <div className="modal-overlay">
               <div className="consultation-container">
                 <div className="form-header">
+                  <button
+                    className="btn btn-cancel"
+                    aria-label="Close"
+                    onClick={() => setShowCreateModal(false)}
+                  >
+                    ×
+                  </button>
                   <h1 className="header-title">Add Online Consultation</h1>
                   <p className="header-subtitle">
                     Enter new online consultation information
                   </p>
+                </div>
+                <div
+                  style={{
+                    margin: "16px 30px 0 30px",
+                    color: "#2d5a3d",
+                    fontWeight: 600,
+                  }}
+                >
+                  <span>Selected Patient: </span>
+                  <span>{selectedUser.userName}</span>
+                  {selectedUser.email && (
+                    <span
+                      style={{
+                        color: "#7dd87f",
+                        fontWeight: 400,
+                        marginLeft: 8,
+                      }}
+                    >
+                      ({selectedUser.email})
+                    </span>
+                  )}
                 </div>
                 <form onSubmit={handleCreateSubmit}>
                   <div className="form-content">
@@ -740,16 +884,18 @@ const OnlineConsultationManagement = () => {
                             Trimester <span className="required">*</span>
                           </label>
                           <div className="input-icon">
-                            <input
-                              type="number"
+                            <select
                               className="form-input"
                               name="Trimester"
                               value={createForm.Trimester}
-                              min={1}
-                              max={3}
                               required
                               onChange={handleCreateChange}
-                            />
+                            >
+                              <option value="">Select Trimester</option>
+                              <option value="1">1</option>
+                              <option value="2">2</option>
+                              <option value="3">3</option>
+                            </select>
                             <i className="fas fa-hashtag"></i>
                           </div>
                         </div>
@@ -982,9 +1128,12 @@ const OnlineConsultationManagement = () => {
                       <button
                         className="btn btn-cancel"
                         type="button"
-                        onClick={() => setShowCreateModal(false)}
+                        onClick={() => {
+                          setShowCreateModal(false);
+                          setShowUserListModal(true);
+                        }}
                       >
-                        <i className="fas fa-times"></i> Cancel
+                        <i className="fas fa-times"></i> Back to user list
                       </button>
                       <button className="btn btn-save" type="submit">
                         <i className="fas fa-save"></i> Create
@@ -997,73 +1146,210 @@ const OnlineConsultationManagement = () => {
           )}
           {loading ? (
             <div>Loading consultations...</div>
-          ) : consultations.length === 0 ? (
+          ) : totalItems === 0 ? (
             <div>No consultations found.</div>
           ) : (
-            <table className="online-consultation-table">
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Patient</th>
-                  <th>Summary</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Note</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultations.map((item, idx) => (
-                  <tr key={item.id || idx}>
-                    <td>{idx + 1}</td>
-                    <td>
-                      {item.user?.userName} <br />
-                      <span className="online-consultation-table-email">
-                        {item.user?.email}
-                      </span>
-                    </td>
-                    <td>{item.summary}</td>
-                    <td>
-                      {item.date
-                        ? new Date(item.date).toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}
-                    </td>
-                    <td>
-                      {item.consultant?.isCurrentlyConsulting
-                        ? "Consulting"
-                        : "Completed"}
-                    </td>
-                    <td>{item.consultantNote}</td>
-                    <td>
-                      <div style={{ display: "flex", gap: "4px" }}>
-                        <button
-                          className="action-btn view"
-                          title="View Detail"
-                          onClick={() => handleEditClick(item)}
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          className="action-btn remove"
-                          title="Remove"
-                          onClick={() => handleRemoveClick(item.id)}
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </td>
+            <>
+              <table className="online-consultation-table">
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>Patient</th>
+                    <th>Summary</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Note</th>
+                    <th>Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {paginatedConsultations.map((item, idx) => (
+                    <tr key={item.id || idx}>
+                      <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                      <td>
+                        {item.user?.userName} <br />
+                        <span className="online-consultation-table-email">
+                          {item.user?.email}
+                        </span>
+                      </td>
+                      <td>{item.summary}</td>
+                      <td>
+                        {item.date
+                          ? new Date(item.date).toLocaleString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : ""}
+                      </td>
+                      <td>
+                        {item.consultant?.isCurrentlyConsulting
+                          ? "Consulting"
+                          : "Completed"}
+                      </td>
+                      <td>{item.consultantNote}</td>
+                      <td>
+                        <div style={{ display: "flex", gap: "4px" }}>
+                          <button
+                            className="action-btn view"
+                            title="View Detail"
+                            onClick={() => handleEditClick(item)}
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            className="action-btn remove"
+                            title="Remove"
+                            onClick={() => handleRemoveClick(item.id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Pagination Controls */}
+              <div style={{ marginTop: "16px", textAlign: "center" }}>
+                <button
+                  className="onlineConsultation-pagination-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={{ marginRight: "8px" }}
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="onlineConsultation-pagination-btn"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  style={{ marginLeft: "8px" }}
+                >
+                  Next
+                </button>
+              </div>
+            </>
           )}
         </section>
+
+        {showUserListModal && (
+          <div className="modal-overlay">
+            <div className="user-online-consultation-container">
+              <div className="form-header">
+                <button
+                  className="btn btn-cancel"
+                  aria-label="Close"
+                  onClick={() => setShowUserListModal(false)}
+                >
+                  ×
+                </button>
+                <h1 className="header-title">Select User</h1>
+              </div>
+              <div className="user-online-consultation-form-content">
+                <div className="table-user-online-consultation-container">
+                  <table className="table-user-online-consultation">
+                    <thead>
+                      <tr>
+                        <th>No.</th>
+                        <th>Avatar</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone Number</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {userListLoading ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: "center" }}>
+                            <div className="loading-spinner"></div>
+                            Loading users...
+                          </td>
+                        </tr>
+                      ) : userList.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} style={{ textAlign: "center" }}>
+                            <div
+                              className="no-user-online-consultation-results-icon"
+                              role="img"
+                              aria-label="No results"
+                            >
+                              🔍
+                            </div>
+                            <h3>No users found</h3>
+                            <p>
+                              Try adjusting your search criteria or add a new
+                              user.
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        userList.map((u, idx) => (
+                          <tr key={u.id || idx}>
+                            <td>{idx + 1}</td>
+                            <td>
+                              {u.avatar ? (
+                                <img
+                                  src={u.avatar}
+                                  alt={u.userName}
+                                  className="user-avatar"
+                                  style={{
+                                    width: 45,
+                                    height: 45,
+                                    borderRadius: "50%",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                              ) : (
+                                <div className="user-avatar">
+                                  {u.userName
+                                    ? u.userName
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")
+                                        .toUpperCase()
+                                    : "U"}
+                                </div>
+                              )}
+                            </td>
+                            <td>
+                              <div className="user-name">{u.userName}</div>
+                            </td>
+                            <td>
+                              <div className="user-email">{u.email}</div>
+                            </td>
+                            <td>{u.phoneNo}</td>
+                            <td>
+                              <button
+                                className="btn btn-save"
+                                onClick={() => {
+                                  setSelectedUser(u);
+                                  setShowUserListModal(false);
+                                  setShowCreateModal(true);
+                                }}
+                              >
+                                Select
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Edit Modal */}
         {showEditModal && (
           <div className="modal-overlay">
@@ -1074,6 +1360,29 @@ const OnlineConsultationManagement = () => {
                   Complete patient consultation information
                 </p>
               </div>
+              {editForm.user && (
+                <div
+                  style={{
+                    margin: "16px 30px 0 30px",
+                    color: "#2d5a3d",
+                    fontWeight: 600,
+                  }}
+                >
+                  <span>Patient: </span>
+                  <span>{editForm.user.userName}</span>
+                  {editForm.user.email && (
+                    <span
+                      style={{
+                        color: "#7dd87f",
+                        fontWeight: 400,
+                        marginLeft: 8,
+                      }}
+                    >
+                      ({editForm.user.email})
+                    </span>
+                  )}
+                </div>
+              )}
               <form onSubmit={handleEditSubmit}>
                 <div className="form-content">
                   <div className="form-grid">
@@ -1090,16 +1399,18 @@ const OnlineConsultationManagement = () => {
                           Trimester <span className="required">*</span>
                         </label>
                         <div className="input-icon">
-                          <input
-                            type="number"
+                          <select
                             className="form-input"
                             name="Trimester"
                             value={editForm.Trimester}
-                            min={1}
-                            max={3}
                             required
                             onChange={handleEditChange}
-                          />
+                          >
+                            <option value="">Select Trimester</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                          </select>
                           <i className="fas fa-hashtag"></i>
                         </div>
                       </div>
@@ -1199,13 +1510,7 @@ const OnlineConsultationManagement = () => {
                                   }}
                                 >
                                   {/* Show fileName if object has fileName, else fallback to .name or string */}
-                                  {file.fileName
-                                    ? file.fileName
-                                    : file.name
-                                    ? file.name
-                                    : typeof file === "string"
-                                    ? file
-                                    : "Attachment"}
+                                  {file.fileName || file.name || String(file)}
                                   <button
                                     type="button"
                                     style={{
@@ -1217,7 +1522,14 @@ const OnlineConsultationManagement = () => {
                                       fontSize: "1em",
                                     }}
                                     title="Remove"
-                                    onClick={() => handleRemoveAttachment(idx)}
+                                    onClick={() => {
+                                      setEditForm((prev) => ({
+                                        ...prev,
+                                        Attachments: prev.Attachments.filter(
+                                          (_, i) => i !== idx
+                                        ),
+                                      }));
+                                    }}
                                   >
                                     &times;
                                   </button>

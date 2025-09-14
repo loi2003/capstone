@@ -136,7 +136,7 @@ const ConsultantHomePage = () => {
               whileHover="hover"
               className="logo-svg-container"
             >
-              <svg
+              {/* <svg
                 width="48"
                 height="48"
                 viewBox="0 0 24 24"
@@ -176,13 +176,13 @@ const ConsultantHomePage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
             </motion.div>
             {isSidebarOpen && (
               <span className="logo-text">Consultant Panel</span>
             )}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title">Consultant Tools</h2>}
+          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -224,7 +224,7 @@ const ConsultantHomePage = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Dashboard"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -264,7 +264,8 @@ const ConsultantHomePage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>📊</span>
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
@@ -274,7 +275,7 @@ const ConsultantHomePage = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Schedule"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -290,7 +291,8 @@ const ConsultantHomePage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>📅</span>
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
@@ -300,7 +302,7 @@ const ConsultantHomePage = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Clients"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -316,7 +318,8 @@ const ConsultantHomePage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>👥</span>
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
@@ -326,7 +329,7 @@ const ConsultantHomePage = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Support"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -342,7 +345,8 @@ const ConsultantHomePage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>❓</span>
               {isSidebarOpen && <span>Support</span>}
             </Link>
           </motion.div>
@@ -352,7 +356,7 @@ const ConsultantHomePage = () => {
               title="Add Consultation"
               onClick={() => navigate("/consultation/online-consultation-management")}
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -368,8 +372,36 @@ const ConsultantHomePage = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>💻</span>
               {isSidebarOpen && <span>Online Consultation</span>}
+            </button>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <button
+              className="sidebar-action-button"
+              title="Add Consultation"
+              onClick={() => navigate("/consultation/offline-consultation-management")}
+            >
+              {/* <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Plus icon for add consultation"
+              >
+                <path
+                  d="M12 5v14m-7-7h14"
+                  fill="var(--consultant-background)"
+                  stroke="var(--consultant-light-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg> */}
+              <span>🏥</span>
+              {isSidebarOpen && <span>Offline Consultation</span>}
             </button>
           </motion.div>
           {user ? (
