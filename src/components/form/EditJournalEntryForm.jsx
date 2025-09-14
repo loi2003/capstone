@@ -4,11 +4,13 @@ import { editJournalEntry, getJournalById } from "../../apis/journal-api";
 import { getSymptomsForUser } from "../../apis/recorded-symptom-api";
 import "./JournalEntryForm.css";
 import SymptomsAndMood from "../tracking/SymptomsAndMood";
-import { FaImage } from "react-icons/fa";
+import { FaImage, FaTimes, FaEye } from "react-icons/fa";
+import LoadingOverlay from "../popup/LoadingOverlay";
 
 const EditJournalEntryForm = ({ onError }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const token = localStorage.getItem("token");
   const entryId = new URLSearchParams(location.search).get("entryId");
   const growthDataId = new URLSearchParams(location.search).get("growthDataId");
@@ -135,6 +137,7 @@ const EditJournalEntryForm = ({ onError }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const userId = localStorage.getItem("userId");
+    setLoading(true);
 
     const selectedNames = allSymptoms
       .filter((sym) => formData.SymptomIds.includes(sym.id))
@@ -161,11 +164,65 @@ const EditJournalEntryForm = ({ onError }) => {
       const msg = err.response?.data?.message || "Update failed";
       setErrors({ submit: msg });
       onError?.(msg);
+    } finally {
+      setLoading(false);
     }
   };
+  // New state for image modal
+  const [modalImage, setModalImage] = useState(null);
+  const [modalImageType, setModalImageType] = useState(null); // 'RelatedImages' | 'UltraSoundImages'
+  const [modalImageIndex, setModalImageIndex] = useState(null);
+
+  const openImageModal = (imageSrc, type, index) => {
+    setModalImage(imageSrc);
+    setModalImageType(type);
+    setModalImageIndex(index);
+  };
+
+  const closeModal = () => {
+    setModalImage(null);
+    setModalImageType(null);
+    setModalImageIndex(null);
+  };
+  const ImagePreviewSection = ({ type, label }) => (
+    <div className="entry-form-section">
+      <label htmlFor={type.toLowerCase()}>{label} (Optional)</label>
+      <div className="file-upload-wrapper">
+        <label htmlFor={type.toLowerCase()} className="custom-file-upload">
+          <FaImage /> Upload {label}
+        </label>
+        <input
+          type="file"
+          id={type.toLowerCase()}
+          name={type}
+          onChange={handleChange}
+          multiple
+          accept="image/*"
+        />
+      </div>
+      {/* Preview */}
+      {imagePreviews[type].length > 0 && (
+        <div className="journal-entry-image-preview">
+          {imagePreviews[type].map((preview, index) => (
+            <div key={index} className="journal-entry-preview-wrapper">
+              <img
+                src={preview}
+                alt={`Preview ${index + 1}`}
+                className="journal-entry-preview-image"
+                onClick={() => openImageModal(preview, type, index)}
+                style={{ cursor: "pointer" }}
+              />
+            </div>
+          ))}
+          <span>{formData[type].length} / 2 images selected</span>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="journal-entry-form">
+      <LoadingOverlay show={loading} />
       <div className="entry-form-header">
         <h3>Edit Journal Entry</h3>
         <button
@@ -303,66 +360,13 @@ const EditJournalEntryForm = ({ onError }) => {
           token={token}
         />
 
-        {/* Related Images */}
-        <div className="entry-form-section">
-          <label>Related Images</label>
-          <div className="file-upload-wrapper">
-            <label htmlFor="RelatedImages" className="custom-file-upload">
-              <FaImage /> Upload Related Images
-            </label>
-            <input
-              id="RelatedImages"
-              name="RelatedImages"
-              type="file"
-              onChange={handleChange}
-              multiple
-              accept="image/*"
-            />
-          </div>
-          {imagePreviews.RelatedImages.length > 0 && (
-            <div className="image-preview">
-              {imagePreviews.RelatedImages.map((src, idx) => (
-                <img
-                  key={idx}
-                  src={src}
-                  alt={`preview-${idx}`}
-                  className="preview-image"
-                />
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Ultrasound Images – only on clinic weeks */}
+        <ImagePreviewSection type="RelatedImages" label="Related Images" />
+        {/* Ultrasound Images - only on clinic weeks */}
         {ultrasoundClinicWeeks.includes(Number(formData.CurrentWeek)) && (
-          <div className="entry-form-section">
-            <label>Ultrasound Images</label>
-            <div className="file-upload-wrapper">
-              <label htmlFor="UltraSoundImages" className="custom-file-upload">
-                <FaImage /> Upload Ultrasound Images
-              </label>
-              <input
-                id="UltraSoundImages"
-                name="UltraSoundImages"
-                type="file"
-                onChange={handleChange}
-                multiple
-                accept="image/*"
-              />
-            </div>
-            {imagePreviews.UltraSoundImages.length > 0 && (
-              <div className="image-preview">
-                {imagePreviews.UltraSoundImages.map((src, idx) => (
-                  <img
-                    key={idx}
-                    src={src}
-                    alt={`preview-${idx}`}
-                    className="preview-image"
-                  />
-                ))}
-              </div>
-            )}
-          </div>
+          <ImagePreviewSection
+            type="UltraSoundImages"
+            label="Ultrasound Images"
+          />
         )}
       </div>
 
@@ -383,6 +387,48 @@ const EditJournalEntryForm = ({ onError }) => {
       </div>
 
       {errors.submit && <span className="error-message">{errors.submit}</span>}
+
+      {/* Image Preview Modal */}
+      {modalImage && (
+        <div className="image-modal-overlay" onClick={closeModal}>
+          <div
+            className="image-modal-content"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="image-modal-header">
+              <h4>
+                {modalImageType === "RelatedImages"
+                  ? "Related Image"
+                  : "Ultrasound Image"}{" "}
+                ({modalImageIndex + 1})
+              </h4>
+              <button className="image-modal-close" onClick={closeModal}>
+                <FaTimes />
+              </button>
+            </div>
+            <div className="image-modal-body">
+              <img src={modalImage} alt="Full size preview" />
+            </div>
+            <div className="image-modal-actions">
+              <button
+                className="image-modal-replace-btn"
+                onClick={() => replaceImage(modalImageType, modalImageIndex)}
+              >
+                Replace Image
+              </button>
+              <button
+                className="image-modal-remove-btn"
+                onClick={() => {
+                  handleRemoveImage(modalImageType, modalImageIndex);
+                  closeModal();
+                }}
+              >
+                Remove Image
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
