@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import Chart from "chart.js/auto";
@@ -35,7 +35,6 @@ const BlogManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
-  const [showFullBody, setShowFullBody] = useState(null);
   const [showViewModal, setShowViewModal] = useState(null);
   const blogsPerPage = 6;
   const chartRef = useRef(null);
@@ -43,6 +42,12 @@ const BlogManagement = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const rolePermissions = {
+    "3": { canApprove: true, canReject: true, restrictedTags: [] },
+    "4": { canApprove: true, canReject: true, restrictedTags: ["nutrient"] },
+    "5": { canApprove: true, canReject: true, restrictedTags: ["health"] },
+  };
 
   const clearError = () => {
     setTimeout(() => {
@@ -53,13 +58,16 @@ const BlogManagement = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (blogs.length > 0 && categories.length > 0 && personalBlogs.length > 0) {
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
         if (!token) {
           throw new Error("No token found. Please log in.");
         }
-
         const userResponse = await getCurrentUser(token);
         const userData = userResponse.data?.data || userResponse.data;
         const roleId = String(userData?.roleId);
@@ -67,17 +75,15 @@ const BlogManagement = () => {
           setUser({ ...userData, roleId });
         } else {
           throw new Error(
-            `Access denied. Role ID ${roleId} is not authorized for this page. Only Clinic (3), Health Expert (4), or Nutrient Specialist (5) users can access this page.`
+            `Access denied. Role ID ${roleId} is not authorized for this page.`
           );
         }
-
         const [categoriesResponse, blogsResponse, personalBlogsResponse] =
           await Promise.all([
             getAllCategories(token),
             getAllBlogs(token),
             getBlogsByUser(userData.id, token),
           ]);
-
         const categoriesData = Array.isArray(categoriesResponse.data?.data)
           ? categoriesResponse.data.data
           : [];
@@ -86,23 +92,16 @@ const BlogManagement = () => {
           setError("No categories available. Please create a category first.");
           clearError();
         }
-
-        const blogsData = Array.isArray(blogsResponse.data?.data)
-          ? blogsResponse.data.data
-          : [];
-        setBlogs(blogsData);
-
-        const personalBlogsData = Array.isArray(
-          personalBlogsResponse.data?.data
-        )
-          ? personalBlogsResponse.data.data
-          : [];
-        setPersonalBlogs(personalBlogsData);
-      } catch (err) {
-        setShowErrorModal(
-          err.response?.data?.message ||
-            "Failed to fetch data. Please log in again."
+        setBlogs(
+          Array.isArray(blogsResponse.data?.data) ? blogsResponse.data.data : []
         );
+        setPersonalBlogs(
+          Array.isArray(personalBlogsResponse.data?.data)
+            ? personalBlogsResponse.data.data
+            : []
+        );
+      } catch (err) {
+        setShowErrorModal(err.response?.data?.message || "Failed to fetch data.");
         clearError();
         localStorage.removeItem("token");
         navigate("/signin", { replace: true });
@@ -111,26 +110,22 @@ const BlogManagement = () => {
       }
     };
     fetchData();
-  }, [navigate, location]);
+  }, []);
+
+  const categoryCounts = useMemo(() => {
+    return categories.reduce((acc, category) => {
+      acc[category.categoryName] = (
+        showPersonalBlogs ? personalBlogs : blogs
+      ).filter((blog) => blog.categoryName === category.categoryName).length;
+      return acc;
+    }, {});
+  }, [categories, blogs, personalBlogs, showPersonalBlogs]);
 
   useEffect(() => {
-    if (
-      !loading &&
-      blogs.length > 0 &&
-      categories.length > 0 &&
-      chartRef.current
-    ) {
+    if (!loading && chartRef.current) {
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
       }
-
-      const categoryCounts = categories.reduce((acc, category) => {
-        acc[category.categoryName] = (
-          showPersonalBlogs ? personalBlogs : blogs
-        ).filter((blog) => blog.categoryName === category.categoryName).length;
-        return acc;
-      }, {});
-
       const labels = Object.keys(categoryCounts).filter(
         (key) => categoryCounts[key] > 0
       );
@@ -138,7 +133,6 @@ const BlogManagement = () => {
       const colors = labels.map(
         (_, index) => `hsl(${(index * 137.5) % 360}, 70%, 60%)`
       );
-
       chartInstanceRef.current = new Chart(chartRef.current, {
         type: "pie",
         data: {
@@ -173,14 +167,13 @@ const BlogManagement = () => {
         },
       });
     }
-
     return () => {
       if (chartInstanceRef.current) {
         chartInstanceRef.current.destroy();
         chartInstanceRef.current = null;
       }
     };
-  }, [blogs, personalBlogs, categories, loading, showPersonalBlogs]);
+  }, [categoryCounts, loading]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -234,6 +227,13 @@ const BlogManagement = () => {
 
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
+    const maxImages = 5;
+    const totalImages = editBlogData.images.length + newImages.length + files.length;
+    if (totalImages > maxImages) {
+      setShowErrorModal(`You can only upload up to ${maxImages} images in total.`);
+      clearError();
+      return;
+    }
     const validImages = files.filter((file) => {
       const isImage = file.type.startsWith("image/");
       const isUnderSizeLimit = file.size <= 5 * 1024 * 1024;
@@ -258,28 +258,75 @@ const BlogManagement = () => {
       images: prev.images.filter((_, i) => i !== index),
     }));
   };
+const validateEditForm = () => {
+  if (!editBlogData.title.trim()) {
+    return "Title is required.";
+  }
+  if (!/^[a-zA-Z0-9\s-_]{3,100}$/.test(editBlogData.title.trim())) {
+    return "Title must be 3-100 characters long and contain only letters, numbers, spaces, hyphens, or underscores.";
+  }
+  const titleLowerCase = editBlogData.title.trim().toLowerCase();
+  const existingBlogs = showPersonalBlogs ? personalBlogs : blogs;
+  console.log("Checking for duplicates:", {
+    editedBlogId: editBlogData.id,
+    editedTitle: titleLowerCase,
+    existingBlogs: existingBlogs.map((b) => ({
+      id: b.id,
+      title: b.title ? b.title.trim().toLowerCase() : "undefined",
+    })),
+  });
+  const isDuplicate = existingBlogs.some(
+    (blog) =>
+      String(blog.id) !== String(editBlogData.id) &&
+      blog.title &&
+      blog.title.trim().toLowerCase() === titleLowerCase
+  );
+  if (isDuplicate) {
+    return "This title is already in use. Please choose a unique title.";
+  }
+  if (!editBlogData.body.trim()) {
+    return "Blog content is required.";
+  }
+  if (editBlogData.body.trim().length < 10) {
+    return "Blog content must be at least 10 characters long.";
+  }
+  if (
+    !editBlogData.categoryId ||
+    !categories.some((c) => c.id === editBlogData.categoryId)
+  ) {
+    return "Please select a valid category.";
+  }
+  if (editBlogData.tags && editBlogData.tags.length > 0) {
+    if (editBlogData.tags.length > 10) {
+      return "You can only add up to 10 tags.";
+    }
+    const invalidTag = editBlogData.tags.find(
+      (tag) => !tag.trim() || !/^[a-zA-Z0-9-_]+$/.test(tag.trim())
+    );
+    if (invalidTag) {
+      return "Tags must contain only letters, numbers, hyphens, or underscores, and cannot be empty.";
+    }
+  }
+  return null;
+};
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
-
+    const validationError = validateEditForm();
+    if (validationError) {
+      setShowErrorModal(validationError);
+      clearError();
+      setIsSubmitting(false);
+      return;
+    }
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         throw new Error("No token found. Please log in.");
       }
-
-      try {
-        await getCurrentUser(token);
-      } catch (tokenError) {
-        setShowErrorModal("Session expired. Please log in again.");
-        clearError();
-        localStorage.removeItem("token");
-        navigate("/signin", { replace: true });
-        return;
-      }
-
+      await getCurrentUser(token);
       if (
         !editBlogData.id ||
         !editBlogData.categoryId ||
@@ -290,24 +337,19 @@ const BlogManagement = () => {
           "All required fields (Id, CategoryId, Title, Body) must be provided."
         );
       }
-
       const formData = new FormData();
       formData.append("Id", editBlogData.id);
       formData.append("CategoryId", editBlogData.categoryId);
-      formData.append("Title", editBlogData.title);
-      formData.append("Body", editBlogData.body);
-
+      formData.append("Title", editBlogData.title.trim());
+      formData.append("Body", editBlogData.body.trim());
       const tags = Array.isArray(editBlogData.tags) ? editBlogData.tags : [];
       tags.forEach((tag, index) => {
-        formData.append(`Tags[${index}]`, tag);
+        formData.append(`Tags[${index}]`, tag.trim());
       });
-
       newImages.forEach((image, index) => {
         formData.append("Images", image);
       });
-
       const response = await editBlog(formData, token);
-
       const updatedBlog = {
         ...editBlogData,
         images: response.data.data?.images || editBlogData.images,
@@ -319,21 +361,20 @@ const BlogManagement = () => {
             ? "Approved"
             : editBlogData.status,
       };
-
       setBlogs((prev) =>
         prev.map((b) => (b.id === editBlogData.id ? updatedBlog : b))
       );
       setPersonalBlogs((prev) =>
         prev.map((b) => (b.id === editBlogData.id ? updatedBlog : b))
       );
-
       setEditBlogData(null);
       setNewImages([]);
       setError("");
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message ||
-        "Failed to update blog. Please try again.";
+        err.response?.data?.message === "Title already exists"
+          ? "This title is already in use. Please choose a unique title."
+          : err.response?.data?.message || "Failed to update blog. Please try again.";
       setShowErrorModal(errorMessage);
       clearError();
     } finally {
@@ -361,30 +402,19 @@ const BlogManagement = () => {
       const blog =
         blogs.find((b) => b.id === blogId) ||
         personalBlogs.find((b) => b.id === blogId);
-
+      const permissions = rolePermissions[user.roleId];
       if (
-        user.roleId === "4" &&
-        blog.tags?.map((tag) => tag.toLowerCase()).includes("nutrient")
+        permissions.restrictedTags.some((tag) =>
+          blog.tags?.map((t) => t.toLowerCase()).includes(tag)
+        )
       ) {
         setShowErrorModal(
-          "Only Nutrient Specialists can approve blogs with the 'nutrient' tag."
+          `Only authorized roles can approve blogs with restricted tags (${permissions.restrictedTags.join(", ")}).`
         );
         clearError();
         return;
       }
-      if (
-        user.roleId === "5" &&
-        blog.tags?.map((tag) => tag.toLowerCase()).includes("health")
-      ) {
-        setShowErrorModal(
-          "Only Health Experts can approve blogs with the 'health' tag."
-        );
-        clearError();
-        return;
-      }
-
       const response = await approveBlog(blogId, user.id, token);
-
       if (response.data.error) {
         setShowErrorModal(
           response.data.message || "Failed to approve blog. Please try again."
@@ -392,7 +422,6 @@ const BlogManagement = () => {
         clearError();
         return;
       }
-
       setBlogs((prev) =>
         prev.map((b) => (b.id === blogId ? { ...b, status: "Approved" } : b))
       );
@@ -401,10 +430,9 @@ const BlogManagement = () => {
       );
       setError("");
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        "Failed to approve blog. Please try again.";
-      setShowErrorModal(errorMessage);
+      setShowErrorModal(
+        err.response?.data?.message || "Failed to approve blog. Please try again."
+      );
       clearError();
     }
   };
@@ -420,35 +448,19 @@ const BlogManagement = () => {
       const blog =
         blogs.find((b) => b.id === blogId) ||
         personalBlogs.find((b) => b.id === blogId);
-
+      const permissions = rolePermissions[user.roleId];
       if (
-        user.roleId === "4" &&
-        blog.tags?.map((tag) => tag.toLowerCase()).includes("nutrient")
+        permissions.restrictedTags.some((tag) =>
+          blog.tags?.map((t) => t.toLowerCase()).includes(tag)
+        )
       ) {
         setShowErrorModal(
-          "Only Nutrient Specialists can reject blogs with the 'nutrient' tag."
+          `Only authorized roles can reject blogs with restricted tags (${permissions.restrictedTags.join(", ")}).`
         );
         clearError();
         return;
       }
-      if (
-        user.roleId === "5" &&
-        blog.tags?.map((tag) => tag.toLowerCase()).includes("health")
-      ) {
-        setShowErrorModal(
-          "Only Health Experts can reject blogs with the 'health' tag."
-        );
-        clearError();
-        return;
-      }
-
-      const response = await rejectBlog(
-        blogId,
-        user.id,
-        rejectionReason,
-        token
-      );
-
+      const response = await rejectBlog(blogId, user.id, rejectionReason, token);
       if (response.data.error) {
         setShowErrorModal(
           response.data.message || "Failed to reject blog. Please try again."
@@ -456,7 +468,6 @@ const BlogManagement = () => {
         clearError();
         return;
       }
-
       setBlogs((prev) =>
         prev.map((b) => (b.id === blogId ? { ...b, status: "Rejected" } : b))
       );
@@ -467,10 +478,9 @@ const BlogManagement = () => {
       setRejectionReason("");
       setError("");
     } catch (err) {
-      const errorMessage =
-        err.response?.data?.message ||
-        "Failed to reject blog. Please try again.";
-      setShowErrorModal(errorMessage);
+      setShowErrorModal(
+        err.response?.data?.message || "Failed to reject blog. Please try again."
+      );
       clearError();
     }
   };
@@ -543,7 +553,7 @@ const BlogManagement = () => {
   };
 
   const handleBack = () => {
-    switch (user.roleId) {
+    switch (user?.roleId) {
       case "5":
         navigate("/clinic");
         break;
@@ -554,21 +564,13 @@ const BlogManagement = () => {
         navigate("/nutrient-specialist");
         break;
       default:
-        navigate("/"); // Fallback to homepage if roleId is invalid
+        navigate("/");
         break;
     }
   };
 
   const handleAddBlog = () => {
     navigate("/blog-management/add");
-  };
-
-  const handleViewFullBody = (blog) => {
-    setShowFullBody(blog);
-  };
-
-  const closeFullBodyModal = () => {
-    setShowFullBody(null);
   };
 
   const truncateBody = (body, maxLength = 100) => {
@@ -1132,6 +1134,9 @@ const BlogManagement = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="image-modal-title"
             >
               <motion.div
                 className="blog-image-modal-content"
@@ -1139,6 +1144,10 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") closeImageModal();
+                }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1187,6 +1196,9 @@ const BlogManagement = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-blog-title"
             >
               <motion.div
                 className="blog-image-modal-content"
@@ -1194,9 +1206,13 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setEditBlogData(null);
+                }}
               >
                 <form className="blog-form-section" onSubmit={handleEditSubmit}>
-                  <h2 className="blog-form-title">Edit Blog</h2>
+                  <h2 id="edit-blog-title" className="blog-form-title">Edit Blog</h2>
                   {error && (
                     <motion.p
                       className="error-message"
@@ -1223,6 +1239,7 @@ const BlogManagement = () => {
                         required
                         aria-label="Blog title"
                         disabled={isSubmitting}
+                        placeholder="Enter title (3-100 characters)"
                       />
                     </div>
                     <div className="input-group">
@@ -1263,6 +1280,7 @@ const BlogManagement = () => {
                       required
                       aria-label="Blog content"
                       disabled={isSubmitting}
+                      placeholder="Enter blog content (min 10 characters)"
                     />
                   </div>
                   <div className="input-group">
@@ -1286,6 +1304,7 @@ const BlogManagement = () => {
                       }
                       aria-label="Blog tags"
                       disabled={isSubmitting}
+                      placeholder="Enter tags (e.g., health, nutrition)"
                     />
                   </div>
                   <div className="input-group">
@@ -1316,7 +1335,7 @@ const BlogManagement = () => {
                     </div>
                   </div>
                   <div className="input-group">
-                    <label htmlFor="edit-images">Add New Images</label>
+                    <label htmlFor="edit-images">Add New Images (max 5 total)</label>
                     <input
                       id="edit-images"
                       type="file"
@@ -1440,6 +1459,9 @@ const BlogManagement = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-confirm-title"
             >
               <motion.div
                 className="blog-image-modal-content"
@@ -1447,6 +1469,10 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setShowDeleteConfirm(null);
+                }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1456,7 +1482,7 @@ const BlogManagement = () => {
                   ×
                 </button>
                 <div className="delete-confirm">
-                  <h2 className="delete-confirm-title">Confirm Delete</h2>
+                  <h2 id="delete-confirm-title" className="delete-confirm-title">Confirm Delete</h2>
                   <p>Are you sure you want to delete this blog?</p>
                   <div className="form-actions">
                     <motion.button
@@ -1518,6 +1544,9 @@ const BlogManagement = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="reject-blog-title"
             >
               <motion.div
                 className="blog-image-modal-content"
@@ -1525,6 +1554,10 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setShowRejectModal(null);
+                }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1534,7 +1567,7 @@ const BlogManagement = () => {
                   ×
                 </button>
                 <div className="delete-confirm">
-                  <h2 className="delete-confirm-title">Reject Blog</h2>
+                  <h2 id="reject-blog-title" className="delete-confirm-title">Reject Blog</h2>
                   <p>Please provide a reason for rejecting this blog:</p>
                   <div className="input-group">
                     <textarea
@@ -1609,6 +1642,9 @@ const BlogManagement = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="view-blog-title"
             >
               <motion.div
                 className="blog-view-modal-content"
@@ -1616,6 +1652,10 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") closeViewModal();
+                }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1624,9 +1664,8 @@ const BlogManagement = () => {
                 >
                   ×
                 </button>
-
                 <div className="blog-view-header">
-                  <h2 className="blog-view-title">{showViewModal.title}</h2>
+                  <h2 id="view-blog-title" className="blog-view-title">{showViewModal.title}</h2>
                   <div className="blog-view-meta">
                     <span className="blog-view-category">
                       <strong>Category:</strong>{" "}
@@ -1650,14 +1689,12 @@ const BlogManagement = () => {
                     </span>
                   </div>
                 </div>
-
                 <div className="blog-view-body">
                   <h3 className="blog-view-subtitle">Content</h3>
                   <div className="blog-view-text">
                     {showViewModal.body || "No content available"}
                   </div>
                 </div>
-
                 {showViewModal.images?.length > 0 && (
                   <div className="blog-view-images">
                     <h3 className="blog-view-subtitle">Images</h3>
@@ -1682,7 +1719,6 @@ const BlogManagement = () => {
                     </div>
                   </div>
                 )}
-
                 <div className="blog-view-footer">
                   <button
                     className="blog-view-close-button"
@@ -1694,42 +1730,6 @@ const BlogManagement = () => {
               </motion.div>
             </motion.div>
           )}
-          {showFullBody && (
-            <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                  maxWidth: "600px",
-                  maxHeight: "80vh",
-                  overflowY: "auto",
-                }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={closeFullBodyModal}
-                  aria-label="Close full body modal"
-                >
-                  ×
-                </button>
-                <div className="full-body-content">
-                  <h2 className="blog-form-title">{showFullBody.title}</h2>
-                  <p style={{ whiteSpace: "pre-wrap" }}>
-                    {showFullBody.body || "No content"}
-                  </p>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
           {showErrorModal && (
             <motion.div
               className="blog-image-modal"
@@ -1737,6 +1737,9 @@ const BlogManagement = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="error-modal-title"
             >
               <motion.div
                 className="blog-image-modal-content"
@@ -1744,6 +1747,10 @@ const BlogManagement = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration: 0.3 }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setShowErrorModal(null);
+                }}
               >
                 <button
                   className="blog-image-modal-close"
@@ -1753,7 +1760,7 @@ const BlogManagement = () => {
                   ×
                 </button>
                 <div className="delete-confirm">
-                  <h2 className="delete-confirm-title">Error</h2>
+                  <h2 id="error-modal-title" className="delete-confirm-title">Error</h2>
                   <p>{showErrorModal}</p>
                   <div className="form-actions">
                     <motion.button

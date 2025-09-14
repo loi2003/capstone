@@ -330,6 +330,10 @@ const SignIn = () => {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="signin-branding"
         >
+          <Link to="/" className="signin-logo">
+            <img src="/images/IMG_4602.PNG" alt="Logo" className="signin-web-logo" />
+            NestlyCare
+          </Link>
           <div className="signin-branding-text">
             <h1 className="signin-title">Welcome to the Community</h1>
             <p className="signin-description">
@@ -348,9 +352,6 @@ const SignIn = () => {
           animate="animate"
           className="signin-form-container"
         >
-          <Link to="/" className="signin-logo">
-            <img src="/images/nestly.png" alt="Logo" />
-          </Link>
           <h2 className="signin-form-title">Sign In</h2>
           <form onSubmit={handleSubmit} className="signin-form">
             <div className="signin-input-group">

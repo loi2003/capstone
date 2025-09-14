@@ -66,18 +66,69 @@ const AdminAccountManagement = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const validateForm = () => {
+    // Username: alphanumeric, hyphens, underscores, 3-30 characters
+    if (!/^[a-zA-Z0-9_-]{3,30}$/.test(formData.userName.trim())) {
+      return 'Username must be 3-30 characters long and contain only letters, numbers, hyphens, or underscores.';
+    }
+    // Email: standard email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      return 'Please enter a valid email address.';
+    }
+    // Password: at least 8 characters, includes letter and number
+    if (!/^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$/.test(formData.passwordHash)) {
+      return 'Password must be at least 8 characters long and include both letters and numbers.';
+    }
+    // Phone number: optional, but if provided, must match a basic phone format
+    if (formData.phoneNumber && !/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.trim())) {
+      return 'Phone number must be a valid international format (e.g., +1234567890).';
+    }
+    // Role: must be one of the allowed values
+    if (!roleOptions.some((role) => role.formValue === formData.role)) {
+      return 'Invalid role selected.';
+    }
+    return null;
+  };
+
+  const checkDuplicates = () => {
+    const allAccounts = [...users, ...staff, ...clinics];
+    if (allAccounts.some((account) => account.userName?.toLowerCase() === formData.userName.trim().toLowerCase())) {
+      return `Username "${formData.userName}" is already taken.`;
+    }
+    if (allAccounts.some((account) => account.email?.toLowerCase() === formData.email.trim().toLowerCase())) {
+      return `Email "${formData.email}" is already in use.`;
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     setLoading(true);
 
+    // Client-side validation
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      setLoading(false);
+      return;
+    }
+
+    // Check for duplicates
+    const duplicateError = checkDuplicates();
+    if (duplicateError) {
+      setError(duplicateError);
+      setLoading(false);
+      return;
+    }
+
     try {
       const form = new FormData();
-      form.append('UserName', formData.userName);
-      form.append('Email', formData.email);
+      form.append('UserName', formData.userName.trim());
+      form.append('Email', formData.email.trim());
       form.append('PasswordHash', formData.passwordHash);
-      form.append('PhoneNumber', formData.phoneNumber || '');
+      form.append('PhoneNumber', formData.phoneNumber.trim() || '');
 
       let response;
       let roleLabel;
@@ -104,9 +155,9 @@ const AdminAccountManagement = () => {
           throw new Error('Invalid role selected');
       }
 
-      const userName = response.data?.data?.userName || formData.userName;
-      const email = response.data?.data?.email || formData.email;
-      const phoneNo = response.data?.data?.phoneNo || formData.phoneNumber || 'N/A';
+      const userName = response.data?.data?.userName || formData.userName.trim();
+      const email = response.data?.data?.email || formData.email.trim();
+      const phoneNo = response.data?.data?.phoneNo || formData.phoneNumber.trim() || 'N/A';
       const status = response.data?.data?.status || 'active';
       const id = response.data?.data?.id || `temp-${Date.now()}`;
       const roleId = response.data?.data?.roleId || selectedRole.value;
@@ -213,9 +264,9 @@ const AdminAccountManagement = () => {
   };
 
   const handleToggleBan = (email, action, status) => {
-    if (action === 'banes') {
+    if (action === 'ban') {
       handleBanAccount(email, status);
-    } else if (action === 'unbaned') {
+    } else if (action === 'unban') {
       handleUnbanAccount(email, status);
     }
   };
@@ -396,7 +447,7 @@ const AdminAccountManagement = () => {
                   value={formData.userName}
                   onChange={handleInputChange}
                   required
-                  placeholder="Enter username"
+                  placeholder="Enter username (3-30 characters)"
                 />
               </div>
               <div className="form-group">
@@ -420,7 +471,7 @@ const AdminAccountManagement = () => {
                   value={formData.passwordHash}
                   onChange={handleInputChange}
                   required
-                  placeholder="Enter password"
+                  placeholder="Enter password (min 8 characters)"
                 />
               </div>
               <div className="form-group">
@@ -431,7 +482,7 @@ const AdminAccountManagement = () => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  placeholder="Enter phone number"
+                  placeholder="Enter phone number (e.g., +1234567890)"
                 />
               </div>
               {error && <div className="error-message">{error}</div>}
@@ -482,8 +533,8 @@ const AdminAccountManagement = () => {
                           ))}
                         </select>
                         <button
-                          className="action-button banes"
-                          onClick={() => handleToggleBan(user.email, 'banes', user.status)}
+                          className="action-button ban"
+                          onClick={() => handleToggleBan(user.email, 'ban', user.status)}
                           disabled={user.status?.toLowerCase() !== 'active' || loadingStates[user.email]}
                           aria-label="Ban Account"
                           title="Ban Account"
@@ -491,8 +542,8 @@ const AdminAccountManagement = () => {
                           Ban
                         </button>
                         <button
-                          className="action-button unbaned"
-                          onClick={() => handleToggleBan(user.email, 'unbaned', user.status)}
+                          className="action-button unban"
+                          onClick={() => handleToggleBan(user.email, 'unban', user.status)}
                           disabled={user.status?.toLowerCase() === 'active' || loadingStates[user.email]}
                           aria-label="Unban Account"
                           title="Unban Account"
@@ -552,8 +603,8 @@ const AdminAccountManagement = () => {
                           ))}
                         </select>
                         <button
-                          className="action-button banes"
-                          onClick={() => handleToggleBan(staffMember.email, 'banes', staffMember.status)}
+                          className="action-button ban"
+                          onClick={() => handleToggleBan(staffMember.email, 'ban', staffMember.status)}
                           disabled={staffMember.status?.toLowerCase() !== 'active' || loadingStates[staffMember.email]}
                           aria-label="Ban Account"
                           title="Ban Account"
@@ -561,8 +612,8 @@ const AdminAccountManagement = () => {
                           Ban
                         </button>
                         <button
-                          className="action-button unbaned"
-                          onClick={() => handleToggleBan(staffMember.email, 'unbaned', staffMember.status)}
+                          className="action-button unban"
+                          onClick={() => handleToggleBan(staffMember.email, 'unban', staffMember.status)}
                           disabled={staffMember.status?.toLowerCase() === 'active' || loadingStates[staffMember.email]}
                           aria-label="Unban Account"
                           title="Unban Account"
@@ -622,8 +673,8 @@ const AdminAccountManagement = () => {
                           ))}
                         </select>
                         <button
-                          className="action-button banes"
-                          onClick={() => handleToggleBan(clinic.email, 'banes', clinic.status)}
+                          className="action-button ban"
+                          onClick={() => handleToggleBan(clinic.email, 'ban', clinic.status)}
                           disabled={clinic.status?.toLowerCase() !== 'active' || loadingStates[clinic.email]}
                           aria-label="Ban Account"
                           title="Ban Account"
@@ -631,8 +682,8 @@ const AdminAccountManagement = () => {
                           Ban
                         </button>
                         <button
-                          className="action-button unbaned"
-                          onClick={() => handleToggleBan(clinic.email, 'unbaned', clinic.status)}
+                          className="action-button unban"
+                          onClick={() => handleToggleBan(clinic.email, 'unban', clinic.status)}
                           disabled={clinic.status?.toLowerCase() === 'active' || loadingStates[clinic.email]}
                           aria-label="Unban Account"
                           title="Unban Account"
