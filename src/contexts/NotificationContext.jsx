@@ -19,7 +19,12 @@ export const NotificationProvider = ({ children }) => {
 
   const addNotification = useCallback((msg) => {
     setNotifications((prev) => {
-      if (prev.some((n) => n.id && n.id === msg.id)) return prev;
+      const exists = prev.some(
+        (n) =>
+          n.type === msg.type &&
+          JSON.stringify(n.payload) === JSON.stringify(msg.payload)
+      );
+      if (exists) return prev;
       return [...prev, msg];
     });
   }, []);
@@ -47,9 +52,21 @@ export const NotificationProvider = ({ children }) => {
       .withAutomaticReconnect()
       .build();
 
-    connection.on("ReceiveNotification", (msg) => {
-      console.log("Notification received:", msg);
-      addNotification(msg);
+    connection.on("ReceivedNotification", (msg) => {
+      const type = msg.type;
+      const payload = msg.payload;
+
+      console.log("=== SignalR Notification Received ===");
+      // console.log("Full message object:", msg);
+      // console.log("Message type:", type);
+      // console.log("Message payload:", payload);
+      // console.log(
+      //   "Message stringified:",
+      //   JSON.stringify({ type, payload }, null, 2)
+      // );
+      // console.log("=====================================");
+
+      addNotification({ type, payload, id: Date.now() });
     });
 
     connection
@@ -62,9 +79,9 @@ export const NotificationProvider = ({ children }) => {
     connectionRef.current = connection;
 
     return () => {
-      connection.stop().catch((err) =>
-        console.error("Error stopping SignalR:", err)
-      );
+      connection
+        .stop()
+        .catch((err) => console.error("Error stopping SignalR:", err));
     };
   }, [addNotification]);
 

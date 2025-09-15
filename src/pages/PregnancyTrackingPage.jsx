@@ -294,31 +294,57 @@ const PregnancyTrackingPage = () => {
     const lastMsg = notifications[notifications.length - 1];
     if (!lastMsg) return;
 
+    console.log("=== New Notification Received ===");
+    console.log("Notification type:", lastMsg.type);
+    // console.log("Full notification object:", lastMsg);
+    // console.log("Payload exists:", !!lastMsg.payload);
+    // console.log("Payload content:", lastMsg.payload);
+    // console.log(
+    //   "Payload stringified:",
+    //   JSON.stringify(lastMsg.payload, null, 2)
+    // );
+    console.log("================================");
+
     // Handle BBM updates
-    if (lastMsg.type === "BBM" || lastMsg.type === "BioMetric") {
-      console.log("Real-time BBM update:", lastMsg);
+    if (lastMsg.type === "BBM") {
+      console.log("Processing BBM update:");
+      console.log("BBM Payload details:", {
+        // growthDataId: lastMsg.payload?.growthDataId,
+        // userId: lastMsg.payload?.userId,
+        metrics: lastMsg.payload?.metrics || lastMsg.payload,
+      });
 
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
       const currentDate = new Date().toISOString().split("T")[0];
 
-      // Re-fetch current growth data to refresh BBM
+      getCurrentWeekGrowthData(userId, currentDate, token)
+        .then(({ data }) => {
+          if (data?.error === 0 && data?.data) {
+            setPregnancyData(data.data); // refresh metrics
+          }
+        })
+        .catch((err) => console.error("Failed to refresh BBM:", err));
+    }
+
+    // Handle Journal delete
+    if (lastMsg.type === "BBM") {
+      console.log("Processing Journal delete:", lastMsg.payload);
+
+      // refresh BBM as well
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const currentDate = new Date().toISOString().split("T")[0];
+
       getCurrentWeekGrowthData(userId, currentDate, token)
         .then(({ data }) => {
           if (data?.error === 0 && data?.data) {
             setPregnancyData(data.data);
           }
         })
-        .catch((err) => console.error("Failed to refresh BBM:", err));
-    }
-
-    // Optionally handle Journal updates here too if you want
-    if (lastMsg.type === "Journal") {
-      console.log("Real-time Journal update:", lastMsg);
-      setJournals((prev) => {
-        if (prev.some((j) => j.id === lastMsg.payload.id)) return prev;
-        return [...prev, lastMsg.payload];
-      });
+        .catch((err) =>
+          console.error("Failed to refresh BBM after journal delete:", err)
+        );
     }
   }, [notifications, pregnancyData?.id]);
 
