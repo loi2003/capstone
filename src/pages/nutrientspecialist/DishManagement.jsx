@@ -281,10 +281,7 @@ const DishManagement = () => {
       showNotification("Dish name is required", "error");
       return;
     }
-    if (newDish.foodList.length === 0) {
-      showNotification("Please select at least one food", "error");
-      return;
-    }
+    
     if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
       showNotification(
         "Please provide valid unit and amount for all selected foods",
