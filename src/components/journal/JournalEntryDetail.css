@@ -134,6 +134,19 @@
 
 .detail-image:hover {
   transform: scale(1.05);
+  cursor: pointer;
+}
+
+.detail-section.abnormal {
+  border-left: 4px solid #e74c3c;
+  background: rgba(231, 76, 60, 0.06);
+}
+
+.abnormal-note {
+  margin-top: 0.25rem;
+  color: #e74c3c;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 @media (max-width: 768px) {

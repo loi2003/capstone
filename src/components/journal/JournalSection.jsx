@@ -12,6 +12,22 @@ import viewIcon from "../../assets/icons/view-reveal-svgrepo-com.svg";
 import moodIcon from "../../assets/icons/emoji-funny-square-svgrepo-com.svg";
 import weightIcon from "../../assets/icons/weight-hanging-svgrepo-com.svg";
 import { getCurrentWeekGrowthData } from "../../apis/growthdata-api";
+// JournalSection.jsx (add near other imports)
+const TRIMESTERS = {
+  ALL: "all",
+  FIRST: "first",
+  SECOND: "second",
+  THIRD: "third",
+};
+
+// helper to check trimester
+const isInTrimester = (week, tri) => {
+  if (tri === TRIMESTERS.ALL) return true;
+  if (tri === TRIMESTERS.FIRST) return week >= 1 && week <= 12;
+  if (tri === TRIMESTERS.SECOND) return week >= 13 && week <= 26;
+  if (tri === TRIMESTERS.THIRD) return week >= 27; // up to currentWeek / 40
+  return true;
+};
 
 const JournalSection = ({
   journalEntries,
@@ -22,7 +38,19 @@ const JournalSection = ({
   const [currentWeek, setCurrentWeek] = useState(null);
 
   const [entries, setEntries] = useState(journalEntries || []);
-  const { notifications } = useContext(NotificationContext);
+  const { notifications, showNotification } = useContext(NotificationContext);
+  // inside component
+  const [trimesterFilter, setTrimesterFilter] = useState(TRIMESTERS.ALL);
+  const [sortOrder, setSortOrder] = useState("desc"); // 'asc' | 'desc'
+
+  // derive visible entries
+  const visibleEntries = (entries || [])
+    .filter((e) => isInTrimester(e.currentWeek, trimesterFilter))
+    .slice() // avoid mutating state when sorting
+    .sort((a, b) => {
+      const cmp = (a.currentWeek ?? 0) - (b.currentWeek ?? 0);
+      return sortOrder === "desc" ? -cmp : cmp;
+    });
 
   useEffect(() => {
     const lastMsg = notifications[notifications.length - 1];
@@ -85,12 +113,16 @@ const JournalSection = ({
     try {
       await deleteJournal(journalId, token);
       setEntries(entries.filter((entry) => entry.id !== journalId));
+      showNotification(
+        `Journal of week ${
+          entries.find((e) => e.id === journalId)?.currentWeek
+        } deleted successfully!`,
+        "success"
+      );
     } catch (error) {
-      console.error("Error deleting journal:", error);
       const errorMessage =
         error.response?.data?.message || "Failed to delete journal";
-      setErrors({ submit: errorMessage });
-      onError?.(errorMessage);
+      showNotification(errorMessage, "error");
     }
   };
 
@@ -123,6 +155,35 @@ const JournalSection = ({
       return URL.createObjectURL(image);
     }
     return image.url || "";
+  };
+
+  // state for confirm dialog
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // open/close helpers
+  const openConfirm = (journalId) => {
+    setPendingDeleteId(journalId);
+    setConfirmOpen(true);
+  };
+
+  const closeConfirm = () => {
+    if (isDeleting) return; // prevent closing during deletion
+    setConfirmOpen(false);
+    setPendingDeleteId(null);
+  };
+
+  // confirm action
+  const confirmDelete = async () => {
+    if (!pendingDeleteId) return;
+    try {
+      setIsDeleting(true);
+      await handleDelete(pendingDeleteId);
+      closeConfirm();
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   if (!entries || entries.length === 0) {
@@ -175,14 +236,33 @@ const JournalSection = ({
       </div>
     );
   }
-  
 
   return (
     <div className="journal-section">
+      <div className="journal-list-controls">
+        <select
+          aria-label="Filter by trimester"
+          value={trimesterFilter}
+          onChange={(e) => setTrimesterFilter(e.target.value)}
+        >
+          <option value={TRIMESTERS.ALL}>All trimesters</option>
+          <option value={TRIMESTERS.FIRST}>First (1–12)</option>
+          <option value={TRIMESTERS.SECOND}>Second (13–26)</option>
+          <option value={TRIMESTERS.THIRD}>Third (27+)</option>
+        </select>
+
+        <select
+          aria-label="Sort by week"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="desc">Latest week first</option>
+          <option value="asc">Oldest week first</option>
+        </select>
+      </div>
       <div className="section-header">
         <h3>Pregnancy Journal</h3>
         <p>Your pregnancy journey documented week by week</p>
-
         {undocumentedWeeks.length > 0 ? (
           <Link
             to={`/pregnancy-tracking/journal-section/journal-form?growthDataId=${growthDataId}`}
@@ -202,8 +282,8 @@ const JournalSection = ({
       </div>
 
       <div className="journal-entries">
-        {entries.map((entry) => (
-          <div key={entry.id || Math.random()} className="journal-entry">
+        {visibleEntries.map((entry) => (
+          <div key={entry.id} className="journal-entry">
             <div className="entry-header">
               <div className="entry-info">
                 <div className="week-badge">
@@ -226,7 +306,7 @@ const JournalSection = ({
 
                 <button
                   className="journal-delete-btn"
-                  onClick={() => handleDelete(entry.id)}
+                  onClick={() => openConfirm(entry.id)}
                   disabled={!token}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -265,7 +345,7 @@ const JournalSection = ({
                     <span className="metric-value">
                       {entry.currentWeight} kg
                     </span>
-                    <span className="metric-label">Current Weight</span>
+                    <span className="metric-label">Recorded Weight</span>
                   </div>
                 )}
                 {entry.mood && (
@@ -318,6 +398,68 @@ const JournalSection = ({
           </div>
         ))}
       </div>
+      {confirmOpen && (
+        <div
+          className="journal-modal-backdrop"
+          role="presentation"
+          onMouseDown={(e) => {
+            // click outside to close (only if the backdrop itself was clicked)
+            if (e.target === e.currentTarget) closeConfirm();
+          }}
+        >
+          <div
+            className="journal-modal-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="journal-delete-dialog-title"
+            aria-describedby="journal-delete-dialog-description"
+            tabIndex={-1}
+            onKeyDown={(e) => {
+              // Escape to close
+              if (e.key === "Escape") closeConfirm();
+              // Simple focus trap: loop between the two buttons
+              if (e.key === "Tab") {
+                const focusables = e.currentTarget.querySelectorAll(
+                  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                const first = focusables;
+                const last = focusables[focusables.length - 1];
+                if (!e.shiftKey && document.activeElement === last) {
+                  e.preventDefault();
+                  first.focus();
+                } else if (e.shiftKey && document.activeElement === first) {
+                  e.preventDefault();
+                  last.focus();
+                }
+              }
+            }}
+          >
+            <h3 id="journal-delete-dialog-title">Delete journal entry?</h3>
+            <p id="journal-delete-dialog-description">
+              This action cannot be undone. The entry and its images will be
+              permanently removed.
+            </p>
+            <div className="journal-modal-actions">
+              <button
+                type="button"
+                className="journal-btn-outline"
+                onClick={closeConfirm}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="journal-btn-danger"
+                onClick={confirmDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting…" : "Yes, Delete it"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* {errors.submit && <span className="error-message">{errors.submit}</span>} */}
     </div>
   );

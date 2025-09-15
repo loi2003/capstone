@@ -34,6 +34,7 @@ import { FaHandHoldingHeart } from "react-icons/fa";
 import { FaCaretDown } from "react-icons/fa";
 import "../styles/PregnancyTrackingPage.css";
 import FoodWarning from "../components/form/FoodWarning";
+import LoadingOverlay from "../components/popup/LoadingOverlay";
 
 const PregnancyTrackingPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -380,10 +381,11 @@ const PregnancyTrackingPage = () => {
       <div className="pregnancy-tracking-page">
         <Header />
         <main className="main-content">
-          <div className="loading-container">
+          {/* <div className="loading-container">
             <div className="loading-spinner large"></div>
             <p>Loading your pregnancy data...</p>
-          </div>
+          </div> */}
+          <LoadingOverlay show={isLoading} />
         </main>
         <Footer />
       </div>
