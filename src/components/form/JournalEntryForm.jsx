@@ -140,7 +140,7 @@ const JournalEntryForm = ({ onError }) => {
       const updatedFiles = [...formData[name], ...newFiles].slice(0, 2);
       setFormData((prev) => {
         const newData = { ...prev, [name]: updatedFiles };
-        console.log("Updated formData (files):", newData);
+        // console.log("Updated formData (files):", newData);
         return newData;
       });
       const previews = newFiles.map((file) => URL.createObjectURL(file));

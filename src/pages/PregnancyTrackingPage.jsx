@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/header/Header";
@@ -35,6 +35,7 @@ import { FaCaretDown } from "react-icons/fa";
 import "../styles/PregnancyTrackingPage.css";
 import FoodWarning from "../components/form/FoodWarning";
 import LoadingOverlay from "../components/popup/LoadingOverlay";
+import { NotificationContext } from "../contexts/NotificationContext";
 
 const PregnancyTrackingPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -285,6 +286,41 @@ const PregnancyTrackingPage = () => {
       setIsLoading(false);
     }
   };
+  const { notifications } = useContext(NotificationContext);
+
+  useEffect(() => {
+    if (!pregnancyData?.id) return;
+
+    const lastMsg = notifications[notifications.length - 1];
+    if (!lastMsg) return;
+
+    // Handle BBM updates
+    if (lastMsg.type === "BBM" || lastMsg.type === "BioMetric") {
+      console.log("Real-time BBM update:", lastMsg);
+
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      // Re-fetch current growth data to refresh BBM
+      getCurrentWeekGrowthData(userId, currentDate, token)
+        .then(({ data }) => {
+          if (data?.error === 0 && data?.data) {
+            setPregnancyData(data.data);
+          }
+        })
+        .catch((err) => console.error("Failed to refresh BBM:", err));
+    }
+
+    // Optionally handle Journal updates here too if you want
+    if (lastMsg.type === "Journal") {
+      console.log("Real-time Journal update:", lastMsg);
+      setJournals((prev) => {
+        if (prev.some((j) => j.id === lastMsg.payload.id)) return prev;
+        return [...prev, lastMsg.payload];
+      });
+    }
+  }, [notifications, pregnancyData?.id]);
 
   const handleCreateProfile = async (formData) => {
     setIsCreating(true);
