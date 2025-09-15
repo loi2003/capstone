@@ -8,8 +8,9 @@ import {
   updateNutrientSuggestion,
   deleteNutrientSuggestion,
   getAllNutrients,
+  addNutrientSuggestionAttribute,
   getAllAgeGroups,
-} from "../../apis/nutriet-api";
+} from "../../apis/nutriet-api"; // Fixed typo from nutriet-api to nutrient-api
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/NutrientSuggestion.css";
 
@@ -51,10 +52,86 @@ const Notification = ({ message, type }) => {
     </motion.div>
   );
 };
+const NutrientSuggestionModal = ({ suggestion, onClose, nutrients }) => {
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2>{suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}</h2>
+        <h3>Attributes:</h3>
+        <ul>
+          {Array.isArray(suggestion.nutrientSuggestionAttributes) &&
+          suggestion.nutrientSuggestionAttributes.length > 0 ? (
+            suggestion.nutrientSuggestionAttributes.map((attr) => (
+              <li key={attr.nutrientId}>
+                {nutrients.find((n) => n.id === attr.nutrientId)?.name ||
+                  "Unknown Nutrient"}{" "}
+                ({attr.amount} {attr.unit})
+              </li>
+            ))
+          ) : (
+            <li>No attributes added</li>
+          )}
+        </ul>
+        <motion.button
+          onClick={onClose}
+          className="nutrient-specialist-button primary"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          Close
+        </motion.button>
+      </motion.div>
+    </motion.div>
+  );
+};
 
-const SuggestionModal = ({ suggestion, onClose, nutrients, ageGroups }) => {
-  const nutrient = nutrients.find((n) => n.id === suggestion.nutrientId);
-  const ageGroup = ageGroups.find((a) => a.id === suggestion.ageGroupId);
+const NutrientAttributeModal = ({
+  suggestionId,
+  nutrients,
+  ageGroups,
+  onClose,
+  onSave,
+}) => {
+  const [attributeData, setAttributeData] = useState({
+    nutrientSuggestionId: suggestionId,
+    ageGroupId: "",
+    trimester: 0,
+    maxEnergyPercentage: 0,
+    minEnergyPercentage: 0,
+    maxValuePerDay: 0,
+    minValuePerDay: 0,
+    unit: "milligrams",
+    amount: 0,
+    minAnimalProteinPercentageRequire: 0,
+    nutrientId: "",
+    type: 0,
+  });
+
+  const handleInputChange = (field, value) => {
+    setAttributeData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await onSave(attributeData);
+      onClose();
+    } catch (error) {
+      console.error("Error saving attribute:", error);
+    }
+  };
 
   return (
     <motion.div
@@ -72,27 +149,185 @@ const SuggestionModal = ({ suggestion, onClose, nutrients, ageGroups }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>
-          {nutrient?.name || "Unknown Nutrient"} Suggestion for{" "}
-          {ageGroup?.name || "Unknown Age Group"}
-        </h2>
-        <p>{suggestion.description || "No description available"}</p>
-        <h3>Details:</h3>
-        <ul>
-          <li>Gender: {suggestion.gender}</li>
-          <li>
-            Recommended Amount: {suggestion.recommendedAmount}{" "}
-            {suggestion.unit}
-          </li>
-        </ul>
-        <motion.button
-          onClick={onClose}
-          className="nutrient-specialist-button primary"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Close
-        </motion.button>
+        <h2>Add Attribute to Suggestion</h2>
+        <div className="form-group">
+          <label htmlFor="nutrientId">Nutrient</label>
+          <select
+            id="nutrientId"
+            value={attributeData.nutrientId}
+            onChange={(e) => handleInputChange("nutrientId", e.target.value)}
+            className="input-field"
+          >
+            <option value="">Select Nutrient</option>
+            {nutrients.map((nutrient) => (
+              <option key={nutrient.id} value={nutrient.id}>
+                {nutrient.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="ageGroupId">Age Group</label>
+          <select
+            id="ageGroupId"
+            value={attributeData.ageGroupId}
+            onChange={(e) => handleInputChange("ageGroupId", e.target.value)}
+            className="input-field"
+          >
+            <option value="">Select Age Group</option>
+            {ageGroups.map((group) => (
+              <option key={group.id} value={group.id}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="trimester">Trimester</label>
+          <input
+            id="trimester"
+            type="number"
+            value={attributeData.trimester}
+            onChange={(e) =>
+              handleInputChange("trimester", parseInt(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="minEnergyPercentage">Min Energy Percentage</label>
+          <input
+            id="minEnergyPercentage"
+            type="number"
+            value={attributeData.minEnergyPercentage}
+            onChange={(e) =>
+              handleInputChange("minEnergyPercentage", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="maxEnergyPercentage">Max Energy Percentage</label>
+          <input
+            id="maxEnergyPercentage"
+            type="number"
+            value={attributeData.maxEnergyPercentage}
+            onChange={(e) =>
+              handleInputChange("maxEnergyPercentage", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="minValuePerDay">Min Value Per Day</label>
+          <input
+            id="minValuePerDay"
+            type="number"
+            value={attributeData.minValuePerDay}
+            onChange={(e) =>
+              handleInputChange("minValuePerDay", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="maxValuePerDay">Max Value Per Day</label>
+          <input
+            id="maxValuePerDay"
+            type="number"
+            value={attributeData.maxValuePerDay}
+            onChange={(e) =>
+              handleInputChange("maxValuePerDay", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="unit">Unit</label>
+          <select
+            id="unit"
+            value={attributeData.unit}
+            onChange={(e) => handleInputChange("unit", e.target.value)}
+            className="input-field"
+          >
+            <option value="milligrams">Milligrams</option>
+            <option value="grams">Grams</option>
+            <option value="micrograms">Micrograms</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="amount">Amount</label>
+          <input
+            id="amount"
+            type="number"
+            value={attributeData.amount}
+            onChange={(e) =>
+              handleInputChange("amount", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="minAnimalProteinPercentageRequire">
+            Min Animal Protein Percentage
+          </label>
+          <input
+            id="minAnimalProteinPercentageRequire"
+            type="number"
+            value={attributeData.minAnimalProteinPercentageRequire}
+            onChange={(e) =>
+              handleInputChange(
+                "minAnimalProteinPercentageRequire",
+                parseFloat(e.target.value) || 0
+              )
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="type">Type</label>
+          <input
+            id="type"
+            type="number"
+            value={attributeData.type}
+            onChange={(e) =>
+              handleInputChange("type", parseInt(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+          />
+        </div>
+        <div className="button-group">
+          <motion.button
+            onClick={handleSubmit}
+            className="nutrient-specialist-button primary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Save Attribute
+          </motion.button>
+          <motion.button
+            onClick={onClose}
+            className="nutrient-specialist-button secondary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Cancel
+          </motion.button>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -102,26 +337,16 @@ const NutrientSuggestion = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [nutrients, setNutrients] = useState([]);
   const [ageGroups, setAgeGroups] = useState([]);
-  const [newSuggestion, setNewSuggestion] = useState({
-    nutrientId: "",
-    ageGroupId: "",
-    gender: "Both",
-    recommendedAmount: 0,
-    unit: "mg",
-    description: "",
-  });
+  const [newSuggestion, setNewSuggestion] = useState({ name: "" });
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [selectedViewSuggestion, setSelectedViewSuggestion] = useState(null);
+  const [selectedAttributeSuggestion, setSelectedAttributeSuggestion] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
-  const [nutrientSearchTerm, setNutrientSearchTerm] = useState("");
-  const [ageGroupSearchTerm, setAgeGroupSearchTerm] = useState("");
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
-  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
@@ -134,27 +359,28 @@ const NutrientSuggestion = () => {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUser = () => {
       if (!token) {
         navigate("/signin", { replace: true });
         return;
       }
-      try {
-        const response = await getCurrentUser(token);
-        const userData = response.data?.data || response.data;
-        if (userData && Number(userData.roleId) === 4) {
-          setUser(userData);
-        } else {
+      getCurrentUser(token)
+        .then((response) => {
+          const userData = response.data?.data || response.data;
+          if (userData && Number(userData.roleId) === 4) {
+            setUser(userData);
+          } else {
+            localStorage.removeItem("token");
+            setUser(null);
+            navigate("/signin", { replace: true });
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error.message);
           localStorage.removeItem("token");
           setUser(null);
           navigate("/signin", { replace: true });
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
-        localStorage.removeItem("token");
-        setUser(null);
-        navigate("/signin", { replace: true });
-      }
+        });
     };
     fetchUser();
   }, [navigate, token]);
@@ -171,12 +397,11 @@ const NutrientSuggestion = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [suggestionsResponse, nutrientsData, ageGroupsData] =
-        await Promise.all([
-          getAllNutrientSuggestions(),
-          getAllNutrients(),
-          getAllAgeGroups(),
-        ]);
+      const [suggestionsResponse, nutrientsData, ageGroupsData] = await Promise.all([
+        getAllNutrientSuggestions(token),
+        getAllNutrients(token),
+        getAllAgeGroups(token),
+      ]);
       const suggestionsData = suggestionsResponse?.data || [];
       setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : []);
       setNutrients(Array.isArray(nutrientsData) ? nutrientsData : []);
@@ -199,60 +424,37 @@ const NutrientSuggestion = () => {
   const fetchSuggestionById = async (id) => {
     setLoading(true);
     try {
-      const data = await getNutrientSuggestionById(id);
+      const data = await getNutrientSuggestionById(id, token);
       setSelectedSuggestion(data);
       setNewSuggestion({
-        nutrientId: data.nutrientId || "",
-        ageGroupId: data.ageGroupId || "",
-        gender: data.gender || "Both",
-        recommendedAmount: data.recommendedAmount || 0,
-        unit: data.unit || "mg",
-        description: data.description || "",
+        name: data.nutrientSuggestionName || "",
       });
       setIsEditing(true);
       return data;
     } catch (err) {
-      showNotification(
-        `Failed to fetch suggestion details: ${err.message}`,
-        "error"
-      );
+      showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const createSuggestionHandler = async () => {
-    if (!newSuggestion.nutrientId || !newSuggestion.ageGroupId) {
-      showNotification("Nutrient and Age Group are required", "error");
+    if (!newSuggestion.name || newSuggestion.name.trim() === "") {
+      showNotification("Suggestion name is required", "error");
       return;
     }
-    if (newSuggestion.recommendedAmount <= 0 || !newSuggestion.unit) {
-      showNotification(
-        "Please provide valid recommended amount and unit",
-        "error"
-      );
-      return;
-    }
+
     setLoading(true);
     try {
-      await createNutrientSuggestion(newSuggestion);
-      setNewSuggestion({
-        nutrientId: "",
-        ageGroupId: "",
-        gender: "Both",
-        recommendedAmount: 0,
-        unit: "mg",
-        description: "",
-      });
+      await createNutrientSuggestion({ name: newSuggestion.name }, token);
+      setNewSuggestion({ name: "" });
       setIsEditing(false);
       await fetchData();
-      showNotification("Suggestion created successfully", "success");
+      showNotification("Nutrient suggestion created successfully", "success");
     } catch (err) {
       console.error("Create suggestion error:", err);
       showNotification(
-        `Failed to create suggestion: ${
-          err.response?.data?.message || err.message
-        }`,
+        `Failed to create suggestion: ${err.response?.data?.message || err.message}`,
         "error"
       );
     } finally {
@@ -261,40 +463,27 @@ const NutrientSuggestion = () => {
   };
 
   const updateSuggestionHandler = async () => {
-    if (!newSuggestion.nutrientId || !newSuggestion.ageGroupId) {
-      showNotification("Nutrient and Age Group are required", "error");
-      return;
-    }
-    if (newSuggestion.recommendedAmount <= 0 || !newSuggestion.unit) {
-      showNotification(
-        "Please provide valid recommended amount and unit",
-        "error"
-      );
+    if (!newSuggestion.name || newSuggestion.name.trim() === "") {
+      showNotification("Suggestion name is required", "error");
       return;
     }
     setLoading(true);
     try {
-      await updateNutrientSuggestion({
-        ...newSuggestion,
-        id: selectedSuggestion?.id,
-      });
-      setNewSuggestion({
-        nutrientId: "",
-        ageGroupId: "",
-        gender: "Both",
-        recommendedAmount: 0,
-        unit: "mg",
-        description: "",
-      });
+      await updateNutrientSuggestion(
+        {
+          suggestionId: selectedSuggestion?.id,
+          name: newSuggestion.name,
+        },
+        token
+      );
+      setNewSuggestion({ name: "" });
       setSelectedSuggestion(null);
       setIsEditing(false);
       await fetchData();
-      showNotification("Suggestion updated successfully", "success");
+      showNotification("Nutrient suggestion updated successfully", "success");
     } catch (err) {
       showNotification(
-        `Failed to update suggestion: ${
-          err.response?.data?.message || err.message
-        }`,
+        `Failed to update suggestion: ${err.response?.data?.message || err.message}`,
         "error"
       );
     } finally {
@@ -303,23 +492,15 @@ const NutrientSuggestion = () => {
   };
 
   const deleteSuggestionHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this suggestion?"))
-      return;
+    if (!window.confirm("Are you sure you want to delete this suggestion?")) return;
     setLoading(true);
     try {
-      await deleteNutrientSuggestion(id);
+      await deleteNutrientSuggestion(id, token);
       setSelectedSuggestion(null);
       setIsEditing(false);
-      setNewSuggestion({
-        nutrientId: "",
-        ageGroupId: "",
-        gender: "Both",
-        recommendedAmount: 0,
-        unit: "mg",
-        description: "",
-      });
+      setNewSuggestion({ name: "" });
       await fetchData();
-      showNotification("Suggestion deleted successfully", "success");
+      showNotification("Nutrient suggestion deleted successfully", "success");
     } catch (err) {
       showNotification(`Failed to delete suggestion: ${err.message}`, "error");
     } finally {
@@ -327,37 +508,28 @@ const NutrientSuggestion = () => {
     }
   };
 
-  const cancelEdit = () => {
-    setNewSuggestion({
-      nutrientId: "",
-      ageGroupId: "",
-      gender: "Both",
-      recommendedAmount: 0,
-      unit: "mg",
-      description: "",
-    });
-    setSelectedSuggestion(null);
-    setIsEditing(false);
+  const handleAddAttribute = async (attributeData) => {
+    setLoading(true);
+    try {
+      await addNutrientSuggestionAttribute(attributeData, token);
+      showNotification("Attribute added successfully", "success");
+      await fetchData();
+    } catch (error) {
+      console.error("Error adding attribute:", error);
+      showNotification(`Failed to add attribute: ${error.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-    setIsNutrientDropdownOpen(false);
-    setIsFoodDropdownOpen(false);
-  };
-
-  const toggleNutrientDropdown = () => {
-    setIsNutrientDropdownOpen((prev) => !prev);
-  };
-
-  const toggleFoodDropdown = () => {
-    setIsFoodDropdownOpen((prev) => !prev);
   };
 
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
     try {
-      if (user?.userId) await logout(user.userId);
+      if (user?.userId) await logout(user.userId, token);
     } catch (error) {
       console.error("Error logging out:", error.message);
     } finally {
@@ -380,46 +552,21 @@ const NutrientSuggestion = () => {
     fetchData();
   }, []);
 
-  const filteredSuggestions = suggestions.filter((suggestion) => {
-    const nutrient = nutrients.find((n) => n.id === suggestion.nutrientId);
-    const ageGroup = ageGroups.find((a) => a.id === suggestion.ageGroupId);
-    return (
-      (nutrient?.name || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      (ageGroup?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (suggestion.description || "")
+  const filteredSuggestions = suggestions.filter(
+    (suggestion) =>
+      (suggestion.nutrientSuggestionName || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
-    );
-  });
+  );
+
   const indexOfLastSuggestion = currentPage * itemsPerPage;
   const indexOfFirstSuggestion = indexOfLastSuggestion - itemsPerPage;
   const currentSuggestions = filteredSuggestions.slice(
     indexOfFirstSuggestion,
     indexOfLastSuggestion
   );
+
   const totalPages = Math.ceil(filteredSuggestions.length / itemsPerPage);
-
-  const filteredNutrients = nutrients.filter((nutrient) =>
-    (nutrient.name || "").toLowerCase().includes(nutrientSearchTerm.toLowerCase())
-  );
-
-  const filteredAgeGroups = ageGroups.filter((ageGroup) =>
-    (ageGroup.name || "").toLowerCase().includes(ageGroupSearchTerm.toLowerCase())
-  );
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -466,19 +613,6 @@ const NutrientSuggestion = () => {
       backgroundColor: "#4caf50",
       transform: "translateY(-2px)",
       transition: { duration: 0.3, ease: "easeOut" },
-    },
-  };
-
-  const dropdownVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
     },
   };
 
@@ -782,7 +916,7 @@ const NutrientSuggestion = () => {
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                    />
+                      />
                   </svg>
                   {isSidebarOpen && <span>Nutrient</span>}
                   {isSidebarOpen && (
@@ -1391,7 +1525,7 @@ const NutrientSuggestion = () => {
           )}
         </motion.nav>
       </motion.aside>
-      <motion.main
+     <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
         }`}
@@ -1402,151 +1536,31 @@ const NutrientSuggestion = () => {
         <div className="management-header">
           <div className="header-content">
             <h1>Manage Nutrient Suggestions</h1>
-            <p>
-              Create, edit, and manage recommended nutrient intakes for different
-              age groups
-            </p>
+            <p>Create, edit, and manage nutrient suggestions for dietary plans</p>
           </div>
         </div>
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
               <h2>
-                {isEditing ? "Edit Nutrient Suggestion" : "Add New Suggestion"}
+                {isEditing ? "Edit Nutrient Suggestion" : "Add New Nutrient Suggestion"}
               </h2>
             </div>
-            {(nutrients.length === 0 || ageGroups.length === 0) && (
-              <p className="no-results">
-                No nutrients or age groups available. Please add them first.
-              </p>
-            )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="nutrient-select">Select Nutrient</label>
+                <label htmlFor="suggestion-name">Suggestion Name</label>
                 <input
-                  id="search-nutrients"
+                  id="suggestion-name"
                   type="text"
-                  value={nutrientSearchTerm}
-                  onChange={(e) => setNutrientSearchTerm(e.target.value)}
-                  placeholder="Search nutrients by name"
-                  className="search-input"
-                />
-                <select
-                  id="nutrient-select"
-                  value={newSuggestion.nutrientId}
+                  value={newSuggestion.name}
                   onChange={(e) =>
                     setNewSuggestion((prev) => ({
                       ...prev,
-                      nutrientId: e.target.value,
+                      name: e.target.value,
                     }))
                   }
+                  placeholder="Enter suggestion name"
                   className="input-field"
-                >
-                  <option value="">Choose a nutrient</option>
-                  {filteredNutrients.map((nutrient) => (
-                    <option key={nutrient.id} value={nutrient.id}>
-                      {nutrient.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="age-group-select">Select Age Group</label>
-                <input
-                  id="search-age-groups"
-                  type="text"
-                  value={ageGroupSearchTerm}
-                  onChange={(e) => setAgeGroupSearchTerm(e.target.value)}
-                  placeholder="Search age groups by name"
-                  className="search-input"
-                />
-                <select
-                  id="age-group-select"
-                  value={newSuggestion.ageGroupId}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      ageGroupId: e.target.value,
-                    }))
-                  }
-                  className="input-field"
-                >
-                  <option value="">Choose an age group</option>
-                  {filteredAgeGroups.map((ageGroup) => (
-                    <option key={ageGroup.id} value={ageGroup.id}>
-                      {ageGroup.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="gender-select">Gender</label>
-                <select
-                  id="gender-select"
-                  value={newSuggestion.gender}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      gender: e.target.value,
-                    }))
-                  }
-                  className="input-field"
-                >
-                  <option value="Both">Both</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="recommended-amount">Recommended Amount</label>
-                <input
-                  id="recommended-amount"
-                  type="number"
-                  value={newSuggestion.recommendedAmount}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      recommendedAmount: parseFloat(e.target.value) || 0,
-                    }))
-                  }
-                  placeholder="Enter recommended amount"
-                  className="input-field"
-                  min="0"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="unit-select">Unit</label>
-                <select
-                  id="unit-select"
-                  value={newSuggestion.unit}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      unit: e.target.value,
-                    }))
-                  }
-                  className="input-field"
-                >
-                  <option value="mg">mg</option>
-                  <option value="g">g</option>
-                  <option value="μg">μg</option>
-                  <option value="IU">IU</option>
-                  <option value="kcal">kcal</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="suggestion-description">Description</label>
-                <textarea
-                  id="suggestion-description"
-                  value={newSuggestion.description}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter suggestion description (optional)"
-                  className="textarea-field"
                 />
               </div>
               <div className="button-group">
@@ -1554,22 +1568,10 @@ const NutrientSuggestion = () => {
                   onClick={
                     isEditing ? updateSuggestionHandler : createSuggestionHandler
                   }
-                  disabled={
-                    loading || nutrients.length === 0 || ageGroups.length === 0
-                  }
+                  disabled={loading}
                   className="submit-button nutrient-specialist-button primary"
-                  whileHover={{
-                    scale:
-                      loading || nutrients.length === 0 || ageGroups.length === 0
-                        ? 1
-                        : 1.05,
-                  }}
-                  whileTap={{
-                    scale:
-                      loading || nutrients.length === 0 || ageGroups.length === 0
-                        ? 1
-                        : 0.95,
-                  }}
+                  whileHover={{ scale: loading ? 1 : 1.05 }}
+                  whileTap={{ scale: loading ? 1 : 0.95 }}
                 >
                   {loading
                     ? isEditing
@@ -1581,7 +1583,11 @@ const NutrientSuggestion = () => {
                 </motion.button>
                 {isEditing && (
                   <motion.button
-                    onClick={cancelEdit}
+                    onClick={() => {
+                      setNewSuggestion({ name: "" });
+                      setSelectedSuggestion(null);
+                      setIsEditing(false);
+                    }}
                     disabled={loading}
                     className="cancel-button nutrient-specialist-button secondary"
                     whileHover={{ scale: loading ? 1 : 1.05 }}
@@ -1595,11 +1601,10 @@ const NutrientSuggestion = () => {
           </div>
           <div className="nutrient-list-section">
             <div className="section-header">
-              <h2>Suggestion List</h2>
+              <h2>Nutrient Suggestion List</h2>
               <div className="nutrient-count">
                 {filteredSuggestions.length}{" "}
-                {filteredSuggestions.length === 1 ? "suggestion" : "suggestions"}{" "}
-                found
+                {filteredSuggestions.length === 1 ? "suggestion" : "suggestions"} found
               </div>
             </div>
             <div className="form-group">
@@ -1609,7 +1614,7 @@ const NutrientSuggestion = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by nutrient, age group or description"
+                placeholder="Search by name"
                 className="search-input"
               />
             </div>
@@ -1635,78 +1640,66 @@ const NutrientSuggestion = () => {
                   />
                 </svg>
                 <h3>No suggestions found</h3>
-                <p>Create your first suggestion to get started</p>
+                <p>Create your first nutrient suggestion to get started</p>
               </div>
             ) : (
               <>
                 <div className="nutrient-grid">
-                  {currentSuggestions.map((suggestion) => {
-                    const nutrient = nutrients.find(
-                      (n) => n.id === suggestion.nutrientId
-                    );
-                    const ageGroup = ageGroups.find(
-                      (a) => a.id === suggestion.ageGroupId
-                    );
-                    return (
-                      <motion.div
-                        key={suggestion.id}
-                        className="nutrient-card"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        whileHover={{ y: -5 }}
-                      >
-                        <div className="card-header">
-                          <h3>
-                            {nutrient?.name || "Unknown Nutrient"} for{" "}
-                            {ageGroup?.name || "Unknown Age Group"}
-                          </h3>
-                        </div>
-                        <p className="suggestion-description">
-                          {suggestion.description || "No description available"}
-                        </p>
-                        <p>
-                          Gender: {suggestion.gender} | Amount:{" "}
-                          {suggestion.recommendedAmount} {suggestion.unit}
-                        </p>
-                        <div className="card-actions">
-                          <motion.button
-                            onClick={() => fetchSuggestionById(suggestion.id)}
-                            className="edit-button nutrient-specialist-button primary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Edit
-                          </motion.button>
-                          <motion.button
-                            onClick={() =>
-                              setSelectedViewSuggestion(suggestion)
-                            }
-                            className="view-button nutrient-specialist-button secondary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            View
-                          </motion.button>
-                          <motion.button
-                            onClick={() =>
-                              deleteSuggestionHandler(suggestion.id)
-                            }
-                            className="delete-button nutrient-specialist-button secondary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Delete
-                          </motion.button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                  {currentSuggestions.map((suggestion) => (
+                    <motion.div
+                      key={suggestion.id}
+                      className="nutrient-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="card-header">
+                        <h3>
+                          {suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}
+                        </h3>
+                      </div>
+                      <div className="card-actions">
+                        <motion.button
+                          onClick={() => setSelectedAttributeSuggestion(suggestion)}
+                          className="add-attribute-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Add Attribute
+                        </motion.button>
+                        <motion.button
+                          onClick={() => fetchSuggestionById(suggestion.id)}
+                          className="edit-button nutrient-specialist-button primary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setSelectedViewSuggestion(suggestion)}
+                          className="view-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          View
+                        </motion.button>
+                        <motion.button
+                          onClick={() => deleteSuggestionHandler(suggestion.id)}
+                          className="delete-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Delete
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
                 {totalPages > 0 && (
                   <div className="pagination-controls">
                     <motion.button
-                      onClick={handlePreviousPage}
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
                       className="pagination-button"
                       whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
@@ -1718,7 +1711,9 @@ const NutrientSuggestion = () => {
                       Page {currentPage} of {totalPages}
                     </span>
                     <motion.button
-                      onClick={handleNextPage}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
                       className="pagination-button"
                       whileHover={{
@@ -1738,11 +1733,19 @@ const NutrientSuggestion = () => {
         </div>
         <AnimatePresence>
           {selectedViewSuggestion && (
-            <SuggestionModal
+            <NutrientSuggestionModal
               suggestion={selectedViewSuggestion}
               onClose={() => setSelectedViewSuggestion(null)}
               nutrients={nutrients}
+            />
+          )}
+          {selectedAttributeSuggestion && (
+            <NutrientAttributeModal
+              suggestionId={selectedAttributeSuggestion.id}
+              nutrients={nutrients}
               ageGroups={ageGroups}
+              onClose={() => setSelectedAttributeSuggestion(null)}
+              onSave={handleAddAttribute}
             />
           )}
         </AnimatePresence>
