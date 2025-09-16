@@ -312,16 +312,25 @@ const OfflineConsultationManagement = () => {
       if ((detail?.data || detail)?.consultationType === "Periodic") {
         setEditFromMonth(
           (detail?.data || detail)?.fromMonth
-            ? new Date((detail?.data || detail).fromMonth)
-                .toISOString()
-                .slice(0, 7)
+            ? (() => {
+                const d = new Date((detail?.data || detail).fromMonth);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+                  2,
+                  "0"
+                )}`;
+              })()
             : ""
         );
+
         setEditToMonth(
           (detail?.data || detail)?.toMonth
-            ? new Date((detail?.data || detail).toMonth)
-                .toISOString()
-                .slice(0, 7)
+            ? (() => {
+                const d = new Date((detail?.data || detail).toMonth);
+                return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+                  2,
+                  "0"
+                )}`;
+              })()
             : ""
         );
         setEditPeriodicDates(
@@ -351,8 +360,11 @@ const OfflineConsultationManagement = () => {
         const token = localStorage.getItem("token");
         await softDeleteOfflineConsultation(id, token);
         setConsultations((prev) => prev.filter((c) => c.id !== id));
+        setSuccessMessage("Remove Consultation Successful!");
+        setTimeout(() => setSuccessMessage(""), 3000);
       } catch (err) {
-        alert("Failed to remove consultation.", err.message);
+        setErrorMessage("Remove Consultation Fail!");
+        setTimeout(() => setErrorMessage(""), 3000);
       }
     }
   };
@@ -432,10 +444,10 @@ const OfflineConsultationManagement = () => {
       );
       setConsultations(consultationsRes?.data || consultationsRes || []);
       setLoading(false);
-      setSuccessMessage("Edit Consultation Successful!");
+      setSuccessMessage("Update Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setErrorMessage("Edit Consultation Fail!");
+      setErrorMessage("Update Consultation Fail!");
       setTimeout(() => setErrorMessage(""), 3000);
     }
     setEditLoading(false);
@@ -975,8 +987,8 @@ const OfflineConsultationManagement = () => {
                           .filter(
                             (d) =>
                               !doctorSearch ||
-                              d.name
-                                .toLowerCase()
+                              d.user?.userName
+                                ?.toLowerCase()
                                 .includes(doctorSearch.toLowerCase())
                           )
                           .map((doctor) => (

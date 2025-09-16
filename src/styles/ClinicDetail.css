@@ -139,6 +139,7 @@
 
 /* Section styling */
 .clinic-section {
+  position: relative;
   background: #fff;
   border: 1.5px solid #e3e8ee;
   border-radius: 16px;
@@ -444,7 +445,7 @@
 
 .clinic-back-btn {
   position: static;
-  margin: 30px 0 -40px 50px;
+  margin: 30px 0 -40px 20px;
   z-index: 1001;
   background: #fff;
   color: #114866;
@@ -733,6 +734,173 @@
 }
 .floating-chatbox-send-btn:hover {
   background: #23234a;
+}
+
+.clinic-detail-give-feedback-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #1a73e8;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+  max-width: fit-content;
+}
+
+.clinic-detail-give-feedback-btn:hover {
+  background-color: #1669c1;
+}
+
+.clinic-feedback-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.clinic-feedback-modal {
+  background: #fff;
+  border-radius: 8px;
+  width: 500px;
+  max-width: 90%;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.2s ease;
+}
+
+.clinic-feedback-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.clinic-feedback-modal-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.clinic-feedback-modal-group {
+  margin-bottom: 16px;
+}
+
+.clinic-feedback-modal-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.clinic-feedback-modal-stars {
+  display: flex;
+  align-items: center;
+}
+
+.star {
+  font-size: 2em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star.selected {
+  color: #f7b801;
+}
+
+.star:not(.selected) {
+  color: #ccc;
+}
+
+.clinic-feedback-modal-rating-note {
+  font-size: 13px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.clinic-feedback-modal-group textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+}
+
+.clinic-feedback-modal-group textarea:focus {
+  border-color: #1a73e8;
+  box-shadow: 0 0 3px rgba(26, 115, 232, 0.5);
+}
+
+.clinic-feedback-modal-error {
+  color: #d93025;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.clinic-feedback-modal-success {
+  color: #188038;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.clinic-feedback-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.clinic-detail-send-feedback-cancel-btn {
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #222;
+  border: #222 solid 1.5px;
+}
+
+.clinic-detail-send-feedback-cancel-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.clinic-detail-send-feedback-btn {
+  background: #1a73e8;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.clinic-detail-send-feedback-btn:hover {
+  background: #1669c1;
+}
+
+.clinic-detail-send-feedback-btn:disabled {
+  background: #90caf9;
+  cursor: not-allowed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 @keyframes chatbox-pop {

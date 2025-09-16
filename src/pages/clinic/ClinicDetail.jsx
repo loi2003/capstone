@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getClinicById } from "../../apis/clinic-api";
 import { startChatThread } from "../../apis/message-api";
+import { createFeedback } from "../../apis/feedback-api";
+import { getCurrentUser } from "../../apis/authentication-api";
 import MainLayout from "../../layouts/MainLayout";
 import "../../styles/ClinicDetail.css";
 
@@ -18,25 +20,30 @@ function getStarRating(feedbacks) {
 // Star rendering helper (with half star support)
 const renderStars = (stars) => {
   const filled = Math.floor(stars);
-  const half = stars - filled >= 0.25 && stars - filled < 0.75;
+  const half = stars - filled >= 0.5;
   return (
     <>
       {[...Array(5)].map((_, i) => {
         if (i < filled) {
           return (
-            <span key={i} className="star">
+            <span key={i} className="star" style={{ color: "#f7b801" }}>
               &#9733;
             </span>
           );
         } else if (i === filled && half) {
           return (
-            <span key={i} className="star star-half" aria-label="half star">
+            <span
+              key={i}
+              className="star star-half"
+              style={{ color: "#f7b801" }}
+              aria-label="half star"
+            >
               &#9733;
             </span>
           );
         } else {
           return (
-            <span key={i} className="star star-empty">
+            <span key={i} className="star star-empty" style={{ color: "#ccc" }}>
               &#9733;
             </span>
           );
@@ -62,12 +69,20 @@ const ChatBox = ({ consultant, onClose, userId, chatThread }) => (
             alt={consultant.user.userName}
           />
           <div>
-            <div className="floating-chatbox-username">{consultant.user.userName}</div>
+            <div className="floating-chatbox-username">
+              {consultant.user.userName}
+            </div>
           </div>
         </div>
         <div className="floating-chatbox-header-actions">
-          <button className="floating-chatbox-action-btn" title="Close" onClick={onClose}>
-            <svg width="20" height="20" fill="#fff" viewBox="0 0 24 24"><path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12l-4.89 4.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z"/></svg>
+          <button
+            className="floating-chatbox-action-btn"
+            title="Close"
+            onClick={onClose}
+          >
+            <svg width="20" height="20" fill="#fff" viewBox="0 0 24 24">
+              <path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12l-4.89 4.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z" />
+            </svg>
           </button>
         </div>
       </div>
@@ -78,14 +93,16 @@ const ChatBox = ({ consultant, onClose, userId, chatThread }) => (
       </div>
       <div className="floating-chatbox-footer">
         <button className="floating-chatbox-footer-btn" title="Image">
-          <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24"><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zm-2 0H5V5h14zm-7-3l2.03 2.71a1 1 0 001.54 0L19 14.13V19H5v-2.87l3.47-4.6a1 1 0 011.54 0z"/></svg>
+          <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
+            <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zm-2 0H5V5h14zm-7-3l2.03 2.71a1 1 0 001.54 0L19 14.13V19H5v-2.87l3.47-4.6a1 1 0 011.54 0z" />
+          </svg>
         </button>
-          <input className="floating-chatbox-input" placeholder="Aa" />
-          <button className="floating-chatbox-send-btn" title="Send">
-            <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
-              <path d="M2 21l21-9-21-9v7l15 2-15 2z"/>
-            </svg>
-          </button>
+        <input className="floating-chatbox-input" placeholder="Aa" />
+        <button className="floating-chatbox-send-btn" title="Send">
+          <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
+            <path d="M2 21l21-9-21-9v7l15 2-15 2z" />
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -124,7 +141,9 @@ const ConsultantCard = ({ consultant, onSendMessage, chatLoading }) => (
     <div className="clinic-doctor-avatar">
       <img
         src={
-          consultant.user && consultant.user.avatar && consultant.user.avatar.fileUrl
+          consultant.user &&
+          consultant.user.avatar &&
+          consultant.user.avatar.fileUrl
             ? consultant.user.avatar.fileUrl
             : "/images/doctor-placeholder.png"
         }
@@ -132,10 +151,14 @@ const ConsultantCard = ({ consultant, onSendMessage, chatLoading }) => (
       />
     </div>
     <div className="clinic-doctor-info">
-      <div className="clinic-doctor-name">{consultant.user && consultant.user.userName}</div>
+      <div className="clinic-doctor-name">
+        {consultant.user && consultant.user.userName}
+      </div>
       <div className="clinic-doctor-contact">
         <div>
-          <strong>Phone:</strong> {consultant.user && (consultant.user.phone || consultant.user.phoneNo)}
+          <strong>Phone:</strong>{" "}
+          {consultant.user &&
+            (consultant.user.phone || consultant.user.phoneNo)}
         </div>
         <div>
           <strong>Email:</strong> {consultant.user && consultant.user.email}
@@ -146,11 +169,17 @@ const ConsultantCard = ({ consultant, onSendMessage, chatLoading }) => (
         title="Send Message & Start Chat"
         onClick={() => onSendMessage(consultant)}
         type="button"
-        style={{marginTop: 8}}
+        style={{ marginTop: 8 }}
         disabled={chatLoading}
       >
-        <svg width="18" height="18" fill="#1976d2" style={{marginRight: 4, verticalAlign: "middle"}} viewBox="0 0 24 24">
-          <path d="M2 21l21-9-21-9v7l15 2-15 2z"/>
+        <svg
+          width="18"
+          height="18"
+          fill="#1976d2"
+          style={{ marginRight: 4, verticalAlign: "middle" }}
+          viewBox="0 0 24 24"
+        >
+          <path d="M2 21l21-9-21-9v7l15 2-15 2z" />
         </svg>
         {chatLoading ? "Starting..." : "Send Message"}
       </button>
@@ -165,6 +194,14 @@ const ClinicDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Feedback modal state
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState("");
+  const [feedbackSuccess, setFeedbackSuccess] = useState("");
+
   // Pagination for doctors/consultants
   const [showAllDoctors, setShowAllDoctors] = useState(false);
   const [showAllConsultants, setShowAllConsultants] = useState(false);
@@ -173,7 +210,9 @@ const ClinicDetail = () => {
   const [chatConsultant, setChatConsultant] = useState(null);
   const [chatThread, setChatThread] = useState(null);
   const [chatLoading, setChatLoading] = useState(false);
-  const userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6"; // Replace with real user id
+  const [showLoginModal, setShowLoginModal] = useState(false);
+
+  const [currentUserId, setCurrentUserId] = useState("");
 
   useEffect(() => {
     const fetchClinic = async () => {
@@ -189,13 +228,30 @@ const ClinicDetail = () => {
     fetchClinic();
   }, [id]);
 
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCurrentUserId("");
+        return;
+      }
+      try {
+        const userRes = await getCurrentUser(token);
+        setCurrentUserId(userRes?.data?.id || userRes?.id || "");
+      } catch (err) {
+        setCurrentUserId("");
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
   // Handler for Send Message button
   const handleSendMessage = async (consultant) => {
     setChatLoading(true);
     try {
       const thread = await startChatThread({
         userId: userId,
-        consultantId: consultant.user.id
+        consultantId: consultant.user.id,
       });
       setChatThread(thread);
       setChatConsultant(consultant);
@@ -247,6 +303,73 @@ const ClinicDetail = () => {
       ? clinic.consultants.slice(0, 9)
       : clinic.consultants;
 
+  const handleOpenFeedbackModal = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setShowLoginModal(true);
+      return;
+    }
+    try {
+      const userRes = await getCurrentUser(token);
+      const userId = userRes?.data?.data.id || userRes?.data.id || "";
+      if (!userId) {
+        setShowLoginModal(true);
+        return;
+      }
+      setCurrentUserId(userId);
+      setShowFeedbackModal(true);
+      setFeedbackRating(0);
+      setFeedbackComment("");
+      setFeedbackError("");
+      setFeedbackSuccess("");
+    } catch {
+      setShowLoginModal(true);
+    }
+  };
+
+  const handleCloseFeedbackModal = () => {
+    setShowFeedbackModal(false);
+    setFeedbackRating(0);
+    setFeedbackComment("");
+    setFeedbackError("");
+    setFeedbackSuccess("");
+  };
+
+  const handleSubmitFeedback = async (e) => {
+    e.preventDefault();
+    setFeedbackLoading(true);
+    setFeedbackError("");
+    setFeedbackSuccess("");
+    if (!feedbackRating || feedbackRating < 1 || feedbackRating > 5) {
+      setFeedbackError("Please select a rating from 1 to 5.");
+      setFeedbackLoading(false);
+      return;
+    }
+    if (!currentUserId) {
+      setFeedbackError("You must be logged in to submit feedback.");
+      setFeedbackLoading(false);
+      return;
+    }
+    try {
+      const token = localStorage.getItem("token");
+      const payload = {
+        clinicId: clinic.id,
+        userId: currentUserId,
+        rating: feedbackRating * 2,
+        comment: feedbackComment,
+      };
+      await createFeedback(payload, token);
+      setFeedbackSuccess("Feedback submitted successfully!");
+      setTimeout(() => {
+        setShowFeedbackModal(false);
+        setFeedbackSuccess("");
+      }, 1200);
+    } catch (err) {
+      setFeedbackError("Failed to submit feedback.");
+    }
+    setFeedbackLoading(false);
+  };
+
   return (
     <div className="clinic-detail-background-container">
       <MainLayout>
@@ -256,7 +379,15 @@ const ClinicDetail = () => {
           type="button"
         >
           {/* Back arrow icon */}
-          <svg width="20" height="20" fill="#1976d2" style={{marginRight: 6, verticalAlign: "middle"}} viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          <svg
+            width="20"
+            height="20"
+            fill="#1976d2"
+            style={{ marginRight: 6, verticalAlign: "middle" }}
+            viewBox="0 0 24 24"
+          >
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+          </svg>
           Back
         </button>
         <div className="clinic-header-banner">
@@ -411,7 +542,11 @@ const ClinicDetail = () => {
                             <span
                               key={i}
                               className={i < stars ? "" : "star-empty"}
-                              style={{ color: i < stars ? "#f7b801" : "#ccc", fontSize: "1.2em", marginRight: "2px" }}
+                              style={{
+                                color: i < stars ? "#f7b801" : "#ccc",
+                                fontSize: "1.2em",
+                                marginRight: "2px",
+                              }}
                             >
                               ★
                             </span>
@@ -427,7 +562,131 @@ const ClinicDetail = () => {
                   <div>No feedback yet</div>
                 )}
               </div>
+              <button
+                className="clinic-detail-give-feedback-btn"
+                onClick={handleOpenFeedbackModal}
+              >
+                Send Feedback
+              </button>
             </div>
+            {/* Feedback Modal */}
+            {showFeedbackModal && (
+              <div className="modal-overlay clinic-feedback-modal-overlay">
+                <div className="clinic-feedback-modal">
+                  <div className="clinic-feedback-modal-header">
+                    <span>Send Feedback</span>
+                    <span
+                      className="close"
+                      style={{ cursor: "pointer", fontSize: "1.5em" }}
+                      onClick={handleCloseFeedbackModal}
+                    >
+                      &times;
+                    </span>
+                  </div>
+                  <form
+                    className="clinic-feedback-modal-body"
+                    onSubmit={handleSubmitFeedback}
+                  >
+                    <div className="clinic-feedback-modal-group">
+                      <label>Rating (1-5)</label>
+                      <div className="clinic-feedback-modal-stars">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <span
+                            key={star}
+                            className={`star ${
+                              feedbackRating >= star ? "selected" : ""
+                            }`}
+                            style={{
+                              cursor: "pointer",
+                              color:
+                                feedbackRating >= star ? "#f7b801" : "#ccc",
+                              fontSize: "2em",
+                              marginRight: "4px",
+                            }}
+                            onClick={() => setFeedbackRating(star)}
+                            aria-label={`Rate ${star}`}
+                          >
+                            ★
+                          </span>
+                        ))}
+                      </div>
+                      <div className="clinic-feedback-modal-rating-note">
+                        Click to rate
+                      </div>
+                    </div>
+                    <div className="clinic-feedback-modal-group">
+                      <label>Comment</label>
+                      <textarea
+                        value={feedbackComment}
+                        onChange={(e) => setFeedbackComment(e.target.value)}
+                        placeholder="Write your feedback here..."
+                        rows={4}
+                        required
+                      />
+                    </div>
+                    {feedbackError && (
+                      <div className="clinic-feedback-modal-error">
+                        {feedbackError}
+                      </div>
+                    )}
+                    {feedbackSuccess && (
+                      <div className="clinic-feedback-modal-success">
+                        {feedbackSuccess}
+                      </div>
+                    )}
+                    <div className="clinic-feedback-modal-actions">
+                      <button
+                        type="button"
+                        className="clinic-detail-send-feedback-cancel-btn"
+                        onClick={handleCloseFeedbackModal}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="clinic-detail-send-feedback-btn"
+                        disabled={feedbackLoading}
+                      >
+                        {feedbackLoading ? "Submitting..." : "Submit"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+            {showLoginModal && (
+              <div className="modal-overlay clinic-feedback-modal-overlay">
+                <div className="clinic-feedback-modal">
+                  <div className="clinic-feedback-modal-header">
+                    <span>Login Required</span>
+                    <span
+                      className="close"
+                      style={{ cursor: "pointer", fontSize: "1.5em" }}
+                      onClick={() => setShowLoginModal(false)}
+                    >
+                      &times;
+                    </span>
+                  </div>
+                  <div
+                    className="clinic-feedback-modal-body"
+                    style={{ textAlign: "center", padding: "24px" }}
+                  >
+                    <div style={{ marginBottom: "16px", fontSize: "1.1em" }}>
+                      You need to log in to send feedback.
+                    </div>
+                    <button
+                      className="clinic-detail-send-feedback-btn"
+                      onClick={() => {
+                        setShowLoginModal(false);
+                        navigate("/signin");
+                      }}
+                    >
+                      Go to Login
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           <aside className="clinic-main-right">
             <div className="clinic-booking-widget">
@@ -454,7 +713,7 @@ const ClinicDetail = () => {
         {chatConsultant && (
           <ChatBox
             consultant={chatConsultant}
-            userId={userId}
+            userId={currentUserId}
             chatThread={chatThread}
             onClose={() => {
               setChatConsultant(null);
