@@ -47,20 +47,36 @@ const renderStars = (stars) => {
 };
 
 // Floating chat box like Messenger
-const ChatBox = ({ consultant, onClose, userId, chatThread }) => (
+const ChatBox = ({ consultant, onClose, userId, chatThread, onImageError, onImageLoad, imageErrors, imageLoading }) => (
   <div className="floating-chatbox-container">
     <div className="floating-chatbox-window">
       <div className="floating-chatbox-header">
         <div className="floating-chatbox-header-left">
-          <img
-            className="floating-chatbox-avatar"
-            src={
-              consultant.user.avatar && consultant.user.avatar.fileUrl
-                ? consultant.user.avatar.fileUrl
-                : "/images/doctor-placeholder.png"
-            }
-            alt={consultant.user.userName}
-          />
+          <div className="floating-chatbox-avatar-container">
+            {imageLoading[`chat-${consultant.user.id}`] && (
+              <div className="image-loading-overlay">
+                <div className="loading-spinner"></div>
+              </div>
+            )}
+            <img
+              className={`floating-chatbox-avatar ${imageErrors[`chat-${consultant.user.id}`] ? 'placeholder-image' : ''}`}
+              src={
+                imageErrors[`chat-${consultant.user.id}`] || !consultant.user.avatar?.fileUrl
+                  ? "/images/doctor-placeholder.png"
+                  : consultant.user.avatar.fileUrl
+              }
+              alt={consultant.user.userName}
+              onError={() => onImageError(`chat-${consultant.user.id}`)}
+              onLoad={() => onImageLoad(`chat-${consultant.user.id}`)}
+            />
+            {(imageErrors[`chat-${consultant.user.id}`] || !consultant.user.avatar?.fileUrl) && (
+              <div className="placeholder-overlay">
+                <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+              </div>
+            )}
+          </div>
           <div>
             <div className="floating-chatbox-username">{consultant.user.userName}</div>
           </div>
@@ -80,38 +96,53 @@ const ChatBox = ({ consultant, onClose, userId, chatThread }) => (
         <button className="floating-chatbox-footer-btn" title="Image">
           <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24"><path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zm-2 0H5V5h14zm-7-3l2.03 2.71a1 1 0 001.54 0L19 14.13V19H5v-2.87l3.47-4.6a1 1 0 011.54 0z"/></svg>
         </button>
-          <input className="floating-chatbox-input" placeholder="Aa" />
-          <button className="floating-chatbox-send-btn" title="Send">
-            <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
-              <path d="M2 21l21-9-21-9v7l15 2-15 2z"/>
-            </svg>
-          </button>
+        <input className="floating-chatbox-input" placeholder="Aa" />
+        <button className="floating-chatbox-send-btn" title="Send">
+          <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
+            <path d="M2 21l21-9-21-9v7l15 2-15 2z"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
 );
 
 // Show username, phone, email for both doctors and consultants
-const DoctorCard = ({ user }) => (
+const DoctorCard = ({ user, onImageError, onImageLoad, imageErrors, imageLoading }) => (
   <div className="clinic-doctor-card">
     <div className="clinic-doctor-avatar">
+      {imageLoading[`doctor-${user.id}`] && (
+        <div className="image-loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <img
         src={
-          user && user.avatar && user.avatar.fileUrl
-            ? user.avatar.fileUrl
-            : "/images/doctor-placeholder.png"
+          imageErrors[`doctor-${user.id}`] || !user?.avatar?.fileUrl
+            ? "/images/doctor-placeholder.png"
+            : user.avatar.fileUrl
         }
-        alt={user && user.userName}
+        alt={user?.userName}
+        className={imageErrors[`doctor-${user.id}`] ? 'placeholder-image' : ''}
+        onError={() => onImageError(`doctor-${user.id}`)}
+        onLoad={() => onImageLoad(`doctor-${user.id}`)}
       />
+      {(imageErrors[`doctor-${user.id}`] || !user?.avatar?.fileUrl) && (
+        <div className="placeholder-overlay">
+          <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+      )}
     </div>
     <div className="clinic-doctor-info">
-      <div className="clinic-doctor-name">{user && user.userName}</div>
+      <div className="clinic-doctor-name">{user?.userName}</div>
       <div className="clinic-doctor-contact">
         <div>
-          <strong>Phone:</strong> {user && (user.phone || user.phoneNo)}
+          <strong>Phone:</strong> {user?.phone || user?.phoneNo}
         </div>
         <div>
-          <strong>Email:</strong> {user && user.email}
+          <strong>Email:</strong> {user?.email}
         </div>
       </div>
     </div>
@@ -119,26 +150,41 @@ const DoctorCard = ({ user }) => (
 );
 
 // ConsultantCard with only "Send Message" button
-const ConsultantCard = ({ consultant, onSendMessage, chatLoading }) => (
+const ConsultantCard = ({ consultant, onSendMessage, chatLoading, onImageError, onImageLoad, imageErrors, imageLoading }) => (
   <div className="clinic-doctor-card">
     <div className="clinic-doctor-avatar">
+      {imageLoading[`consultant-${consultant.user.id}`] && (
+        <div className="image-loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       <img
         src={
-          consultant.user && consultant.user.avatar && consultant.user.avatar.fileUrl
-            ? consultant.user.avatar.fileUrl
-            : "/images/doctor-placeholder.png"
+          imageErrors[`consultant-${consultant.user.id}`] || !consultant.user?.avatar?.fileUrl
+            ? "/images/doctor-placeholder.png"
+            : consultant.user.avatar.fileUrl
         }
-        alt={consultant.user && consultant.user.userName}
+        alt={consultant.user?.userName}
+        className={imageErrors[`consultant-${consultant.user.id}`] ? 'placeholder-image' : ''}
+        onError={() => onImageError(`consultant-${consultant.user.id}`)}
+        onLoad={() => onImageLoad(`consultant-${consultant.user.id}`)}
       />
+      {(imageErrors[`consultant-${consultant.user.id}`] || !consultant.user?.avatar?.fileUrl) && (
+        <div className="placeholder-overlay">
+          <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
+      )}
     </div>
     <div className="clinic-doctor-info">
-      <div className="clinic-doctor-name">{consultant.user && consultant.user.userName}</div>
+      <div className="clinic-doctor-name">{consultant.user?.userName}</div>
       <div className="clinic-doctor-contact">
         <div>
-          <strong>Phone:</strong> {consultant.user && (consultant.user.phone || consultant.user.phoneNo)}
+          <strong>Phone:</strong> {consultant.user?.phone || consultant.user?.phoneNo}
         </div>
         <div>
-          <strong>Email:</strong> {consultant.user && consultant.user.email}
+          <strong>Email:</strong> {consultant.user?.email}
         </div>
       </div>
       <button
@@ -165,6 +211,10 @@ const ClinicDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Image state management
+  const [imageErrors, setImageErrors] = useState({});
+  const [imageLoading, setImageLoading] = useState({});
+
   // Pagination for doctors/consultants
   const [showAllDoctors, setShowAllDoctors] = useState(false);
   const [showAllConsultants, setShowAllConsultants] = useState(false);
@@ -174,6 +224,20 @@ const ClinicDetail = () => {
   const [chatThread, setChatThread] = useState(null);
   const [chatLoading, setChatLoading] = useState(false);
   const userId = "3fa85f64-5717-4562-b3fc-2c963f66afa6"; // Replace with real user id
+
+  // Image handling functions
+  const handleImageError = (imageId) => {
+    setImageErrors(prev => ({ ...prev, [imageId]: true }));
+    setImageLoading(prev => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageLoad = (imageId) => {
+    setImageLoading(prev => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageLoadStart = (imageId) => {
+    setImageLoading(prev => ({ ...prev, [imageId]: true }));
+  };
 
   useEffect(() => {
     const fetchClinic = async () => {
@@ -255,26 +319,42 @@ const ClinicDetail = () => {
           onClick={() => navigate("/clinic/list")}
           type="button"
         >
-          {/* Back arrow icon */}
           <svg width="20" height="20" fill="#1976d2" style={{marginRight: 6, verticalAlign: "middle"}} viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
           Back
         </button>
+        
         <div className="clinic-header-banner">
           <div className="clinic-header-logo">
+            {imageLoading['clinic-main'] && (
+              <div className="image-loading-overlay">
+                <div className="loading-spinner"></div>
+              </div>
+            )}
             <img
               src={
-                clinic.imageUrl && clinic.imageUrl.fileUrl
-                  ? clinic.imageUrl.fileUrl
-                  : "/images/clinic-placeholder.png"
+                imageErrors['clinic-main'] || !clinic.imageUrl?.fileUrl
+                  ? "/images/clinic-placeholder.png"
+                  : clinic.imageUrl.fileUrl
               }
               alt={clinic.name}
+              className={imageErrors['clinic-main'] ? 'placeholder-image' : ''}
+              onError={() => handleImageError('clinic-main')}
+              onLoad={() => handleImageLoad('clinic-main')}
+              onLoadStart={() => handleImageLoadStart('clinic-main')}
             />
+            {(imageErrors['clinic-main'] || !clinic.imageUrl?.fileUrl) && (
+              <div className="placeholder-overlay">
+                <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-2 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                </svg>
+              </div>
+            )}
           </div>
+          
           <div className="clinic-header-meta">
             <div className="clinic-header-title">{clinic.name}</div>
             <div className="clinic-header-address">
               <span className="clinic-header-location">
-                {/* Location Icon */}
                 <svg
                   width="18"
                   height="18"
@@ -289,7 +369,6 @@ const ClinicDetail = () => {
             </div>
             <div className="clinic-header-contact-row">
               <span className="clinic-header-contact-item">
-                {/* Phone Icon */}
                 <svg
                   width="18"
                   height="18"
@@ -302,7 +381,6 @@ const ClinicDetail = () => {
                 {clinic.user.phoneNo}
               </span>
               <span className="clinic-header-contact-item">
-                {/* Email Icon */}
                 <svg
                   width="18"
                   height="18"
@@ -339,7 +417,14 @@ const ClinicDetail = () => {
               <div className="clinic-doctor-list">
                 {doctorsToShow && doctorsToShow.length > 0 ? (
                   doctorsToShow.map((doctor) => (
-                    <DoctorCard key={doctor.id} user={doctor.user} />
+                    <DoctorCard 
+                      key={doctor.id} 
+                      user={doctor.user} 
+                      onImageError={handleImageError}
+                      onImageLoad={handleImageLoad}
+                      imageErrors={imageErrors}
+                      imageLoading={imageLoading}
+                    />
                   ))
                 ) : (
                   <div className="clinic-doctor-card clinic-doctor-card-empty">
@@ -371,6 +456,10 @@ const ClinicDetail = () => {
                       consultant={consultant}
                       onSendMessage={handleSendMessage}
                       chatLoading={chatLoading}
+                      onImageError={handleImageError}
+                      onImageLoad={handleImageLoad}
+                      imageErrors={imageErrors}
+                      imageLoading={imageLoading}
                     />
                   ))
                 ) : (
@@ -429,6 +518,7 @@ const ClinicDetail = () => {
               </div>
             </div>
           </div>
+          
           <aside className="clinic-main-right">
             <div className="clinic-booking-widget">
               <div className="clinic-booking-title">Book Appointment</div>
@@ -450,6 +540,7 @@ const ClinicDetail = () => {
             </div>
           </aside>
         </div>
+        
         {/* Floating ChatBox overlay */}
         {chatConsultant && (
           <ChatBox
@@ -460,6 +551,10 @@ const ClinicDetail = () => {
               setChatConsultant(null);
               setChatThread(null);
             }}
+            onImageError={handleImageError}
+            onImageLoad={handleImageLoad}
+            imageErrors={imageErrors}
+            imageLoading={imageLoading}
           />
         )}
       </MainLayout>
