@@ -1,278 +1,631 @@
+/* Enhanced theme variables */
+:root {
+  --color-main: #0D7AA5;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --white-text: #fafafa;
+  --co-1: #0D7AA5;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #f9fbcf;
+  
+  /* Enhanced design tokens */
+  --gradient-primary: linear-gradient(135deg, var(--co-1) 0%, var(--co-2) 50%, var(--co-3) 100%);
+  --gradient-secondary: linear-gradient(135deg, var(--co-2) 0%, var(--co-3) 50%, var(--co-4) 100%);
+  --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 255, 254, 0.9) 100%);
+  --shadow-light: 0 4px 20px rgba(13, 122, 165, 0.08);
+  --shadow-medium: 0 8px 30px rgba(13, 122, 165, 0.12);
+  --shadow-heavy: 0 15px 40px rgba(13, 122, 165, 0.15);
+  --shadow-glow: 0 0 30px rgba(13, 122, 165, 0.1);
+  --border-radius-small: 12px;
+  --border-radius-medium: 18px;
+  --border-radius-large: 24px;
+  --border-radius-xl: 32px;
+  --animation-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced page wrapper with animated background */
 .nutrition-page-wrapper {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--color-general);
+  background: linear-gradient(180deg, #1780A6 30%, #f8fffe 100%);
+  position: relative;
+  overflow-x: hidden;
 }
 
+.nutrition-page-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 15% 25%, rgba(240, 243, 190, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 85% 75%, rgba(3, 195, 154, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(13, 122, 165, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+  animation: gentle-float 12s ease-in-out infinite;
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translateY(0px); opacity: 0.8; }
+  50% { transform: translateY(-10px); opacity: 1; }
+}
+
+/* Enhanced heading section */
 .nutrition-heading {
   max-width: 1500px;
   margin: 80px auto 0 auto;
-  padding: 0 1rem;
+  padding: 0 2rem;
   text-align: left;
+  position: relative;
+  z-index: 2;
 }
 
 .nutrition-heading h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--dark-text);
-  margin-bottom: 0.5rem;
+  font-size: 3.5rem;
+  font-weight: 800;
+  background: white;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(13, 122, 165, 0.1);
 }
 
 .nutrition-heading p {
-  font-size: 1rem;
-  color: var(--color-text);
-  line-height: 1.5;
+  font-size: 1.2rem;
+  color: #E3EDE8;
+  line-height: 1.6;
+  max-width: 600px;
+  font-weight: 500;
 }
 
+/* Enhanced layout with better spacing */
 .nutritional-guidance-layout {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
   max-width: 1500px;
-  padding-top: 20px;
-  margin: 40px auto 40px auto; /* same spacing as pregnancy tracking container */
+  padding: 2rem;
+  margin: 40px auto;
   flex: 1;
+  position: relative;
+  z-index: 2;
 }
 
+/* Premium sidebar with glassmorphism */
 .nutrition-sidebar {
   flex: 1;
-  max-width: 320px;
-  background: var(--white-text);
-  border-radius: var(--border-radius, 1rem);
-  padding: 1rem;
-  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
+  max-width: 380px;
+  background: var(--gradient-glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius-large);
+  padding: 2rem;
+  box-shadow: var(--shadow-medium);
+  height: fit-content;
+  position: sticky;
+  top: 2rem;
 }
 
 .nutrition-sidebar h3 {
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--co-1);
+  margin-bottom: 1.5rem;
+  text-align: center;
 }
 
+/* Enhanced trimester buttons */
 .trimester-btn {
   display: block;
   width: 100%;
-  background: var(--color-general);
+  background: rgba(244, 244, 244, 0.6);
   color: var(--dark-text);
-  padding: 0.75rem 1rem;
-  margin-bottom: 0.6rem;
-  border-radius: 0.5rem;
-  font-size: 16px;
-  border: none;
-  text-align: left;
-  font-style: bold;
-  cursor: pointer;
+  padding: 1rem 1.5rem;
+  margin-bottom: 0.8rem;
+  border-radius: var(--border-radius-medium);
+  font-size: 1rem;
+  border: 2px solid transparent;
+  text-align: center;
   font-weight: 600;
-  transition: background 0.3s, color 0.3s, transform 0.2s;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  cursor: pointer;
+  transition: all var(--animation-smooth);
+  position: relative;
+  overflow: hidden;
 }
+
+/* .trimester-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: left var(--animation-smooth);
+  z-index: -1;
+} */
 
 .trimester-btn.active,
 .trimester-btn:hover {
-  background: #02808F;
+  background: #0D7AA5;
   color: var(--white-text);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-light);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
+/* .trimester-btn.active::before,
+.trimester-btn:hover::before {
+  left: 0;
+} */
+
+/* Enhanced consultation card */
 .consult-card {
-  margin-top: 2rem;
-  background: var(--color-general);
-  padding: 1rem;
-  border-radius: 0.5rem;
+  margin-top: 2.5rem;
+  background: var(--gradient-card);
+  padding: 2rem;
+  border-radius: var(--border-radius-large);
   text-align: center;
-  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-light);
+  border: 1px solid rgba(13, 122, 165, 0.1);
+  transition: all var(--animation-smooth);
+  position: relative;
+  overflow: hidden;
 }
+
+/* .consult-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+} */
 
 .consult-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-medium);
 }
 
 .consult-card p {
-    margin-top: 10px;
+  margin-top: 1rem;
+  color: var(--color-text);
+  font-size: 1.1rem;
+  line-height: 1.5;
 }
 
 .consult-btn {
-  background: #02808F;
+  background: #0D7AA5;
   color: var(--white-text);
   border: none;
-  padding: 0.6rem 1.2rem;
-  margin-top: 1rem;
-  border-radius: 0.4rem;
+  padding: 1rem 2rem;
+  margin-top: 1.5rem;
+  border-radius: var(--border-radius-medium);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 600;
-  transition: background 0.3s, transform 0.2s;
+  transition: all var(--animation-smooth);
+  box-shadow: var(--shadow-light);
+  position: relative;
+  overflow: hidden;
 }
+
+/* .consult-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: var(--gradient-secondary);
+  transition: left var(--animation-smooth);
+  z-index: -1;
+} */
 
 .consult-btn:hover {
-  /* background: linear-gradient(135deg, var(--co-2), var(--nguyen-primary-bg)); */
   transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
 }
 
+/* .consult-btn:hover::before {
+  left: 0;
+} */
+
+/* Enhanced main content with glassmorphism */
 .nutrition-main-content {
-  width: 1080px;
-  flex: 3;
-  margin-top: auto;
-  background: var(--white-text);
-  padding: 2rem;
-  border-radius: var(--border-radius, 1rem);
-  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
+  flex: 2;
+  min-width: 0;
+  background: var(--gradient-glass);
+  backdrop-filter: blur(20px);
+  padding: 3rem;
+  border-radius: var(--border-radius-large);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shadow-medium);
+  position: relative;
 }
+
+/* .nutrition-main-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  border-radius: var(--border-radius-large) var(--border-radius-large) 0 0;
+} */
 
 .nutrition-main-content h2 {
-  color: #04668d;
-  display: flex;
-  justify-content: center;
+  color: var(--co-1);
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
 }
 
+/* .nutrition-main-content h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: var(--gradient-primary);
+  border-radius: 2px;
+} */
+
+/* Enhanced highlight boxes */
 .highlight-box {
-  background: #fbfeff;
-  padding: 1rem;
-  margin-top: 20px;
-  border-left: 5px solid #02808F;
-  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
-  transition: transform 0.2s, box-shadow 0.2s;
-  margin-bottom: 1.5rem;
-  border-radius: 0.3rem;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  background: var(--gradient-card);
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  border-left: 6px solid var(--co-2);
+  border-radius: var(--border-radius-small);
+  box-shadow: var(--shadow-light);
+  transition: all var(--animation-smooth);
+  font-size: 1rem;
+  line-height: 1.6;
+  position: relative;
+  overflow: hidden;
 }
+
+/* .highlight-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(13, 122, 165, 0.02) 0%, rgba(3, 195, 154, 0.04) 100%);
+  border-radius: 50px;
+  transform: translateX(30px);
+} */
 
 .highlight-box:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+  box-shadow: var(--shadow-medium);
+  border-left-color: var(--co-3);
 }
 
+/* Enhanced nutrient grid */
 .nutrient-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.2rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
+/* Premium nutrient cards */
 .nutrient-card {
-  background: #fbfeff;
-  border-left: 5px solid #02808F;
-  padding: 1.2rem;
-  border-radius: 0.5rem;
-  box-shadow: var(--shadow, 0 2px 8px rgba(0, 0, 0, 0.05));
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: var(--gradient-card);
+  border-left: 6px solid var(--co-2);
+  padding: 1.8rem;
+  border-radius: var(--border-radius-medium);
+  box-shadow: var(--shadow-light);
+  transition: all var(--animation-smooth);
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(13, 122, 165, 0.08);
 }
 
-.nutrient-card h4{
-  color: #04668D;
-}
+/* .nutrient-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80px;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(13, 122, 165, 0.03) 0%, rgba(3, 195, 154, 0.05) 100%);
+  border-radius: 40px;
+  transform: translateX(20px);
+} */
 
-.nutrient-card-source {
-  margin-top: 5px;
+.nutrient-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-medium);
+  border-left-color: var(--co-3);
 }
 
 .nutrient-header {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.8rem;
+  margin-bottom: 0.5rem;
 }
 
 .nutrient-icon {
-  font-size: 1.2rem;
-  color: #04668d;
+  font-size: 1.4rem;
+  color: var(--co-1);
+  filter: drop-shadow(0 2px 4px rgba(13, 122, 165, 0.2));
 }
 
 .nutrient-card h4 {
+  color: var(--co-1);
+  font-size: 1.3rem;
+  font-weight: 700;
   margin: 0;
+  line-height: 1.3;
 }
 
-.icon-info {
-  color: var(--nguyen-primary-bg);
-  margin-right: 5px;
+.nutrient-card p {
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0.5rem 0;
 }
 
+.nutrient-card-source {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(13, 122, 165, 0.1);
+}
+
+.nutrient-card-source strong {
+  color: var(--co-2);
+  font-weight: 600;
+}
+
+/* Enhanced food lists */
 .food-list {
   padding-left: 0;
   list-style: none;
+  margin: 1rem 0;
 }
 
 .food-list li {
   display: flex;
   align-items: flex-start;
-  gap: 0.5rem;
-  margin-bottom: 0.6rem;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem 0;
+  border-radius: var(--border-radius-small);
+  transition: all var(--animation-fast);
+}
+
+.food-list li:hover {
+  background: rgba(13, 122, 165, 0.02);
+  padding-left: 0.5rem;
 }
 
 .icon-embrace {
   color: #4fc86b;
   flex-shrink: 0;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  filter: drop-shadow(0 1px 2px rgba(79, 200, 107, 0.3));
 }
 
 .icon-avoid {
   color: #d9534f;
   flex-shrink: 0;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  filter: drop-shadow(0 1px 2px rgba(217, 83, 79, 0.3));
 }
 
 .icon-check {
   color: #72a7db;
   flex-shrink: 0;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  filter: drop-shadow(0 1px 2px rgba(114, 167, 219, 0.3));
 }
 
-.nutrient-card.nutrient-card-source {
-  margin-top: 10px;
+.icon-info {
+  color: var(--co-1);
+  margin-right: 0.5rem;
+  filter: drop-shadow(0 1px 2px rgba(13, 122, 165, 0.3));
 }
 
-.nutrient-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.1));
+/* Enhanced typography */
+h3 {
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  color: var(--co-1);
+  font-size: 1.8rem;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 0.5rem;
 }
+
+/* h3::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 2px;
+} */
 
 ul {
-  list-style: disc;
-  margin-left: 1.5rem;
+  list-style: none;
+  margin-left: 0;
   margin-bottom: 1.5rem;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
-h3 {
-  margin-top: 1.5rem;
-  margin-bottom: 0.8rem;
-  color: var(--nguyen-primary-bg);
+ul li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+ul li::before {
+  /* content: '•'; */
+  color: var(--co-2);
+  font-weight: bold;
+  position: absolute;
+  left: 0;
   font-size: 1.2rem;
-  font-weight: 700;
 }
 
+/* Enhanced floating contact icon */
 .contact-icon {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #2563eb;
+  bottom: 30px;
+  right: 30px;
+  background: #4F94AF;
   color: #ffffff;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-heavy);
   z-index: 1000;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: all var(--animation-smooth);
+  border: 3px solid rgba(255, 255, 255, 0.2);
 }
 
 .contact-icon:hover {
-  background-color: #1e40af;
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: var(--shadow-glow);
+}
+
+.contact-icon:active {
+  transform: translateY(-2px) scale(1.02);
+}
+
+/* Enhanced responsive design */
+@media (max-width: 1200px) {
+  .nutritional-guidance-layout {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+  
+  .nutrition-heading {
+    padding: 0 1.5rem;
+  }
+  
+  .nutrition-heading h1 {
+    font-size: 2.8rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .nutritional-guidance-layout {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .nutrition-sidebar {
+    max-width: 100%;
+    position: static;
+  }
+  
+  .nutrition-main-content {
+    padding: 2rem;
+  }
+  
+  .nutrition-heading h1 {
+    font-size: 2.2rem;
+  }
+  
+  .nutrient-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {
-  .contact-icon {
-    width: 50px;
-    height: 50px;
+  .nutrition-heading {
+    padding: 0 1rem;
+    margin-top: 60px;
   }
+  
+  .nutrition-heading h1 {
+    font-size: 1.8rem;
+  }
+  
+  .nutritional-guidance-layout {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+  
+  .nutrition-sidebar,
+  .nutrition-main-content {
+    padding: 1.5rem;
+  }
+  
+  .contact-icon {
+    width: 60px;
+    height: 60px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .nutrient-card {
+    padding: 1.2rem;
+  }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .nutrition-sidebar,
+  .nutrition-main-content,
+  .nutrient-card,
+  .highlight-box,
+  .consult-card {
+    border: 2px solid var(--co-1);
+  }
+}
+
+/* Focus indicators for accessibility */
+.trimester-btn:focus,
+.consult-btn:focus,
+.contact-icon:focus {
+  outline: 3px solid var(--co-3);
+  outline-offset: 2px;
 }
