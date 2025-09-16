@@ -256,16 +256,30 @@ const RecommendedNutritionalNeeds = () => {
     }
 
     try {
-      // Update user DOB if changed
+      // Update user DOB if changed - Fix undefined values
       if (dob && dob !== savedDob) {
-        await editUserProfile({ dateOfBirth: dob });
-
+        // Get current user info
         const storedUser = localStorage.getItem("user");
-        if (storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          parsedUser.dateOfBirth = dob;
-          localStorage.setItem("user", JSON.stringify(parsedUser));
+        let parsedUser = storedUser ? JSON.parse(storedUser) : null;
+
+        if (!parsedUser) {
+          const response = await getCurrentUser(token);
+          parsedUser = response.data.data;
         }
+
+        // Create complete payload
+        const updateData = {
+          Id: parsedUser.id,
+          UserName: parsedUser.userName,
+          PhoneNumber: parsedUser.phoneNumber,
+          DateOfBirth: dob ? new Date(dob).toISOString() : null,
+        };
+
+        await editUserProfile(updateData, token);
+
+        // Update local storage
+        parsedUser.DateOfBirth = dob;
+        localStorage.setItem("user", JSON.stringify(parsedUser));
 
         setSavedDob(dob);
       }
@@ -364,6 +378,7 @@ const RecommendedNutritionalNeeds = () => {
             value={dob}
             onChange={(e) => setDob(e.target.value)}
             max={new Date().toISOString().split("T")[0]}
+            // disabled={!!savedDob}
           />
           <label>Activity Level</label>
           <select
