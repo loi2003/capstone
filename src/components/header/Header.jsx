@@ -146,17 +146,17 @@ const Header = () => {
             <Link to="/duedate-calculator">DueDate Calculator</Link>
           ) : (
             <Link to="/pregnancy-tracking" title="Pregnancy Tracking">
-              Pregnancy
+              Pregnancy Tracking
             </Link>
           )}
           <Link to="/nutritional-guidance" title="Nutritional Guidance">
             Nutrition
           </Link>
           <Link to="/clinic/list" title="Consultation">
-            Consultation
+           Consultation Booking
           </Link>
           <Link to="/blog" title="Blog">
-            Blog
+            Blog & Community
           </Link>
           <div className="auth-section">
             {user ? (
@@ -255,7 +255,7 @@ const Header = () => {
                             fill="var(--white)"
                           />
                         </svg>
-                        <span>Đăng xuất</span>
+                        <span>Sign out</span>
                       </button>
                     </div>
                   </div>
