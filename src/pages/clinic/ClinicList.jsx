@@ -16,7 +16,7 @@ function getStarRating(feedbacks) {
   const sum = feedbacks.reduce((acc, f) => acc + (f.rating || 0), 0);
   const avg10 = sum / feedbacks.length;
   const avg5 = avg10 / 2;
-  return { avg: avg5, stars: Math.round(avg5), count: feedbacks.length };
+  return { avg: avg5, stars: avg5, count: feedbacks.length };
 }
 
 // Helper to truncate description
@@ -83,22 +83,43 @@ const ClinicList = () => {
 
   const handleSeeMore = () => setCurrentPage((prev) => prev + 1);
 
-  // Star rendering helper
+// Star rendering helper
   const renderStars = (stars) => {
     const filled = Math.floor(stars);
-    const half = stars - filled >= 0.25 && stars - filled < 0.75;
+    const half = stars - filled >= 0.5;
     return (
-      <div className="stars-container">
+      <>
         {[...Array(5)].map((_, i) => {
           if (i < filled) {
-            return <FaStar key={i} className="star star-filled" />;
+            return (
+              <span key={i} className="star" style={{ color: "#f7b801" }}>
+                &#9733;
+              </span>
+            );
           } else if (i === filled && half) {
-            return <FaStar key={i} className="star star-half" />;
+            return (
+              <span
+                key={i}
+                className="star star-half"
+                style={{ color: "#f7b801" }}
+                aria-label="half star"
+              >
+                &#9733;
+              </span>
+            );
           } else {
-            return <FaStar key={i} className="star star-empty" />;
+            return (
+              <span
+                key={i}
+                className="star star-empty"
+                style={{ color: "#ccc" }}
+              >
+                &#9733;
+              </span>
+            );
           }
         })}
-      </div>
+      </>
     );
   };
 
@@ -372,7 +393,6 @@ const ClinicList = () => {
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </motion.div>
-        
         <ChatBoxPage
           isOpen={isPopupOpen}
           onClose={() => setIsPopupOpen(false)}

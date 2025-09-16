@@ -2,16 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  getAllNutrientSuggestions,
-  getNutrientSuggestionById,
-  createNutrientSuggestion,
-  updateNutrientSuggestion,
-  deleteNutrientSuggestion,
-  getAllNutrients,
+  getAllEnergySuggestions,
+  getEnergySuggestionById,
+  createEnergySuggestion,
+  updateEnergySuggestion,
   getAllAgeGroups,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/NutrientSuggestion.css";
+import "../../styles/EnergySuggestion.css";
 
 const LoaderIcon = () => (
   <svg
@@ -36,6 +34,7 @@ const Notification = ({ message, type }) => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
+
   return (
     <motion.div
       className={`notification ${type}`}
@@ -52,10 +51,7 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const SuggestionModal = ({ suggestion, onClose, nutrients, ageGroups }) => {
-  const nutrient = nutrients.find((n) => n.id === suggestion.nutrientId);
-  const ageGroup = ageGroups.find((a) => a.id === suggestion.ageGroupId);
-
+const EnergySuggestionModal = ({ suggestion, onClose }) => {
   return (
     <motion.div
       className="modal-overlay"
@@ -72,19 +68,24 @@ const SuggestionModal = ({ suggestion, onClose, nutrients, ageGroups }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>
-          {nutrient?.name || "Unknown Nutrient"} Suggestion for{" "}
-          {ageGroup?.name || "Unknown Age Group"}
-        </h2>
-        <p>{suggestion.description || "No description available"}</p>
-        <h3>Details:</h3>
-        <ul>
-          <li>Gender: {suggestion.gender}</li>
-          <li>
-            Recommended Amount: {suggestion.recommendedAmount}{" "}
-            {suggestion.unit}
-          </li>
-        </ul>
+        <h2>Energy Suggestion #{suggestion.id}</h2>
+        <p>
+          <strong>Age Group ID:</strong> {suggestion.ageGroupId}
+        </p>
+        <p>
+          <strong>Activity Level:</strong>{" "}
+          {suggestion.activityLevelDisplay || suggestion.activityLevel}
+        </p>
+        <p>
+          <strong>Base Calories:</strong> {suggestion.baseCalories} kcal
+        </p>
+        <p>
+          <strong>Trimester:</strong> {suggestion.trimester || "N/A"}
+        </p>
+        <p>
+          <strong>Additional Calories:</strong>{" "}
+          {suggestion.additionalCalories || "N/A"} kcal
+        </p>
         <motion.button
           onClick={onClose}
           className="nutrient-specialist-button primary"
@@ -98,17 +99,15 @@ const SuggestionModal = ({ suggestion, onClose, nutrients, ageGroups }) => {
   );
 };
 
-const NutrientSuggestion = () => {
+const EnergySuggestion = () => {
   const [suggestions, setSuggestions] = useState([]);
-  const [nutrients, setNutrients] = useState([]);
   const [ageGroups, setAgeGroups] = useState([]);
   const [newSuggestion, setNewSuggestion] = useState({
-    nutrientId: "",
     ageGroupId: "",
-    gender: "Both",
-    recommendedAmount: 0,
-    unit: "mg",
-    description: "",
+    activityLevel: "",
+    baseCalories: "",
+    trimester: "",
+    additionalCalories: "",
   });
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [selectedViewSuggestion, setSelectedViewSuggestion] = useState(null);
@@ -117,8 +116,6 @@ const NutrientSuggestion = () => {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
-  const [nutrientSearchTerm, setNutrientSearchTerm] = useState("");
-  const [ageGroupSearchTerm, setAgeGroupSearchTerm] = useState("");
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
@@ -150,7 +147,11 @@ const NutrientSuggestion = () => {
           navigate("/signin", { replace: true });
         }
       } catch (error) {
-        console.error("Error fetching user:", error.message);
+        console.error("Error fetching user:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+        });
         localStorage.removeItem("token");
         setUser(null);
         navigate("/signin", { replace: true });
@@ -168,176 +169,268 @@ const NutrientSuggestion = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
+  const normalizeActivityLevel = (activityLevel) => {
+    if (activityLevel === "Light" || activityLevel === 1) return "1-light";
+    if (activityLevel === "Moderate" || activityLevel === 2) return "2-moderate";
+    return activityLevel || "";
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [suggestionsResponse, nutrientsData, ageGroupsData] =
-        await Promise.all([
-          getAllNutrientSuggestions(),
-          getAllNutrients(),
-          getAllAgeGroups(),
-        ]);
-      const suggestionsData = suggestionsResponse?.data || [];
-      setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : []);
-      setNutrients(Array.isArray(nutrientsData) ? nutrientsData : []);
-      setAgeGroups(Array.isArray(ageGroupsData) ? ageGroupsData : []);
+      const response = await getAllEnergySuggestions();
+      let suggestionsData;
+      if (Array.isArray(response)) {
+        suggestionsData = response;
+      } else {
+        suggestionsData = response?.data || [];
+      }
+      console.log("Processed suggestions data:", suggestionsData);
+      const normalizedSuggestions = Array.isArray(suggestionsData)
+        ? suggestionsData.map((suggestion) => ({
+            ...suggestion,
+            activityLevelDisplay: normalizeActivityLevel(suggestion.activityLevel),
+            activityLevel: normalizeActivityLevel(suggestion.activityLevel),
+          }))
+        : [];
+      setSuggestions(normalizedSuggestions);
     } catch (err) {
       console.error("Fetch error details:", {
         message: err.message,
         response: err.response?.data,
         status: err.response?.status,
       });
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
-      setSuggestions([]);
-      setNutrients([]);
-      setAgeGroups([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSuggestionById = async (id) => {
-    setLoading(true);
-    try {
-      const data = await getNutrientSuggestionById(id);
-      setSelectedSuggestion(data);
-      setNewSuggestion({
-        nutrientId: data.nutrientId || "",
-        ageGroupId: data.ageGroupId || "",
-        gender: data.gender || "Both",
-        recommendedAmount: data.recommendedAmount || 0,
-        unit: data.unit || "mg",
-        description: data.description || "",
-      });
-      setIsEditing(true);
-      return data;
-    } catch (err) {
       showNotification(
-        `Failed to fetch suggestion details: ${err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createSuggestionHandler = async () => {
-    if (!newSuggestion.nutrientId || !newSuggestion.ageGroupId) {
-      showNotification("Nutrient and Age Group are required", "error");
-      return;
-    }
-    if (newSuggestion.recommendedAmount <= 0 || !newSuggestion.unit) {
-      showNotification(
-        "Please provide valid recommended amount and unit",
-        "error"
-      );
-      return;
-    }
-    setLoading(true);
-    try {
-      await createNutrientSuggestion(newSuggestion);
-      setNewSuggestion({
-        nutrientId: "",
-        ageGroupId: "",
-        gender: "Both",
-        recommendedAmount: 0,
-        unit: "mg",
-        description: "",
-      });
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Suggestion created successfully", "success");
-    } catch (err) {
-      console.error("Create suggestion error:", err);
-      showNotification(
-        `Failed to create suggestion: ${
+        `Failed to fetch energy suggestions: ${
           err.response?.data?.message || err.message
         }`,
         "error"
       );
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchAgeGroups = async () => {
+    try {
+      const response = await getAllAgeGroups();
+      const ageGroupsData = response?.data || [];
+      console.log("Fetched age groups:", ageGroupsData);
+      setAgeGroups(Array.isArray(ageGroupsData) ? ageGroupsData : []);
+    } catch (err) {
+      console.error("Error fetching age groups:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(
+        `Failed to fetch age groups: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
+      setAgeGroups([]);
+    }
+  };
+
+ const fetchSuggestionById = async (id) => {
+  console.log("Fetching suggestion with ID:", id);
+  if (!id) {
+    showNotification("Invalid suggestion ID", "error");
+    console.error("fetchSuggestionById called with invalid ID:", id);
+    return;
+  }
+  setLoading(true);
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      showNotification("Authentication token is missing. Please sign in again.", "error");
+      navigate("/signin", { replace: true });
+      return;
+    }
+    const response = await getEnergySuggestionById(id, token);
+    console.log("Raw API response:", response);
+
+    // Check if response is empty or invalid
+    if (!response) {
+      showNotification("Energy suggestion not found", "error");
+      console.warn("No data in response:", response);
+      return;
+    }
+
+    // Use response directly since getEnergySuggestionById returns response.data
+    const data = response;
+    console.log("Extracted data:", data);
+
+    if (!data || typeof data !== "object" || !data.id) {
+      throw new Error("Invalid response data format. Expected an object with an ID.");
+    }
+
+    const normalizedData = {
+      ...data,
+      activityLevel: normalizeActivityLevel(data.activityLevel),
+      activityLevelDisplay: normalizeActivityLevel(data.activityLevel),
+    };
+    console.log("setSelectedSuggestion called with:", normalizedData);
+    setSelectedSuggestion(normalizedData);
+    setNewSuggestion({
+      ageGroupId: normalizedData.ageGroupId || "",
+      activityLevel: normalizedData.activityLevel || "",
+      baseCalories: normalizedData.baseCalories || "",
+      trimester: normalizedData.trimester || "",
+      additionalCalories: normalizedData.additionalCalories || "",
+    });
+    setIsEditing(true);
+    return normalizedData;
+  } catch (err) {
+    const errorMessage =
+      err.response?.data?.message || err.message || "An unexpected error occurred.";
+    showNotification(`Failed to fetch suggestion details: ${errorMessage}`, "error");
+    console.error("Fetch suggestion error details:", {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+      stack: err.stack,
+    });
+  } finally {
+    setLoading(false);
+  }
+};
+  const createSuggestionHandler = async () => {
+    if (!newSuggestion.ageGroupId || newSuggestion.ageGroupId.trim() === "") {
+      showNotification("Age Group is required", "error");
+      return;
+    }
+    if (
+      !newSuggestion.activityLevel ||
+      newSuggestion.activityLevel.trim() === ""
+    ) {
+      showNotification("Activity Level is required", "error");
+      return;
+    }
+    if (
+      !newSuggestion.baseCalories ||
+      isNaN(newSuggestion.baseCalories) ||
+      newSuggestion.baseCalories <= 0
+    ) {
+      showNotification("Valid Base Calories is required", "error");
+      return;
+    }
+    const activityLevelValue = newSuggestion.activityLevel.split("-")[0];
+    setLoading(true);
+    try {
+      await createEnergySuggestion(
+        {
+          ageGroupId: newSuggestion.ageGroupId,
+          activityLevel: parseInt(activityLevelValue),
+          baseCalories: parseFloat(newSuggestion.baseCalories),
+          trimester: newSuggestion.trimester
+            ? parseInt(newSuggestion.trimester)
+            : 0,
+          additionalCalories: parseFloat(newSuggestion.additionalCalories) || 0,
+        },
+        token
+      );
+      setNewSuggestion({
+        ageGroupId: "",
+        activityLevel: "",
+        baseCalories: "",
+        trimester: "",
+        additionalCalories: "",
+      });
+      setIsEditing(false);
+      await fetchData();
+      showNotification("Energy suggestion created successfully", "success");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message;
+      showNotification(`Failed to create suggestion: ${errorMessage}`, "error");
+      console.error("Create suggestion error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const updateSuggestionHandler = async () => {
-    if (!newSuggestion.nutrientId || !newSuggestion.ageGroupId) {
-      showNotification("Nutrient and Age Group are required", "error");
+    console.log("selectedSuggestion before update:", selectedSuggestion);
+    if (!newSuggestion.ageGroupId || newSuggestion.ageGroupId.trim() === "") {
+      showNotification("Age Group is required", "error");
       return;
     }
-    if (newSuggestion.recommendedAmount <= 0 || !newSuggestion.unit) {
-      showNotification(
-        "Please provide valid recommended amount and unit",
-        "error"
-      );
+    if (
+      !newSuggestion.activityLevel ||
+      newSuggestion.activityLevel.trim() === ""
+    ) {
+      showNotification("Activity Level is required", "error");
       return;
     }
+    if (
+      !newSuggestion.baseCalories ||
+      isNaN(newSuggestion.baseCalories) ||
+      newSuggestion.baseCalories <= 0
+    ) {
+      showNotification("Valid Base Calories is required", "error");
+      return;
+    }
+    if (!selectedSuggestion || !selectedSuggestion.id) {
+      showNotification("No energy suggestion selected for update", "error");
+      console.error("selectedSuggestion is invalid:", selectedSuggestion);
+      return;
+    }
+    const activityLevelValue = newSuggestion.activityLevel.split("-")[0];
     setLoading(true);
     try {
-      await updateNutrientSuggestion({
-        ...newSuggestion,
-        id: selectedSuggestion?.id,
-      });
+      await updateEnergySuggestion(
+        {
+          id: selectedSuggestion.id,
+          ageGroupId: newSuggestion.ageGroupId,
+          activityLevel: parseInt(activityLevelValue),
+          baseCalories: parseFloat(newSuggestion.baseCalories),
+          trimester: newSuggestion.trimester
+            ? parseInt(newSuggestion.trimester)
+            : 0,
+          additionalCalories: parseFloat(newSuggestion.additionalCalories) || 0,
+        },
+        token
+      );
       setNewSuggestion({
-        nutrientId: "",
         ageGroupId: "",
-        gender: "Both",
-        recommendedAmount: 0,
-        unit: "mg",
-        description: "",
+        activityLevel: "",
+        baseCalories: "",
+        trimester: "",
+        additionalCalories: "",
       });
       setSelectedSuggestion(null);
       setIsEditing(false);
       await fetchData();
-      showNotification("Suggestion updated successfully", "success");
+      showNotification("Energy suggestion updated successfully", "success");
     } catch (err) {
-      showNotification(
-        `Failed to update suggestion: ${
-          err.response?.data?.message || err.message
-        }`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteSuggestionHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this suggestion?"))
-      return;
-    setLoading(true);
-    try {
-      await deleteNutrientSuggestion(id);
-      setSelectedSuggestion(null);
-      setIsEditing(false);
-      setNewSuggestion({
-        nutrientId: "",
-        ageGroupId: "",
-        gender: "Both",
-        recommendedAmount: 0,
-        unit: "mg",
-        description: "",
+      const errorMessage = err.response?.data?.message || err.message;
+      showNotification(`Failed to update suggestion: ${errorMessage}`, "error");
+      console.error("Update suggestion error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
       });
-      await fetchData();
-      showNotification("Suggestion deleted successfully", "success");
-    } catch (err) {
-      showNotification(`Failed to delete suggestion: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
   };
 
   const cancelEdit = () => {
-    setNewSuggestion({
-      nutrientId: "",
-      ageGroupId: "",
-      gender: "Both",
-      recommendedAmount: 0,
-      unit: "mg",
-      description: "",
-    });
-    setSelectedSuggestion(null);
-    setIsEditing(false);
+    if (window.confirm("Are you sure you want to cancel editing?")) {
+      setNewSuggestion({
+        ageGroupId: "",
+        activityLevel: "",
+        baseCalories: "",
+        trimester: "",
+        additionalCalories: "",
+      });
+      setSelectedSuggestion(null);
+      setIsEditing(false);
+    }
   };
 
   const toggleSidebar = () => {
@@ -359,7 +452,11 @@ const NutrientSuggestion = () => {
     try {
       if (user?.userId) await logout(user.userId);
     } catch (error) {
-      console.error("Error logging out:", error.message);
+      console.error("Error logging out:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
     } finally {
       localStorage.removeItem("token");
       setUser(null);
@@ -377,22 +474,23 @@ const NutrientSuggestion = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (user?.roleId === 4) {
+      fetchData();
+      fetchAgeGroups();
+    }
+  }, [user]);
 
-  const filteredSuggestions = suggestions.filter((suggestion) => {
-    const nutrient = nutrients.find((n) => n.id === suggestion.nutrientId);
-    const ageGroup = ageGroups.find((a) => a.id === suggestion.ageGroupId);
-    return (
-      (nutrient?.name || "")
+  const filteredSuggestions = suggestions.filter(
+    (suggestion) =>
+      (suggestion.ageGroupId || "")
+        .toString()
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
-      (ageGroup?.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (suggestion.description || "")
+      (suggestion.activityLevelDisplay || suggestion.activityLevel || "")
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
-    );
-  });
+  );
+
   const indexOfLastSuggestion = currentPage * itemsPerPage;
   const indexOfFirstSuggestion = indexOfLastSuggestion - itemsPerPage;
   const currentSuggestions = filteredSuggestions.slice(
@@ -400,14 +498,6 @@ const NutrientSuggestion = () => {
     indexOfLastSuggestion
   );
   const totalPages = Math.ceil(filteredSuggestions.length / itemsPerPage);
-
-  const filteredNutrients = nutrients.filter((nutrient) =>
-    (nutrient.name || "").toLowerCase().includes(nutrientSearchTerm.toLowerCase())
-  );
-
-  const filteredAgeGroups = ageGroups.filter((ageGroup) =>
-    (ageGroup.name || "").toLowerCase().includes(ageGroupSearchTerm.toLowerCase())
-  );
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -483,7 +573,7 @@ const NutrientSuggestion = () => {
   };
 
   return (
-    <div className="nutrient-suggestion">
+    <div className="energy-suggestion">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -688,7 +778,9 @@ const NutrientSuggestion = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
+                animate={
+                  isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -952,7 +1044,7 @@ const NutrientSuggestion = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 22"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Plate icon for dish management"
@@ -1125,7 +1217,7 @@ const NutrientSuggestion = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="sidebar-nav-item active"
                 whileHover="hover"
               >
                 <Link
@@ -1155,7 +1247,7 @@ const NutrientSuggestion = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item active"
+                className="sidebar-nav-item"
                 whileHover="hover"
               >
                 <Link
@@ -1401,10 +1493,10 @@ const NutrientSuggestion = () => {
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Manage Nutrient Suggestions</h1>
+            <h1>Manage Energy Suggestions</h1>
             <p>
-              Create, edit, and manage recommended nutrient intakes for different
-              age groups
+              Create and edit energy suggestions for different age groups and
+              activity levels
             </p>
           </div>
         </div>
@@ -1412,56 +1504,16 @@ const NutrientSuggestion = () => {
           <div className="form-section">
             <div className="section-header">
               <h2>
-                {isEditing ? "Edit Nutrient Suggestion" : "Add New Suggestion"}
+                {isEditing
+                  ? "Edit Energy Suggestion"
+                  : "Add New Energy Suggestion"}
               </h2>
             </div>
-            {(nutrients.length === 0 || ageGroups.length === 0) && (
-              <p className="no-results">
-                No nutrients or age groups available. Please add them first.
-              </p>
-            )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="nutrient-select">Select Nutrient</label>
-                <input
-                  id="search-nutrients"
-                  type="text"
-                  value={nutrientSearchTerm}
-                  onChange={(e) => setNutrientSearchTerm(e.target.value)}
-                  placeholder="Search nutrients by name"
-                  className="search-input"
-                />
+                <label htmlFor="age-group-id">Age Group</label>
                 <select
-                  id="nutrient-select"
-                  value={newSuggestion.nutrientId}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      nutrientId: e.target.value,
-                    }))
-                  }
-                  className="input-field"
-                >
-                  <option value="">Choose a nutrient</option>
-                  {filteredNutrients.map((nutrient) => (
-                    <option key={nutrient.id} value={nutrient.id}>
-                      {nutrient.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="age-group-select">Select Age Group</label>
-                <input
-                  id="search-age-groups"
-                  type="text"
-                  value={ageGroupSearchTerm}
-                  onChange={(e) => setAgeGroupSearchTerm(e.target.value)}
-                  placeholder="Search age groups by name"
-                  className="search-input"
-                />
-                <select
-                  id="age-group-select"
+                  id="age-group-id"
                   value={newSuggestion.ageGroupId}
                   onChange={(e) =>
                     setNewSuggestion((prev) => ({
@@ -1471,105 +1523,99 @@ const NutrientSuggestion = () => {
                   }
                   className="input-field"
                 >
-                  <option value="">Choose an age group</option>
-                  {filteredAgeGroups.map((ageGroup) => (
+                  <option value="">Select Age Group</option>
+                  {ageGroups.map((ageGroup) => (
                     <option key={ageGroup.id} value={ageGroup.id}>
-                      {ageGroup.name}
+                      {ageGroup.fromAge} - {ageGroup.toAge} years
                     </option>
                   ))}
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="gender-select">Gender</label>
+                <label htmlFor="activity-level">Activity Level</label>
                 <select
-                  id="gender-select"
-                  value={newSuggestion.gender}
+                  id="activity-level"
+                  value={newSuggestion.activityLevel}
                   onChange={(e) =>
                     setNewSuggestion((prev) => ({
                       ...prev,
-                      gender: e.target.value,
+                      activityLevel: e.target.value,
                     }))
                   }
                   className="input-field"
                 >
-                  <option value="Both">Both</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
+                  <option value="">Select Activity Level</option>
+                  <option value="1-light">1 - Light</option>
+                  <option value="2-moderate">2 - Moderate</option>
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="recommended-amount">Recommended Amount</label>
+                <label htmlFor="base-calories">Base Calories (kcal)</label>
                 <input
-                  id="recommended-amount"
+                  id="base-calories"
                   type="number"
-                  value={newSuggestion.recommendedAmount}
+                  value={newSuggestion.baseCalories}
                   onChange={(e) =>
                     setNewSuggestion((prev) => ({
                       ...prev,
-                      recommendedAmount: parseFloat(e.target.value) || 0,
+                      baseCalories: e.target.value,
                     }))
                   }
-                  placeholder="Enter recommended amount"
+                  placeholder="Enter base calories"
                   className="input-field"
                   min="0"
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="unit-select">Unit</label>
-                <select
-                  id="unit-select"
-                  value={newSuggestion.unit}
+                <label htmlFor="trimester">Trimester (Optional)</label>
+                <input
+                  id="trimester"
+                  type="number"
+                  value={newSuggestion.trimester}
                   onChange={(e) =>
                     setNewSuggestion((prev) => ({
                       ...prev,
-                      unit: e.target.value,
+                      trimester: e.target.value,
+                    }))
+                  }
+                  placeholder="Enter trimester (1-3)"
+                  className="input-field"
+                  min="0"
+                  max="3"
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="additional-calories">
+                  Additional Calories (kcal, Optional)
+                </label>
+                <select
+                  id="additional-calories"
+                  value={newSuggestion.additionalCalories}
+                  onChange={(e) =>
+                    setNewSuggestion((prev) => ({
+                      ...prev,
+                      additionalCalories: e.target.value,
                     }))
                   }
                   className="input-field"
                 >
-                  <option value="mg">mg</option>
-                  <option value="g">g</option>
-                  <option value="μg">μg</option>
-                  <option value="IU">IU</option>
-                  <option value="kcal">kcal</option>
+                  <option value="">Select Additional Calories</option>
+                  <option value="50">50 kcal</option>
+                  <option value="250">250 kcal</option>
+                  <option value="450">450 kcal</option>
                 </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="suggestion-description">Description</label>
-                <textarea
-                  id="suggestion-description"
-                  value={newSuggestion.description}
-                  onChange={(e) =>
-                    setNewSuggestion((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter suggestion description (optional)"
-                  className="textarea-field"
-                />
               </div>
               <div className="button-group">
                 <motion.button
                   onClick={
-                    isEditing ? updateSuggestionHandler : createSuggestionHandler
+                    isEditing
+                      ? updateSuggestionHandler
+                      : createSuggestionHandler
                   }
-                  disabled={
-                    loading || nutrients.length === 0 || ageGroups.length === 0
-                  }
+                  disabled={loading}
                   className="submit-button nutrient-specialist-button primary"
-                  whileHover={{
-                    scale:
-                      loading || nutrients.length === 0 || ageGroups.length === 0
-                        ? 1
-                        : 1.05,
-                  }}
-                  whileTap={{
-                    scale:
-                      loading || nutrients.length === 0 || ageGroups.length === 0
-                        ? 1
-                        : 0.95,
-                  }}
+                  whileHover={{ scale: loading ? 1 : 1.05 }}
+                  whileTap={{ scale: loading ? 1 : 0.95 }}
                 >
                   {loading
                     ? isEditing
@@ -1595,10 +1641,12 @@ const NutrientSuggestion = () => {
           </div>
           <div className="nutrient-list-section">
             <div className="section-header">
-              <h2>Suggestion List</h2>
+              <h2>Energy Suggestion List</h2>
               <div className="nutrient-count">
                 {filteredSuggestions.length}{" "}
-                {filteredSuggestions.length === 1 ? "suggestion" : "suggestions"}{" "}
+                {filteredSuggestions.length === 1
+                  ? "suggestion"
+                  : "suggestions"}{" "}
                 found
               </div>
             </div>
@@ -1609,7 +1657,7 @@ const NutrientSuggestion = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by nutrient, age group or description"
+                placeholder="Search by age group ID or activity level"
                 className="search-input"
               />
             </div>
@@ -1635,73 +1683,55 @@ const NutrientSuggestion = () => {
                   />
                 </svg>
                 <h3>No suggestions found</h3>
-                <p>Create your first suggestion to get started</p>
+                <p>Create your first energy suggestion to get started</p>
               </div>
             ) : (
               <>
                 <div className="nutrient-grid">
-                  {currentSuggestions.map((suggestion) => {
-                    const nutrient = nutrients.find(
-                      (n) => n.id === suggestion.nutrientId
-                    );
-                    const ageGroup = ageGroups.find(
-                      (a) => a.id === suggestion.ageGroupId
-                    );
-                    return (
-                      <motion.div
-                        key={suggestion.id}
-                        className="nutrient-card"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        whileHover={{ y: -5 }}
-                      >
-                        <div className="card-header">
-                          <h3>
-                            {nutrient?.name || "Unknown Nutrient"} for{" "}
-                            {ageGroup?.name || "Unknown Age Group"}
-                          </h3>
-                        </div>
-                        <p className="suggestion-description">
-                          {suggestion.description || "No description available"}
-                        </p>
-                        <p>
-                          Gender: {suggestion.gender} | Amount:{" "}
-                          {suggestion.recommendedAmount} {suggestion.unit}
-                        </p>
-                        <div className="card-actions">
-                          <motion.button
-                            onClick={() => fetchSuggestionById(suggestion.id)}
-                            className="edit-button nutrient-specialist-button primary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Edit
-                          </motion.button>
-                          <motion.button
-                            onClick={() =>
-                              setSelectedViewSuggestion(suggestion)
-                            }
-                            className="view-button nutrient-specialist-button secondary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            View
-                          </motion.button>
-                          <motion.button
-                            onClick={() =>
-                              deleteSuggestionHandler(suggestion.id)
-                            }
-                            className="delete-button nutrient-specialist-button secondary"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                          >
-                            Delete
-                          </motion.button>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
+                  {currentSuggestions.map((suggestion) => (
+                    <motion.div
+                      key={suggestion.id}
+                      className="nutrient-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="card-header">
+                        <h3>Energy Suggestion #{suggestion.id}</h3>
+                      </div>
+                      <p>
+                        <strong>Age Group ID:</strong> {suggestion.ageGroupId}
+                      </p>
+                      <p>
+                        <strong>Activity Level:</strong>{" "}
+                        {suggestion.activityLevelDisplay ||
+                          suggestion.activityLevel}
+                      </p>
+                      <p>
+                        <strong>Base Calories:</strong>{" "}
+                        {suggestion.baseCalories} kcal
+                      </p>
+                      <div className="card-actions">
+                        <motion.button
+                          onClick={() => fetchSuggestionById(suggestion.id)}
+                          className="edit-button nutrient-specialist-button primary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setSelectedViewSuggestion(suggestion)}
+                          className="view-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          View
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
                 {totalPages > 0 && (
                   <div className="pagination-controls">
@@ -1738,11 +1768,9 @@ const NutrientSuggestion = () => {
         </div>
         <AnimatePresence>
           {selectedViewSuggestion && (
-            <SuggestionModal
+            <EnergySuggestionModal
               suggestion={selectedViewSuggestion}
               onClose={() => setSelectedViewSuggestion(null)}
-              nutrients={nutrients}
-              ageGroups={ageGroups}
             />
           )}
         </AnimatePresence>
@@ -1751,4 +1779,4 @@ const NutrientSuggestion = () => {
   );
 };
 
-export default NutrientSuggestion;
+export default EnergySuggestion;

@@ -725,7 +725,7 @@ export const updateAgeGroup = async (ageGroupData) => {
     if (!ageGroupData.ageGroupId || ageGroupData.ageGroupId === "") {
       throw new Error("AgeGroup Id is null or empty");
     }
-    const response = await apiClient.post(
+    const response = await apiClient.put(
       `/api/AgeGroup/update-age-group`,
       {
         ageGroupId: ageGroupData.ageGroupId,
@@ -1937,8 +1937,7 @@ export const updateEnergySuggestion = async (energySuggestionData, token) => {
     });
     throw error;
   }
-};
-// Nutrient Suggestion Management APIs
+};// Nutrient Suggestion Management APIs
 export const createNutrientSuggestion = async (nutrientSuggestionData, token) => {
   try {
     if (!nutrientSuggestionData.name || nutrientSuggestionData.name.trim() === "") {
@@ -1986,9 +1985,21 @@ export const addNutrientSuggestionAttribute = async (attributeData, token) => {
       throw new Error("Nutrient suggestion ID and nutrient ID are required");
     }
 
+    const isValidGuid = (guid) => {
+      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
+    };
+
+    if (!isValidGuid(attributeData.nutrientSuggestionId)) {
+      throw new Error("Nutrient suggestion ID must be a valid GUID");
+    }
+    if (!isValidGuid(attributeData.nutrientId)) {
+      throw new Error("Nutrient ID must be a valid GUID");
+    }
+
     const payload = {
-      nutrientSuggestionId: attributeData.nutrientSuggestionId, // Fixed typo
-      ageGroupId: attributeData.ageGroupId || null, // Fixed typo from ageGroudId
+      nutrientSuggetionId: attributeData.nutrientSuggestionId, // Changed to match backend's expected field name
+      ageGroudId: attributeData.ageGroudId || null, // Fixed typo to match backend: ageGroudId (missing 'p')
       trimester: attributeData.trimester || 0,
       maxEnergyPercentage: attributeData.maxEnergyPercentage || 0,
       minEnergyPercentage: attributeData.minEnergyPercentage || 0,
@@ -2029,7 +2040,6 @@ export const addNutrientSuggestionAttribute = async (attributeData, token) => {
     throw error;
   }
 };
-
 export const getAllNutrientSuggestions = async (token) => {
   try {
     const headers = {

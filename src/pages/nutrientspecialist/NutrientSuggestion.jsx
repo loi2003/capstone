@@ -10,7 +10,7 @@ import {
   getAllNutrients,
   addNutrientSuggestionAttribute,
   getAllAgeGroups,
-} from "../../apis/nutriet-api"; // Fixed typo from nutriet-api to nutrient-api
+} from "../../apis/nutriet-api"; // Fixed typo in import
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/NutrientSuggestion.css";
 
@@ -52,7 +52,17 @@ const Notification = ({ message, type }) => {
     </motion.div>
   );
 };
-const NutrientSuggestionModal = ({ suggestion, onClose, nutrients }) => {
+
+// NutrientSuggestionModal Component
+const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
+  // Ensure nutrientSuggestionAttributes is an array
+  const attributes = Array.isArray(suggestion?.nutrientSuggestionAttributes)
+    ? suggestion.nutrientSuggestionAttributes
+    : [];
+
+  // Log the suggestion data for debugging
+  console.log("NutrientSuggestionModal - suggestion data:", suggestion);
+
   return (
     <motion.div
       className="modal-overlay"
@@ -71,20 +81,37 @@ const NutrientSuggestionModal = ({ suggestion, onClose, nutrients }) => {
       >
         <h2>{suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}</h2>
         <h3>Attributes:</h3>
-        <ul>
-          {Array.isArray(suggestion.nutrientSuggestionAttributes) &&
-          suggestion.nutrientSuggestionAttributes.length > 0 ? (
-            suggestion.nutrientSuggestionAttributes.map((attr) => (
-              <li key={attr.nutrientId}>
-                {nutrients.find((n) => n.id === attr.nutrientId)?.name ||
-                  "Unknown Nutrient"}{" "}
-                ({attr.amount} {attr.unit})
-              </li>
-            ))
-          ) : (
-            <li>No attributes added</li>
-          )}
-        </ul>
+        {attributes.length > 0 ? (
+          <ul>
+            {attributes.map((attr, index) => {
+              const attribute = attr.attribute || {};
+              const ageGroup = ageGroups.find((g) => g.id === attr.ageGroudId);
+              return (
+                <li key={index}>
+                  <strong>Nutrient:</strong> {attribute.nutrientName || "Unknown Nutrient"}<br />
+                  <strong>ID:</strong> {attr.nutrientSuggestionAttributeId || "N/A"}<br />
+                  <strong>Nutrient ID:</strong> {attribute.nutrientId || "N/A"}<br />
+                  <strong>Age Group:</strong>{" "}
+                  {ageGroup
+                    ? ageGroup.name || `Age ${ageGroup.fromAge}-${ageGroup.toAge}`
+                    : "Unknown Age Group"} (ID: {attr.ageGroudId || "N/A"})<br />
+                  <strong>Trimester:</strong> {attr.trimester || "N/A"}<br />
+                  <strong>Type:</strong> {attribute.type || "N/A"}<br />
+                  <strong>Min Energy %:</strong> {attribute.minEnergyPercentage || "N/A"}<br />
+                  <strong>Max Energy %:</strong> {attribute.maxEnergyPercentage || "N/A"}<br />
+                  <strong>Min Value Per Day:</strong> {attribute.minValuePerDay || "N/A"}<br />
+                  <strong>Max Value Per Day:</strong> {attribute.maxValuePerDay || "N/A"}<br />
+                  <strong>Amount:</strong> {attribute.amount || "N/A"}<br />
+                  <strong>Unit:</strong> {attribute.unit || "N/A"}<br />
+                  <strong>Min Animal Protein % Require:</strong>{" "}
+                  {attribute.minAnimalProteinPercentageRequire || "N/A"}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p>No attributes added for this suggestion.</p>
+        )}
         <motion.button
           onClick={onClose}
           className="nutrient-specialist-button primary"
@@ -106,8 +133,8 @@ const NutrientAttributeModal = ({
   onSave,
 }) => {
   const [attributeData, setAttributeData] = useState({
-    nutrientSuggestionId: suggestionId,
-    ageGroupId: "",
+    nutrientSuggestionId: suggestionId || "", // Ensure suggestionId is set
+    ageGroudId: "", // Fixed to match backend typo: ageGroudId
     trimester: 0,
     maxEnergyPercentage: 0,
     minEnergyPercentage: 0,
@@ -124,12 +151,77 @@ const NutrientAttributeModal = ({
     setAttributeData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const isValidGuid = (guid) => {
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
+  };
+
+  const validateAttributeData = () => {
+    if (!isValidGuid(attributeData.nutrientSuggestionId)) {
+      return "NutrientSuggestionId is required and must be a valid GUID";
+    }
+
+    if (
+      attributeData.minValuePerDay !== 0 &&
+      attributeData.maxValuePerDay !== 0 &&
+      attributeData.minValuePerDay > attributeData.maxValuePerDay
+    ) {
+      return "MinValuePerDay cannot be greater than MaxValuePerDay";
+    }
+
+    if (
+      attributeData.minAnimalProteinPercentageRequire !== 0 &&
+      (attributeData.minAnimalProteinPercentageRequire < 0 ||
+        attributeData.minAnimalProteinPercentageRequire > 100)
+    ) {
+      return "MinAnimalProteinPercentageRequire must be between 0 and 100";
+    }
+
+    if (!attributeData.unit || attributeData.unit.trim() === "") {
+      return "Unit is required";
+    }
+
+    if (attributeData.amount < 0) {
+      return "Amount must be non-negative";
+    }
+
+    if (!isValidGuid(attributeData.nutrientId)) {
+      return "NutrientId is required and must be a valid GUID";
+    }
+
+    if (attributeData.type < 0) {
+      return "Type must be non-negative";
+    }
+
+    if (attributeData.trimester < 0 || attributeData.trimester > 3) {
+      return "Trimester must be between 0 and 3";
+    }
+
+    return null;
+  };
+
   const handleSubmit = async () => {
+    if (!isValidGuid(attributeData.nutrientId)) {
+      alert("Please select a nutrient");
+      return;
+    }
+    if (!isValidGuid(attributeData.ageGroudId)) {
+      alert("Please select an age group");
+      return;
+    }
+
+    const validationError = validateAttributeData();
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
     try {
       await onSave(attributeData);
       onClose();
     } catch (error) {
       console.error("Error saving attribute:", error);
+      alert("Failed to save attribute: " + (error.response?.data?.message || error.message));
     }
   };
 
@@ -159,28 +251,46 @@ const NutrientAttributeModal = ({
             className="input-field"
           >
             <option value="">Select Nutrient</option>
-            {nutrients.map((nutrient) => (
-              <option key={nutrient.id} value={nutrient.id}>
-                {nutrient.name}
+            {nutrients.length > 0 ? (
+              nutrients.map((nutrient) => (
+                <option key={nutrient.id} value={nutrient.id}>
+                  {nutrient.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No nutrients available
               </option>
-            ))}
+            )}
           </select>
+          {nutrients.length === 0 && (
+            <p className="error-text">No nutrients loaded. Please try again later.</p>
+          )}
         </div>
         <div className="form-group">
-          <label htmlFor="ageGroupId">Age Group</label>
+          <label htmlFor="ageGroudId">Age Group</label> {/* Updated label to match typo for clarity */}
           <select
-            id="ageGroupId"
-            value={attributeData.ageGroupId}
-            onChange={(e) => handleInputChange("ageGroupId", e.target.value)}
+            id="ageGroudId"
+            value={attributeData.ageGroudId}
+            onChange={(e) => handleInputChange("ageGroudId", e.target.value)}
             className="input-field"
           >
             <option value="">Select Age Group</option>
-            {ageGroups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
+            {ageGroups.length > 0 ? (
+              ageGroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name || `Age ${group.fromAge}-${group.toAge}`}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No age groups available
               </option>
-            ))}
+            )}
           </select>
+          {ageGroups.length === 0 && (
+            <p className="error-text">No age groups loaded. Please try again later.</p>
+          )}
         </div>
         <div className="form-group">
           <label htmlFor="trimester">Trimester</label>
@@ -193,6 +303,7 @@ const NutrientAttributeModal = ({
             }
             className="input-field"
             min="0"
+            max="3"
           />
         </div>
         <div className="form-group">
@@ -294,6 +405,7 @@ const NutrientAttributeModal = ({
             }
             className="input-field"
             min="0"
+            max="100"
             step="0.1"
           />
         </div>
@@ -316,6 +428,7 @@ const NutrientAttributeModal = ({
             className="nutrient-specialist-button primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            disabled={!isValidGuid(attributeData.nutrientId) || !isValidGuid(attributeData.ageGroudId)}
           >
             Save Attribute
           </motion.button>
@@ -349,9 +462,34 @@ const NutrientSuggestion = () => {
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false); // Added state for food dropdown
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false); // Added state for nutrient dropdown
   const itemsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  // Added toggle functions for dropdowns
+  const toggleFoodDropdown = () => {
+    setIsFoodDropdownOpen((prev) => !prev);
+  };
+
+  const toggleNutrientDropdown = () => {
+    setIsNutrientDropdownOpen((prev) => !prev);
+  };
+
+  // Define dropdown variants
+  const dropdownVariants = {
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
 
   const handleHomepageNavigation = () => {
     setIsSidebarOpen(true);
@@ -394,18 +532,63 @@ const NutrientSuggestion = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
+  const extractData = (response) => {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.data?.data)) return response.data.data;
+    console.warn("Unexpected response structure:", response);
+    return [];
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [suggestionsResponse, nutrientsData, ageGroupsData] = await Promise.all([
+      const [suggestionsResponse, nutrientsResponse, ageGroupsResponse] = await Promise.all([
         getAllNutrientSuggestions(token),
-        getAllNutrients(token),
-        getAllAgeGroups(token),
+        getAllNutrients(),
+        getAllAgeGroups(),
       ]);
-      const suggestionsData = suggestionsResponse?.data || [];
-      setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : []);
-      setNutrients(Array.isArray(nutrientsData) ? nutrientsData : []);
-      setAgeGroups(Array.isArray(ageGroupsData) ? ageGroupsData : []);
+
+      console.log("Suggestions Response:", suggestionsResponse);
+      console.log("Nutrients Response:", nutrientsResponse);
+      console.log("Age Groups Response:", ageGroupsResponse);
+
+      // Handle suggestions
+      const suggestionsData = extractData(suggestionsResponse);
+      if (!Array.isArray(suggestionsData)) {
+        console.warn("Suggestions data is not an array:", suggestionsData);
+        setSuggestions([]);
+      } else {
+        setSuggestions(suggestionsData);
+      }
+
+      // Handle nutrients
+      const nutrientsData = extractData(nutrientsResponse);
+      if (!Array.isArray(nutrientsData)) {
+        console.warn("Nutrients data is not an array:", nutrientsData);
+        showNotification("Failed to load nutrients: Invalid data format", "error");
+        setNutrients([]);
+      } else {
+        const validNutrients = nutrientsData.filter(nutrient => nutrient.id && nutrient.name);
+        console.log("Valid Nutrients:", validNutrients);
+        setNutrients(validNutrients);
+      }
+
+      // Handle age groups
+      const ageGroupsData = extractData(ageGroupsResponse);
+      if (!Array.isArray(ageGroupsData)) {
+        console.warn("Age groups data is not an array:", ageGroupsData);
+        showNotification("Failed to load age groups: Invalid data format", "error");
+        setAgeGroups([]);
+      } else if (ageGroupsData.length === 0) {
+        console.warn("No age groups returned from API");
+        showNotification("No age groups available", "warning");
+        setAgeGroups([]);
+      } else {
+        const validAgeGroups = ageGroupsData.filter(group => group.id && (group.name || (group.fromAge !== undefined && group.toAge !== undefined)));
+        console.log("Valid Age Groups:", validAgeGroups);
+        setAgeGroups(validAgeGroups);
+      }
     } catch (err) {
       console.error("Fetch error details:", {
         message: err.message,
@@ -420,7 +603,6 @@ const NutrientSuggestion = () => {
       setLoading(false);
     }
   };
-
   const fetchSuggestionById = async (id) => {
     setLoading(true);
     try {
@@ -437,6 +619,35 @@ const NutrientSuggestion = () => {
       setLoading(false);
     }
   };
+
+  const fetchSuggestionByIdForView = async (id) => {
+  setLoading(true);
+  try {
+    const response = await getNutrientSuggestionById(id, token);
+    // Extract data safely
+    const data = response?.data?.data || response?.data || response;
+    console.log("fetchSuggestionByIdForView - response data:", data);
+
+    // Ensure nutrientSuggestionAttributes is an array
+    if (!Array.isArray(data.nutrientSuggestionAttributes)) {
+      console.warn("nutrientSuggestionAttributes is not an array, setting to empty array:", data.nutrientSuggestionAttributes);
+      data.nutrientSuggestionAttributes = [];
+    }
+
+    setSelectedViewSuggestion(data);
+    return data;
+  } catch (err) {
+    console.error("fetchSuggestionByIdForView error:", {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+    });
+    showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
+    return null;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const createSuggestionHandler = async () => {
     if (!newSuggestion.name || newSuggestion.name.trim() === "") {
@@ -916,7 +1127,7 @@ const NutrientSuggestion = () => {
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      />
+                    />
                   </svg>
                   {isSidebarOpen && <span>Nutrient</span>}
                   {isSidebarOpen && (
@@ -1525,7 +1736,7 @@ const NutrientSuggestion = () => {
           )}
         </motion.nav>
       </motion.aside>
-     <motion.main
+      <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
         }`}
@@ -1677,7 +1888,7 @@ const NutrientSuggestion = () => {
                           Edit
                         </motion.button>
                         <motion.button
-                          onClick={() => setSelectedViewSuggestion(suggestion)}
+                          onClick={() => fetchSuggestionByIdForView(suggestion.id)}
                           className="view-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1736,7 +1947,7 @@ const NutrientSuggestion = () => {
             <NutrientSuggestionModal
               suggestion={selectedViewSuggestion}
               onClose={() => setSelectedViewSuggestion(null)}
-              nutrients={nutrients}
+              ageGroups={ageGroups}
             />
           )}
           {selectedAttributeSuggestion && (
