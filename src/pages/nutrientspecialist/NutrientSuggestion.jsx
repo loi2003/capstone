@@ -159,11 +159,17 @@ const NutrientAttributeModal = ({
             className="input-field"
           >
             <option value="">Select Nutrient</option>
-            {nutrients.map((nutrient) => (
-              <option key={nutrient.id} value={nutrient.id}>
-                {nutrient.name}
+            {nutrients.length > 0 ? (
+              nutrients.map((nutrient) => (
+                <option key={nutrient.id} value={nutrient.id}>
+                  {nutrient.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No nutrients available
               </option>
-            ))}
+            )}
           </select>
         </div>
         <div className="form-group">
@@ -175,12 +181,21 @@ const NutrientAttributeModal = ({
             className="input-field"
           >
             <option value="">Select Age Group</option>
-            {ageGroups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name}
+            {ageGroups.length > 0 ? (
+              ageGroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name || `Age Group ${group.fromAge}-${group.toAge}`}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No age groups available
               </option>
-            ))}
+            )}
           </select>
+          {ageGroups.length === 0 && (
+            <p className="error-text">No age groups loaded. Please try again later.</p>
+          )}
         </div>
         <div className="form-group">
           <label htmlFor="trimester">Trimester</label>
@@ -316,6 +331,7 @@ const NutrientAttributeModal = ({
             className="nutrient-specialist-button primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            disabled={!attributeData.nutrientId || !attributeData.ageGroupId}
           >
             Save Attribute
           </motion.button>
@@ -394,33 +410,55 @@ const NutrientSuggestion = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [suggestionsResponse, nutrientsData, ageGroupsData] = await Promise.all([
-        getAllNutrientSuggestions(token),
-        getAllNutrients(token),
-        getAllAgeGroups(token),
-      ]);
-      const suggestionsData = suggestionsResponse?.data || [];
-      setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : []);
-      setNutrients(Array.isArray(nutrientsData) ? nutrientsData : []);
-      setAgeGroups(Array.isArray(ageGroupsData) ? ageGroupsData : []);
-    } catch (err) {
-      console.error("Fetch error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
-      setSuggestions([]);
-      setNutrients([]);
-      setAgeGroups([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchData = async () => {
+  setLoading(true);
+  try {
+    const [suggestionsResponse, nutrientsResponse, ageGroupsResponse] = await Promise.all([
+      getAllNutrientSuggestions(token),
+      getAllNutrients(token),
+      getAllAgeGroups(token),
+    ]);
 
+    // Log raw responses for debugging
+    console.log("Suggestions Response:", suggestionsResponse);
+    console.log("Nutrients Response:", nutrientsResponse);
+    console.log("Age Groups Response:", ageGroupsResponse);
+
+    // Extract data, handling cases where response.data.data is nested
+    const suggestionsData = suggestionsResponse?.data?.data || suggestionsResponse?.data || [];
+    const nutrientsData = nutrientsResponse?.data?.data || nutrientsResponse?.data || [];
+    const ageGroupsData = ageGroupsResponse?.data?.data || ageGroupsResponse?.data || [];
+
+    // Validate ageGroupsData structure
+    if (!Array.isArray(ageGroupsData)) {
+      console.warn("Age groups data is not an array:", ageGroupsData);
+      showNotification("Failed to load age groups: Invalid data format", "error");
+    } else if (ageGroupsData.length === 0) {
+      console.warn("No age groups returned from API");
+      showNotification("No age groups available", "warning");
+    } else {
+      // Ensure each age group has id and name
+      const validAgeGroups = ageGroupsData.filter(group => group.id && group.name);
+      console.log("Valid Age Groups:", validAgeGroups);
+      setAgeGroups(validAgeGroups);
+    }
+
+    setSuggestions(Array.isArray(suggestionsData) ? suggestionsData : []);
+    setNutrients(Array.isArray(nutrientsData) ? nutrientsData : []);
+  } catch (err) {
+    console.error("Fetch error details:", {
+      message: err.message,
+      response: err.response?.data,
+      status: err.response?.status,
+    });
+    showNotification(`Failed to fetch data: ${err.message}`, "error");
+    setSuggestions([]);
+    setNutrients([]);
+    setAgeGroups([]);
+  } finally {
+    setLoading(false);
+  }
+};
   const fetchSuggestionById = async (id) => {
     setLoading(true);
     try {

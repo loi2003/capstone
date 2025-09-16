@@ -725,7 +725,7 @@ export const updateAgeGroup = async (ageGroupData) => {
     if (!ageGroupData.ageGroupId || ageGroupData.ageGroupId === "") {
       throw new Error("AgeGroup Id is null or empty");
     }
-    const response = await apiClient.post(
+    const response = await apiClient.put(
       `/api/AgeGroup/update-age-group`,
       {
         ageGroupId: ageGroupData.ageGroupId,
