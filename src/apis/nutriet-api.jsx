@@ -725,7 +725,7 @@ export const updateAgeGroup = async (ageGroupData) => {
     if (!ageGroupData.ageGroupId || ageGroupData.ageGroupId === "") {
       throw new Error("AgeGroup Id is null or empty");
     }
-    const response = await apiClient.post(
+    const response = await apiClient.put(
       `/api/AgeGroup/update-age-group`,
       {
         ageGroupId: ageGroupData.ageGroupId,
@@ -900,9 +900,7 @@ export const updateDish = async (dishData) => {
     if (!dishData.dishName || dishData.dishName.trim() === "") {
       throw new Error("Dish name is required");
     }
-    if (dishData.foodList.length === 0) {
-      throw new Error("At least one food item is required");
-    }
+  
     if (dishData.foodList.some((food) => !food.unit || food.amount <= 0)) {
       throw new Error(
         "All food items must have a valid unit and amount greater than 0"
@@ -1936,6 +1934,246 @@ export const updateEnergySuggestion = async (energySuggestionData, token) => {
       response: error.response?.data,
       status: error.response?.status,
       config: error.config,
+    });
+    throw error;
+  }
+};// Nutrient Suggestion Management APIs
+export const createNutrientSuggestion = async (nutrientSuggestionData, token) => {
+  try {
+    if (!nutrientSuggestionData.name || nutrientSuggestionData.name.trim() === "") {
+      throw new Error("Nutrient suggestion name is required");
+    }
+
+    const payload = {
+      nutrientSuggetionName: nutrientSuggestionData.name,
+      // Note: The Swagger API doesn't include description or nutrientList in the create payload
+      // These will be handled by adding attributes after creation
+    };
+
+    console.log("Sending create nutrient suggestion request with payload:", payload);
+
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.post(
+      `/api/NutrientSuggestion/Create`,
+      payload,
+      { headers }
+    );
+
+    console.log("Create nutrient suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating nutrient suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const addNutrientSuggestionAttribute = async (attributeData, token) => {
+  try {
+    if (!attributeData.nutrientSuggestionId || !attributeData.nutrientId) {
+      throw new Error("Nutrient suggestion ID and nutrient ID are required");
+    }
+
+    const isValidGuid = (guid) => {
+      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
+    };
+
+    if (!isValidGuid(attributeData.nutrientSuggestionId)) {
+      throw new Error("Nutrient suggestion ID must be a valid GUID");
+    }
+    if (!isValidGuid(attributeData.nutrientId)) {
+      throw new Error("Nutrient ID must be a valid GUID");
+    }
+
+    const payload = {
+      nutrientSuggetionId: attributeData.nutrientSuggestionId, // Changed to match backend's expected field name
+      ageGroudId: attributeData.ageGroudId || null, // Fixed typo to match backend: ageGroudId (missing 'p')
+      trimester: attributeData.trimester || 0,
+      maxEnergyPercentage: attributeData.maxEnergyPercentage || 0,
+      minEnergyPercentage: attributeData.minEnergyPercentage || 0,
+      maxValuePerDay: attributeData.maxValuePerDay || 0,
+      minValuePerDay: attributeData.minValuePerDay || 0,
+      unit: attributeData.unit || "milligrams",
+      amount: attributeData.amount || 0,
+      minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire || 0,
+      nutrientId: attributeData.nutrientId,
+      type: attributeData.type || 0,
+    };
+
+    console.log("Sending add nutrient suggestion attribute request with payload:", payload);
+
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.put(
+      `/api/NutrientSuggestion/AddAttribute`,
+      payload,
+      { headers }
+    );
+
+    console.log("Add nutrient suggestion attribute response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding nutrient suggestion attribute:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+export const getAllNutrientSuggestions = async (token) => {
+  try {
+    const headers = {
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.get(`/api/NutrientSuggestion/view-all-nutrient-suggestions`, {
+      headers,
+    });
+
+    console.log("Get all nutrient suggestions response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all nutrient suggestions:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const getNutrientSuggestionById = async (id, token) => {
+  try {
+    if (!id || id === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+
+    console.log("Fetching nutrient suggestion with ID:", id);
+
+    const headers = {
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.get(`/api/NutrientSuggestion/view-nutrient-suggestion-by-id`, {
+      params: { Id: id },
+      headers,
+    });
+
+    console.log("Get nutrient suggestion by ID response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching nutrient suggestion by ID:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const updateNutrientSuggestion = async (nutrientSuggestionData, token) => {
+  try {
+    if (!nutrientSuggestionData.id || nutrientSuggestionData.id === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+    if (!nutrientSuggestionData.nutrientSuggetionName || nutrientSuggestionData.nutrientSuggetionName.trim() === "") {
+      throw new Error("Nutrient suggestion name is required");
+    }
+
+    const payload = {
+      id: nutrientSuggestionData.id,
+      nutrientSuggetionName: nutrientSuggestionData.nutrientSuggetionName,
+    };
+
+    console.log("Sending update nutrient suggestion request with payload:", payload);
+
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.put(
+      `/api/NutrientSuggestion/Update`,
+      payload,
+      { headers }
+    );
+
+    console.log("Update nutrient suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating nutrient suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
+};
+
+export const deleteNutrientSuggestion = async (id, token) => {
+  try {
+    if (!id || id === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+
+    console.log("Sending delete nutrient suggestion request for ID:", id);
+
+    const headers = {
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.delete(
+      `/api/NutrientSuggestion/delete-nutrient-suggestion-by-id`,
+      {
+        params: { id },
+        headers,
+      }
+    );
+
+    console.log("Delete nutrient suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting nutrient suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
     });
     throw error;
   }

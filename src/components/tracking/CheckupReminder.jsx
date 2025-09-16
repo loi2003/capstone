@@ -22,6 +22,13 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
     const lmpDateStr = localStorage.getItem("lmpDate");
     const lmpDate = lmpDateStr ? new Date(lmpDateStr) : new Date();
 
+    if (lmpDateStr) {
+      const currentWeek = getCurrentPregnancyWeek(lmpDate);
+      const currentTrimester = getCurrentTrimester(currentWeek);
+      setSelectedTrimester(currentTrimester);
+    }
+
+
     const fetchRecommendedReminders = async () => {
       try {
         const growthDataId = localStorage.getItem("growthDataId");
@@ -74,7 +81,7 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
           : [];
 
         const mappedEmergency = remindersArray
-          .filter((r) => r.type === "Emergency" && r.isActive === 1)
+          .filter((r) => r.type === "Emergency" && r.isActive)
           .map((r) => {
             const startDate = getDateFromWeek(lmpDate, r.recommendedStartWeek);
             const endDate = getDateFromWeek(lmpDate, r.recommendedEndWeek);
@@ -171,9 +178,9 @@ const CheckupReminder = ({ token, userId, appointments = [] }) => {
             onChange={(e) => setSelectedTrimester(e.target.value)}
           >
             <option value="all">All Trimesters</option>
-            <option value="first">First Trimester</option>
-            <option value="second">Second Trimester</option>
-            <option value="third">Third Trimester</option>
+            <option value="first">First Trimester (Weeks 1-13)</option>
+            <option value="second">Second Trimester (Weeks 14-27)</option>
+            <option value="third">Third Trimester (Weeks 28-40)</option>
           </select>
         </div>
 

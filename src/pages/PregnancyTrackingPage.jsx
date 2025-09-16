@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import Header from "../components/header/Header";
@@ -34,6 +34,8 @@ import { FaHandHoldingHeart } from "react-icons/fa";
 import { FaCaretDown } from "react-icons/fa";
 import "../styles/PregnancyTrackingPage.css";
 import FoodWarning from "../components/form/FoodWarning";
+import LoadingOverlay from "../components/popup/LoadingOverlay";
+import { NotificationContext } from "../contexts/NotificationContext";
 
 const PregnancyTrackingPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -284,6 +286,67 @@ const PregnancyTrackingPage = () => {
       setIsLoading(false);
     }
   };
+  const { notifications } = useContext(NotificationContext);
+
+  useEffect(() => {
+    if (!pregnancyData?.id) return;
+
+    const lastMsg = notifications[notifications.length - 1];
+    if (!lastMsg) return;
+
+    console.log("=== New Notification Received ===");
+    console.log("Notification type:", lastMsg.type);
+    // console.log("Full notification object:", lastMsg);
+    // console.log("Payload exists:", !!lastMsg.payload);
+    // console.log("Payload content:", lastMsg.payload);
+    // console.log(
+    //   "Payload stringified:",
+    //   JSON.stringify(lastMsg.payload, null, 2)
+    // );
+    console.log("================================");
+
+    // Handle BBM updates
+    if (lastMsg.type === "BBM") {
+      console.log("Processing BBM update:");
+      console.log("BBM Payload details:", {
+        // growthDataId: lastMsg.payload?.growthDataId,
+        // userId: lastMsg.payload?.userId,
+        metrics: lastMsg.payload?.metrics || lastMsg.payload,
+      });
+
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      getCurrentWeekGrowthData(userId, currentDate, token)
+        .then(({ data }) => {
+          if (data?.error === 0 && data?.data) {
+            setPregnancyData(data.data); // refresh metrics
+          }
+        })
+        .catch((err) => console.error("Failed to refresh BBM:", err));
+    }
+
+    // Handle Journal delete
+    if (lastMsg.type === "BBM") {
+      console.log("Processing Journal delete:", lastMsg.payload);
+
+      // refresh BBM as well
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      const currentDate = new Date().toISOString().split("T")[0];
+
+      getCurrentWeekGrowthData(userId, currentDate, token)
+        .then(({ data }) => {
+          if (data?.error === 0 && data?.data) {
+            setPregnancyData(data.data);
+          }
+        })
+        .catch((err) =>
+          console.error("Failed to refresh BBM after journal delete:", err)
+        );
+    }
+  }, [notifications, pregnancyData?.id]);
 
   const handleCreateProfile = async (formData) => {
     setIsCreating(true);
@@ -380,10 +443,11 @@ const PregnancyTrackingPage = () => {
       <div className="pregnancy-tracking-page">
         <Header />
         <main className="main-content">
-          <div className="loading-container">
+          {/* <div className="loading-container">
             <div className="loading-spinner large"></div>
             <p>Loading your pregnancy data...</p>
-          </div>
+          </div> */}
+          <LoadingOverlay show={isLoading} />
         </main>
         <Footer />
       </div>

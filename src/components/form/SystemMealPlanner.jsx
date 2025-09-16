@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./SystemMealPlanner.css";
 import { FaSyncAlt, FaInfoCircle, FaUtensils } from "react-icons/fa";
 import { viewMenuSuggestionByTrimester } from "../../apis/meal-api";
+import LoadingOverlay from "../popup/LoadingOverlay";
 
 const SystemMealPlanner = () => {
   const dayNames = [
@@ -19,6 +20,7 @@ const SystemMealPlanner = () => {
   const [allergies, setAllergies] = useState("");
   const [diseases, setDiseases] = useState("");
   const [preferredFoods, setPreferredFoods] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState("day");
   const [generatedPlan, setGeneratedPlan] = useState(null);
@@ -143,17 +145,17 @@ const SystemMealPlanner = () => {
   };
 
   const handleGenerate = async () => {
-    try {
-      setError("");
-      setGeneratedPlan(null);
+    setError("");
+    setGeneratedPlan(null);
+    setLoading(true);
 
+    try {
       const weekNumber = parseInt(week.replace("Week ", ""), 10);
       const res = await viewMenuSuggestionByTrimester({ stage: weekNumber });
       const data = res?.data;
 
       if (!data?.days) {
-        setError("No data returned for this week.");
-        return;
+        throw new Error("No data returned for this week.");
       }
 
       // Reorder days so Monday is first
@@ -164,14 +166,13 @@ const SystemMealPlanner = () => {
         const dayData = orderedDays[dayIndex];
 
         if (!dayData) {
-          setError("No meal plan available for selected day.");
-          return;
+          throw new Error("No meal plan available for selected day.");
         }
 
         const transformedDay = dayData.meals.map((meal) => ({
           type: meal.mealType,
           dishes: meal.dishes
-            .sort((a, b) => b.calories - a.calories) // sort dishes descending
+            .sort((a, b) => b.calories - a.calories)
             .map((dish) => ({
               name: dish.dishName,
               image:
@@ -188,7 +189,7 @@ const SystemMealPlanner = () => {
           meals: day.meals.map((meal) => ({
             type: meal.mealType,
             dishes: meal.dishes
-              .sort((a, b) => b.calories - a.calories) // sort dishes descending
+              .sort((a, b) => b.calories - a.calories)
               .map((dish) => ({
                 name: dish.dishName,
                 image:
@@ -203,7 +204,12 @@ const SystemMealPlanner = () => {
       }
     } catch (err) {
       console.error(err);
-      setError("Failed to fetch meal suggestions. Please try again.");
+      setError(
+        err.message || "Failed to fetch meal suggestions. Please try again."
+      );
+    } finally {
+      setLoading(false);
+      console.log("Stopping loading")
     }
   };
 
@@ -246,13 +252,14 @@ const SystemMealPlanner = () => {
 
   return (
     <div className="mealplanner-page-wrapper">
+      <LoadingOverlay show={loading} />
       <div className="mealplanner-heading">
         <h1>System Meal Planner</h1>
         <p>Enter your details and choose to generate by day or by week.</p>
       </div>
 
       <div className="mealplanner-form">
-        <label>Gestational Week  (Stage)</label>
+        <label>Gestational Week (Stage)</label>
         <select
           value={week}
           onChange={(e) => setWeek(e.target.value)}

@@ -110,7 +110,7 @@ const MealManagement = () => {
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);

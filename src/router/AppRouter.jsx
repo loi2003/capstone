@@ -60,7 +60,8 @@ import FoodWarning from "../components/form/FoodWarning";
 import DiseaseManagement from "../pages/nutrientspecialist/DiseaseManagement";
 import MealManagement from "../pages/nutrientspecialist/MealManagement";
 import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
-import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion"; // Added import
+import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
+import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -103,7 +104,8 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/meal-management" element={<MealManagement />} />
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/nutrient-specialist/warning-management" element={<WarningManagement />} />
-        <Route path="/nutrient-specialist/energy-suggestion" element={<EnergySuggestion />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/energy-suggestion" element={<EnergySuggestion />} />
+        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> {/* Added route */}
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
@@ -123,7 +125,6 @@ const AppRoutes = () => {
           path="/pregnancy-tracking/journal-section/edit-journal-form"
           element={<EditJournalEntryForm />}
         />
-
         <Route path="/pregnancy-tracking/system-meal-planner" element={<SystemMealPlanner />} />
         <Route path="/pregnancy-tracking/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
         <Route path="/pregnancy-tracking/nutritional-guidance-foodwarning" element={<FoodWarning />} />

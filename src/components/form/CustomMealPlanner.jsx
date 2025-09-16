@@ -6,6 +6,7 @@ import { getCurrentUser } from "../../apis/authentication-api";
 import { viewAllDiseases } from "../../apis/disease-api";
 import { viewAllAllergies } from "../../apis/allergy-api";
 import { viewAllDishes } from "../../apis/dish-api";
+import LoadingOverlay from "../popup/LoadingOverlay";
 
 const CustomMealPlanner = () => {
   const token = localStorage.getItem("token");
@@ -26,6 +27,7 @@ const CustomMealPlanner = () => {
   const [selectedPreferredFoodId, setSelectedPreferredFoodId] = useState(null);
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   // Dropdown control
   const [showAllergyList, setShowAllergyList] = useState(false);
@@ -146,6 +148,7 @@ const CustomMealPlanner = () => {
     //   return;
     // }
     setError("");
+    setLoading(true);
 
     const payload = {
       stage,
@@ -181,11 +184,16 @@ const CustomMealPlanner = () => {
     } catch (err) {
       console.error("Error generating menus", err);
       setError("Failed to generate menus.");
+    } finally {
+      setLoading(false);
+      console.log("Stopping loading");
     }
   };
 
   const handleGenerateMore = async () => {
     if (generatedMenus.length >= 4) return; // max 4 menus
+
+    setLoading(true);
 
     try {
       const response = await viewMealsSuggestion({
@@ -213,6 +221,9 @@ const CustomMealPlanner = () => {
     } catch (err) {
       console.error("Error fetching more menus:", err);
       setError("Could not fetch more menus.");
+    } finally {
+      setLoading(false);
+      console.log("Stopping loading");
     }
   };
 
@@ -235,6 +246,7 @@ const CustomMealPlanner = () => {
 
   return (
     <div className="custommealplanner-page-wrapper">
+      <LoadingOverlay show={loading} />
       <div className="custommealplanner-heading">
         <h1>Custom Meal Planner</h1>
         <p>Create and manage your own custom meal plans here.</p>

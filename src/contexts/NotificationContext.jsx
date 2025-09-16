@@ -1,3 +1,4 @@
+// NotificationContext.jsx
 import React, {
   createContext,
   useEffect,
@@ -13,14 +14,30 @@ export const NotificationContext = createContext();
 
 export const NotificationProvider = ({ children }) => {
   const connectionRef = useRef(null);
-  const [notifications, setNotifications] = useState([]);
+  const [notifications, setNotifications] = useState([]); // SignalR messages
+  const [toasts, setToasts] = useState([]); // Local toast notifications
 
   const addNotification = useCallback((msg) => {
     setNotifications((prev) => {
-      // optional: prevent duplicates if server sends same message twice
-      if (prev.some((n) => n.id && n.id === msg.id)) return prev;
+      const exists = prev.some(
+        (n) =>
+          n.type === msg.type &&
+          JSON.stringify(n.payload) === JSON.stringify(msg.payload)
+      );
+      if (exists) return prev;
       return [...prev, msg];
     });
+  }, []);
+
+  const showNotification = useCallback((message, type = "info") => {
+    const id = Date.now();
+    const newToast = { id, message, type };
+    setToasts((prev) => [...prev, newToast]);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((toast) => toast.id !== id));
+    }, 3000);
   }, []);
 
   useEffect(() => {
@@ -31,17 +48,25 @@ export const NotificationProvider = ({ children }) => {
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${baseUrl}/hub/notificationHub?userId=${userId}`, {
         withCredentials: true,
-        transport:
-          signalR.HttpTransportType.WebSockets |
-          signalR.HttpTransportType.ServerSentEvents |
-          signalR.HttpTransportType.LongPolling,
       })
       .withAutomaticReconnect()
       .build();
 
-    connection.on("ReceiveNotification", (msg) => {
-      console.log("Notification received:", msg);
-      addNotification(msg);
+    connection.on("ReceivedNotification", (msg) => {
+      const type = msg.type;
+      const payload = msg.payload;
+
+      console.log("=== SignalR Notification Received ===");
+      // console.log("Full message object:", msg);
+      // console.log("Message type:", type);
+      // console.log("Message payload:", payload);
+      // console.log(
+      //   "Message stringified:",
+      //   JSON.stringify({ type, payload }, null, 2)
+      // );
+      // console.log("=====================================");
+
+      addNotification({ type, payload, id: Date.now() });
     });
 
     connection
@@ -56,7 +81,6 @@ export const NotificationProvider = ({ children }) => {
     return () => {
       connection
         .stop()
-        .then(() => console.log("SignalR disconnected"))
         .catch((err) => console.error("Error stopping SignalR:", err));
     };
   }, [addNotification]);
@@ -65,8 +89,10 @@ export const NotificationProvider = ({ children }) => {
     () => ({
       connection: connectionRef.current,
       notifications,
+      toasts,
+      showNotification,
     }),
-    [notifications]
+    [notifications, toasts, showNotification]
   );
 
   return (

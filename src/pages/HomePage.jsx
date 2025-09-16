@@ -45,7 +45,7 @@ const HomePage = () => {
   const chartData = {
     datasets: [
       {
-        label: 'Tiến độ thai kỳ',
+        label: 'Progress',
         data: pregnancyData
           .slice(trimesters[currentTrimester].start, trimesters[currentTrimester].end + 1)
           .map((data, index) => ({
@@ -98,7 +98,7 @@ const HomePage = () => {
         grid: { display: false },
         title: {
           display: true,
-          text: `Tuần Thai Kỳ (Tam Cá Nguyệt ${currentTrimester + 1})`,
+          text: `Gestational Week (Trimester ${currentTrimester + 1})`,
           font: { size: 16, weight: 'bold' },
           color: '#333',
         },
@@ -230,7 +230,7 @@ const HomePage = () => {
         </section>
         {/* Features Section */}
         <section className="features-section">
-          <h2 className="section-title">Our Service</h2>
+          <h2 className="home-section-title">Our Service</h2>
           <div className="features-grid">
             {homepageData.features.map((feature, index) => (
               <motion.div
@@ -250,7 +250,7 @@ const HomePage = () => {
         </section>
         {/* Testimonials Section */}
         <section className="testimonials-section">
-          <h2 className="section-title">What Our Community Says</h2>
+          <h2 className="home-section-title">What Our Community Says</h2>
           <div className="testimonials-grid">
             {homepageData.testimonials.map((testimonial, index) => (
               <motion.div
@@ -280,7 +280,7 @@ const HomePage = () => {
             transition={{ duration: 0.7 }}
             className="community-content"
           >
-            <h2 className="section-title">{homepageData.community.title}</h2>
+            <h2 className="home-section-title">{homepageData.community.title}</h2>
             <p className="community-description">{homepageData.community.description}</p>
             <p className="community-highlight">{homepageData.community.highlight}</p>
             <Link to={homepageData.community.ctaLink} className="community-button">
@@ -290,7 +290,7 @@ const HomePage = () => {
         </section>
         {/* Pregnancy Tracker Section */}
         <section className="pregnancy-tracker-section">
-          <h2 className="section-title">{homepageData.pregnancyTracker.title}</h2>
+          <h2 className="home-section-title">{homepageData.pregnancyTracker.title}</h2>
           <p className="section-description">{homepageData.pregnancyTracker.description}</p>
           <div className="tracker-chart-container">
             <motion.button
@@ -339,12 +339,12 @@ const HomePage = () => {
               <h3 className="week-popup-title">{selectedWeek.week}</h3>
               <h4 className="week-popup-subtitle">{selectedWeek.title}</h4>
               <p className="week-popup-description">{selectedWeek.description}</p>
-              <p className="week-popup-tip"><strong>Mẹo:</strong> {selectedWeek.tip}</p>
+              <p className="week-popup-tip"><strong>Tip:</strong> {selectedWeek.tip}</p>
               <Link to="/pregnancy-tracking" className="week-popup-button">
-                Để biết thêm thông tin chi tiết, vui lòng chọn tại đây
+                For more Information, Click Here!
               </Link>
               <button className="week-popup-close" onClick={() => setSelectedWeek(null)}>
-                Đóng
+                Close
               </button>
             </motion.div>
           )}
@@ -354,7 +354,7 @@ const HomePage = () => {
         </section>
         {/* Health Tips Section */}
         <section className="health-tips-section">
-          <h2 className="section-title">{homepageData.healthTips.title}</h2>
+          <h2 className="home-section-title">{homepageData.healthTips.title}</h2>
           <p className="section-description">{homepageData.healthTips.description}</p>
           <div className="tips-grid">
             {homepageData.healthTips.items.map((item, index) => (
@@ -381,7 +381,7 @@ const HomePage = () => {
         </section>
         {/* Pregnancy Guides Section */}
         <section className="resources-section">
-          <h2 className="section-title">{homepageData.pregnancyGuides.title}</h2>
+          <h2 className="home-section-title">{homepageData.pregnancyGuides.title}</h2>
           <p className="section-description">{homepageData.pregnancyGuides.description}</p>
           <div className="resources-grid">
             {homepageData.pregnancyGuides.items.map((resource, index) => (
@@ -395,7 +395,7 @@ const HomePage = () => {
               >
                 <h3 className="resource-title">{resource.title}</h3>
                 <p className="resource-description">{resource.description}</p>
-                <Link to={resource.link} className="resource-link">Xem chi tiết</Link>
+                <Link to={resource.link} className="resource-link">View Detail</Link>
               </motion.div>
             ))}
           </div>
@@ -405,7 +405,7 @@ const HomePage = () => {
         </section>
         {/* Partners Section */}
         <section className="partners-section">
-          <h2 className="section-title">{homepageData.partners.title}</h2>
+          <h2 className="home-section-title">{homepageData.partners.title}</h2>
           <p className="section-description">{homepageData.partners.description}</p>
           <div className="partners-grid">
             {homepageData.partners.items.map((partner, index) => (

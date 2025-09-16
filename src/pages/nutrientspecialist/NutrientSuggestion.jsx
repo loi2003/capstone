@@ -2,17 +2,17 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  getAllDiseases,
-  getAllAllergies,
-  getAllFoods,
-  createWarningFoodForDisease,
-  createWarningFoodForAllergy,
-  removeRecommendOrWarningFoodForDisease,
-  removeRecommendOrWarningFoodForAllergy,
-  viewWarningFoods,
-} from "../../apis/nutriet-api";
+  getAllNutrientSuggestions,
+  getNutrientSuggestionById,
+  createNutrientSuggestion,
+  updateNutrientSuggestion,
+  deleteNutrientSuggestion,
+  getAllNutrients,
+  addNutrientSuggestionAttribute,
+  getAllAgeGroups,
+} from "../../apis/nutriet-api"; // Fixed typo in import
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/WarningManagement.css";
+import "../../styles/NutrientSuggestion.css";
 
 const LoaderIcon = () => (
   <svg
@@ -37,7 +37,6 @@ const Notification = ({ message, type }) => {
     }, 3000);
     return () => clearTimeout(timer);
   }, []);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -54,7 +53,16 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const WarningModal = ({ warning, onClose, foods }) => {
+// NutrientSuggestionModal Component
+const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
+  // Ensure nutrientSuggestionAttributes is an array
+  const attributes = Array.isArray(suggestion?.nutrientSuggestionAttributes)
+    ? suggestion.nutrientSuggestionAttributes
+    : [];
+
+  // Log the suggestion data for debugging
+  console.log("NutrientSuggestionModal - suggestion data:", suggestion);
+
   return (
     <motion.div
       className="modal-overlay"
@@ -71,11 +79,39 @@ const WarningModal = ({ warning, onClose, foods }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>Warning Food Details</h2>
-        <h3>Food: {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}</h3>
-        <p><strong>Type:</strong> {warning.type}</p>
-        <p><strong>Related ID:</strong> {warning.relatedId}</p>
-        <p><strong>Description:</strong> {warning.description || "No description provided"}</p>
+        <h2>{suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}</h2>
+        <h3>Attributes:</h3>
+        {attributes.length > 0 ? (
+          <ul>
+            {attributes.map((attr, index) => {
+              const attribute = attr.attribute || {};
+              const ageGroup = ageGroups.find((g) => g.id === attr.ageGroudId);
+              return (
+                <li key={index}>
+                  <strong>Nutrient:</strong> {attribute.nutrientName || "Unknown Nutrient"}<br />
+                  <strong>ID:</strong> {attr.nutrientSuggestionAttributeId || "N/A"}<br />
+                  <strong>Nutrient ID:</strong> {attribute.nutrientId || "N/A"}<br />
+                  <strong>Age Group:</strong>{" "}
+                  {ageGroup
+                    ? ageGroup.name || `Age ${ageGroup.fromAge}-${ageGroup.toAge}`
+                    : "Unknown Age Group"} (ID: {attr.ageGroudId || "N/A"})<br />
+                  <strong>Trimester:</strong> {attr.trimester || "N/A"}<br />
+                  <strong>Type:</strong> {attribute.type || "N/A"}<br />
+                  <strong>Min Energy %:</strong> {attribute.minEnergyPercentage || "N/A"}<br />
+                  <strong>Max Energy %:</strong> {attribute.maxEnergyPercentage || "N/A"}<br />
+                  <strong>Min Value Per Day:</strong> {attribute.minValuePerDay || "N/A"}<br />
+                  <strong>Max Value Per Day:</strong> {attribute.maxValuePerDay || "N/A"}<br />
+                  <strong>Amount:</strong> {attribute.amount || "N/A"}<br />
+                  <strong>Unit:</strong> {attribute.unit || "N/A"}<br />
+                  <strong>Min Animal Protein % Require:</strong>{" "}
+                  {attribute.minAnimalProteinPercentageRequire || "N/A"}
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p>No attributes added for this suggestion.</p>
+        )}
         <motion.button
           onClick={onClose}
           className="nutrient-specialist-button primary"
@@ -89,31 +125,371 @@ const WarningModal = ({ warning, onClose, foods }) => {
   );
 };
 
-const WarningManagement = () => {
-  const [diseases, setDiseases] = useState([]);
-  const [allergies, setAllergies] = useState([]);
-  const [foods, setFoods] = useState([]);
-  const [warnings, setWarnings] = useState([]);
-  const [newWarning, setNewWarning] = useState({
-    type: "Disease",
-    relatedId: "",
-    warningFoodDtos: [],
+const NutrientAttributeModal = ({
+  suggestionId,
+  nutrients,
+  ageGroups,
+  onClose,
+  onSave,
+}) => {
+  const [attributeData, setAttributeData] = useState({
+    nutrientSuggestionId: suggestionId || "", // Ensure suggestionId is set
+    ageGroudId: "", // Fixed to match backend typo: ageGroudId
+    trimester: 0,
+    maxEnergyPercentage: 0,
+    minEnergyPercentage: 0,
+    maxValuePerDay: 0,
+    minValuePerDay: 0,
+    unit: "milligrams",
+    amount: 0,
+    minAnimalProteinPercentageRequire: 0,
+    nutrientId: "",
+    type: 0,
   });
-  const [selectedWarning, setSelectedWarning] = useState(null);
-  const [selectedViewWarning, setSelectedViewWarning] = useState(null);
+
+  const handleInputChange = (field, value) => {
+    setAttributeData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const isValidGuid = (guid) => {
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
+  };
+
+  const validateAttributeData = () => {
+    if (!isValidGuid(attributeData.nutrientSuggestionId)) {
+      return "NutrientSuggestionId is required and must be a valid GUID";
+    }
+
+    if (
+      attributeData.minValuePerDay !== 0 &&
+      attributeData.maxValuePerDay !== 0 &&
+      attributeData.minValuePerDay > attributeData.maxValuePerDay
+    ) {
+      return "MinValuePerDay cannot be greater than MaxValuePerDay";
+    }
+
+    if (
+      attributeData.minAnimalProteinPercentageRequire !== 0 &&
+      (attributeData.minAnimalProteinPercentageRequire < 0 ||
+        attributeData.minAnimalProteinPercentageRequire > 100)
+    ) {
+      return "MinAnimalProteinPercentageRequire must be between 0 and 100";
+    }
+
+    if (!attributeData.unit || attributeData.unit.trim() === "") {
+      return "Unit is required";
+    }
+
+    if (attributeData.amount < 0) {
+      return "Amount must be non-negative";
+    }
+
+    if (!isValidGuid(attributeData.nutrientId)) {
+      return "NutrientId is required and must be a valid GUID";
+    }
+
+    if (attributeData.type < 0) {
+      return "Type must be non-negative";
+    }
+
+    if (attributeData.trimester < 0 || attributeData.trimester > 3) {
+      return "Trimester must be between 0 and 3";
+    }
+
+    return null;
+  };
+
+  const handleSubmit = async () => {
+    if (!isValidGuid(attributeData.nutrientId)) {
+      alert("Please select a nutrient");
+      return;
+    }
+    if (!isValidGuid(attributeData.ageGroudId)) {
+      alert("Please select an age group");
+      return;
+    }
+
+    const validationError = validateAttributeData();
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
+
+    try {
+      await onSave(attributeData);
+      onClose();
+    } catch (error) {
+      console.error("Error saving attribute:", error);
+      alert("Failed to save attribute: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  return (
+    <motion.div
+      className="modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="modal-content"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2>Add Attribute to Suggestion</h2>
+        <div className="form-group">
+          <label htmlFor="nutrientId">Nutrient</label>
+          <select
+            id="nutrientId"
+            value={attributeData.nutrientId}
+            onChange={(e) => handleInputChange("nutrientId", e.target.value)}
+            className="input-field"
+          >
+            <option value="">Select Nutrient</option>
+            {nutrients.length > 0 ? (
+              nutrients.map((nutrient) => (
+                <option key={nutrient.id} value={nutrient.id}>
+                  {nutrient.name}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No nutrients available
+              </option>
+            )}
+          </select>
+          {nutrients.length === 0 && (
+            <p className="error-text">No nutrients loaded. Please try again later.</p>
+          )}
+        </div>
+        <div className="form-group">
+          <label htmlFor="ageGroudId">Age Group</label> {/* Updated label to match typo for clarity */}
+          <select
+            id="ageGroudId"
+            value={attributeData.ageGroudId}
+            onChange={(e) => handleInputChange("ageGroudId", e.target.value)}
+            className="input-field"
+          >
+            <option value="">Select Age Group</option>
+            {ageGroups.length > 0 ? (
+              ageGroups.map((group) => (
+                <option key={group.id} value={group.id}>
+                  {group.name || `Age ${group.fromAge}-${group.toAge}`}
+                </option>
+              ))
+            ) : (
+              <option value="" disabled>
+                No age groups available
+              </option>
+            )}
+          </select>
+          {ageGroups.length === 0 && (
+            <p className="error-text">No age groups loaded. Please try again later.</p>
+          )}
+        </div>
+        <div className="form-group">
+          <label htmlFor="trimester">Trimester</label>
+          <input
+            id="trimester"
+            type="number"
+            value={attributeData.trimester}
+            onChange={(e) =>
+              handleInputChange("trimester", parseInt(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            max="3"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="minEnergyPercentage">Min Energy Percentage</label>
+          <input
+            id="minEnergyPercentage"
+            type="number"
+            value={attributeData.minEnergyPercentage}
+            onChange={(e) =>
+              handleInputChange("minEnergyPercentage", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="maxEnergyPercentage">Max Energy Percentage</label>
+          <input
+            id="maxEnergyPercentage"
+            type="number"
+            value={attributeData.maxEnergyPercentage}
+            onChange={(e) =>
+              handleInputChange("maxEnergyPercentage", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="minValuePerDay">Min Value Per Day</label>
+          <input
+            id="minValuePerDay"
+            type="number"
+            value={attributeData.minValuePerDay}
+            onChange={(e) =>
+              handleInputChange("minValuePerDay", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="maxValuePerDay">Max Value Per Day</label>
+          <input
+            id="maxValuePerDay"
+            type="number"
+            value={attributeData.maxValuePerDay}
+            onChange={(e) =>
+              handleInputChange("maxValuePerDay", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="unit">Unit</label>
+          <select
+            id="unit"
+            value={attributeData.unit}
+            onChange={(e) => handleInputChange("unit", e.target.value)}
+            className="input-field"
+          >
+            <option value="milligrams">Milligrams</option>
+            <option value="grams">Grams</option>
+            <option value="micrograms">Micrograms</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="amount">Amount</label>
+          <input
+            id="amount"
+            type="number"
+            value={attributeData.amount}
+            onChange={(e) =>
+              handleInputChange("amount", parseFloat(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="minAnimalProteinPercentageRequire">
+            Min Animal Protein Percentage
+          </label>
+          <input
+            id="minAnimalProteinPercentageRequire"
+            type="number"
+            value={attributeData.minAnimalProteinPercentageRequire}
+            onChange={(e) =>
+              handleInputChange(
+                "minAnimalProteinPercentageRequire",
+                parseFloat(e.target.value) || 0
+              )
+            }
+            className="input-field"
+            min="0"
+            max="100"
+            step="0.1"
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="type">Type</label>
+          <input
+            id="type"
+            type="number"
+            value={attributeData.type}
+            onChange={(e) =>
+              handleInputChange("type", parseInt(e.target.value) || 0)
+            }
+            className="input-field"
+            min="0"
+          />
+        </div>
+        <div className="button-group">
+          <motion.button
+            onClick={handleSubmit}
+            className="nutrient-specialist-button primary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            disabled={!isValidGuid(attributeData.nutrientId) || !isValidGuid(attributeData.ageGroudId)}
+          >
+            Save Attribute
+          </motion.button>
+          <motion.button
+            onClick={onClose}
+            className="nutrient-specialist-button secondary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Cancel
+          </motion.button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const NutrientSuggestion = () => {
+  const [suggestions, setSuggestions] = useState([]);
+  const [nutrients, setNutrients] = useState([]);
+  const [ageGroups, setAgeGroups] = useState([]);
+  const [newSuggestion, setNewSuggestion] = useState({ name: "" });
+  const [selectedSuggestion, setSelectedSuggestion] = useState(null);
+  const [selectedViewSuggestion, setSelectedViewSuggestion] = useState(null);
+  const [selectedAttributeSuggestion, setSelectedAttributeSuggestion] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
-  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false); // Added state for food dropdown
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false); // Added state for nutrient dropdown
   const itemsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+
+  // Added toggle functions for dropdowns
+  const toggleFoodDropdown = () => {
+    setIsFoodDropdownOpen((prev) => !prev);
+  };
+
+  const toggleNutrientDropdown = () => {
+    setIsNutrientDropdownOpen((prev) => !prev);
+  };
+
+  // Define dropdown variants
+  const dropdownVariants = {
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
 
   const handleHomepageNavigation = () => {
     setIsSidebarOpen(true);
@@ -121,27 +497,28 @@ const WarningManagement = () => {
   };
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUser = () => {
       if (!token) {
         navigate("/signin", { replace: true });
         return;
       }
-      try {
-        const response = await getCurrentUser(token);
-        const userData = response.data?.data || response.data;
-        if (userData && Number(userData.roleId) === 4) {
-          setUser(userData);
-        } else {
+      getCurrentUser(token)
+        .then((response) => {
+          const userData = response.data?.data || response.data;
+          if (userData && Number(userData.roleId) === 4) {
+            setUser(userData);
+          } else {
+            localStorage.removeItem("token");
+            setUser(null);
+            navigate("/signin", { replace: true });
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error.message);
           localStorage.removeItem("token");
           setUser(null);
           navigate("/signin", { replace: true });
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
-        localStorage.removeItem("token");
-        setUser(null);
-        navigate("/signin", { replace: true });
-      }
+        });
     };
     fetchUser();
   }, [navigate, token]);
@@ -155,115 +532,140 @@ const WarningManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-const fetchData = async () => {
+  const extractData = (response) => {
+    if (Array.isArray(response)) return response;
+    if (Array.isArray(response?.data)) return response.data;
+    if (Array.isArray(response?.data?.data)) return response.data.data;
+    console.warn("Unexpected response structure:", response);
+    return [];
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [suggestionsResponse, nutrientsResponse, ageGroupsResponse] = await Promise.all([
+        getAllNutrientSuggestions(token),
+        getAllNutrients(),
+        getAllAgeGroups(),
+      ]);
+
+      console.log("Suggestions Response:", suggestionsResponse);
+      console.log("Nutrients Response:", nutrientsResponse);
+      console.log("Age Groups Response:", ageGroupsResponse);
+
+      // Handle suggestions
+      const suggestionsData = extractData(suggestionsResponse);
+      if (!Array.isArray(suggestionsData)) {
+        console.warn("Suggestions data is not an array:", suggestionsData);
+        setSuggestions([]);
+      } else {
+        setSuggestions(suggestionsData);
+      }
+
+      // Handle nutrients
+      const nutrientsData = extractData(nutrientsResponse);
+      if (!Array.isArray(nutrientsData)) {
+        console.warn("Nutrients data is not an array:", nutrientsData);
+        showNotification("Failed to load nutrients: Invalid data format", "error");
+        setNutrients([]);
+      } else {
+        const validNutrients = nutrientsData.filter(nutrient => nutrient.id && nutrient.name);
+        console.log("Valid Nutrients:", validNutrients);
+        setNutrients(validNutrients);
+      }
+
+      // Handle age groups
+      const ageGroupsData = extractData(ageGroupsResponse);
+      if (!Array.isArray(ageGroupsData)) {
+        console.warn("Age groups data is not an array:", ageGroupsData);
+        showNotification("Failed to load age groups: Invalid data format", "error");
+        setAgeGroups([]);
+      } else if (ageGroupsData.length === 0) {
+        console.warn("No age groups returned from API");
+        showNotification("No age groups available", "warning");
+        setAgeGroups([]);
+      } else {
+        const validAgeGroups = ageGroupsData.filter(group => group.id && (group.name || (group.fromAge !== undefined && group.toAge !== undefined)));
+        console.log("Valid Age Groups:", validAgeGroups);
+        setAgeGroups(validAgeGroups);
+      }
+    } catch (err) {
+      console.error("Fetch error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(`Failed to fetch data: ${err.message}`, "error");
+      setSuggestions([]);
+      setNutrients([]);
+      setAgeGroups([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const fetchSuggestionById = async (id) => {
+    setLoading(true);
+    try {
+      const data = await getNutrientSuggestionById(id, token);
+      setSelectedSuggestion(data);
+      setNewSuggestion({
+        name: data.nutrientSuggestionName || "",
+      });
+      setIsEditing(true);
+      return data;
+    } catch (err) {
+      showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSuggestionByIdForView = async (id) => {
   setLoading(true);
   try {
-    const [diseasesResponse, allergiesResponse, foodsResponse] = await Promise.all([
-      getAllDiseases(token),
-      getAllAllergies(token),
-      getAllFoods(),
-    ]);
+    const response = await getNutrientSuggestionById(id, token);
+    // Extract data safely
+    const data = response?.data?.data || response?.data || response;
+    console.log("fetchSuggestionByIdForView - response data:", data);
 
-    // Handle diseases response
-    const diseasesData = Array.isArray(diseasesResponse?.data?.data)
-      ? diseasesResponse.data.data
-      : Array.isArray(diseasesResponse?.data)
-      ? diseasesResponse.data
-      : [];
-
-    // Handle allergies response
-    const allergiesData = Array.isArray(allergiesResponse?.data?.data)
-      ? allergiesResponse.data.data
-      : Array.isArray(allergiesResponse?.data)
-      ? allergiesResponse.data
-      : [];
-
-    // Handle foods response (direct array from API)
-    const foodsData = Array.isArray(foodsResponse)
-      ? foodsResponse
-      : [];
-
-    // Log for debugging
-    console.log("Foods response:", foodsResponse);
-    console.log("Foods data:", foodsData);
-
-    setDiseases(diseasesData);
-    setAllergies(allergiesData);
-    setFoods(foodsData);
-
-    // Fetch warnings only if there are diseases or allergies
-    if (diseasesData.length > 0 || allergiesData.length > 0) {
-      const diseaseIds = diseasesData.map((disease) => disease.id);
-      const allergyIds = allergiesData.map((allergy) => allergy.id);
-      const warningsResponse = await viewWarningFoods({
-        allergyIds,
-        diseaseIds,
-      });
-
-      // Handle warnings response
-      const warningsData = Array.isArray(warningsResponse?.data?.data)
-        ? warningsResponse.data.data
-        : Array.isArray(warningsResponse?.data)
-        ? warningsResponse.data
-        : [];
-      setWarnings(warningsData);
-    } else {
-      setWarnings([]);
+    // Ensure nutrientSuggestionAttributes is an array
+    if (!Array.isArray(data.nutrientSuggestionAttributes)) {
+      console.warn("nutrientSuggestionAttributes is not an array, setting to empty array:", data.nutrientSuggestionAttributes);
+      data.nutrientSuggestionAttributes = [];
     }
+
+    setSelectedViewSuggestion(data);
+    return data;
   } catch (err) {
-    console.error("Fetch error details:", {
+    console.error("fetchSuggestionByIdForView error:", {
       message: err.message,
       response: err.response?.data,
       status: err.response?.status,
     });
-    showNotification(`Failed to fetch data: ${err.message}`, "error");
-    setDiseases([]);
-    setAllergies([]);
-    setFoods([]);
-    setWarnings([]);
+    showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
+    return null;
   } finally {
     setLoading(false);
   }
 };
 
-  const createWarningHandler = async () => {
-    if (!newWarning.type || newWarning.type.trim() === "") {
-      showNotification("Type is required", "error");
+  const createSuggestionHandler = async () => {
+    if (!newSuggestion.name || newSuggestion.name.trim() === "") {
+      showNotification("Suggestion name is required", "error");
       return;
     }
-    if (!newWarning.relatedId || newWarning.relatedId.trim() === "") {
-      showNotification("Related ID (Disease or Allergy) is required", "error");
-      return;
-    }
-    if (newWarning.warningFoodDtos.length === 0) {
-      showNotification("Please select at least one food", "error");
-      return;
-    }
+
     setLoading(true);
     try {
-      if (newWarning.type === "Disease") {
-        await createWarningFoodForDisease({
-          diseaseId: newWarning.relatedId,
-          warningFoodDtos: newWarning.warningFoodDtos,
-        });
-      } else {
-        await createWarningFoodForAllergy({
-          allergyId: newWarning.relatedId,
-          warningFoodDtos: newWarning.warningFoodDtos,
-        });
-      }
-      setNewWarning({
-        type: "Disease",
-        relatedId: "",
-        warningFoodDtos: [],
-      });
+      await createNutrientSuggestion({ name: newSuggestion.name }, token);
+      setNewSuggestion({ name: "" });
       setIsEditing(false);
       await fetchData();
-      showNotification("Warning created successfully", "success");
+      showNotification("Nutrient suggestion created successfully", "success");
     } catch (err) {
-      console.error("Create warning error:", err);
+      console.error("Create suggestion error:", err);
       showNotification(
-        `Failed to create warning: ${err.response?.data?.message || err.message}`,
+        `Failed to create suggestion: ${err.response?.data?.message || err.message}`,
         "error"
       );
     } finally {
@@ -271,87 +673,74 @@ const fetchData = async () => {
     }
   };
 
-  const deleteWarningHandler = async (warning) => {
-    if (!window.confirm("Are you sure you want to delete this warning?")) return;
+  const updateSuggestionHandler = async () => {
+    if (!newSuggestion.name || newSuggestion.name.trim() === "") {
+      showNotification("Suggestion name is required", "error");
+      return;
+    }
     setLoading(true);
     try {
-      if (warning.type === "Disease") {
-        await removeRecommendOrWarningFoodForDisease({
-          foodId: warning.foodId,
-          diseaseId: warning.relatedId,
-        });
-      } else {
-        await removeRecommendOrWarningFoodForAllergy({
-          foodId: warning.foodId,
-          allergyId: warning.relatedId,
-        });
-      }
-      setSelectedWarning(null);
+      await updateNutrientSuggestion(
+        {
+          suggestionId: selectedSuggestion?.id,
+          name: newSuggestion.name,
+        },
+        token
+      );
+      setNewSuggestion({ name: "" });
+      setSelectedSuggestion(null);
       setIsEditing(false);
-      setNewWarning({
-        type: "Disease",
-        relatedId: "",
-        warningFoodDtos: [],
-      });
       await fetchData();
-      showNotification("Warning deleted successfully", "success");
+      showNotification("Nutrient suggestion updated successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete warning: ${err.message}`, "error");
+      showNotification(
+        `Failed to update suggestion: ${err.response?.data?.message || err.message}`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const cancelEdit = () => {
-    setNewWarning({
-      type: "Disease",
-      relatedId: "",
-      warningFoodDtos: [],
-    });
-    setSelectedWarning(null);
-    setIsEditing(false);
+  const deleteSuggestionHandler = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this suggestion?")) return;
+    setLoading(true);
+    try {
+      await deleteNutrientSuggestion(id, token);
+      setSelectedSuggestion(null);
+      setIsEditing(false);
+      setNewSuggestion({ name: "" });
+      await fetchData();
+      showNotification("Nutrient suggestion deleted successfully", "success");
+    } catch (err) {
+      showNotification(`Failed to delete suggestion: ${err.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleFoodSelect = (foodId) => {
-    setNewWarning((prev) => {
-      const currentFoods = [...prev.warningFoodDtos];
-      const index = currentFoods.findIndex((food) => food.foodId === foodId);
-      if (index > -1) {
-        currentFoods.splice(index, 1);
-      } else {
-        currentFoods.push({ foodId, description: "" });
-      }
-      return { ...prev, warningFoodDtos: currentFoods };
-    });
-  };
-
-  const handleFoodDescriptionChange = (foodId, description) => {
-    setNewWarning((prev) => ({
-      ...prev,
-      warningFoodDtos: prev.warningFoodDtos.map((food) =>
-        food.foodId === foodId ? { ...food, description } : food
-      ),
-    }));
+  const handleAddAttribute = async (attributeData) => {
+    setLoading(true);
+    try {
+      await addNutrientSuggestionAttribute(attributeData, token);
+      showNotification("Attribute added successfully", "success");
+      await fetchData();
+    } catch (error) {
+      console.error("Error adding attribute:", error);
+      showNotification(`Failed to add attribute: ${error.message}`, "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-    setIsNutrientDropdownOpen(false);
-    setIsFoodDropdownOpen(false);
-  };
-
-  const toggleNutrientDropdown = () => {
-    setIsNutrientDropdownOpen((prev) => !prev);
-  };
-
-  const toggleFoodDropdown = () => {
-    setIsFoodDropdownOpen((prev) => !prev);
   };
 
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
     try {
-      if (user?.userId) await logout(user.userId);
+      if (user?.userId) await logout(user.userId, token);
     } catch (error) {
       console.error("Error logging out:", error.message);
     } finally {
@@ -374,28 +763,21 @@ const fetchData = async () => {
     fetchData();
   }, []);
 
-  const filteredWarnings = warnings.filter(
-    (warning) =>
-      (warning.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      foods.find((f) => f.id === warning.foodId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSuggestions = suggestions.filter(
+    (suggestion) =>
+      (suggestion.nutrientSuggestionName || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
-  const indexOfLastWarning = currentPage * itemsPerPage;
-  const indexOfFirstWarning = indexOfLastWarning - itemsPerPage;
-  const currentWarnings = filteredWarnings.slice(indexOfFirstWarning, indexOfLastWarning);
-  const totalPages = Math.ceil(filteredWarnings.length / itemsPerPage);
+  const indexOfLastSuggestion = currentPage * itemsPerPage;
+  const indexOfFirstSuggestion = indexOfLastSuggestion - itemsPerPage;
+  const currentSuggestions = filteredSuggestions.slice(
+    indexOfFirstSuggestion,
+    indexOfLastSuggestion
+  );
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const totalPages = Math.ceil(filteredSuggestions.length / itemsPerPage);
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -445,21 +827,8 @@ const fetchData = async () => {
     },
   };
 
-  const dropdownVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
-  };
-
   return (
-    <div className="warning-management">
+    <div className="nutrient-suggestion">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -1041,7 +1410,7 @@ const fetchData = async () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item active"
+                className="sidebar-nav-item"
                 whileHover="hover"
               >
                 <Link
@@ -1131,7 +1500,7 @@ const fetchData = async () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="sidebar-nav-item active"
                 whileHover="hover"
               >
                 <Link
@@ -1377,133 +1746,59 @@ const fetchData = async () => {
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Manage Warning Foods</h1>
-            <p>Manage foods to avoid for specific diseases or allergies</p>
+            <h1>Manage Nutrient Suggestions</h1>
+            <p>Create, edit, and manage nutrient suggestions for dietary plans</p>
           </div>
         </div>
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
-              <h2>{isEditing ? "Edit Warning" : "Add New Warning"}</h2>
+              <h2>
+                {isEditing ? "Edit Nutrient Suggestion" : "Add New Nutrient Suggestion"}
+              </h2>
             </div>
-            {foods.length === 0 && (
-              <p className="no-results">
-                No foods available. Please add foods first.
-              </p>
-            )}
             <div className="form-card">
               <div className="form-group">
-                <label htmlFor="warning-type">Warning Type</label>
-                <select
-                  id="warning-type"
-                  value={newWarning.type}
+                <label htmlFor="suggestion-name">Suggestion Name</label>
+                <input
+                  id="suggestion-name"
+                  type="text"
+                  value={newSuggestion.name}
                   onChange={(e) =>
-                    setNewWarning((prev) => ({
+                    setNewSuggestion((prev) => ({
                       ...prev,
-                      type: e.target.value,
-                      relatedId: "",
+                      name: e.target.value,
                     }))
                   }
+                  placeholder="Enter suggestion name"
                   className="input-field"
-                >
-                  <option value="Disease">Disease</option>
-                  <option value="Allergy">Allergy</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="related-id">
-                  {newWarning.type === "Disease" ? "Select Disease" : "Select Allergy"}
-                </label>
-                <select
-                  id="related-id"
-                  value={newWarning.relatedId}
-                  onChange={(e) =>
-                    setNewWarning((prev) => ({
-                      ...prev,
-                      relatedId: e.target.value,
-                    }))
-                  }
-                  className="input-field"
-                >
-                  <option value="">Select {newWarning.type}</option>
-                  {(newWarning.type === "Disease" ? diseases : allergies).map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="food-selection">Select Foods</label>
-                <div className="food-selection-container">
-                  {foods.length === 0 ? (
-                    <p>No foods available to select. Please ensure foods are added in the database.</p>
-                  ) : (
-                    foods.map((food) => (
-                      <motion.div
-                        key={food.id}
-                        className={`food-item ${
-                          newWarning.warningFoodDtos.some((f) => f.foodId === food.id)
-                            ? "selected"
-                            : ""
-                        }`}
-                        onClick={() => handleFoodSelect(food.id)}
-                        whileHover={{ scale: 1.03 }}
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        <span className="food-name">{food.name}</span>
-                        {newWarning.warningFoodDtos.some((f) => f.foodId === food.id) && (
-                          <span className="checkmark">✓</span>
-                        )}
-                      </motion.div>
-                    ))
-                  )}
-                </div>
-              </div>
-              <div className="food-details-container">
-                <h4>Food Descriptions</h4>
-                {newWarning.warningFoodDtos.length === 0 ? (
-                  <p>No foods selected.</p>
-                ) : (
-                  newWarning.warningFoodDtos.map((food) => (
-                    <div key={food.foodId} className="food-detail-item">
-                      <span>{foods.find((f) => f.id === food.foodId)?.name || "Unknown Food"}</span>
-                      <div className="food-detail-inputs">
-                        <input
-                          type="text"
-                          value={food.description}
-                          onChange={(e) => handleFoodDescriptionChange(food.foodId, e.target.value)}
-                          placeholder="Description"
-                          className="input-field"
-                        />
-                      </div>
-                    </div>
-                  ))
-                )}
+                />
               </div>
               <div className="button-group">
                 <motion.button
-                  onClick={createWarningHandler}
-                  disabled={loading || foods.length === 0}
+                  onClick={
+                    isEditing ? updateSuggestionHandler : createSuggestionHandler
+                  }
+                  disabled={loading}
                   className="submit-button nutrient-specialist-button primary"
-                  whileHover={{
-                    scale: loading || foods.length === 0 ? 1 : 1.05,
-                  }}
-                  whileTap={{
-                    scale: loading || foods.length === 0 ? 1 : 0.95,
-                  }}
+                  whileHover={{ scale: loading ? 1 : 1.05 }}
+                  whileTap={{ scale: loading ? 1 : 0.95 }}
                 >
                   {loading
                     ? isEditing
                       ? "Updating..."
                       : "Creating..."
                     : isEditing
-                    ? "Update Warning"
-                    : "Create Warning"}
+                    ? "Update Suggestion"
+                    : "Create Suggestion"}
                 </motion.button>
                 {isEditing && (
                   <motion.button
-                    onClick={cancelEdit}
+                    onClick={() => {
+                      setNewSuggestion({ name: "" });
+                      setSelectedSuggestion(null);
+                      setIsEditing(false);
+                    }}
                     disabled={loading}
                     className="cancel-button nutrient-specialist-button secondary"
                     whileHover={{ scale: loading ? 1 : 1.05 }}
@@ -1515,31 +1810,31 @@ const fetchData = async () => {
               </div>
             </div>
           </div>
-          <div className="warning-list-section">
+          <div className="nutrient-list-section">
             <div className="section-header">
-              <h2>Warning List</h2>
-              <div className="warning-count">
-                {filteredWarnings.length}{" "}
-                {filteredWarnings.length === 1 ? "warning" : "warnings"} found
+              <h2>Nutrient Suggestion List</h2>
+              <div className="nutrient-count">
+                {filteredSuggestions.length}{" "}
+                {filteredSuggestions.length === 1 ? "suggestion" : "suggestions"} found
               </div>
             </div>
             <div className="form-group">
-              <label htmlFor="search-warnings">Search Warnings</label>
+              <label htmlFor="search-suggestions">Search Suggestions</label>
               <input
-                id="search-warnings"
+                id="search-suggestions"
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by type or food name"
+                placeholder="Search by name"
                 className="search-input"
               />
             </div>
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
-                <p>Loading warnings...</p>
+                <p>Loading suggestions...</p>
               </div>
-            ) : !Array.isArray(warnings) || warnings.length === 0 ? (
+            ) : !Array.isArray(suggestions) || suggestions.length === 0 ? (
               <div className="empty-state">
                 <svg
                   width="64"
@@ -1555,32 +1850,45 @@ const fetchData = async () => {
                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <h3>No warnings found</h3>
-                <p>Create your first warning to get started</p>
+                <h3>No suggestions found</h3>
+                <p>Create your first nutrient suggestion to get started</p>
               </div>
             ) : (
               <>
-                <div className="warning-grid">
-                  {currentWarnings.map((warning, index) => (
+                <div className="nutrient-grid">
+                  {currentSuggestions.map((suggestion) => (
                     <motion.div
-                      key={`${warning.foodId}-${warning.relatedId}`}
-                      className="warning-card"
+                      key={suggestion.id}
+                      className="nutrient-card"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                       whileHover={{ y: -5 }}
                     >
                       <div className="card-header">
-                        <h3>{foods.find((f) => f.id === warning.foodId)?.name || `Warning #${index + 1}`}</h3>
-                      </div>
-                      <div className="warning-details">
-                        <p><strong>Type:</strong> {warning.type}</p>
-                        <p><strong>Related:</strong> {(warning.type === "Disease" ? diseases : allergies).find((item) => item.id === warning.relatedId)?.name || "Unknown"}</p>
-                        <p><strong>Description:</strong> {warning.description || "No description"}</p>
+                        <h3>
+                          {suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}
+                        </h3>
                       </div>
                       <div className="card-actions">
                         <motion.button
-                          onClick={() => setSelectedViewWarning(warning)}
+                          onClick={() => setSelectedAttributeSuggestion(suggestion)}
+                          className="add-attribute-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Add Attribute
+                        </motion.button>
+                        <motion.button
+                          onClick={() => fetchSuggestionById(suggestion.id)}
+                          className="edit-button nutrient-specialist-button primary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          onClick={() => fetchSuggestionByIdForView(suggestion.id)}
                           className="view-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1588,7 +1896,7 @@ const fetchData = async () => {
                           View
                         </motion.button>
                         <motion.button
-                          onClick={() => deleteWarningHandler(warning)}
+                          onClick={() => deleteSuggestionHandler(suggestion.id)}
                           className="delete-button nutrient-specialist-button secondary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -1602,23 +1910,29 @@ const fetchData = async () => {
                 {totalPages > 0 && (
                   <div className="pagination-controls">
                     <motion.button
-                      onClick={handlePreviousPage}
+                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className="nutrient-specialist-button secondary"
+                      className="pagination-button"
                       whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
                       whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
                     >
                       Previous
                     </motion.button>
-                    <span className="page-indicator">
+                    <span className="pagination-info">
                       Page {currentPage} of {totalPages}
                     </span>
                     <motion.button
-                      onClick={handleNextPage}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
-                      className="nutrient-specialist-button secondary"
-                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
-                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                      className="pagination-button"
+                      whileHover={{
+                        scale: currentPage === totalPages ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: currentPage === totalPages ? 1 : 0.95,
+                      }}
                     >
                       Next
                     </motion.button>
@@ -1629,11 +1943,20 @@ const fetchData = async () => {
           </div>
         </div>
         <AnimatePresence>
-          {selectedViewWarning && (
-            <WarningModal
-              warning={selectedViewWarning}
-              onClose={() => setSelectedViewWarning(null)}
-              foods={foods}
+          {selectedViewSuggestion && (
+            <NutrientSuggestionModal
+              suggestion={selectedViewSuggestion}
+              onClose={() => setSelectedViewSuggestion(null)}
+              ageGroups={ageGroups}
+            />
+          )}
+          {selectedAttributeSuggestion && (
+            <NutrientAttributeModal
+              suggestionId={selectedAttributeSuggestion.id}
+              nutrients={nutrients}
+              ageGroups={ageGroups}
+              onClose={() => setSelectedAttributeSuggestion(null)}
+              onSave={handleAddAttribute}
             />
           )}
         </AnimatePresence>
@@ -1642,4 +1965,4 @@ const fetchData = async () => {
   );
 };
 
-export default WarningManagement;
+export default NutrientSuggestion;

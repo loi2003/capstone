@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import ChatBoxPage from "../../components/chatbox/ChatBoxPage";
 import "../../styles/ClinicList.css";
+import { FaSearch, FaMapMarkerAlt, FaPhone, FaUserMd, FaStethoscope, FaStar, FaFilter } from "react-icons/fa";
 
 const CLINICS_PER_PAGE = 6;
 
@@ -19,7 +20,7 @@ function getStarRating(feedbacks) {
 }
 
 // Helper to truncate description
-function truncateText(text, maxLength = 100) {
+function truncateText(text, maxLength = 120) {
   if (!text) return "";
   return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
 }
@@ -31,6 +32,7 @@ const ClinicList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [search, setSearch] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,23 +48,31 @@ const ClinicList = () => {
     };
     fetchClinics();
   }, []);
+  
+  const [specialization, setSpecialization] = useState("");
+  const [insuranceOnly, setInsuranceOnly] = useState(false);
 
   // Search handler using getClinicsByName
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
     try {
       let data;
-      if (!search.trim()) {
+      if (!search.trim() && !specialization && !insuranceOnly) {
         data = await getAllClinics();
       } else {
-        data = await getClinicsByName(search);
+        data = await getClinicsByName({
+          nameOrAddress: search,
+          specialization,
+          insuranceOnly,
+        });
       }
       setClinics(data.data || data);
       setCurrentPage(1);
     } catch (err) {
-      setError("Failed to search clinics.", err.message);
+      setError("Failed to search clinics.");
     } finally {
       setLoading(false);
     }
@@ -73,7 +83,7 @@ const ClinicList = () => {
 
   const handleSeeMore = () => setCurrentPage((prev) => prev + 1);
 
-  // Star rendering helper
+// Star rendering helper
   const renderStars = (stars) => {
     const filled = Math.floor(stars);
     const half = stars - filled >= 0.5;
@@ -116,72 +126,139 @@ const ClinicList = () => {
   return (
     <div className="clinic-list-background-container">
       <MainLayout>
-        <header className="clinic-header">
-          <h1 className="clinic-main-title">Clinics</h1>
-          <p className="clinic-header-desc">
-            Explore reputable and quality clinics that suit your needs.
-          </p>
-          {/* Modern search bar */}
-          <form className="clinic-search-bar" onSubmit={handleSearch}>
-            <div className="clinic-search-bar-input-wrapper">
-              <button
-                type="submit"
-                className="clinic-search-icon-btn"
-                tabIndex={-1}
-                aria-label="Search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+        {/* Hero Section */}
+        <motion.header 
+          className="clinic-hero-section"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="clinic-hero-content">
+            <h1 className="clinic-hero-title">
+              Find Your Perfect 
+              <span className="clinic-hero-accent"> Healthcare Partner</span>
+            </h1>
+            <p className="clinic-hero-description">
+              Discover trusted clinics with verified ratings, experienced professionals, and comprehensive healthcare services tailored to your needs.
+            </p>
+            
+            {/* Enhanced Search Section */}
+            <motion.form 
+              className="clinic-search-container"
+              onSubmit={handleSearch}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <div className="clinic-main-search">
+                <div className="clinic-search-input-group">
+                  <FaSearch className="search-input-icon" />
+                  <input
+                    type="text"
+                    className="clinic-search-main-input"
+                    placeholder="Search clinics by name or location..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
+                <button 
+                  type="button" 
+                  className="clinic-filter-toggle"
+                  onClick={() => setShowFilters(!showFilters)}
+                >
+                  <FaFilter />
+                  Filters
+                </button>
+                <button type="submit" className="clinic-search-main-btn">
+                  <FaSearch />
+                  Search
+                </button>
+              </div>
+
+              {/* Collapsible Filters */}
+              <motion.div 
+                className={`clinic-filters-panel ${showFilters ? 'expanded' : ''}`}
+                initial={false}
+                animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }}
+                transition={{ duration: 0.3 }}
               >
-                <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-                  <circle
-                    cx="10"
-                    cy="10"
-                    r="8"
-                    fill="#8ee6f7"
-                    stroke="#2196f3"
-                    strokeWidth="2"
-                  />
-                  <line
-                    x1="16"
-                    y1="16"
-                    x2="20"
-                    y2="20"
-                    stroke="#a259c6"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-              <input
-                type="text"
-                className="clinic-search-input"
-                placeholder="Input clinic name or location"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+                <div className="clinic-filters-content">
+                  <div className="filter-group">
+                    <label className="filter-label">Specialization</label>
+                    <select
+                      className="clinic-filter-select"
+                      value={specialization}
+                      onChange={(e) => setSpecialization(e.target.value)}
+                    >
+                      <option value="">All Specializations</option>
+                      <option value="Cardiology">Cardiology</option>
+                      <option value="Dermatology">Dermatology</option>
+                      <option value="Pediatrics">Pediatrics</option>
+                      <option value="Orthopedics">Orthopedics</option>
+                      <option value="Neurology">Neurology</option>
+                    </select>
+                  </div>
+                  
+                  <div className="filter-group">
+                    <label className="clinic-insurance-filter">
+                      <input
+                        type="checkbox"
+                        checked={insuranceOnly}
+                        onChange={(e) => setInsuranceOnly(e.target.checked)}
+                      />
+                      <span className="checkmark"></span>
+                      Insurance Accepted Only
+                    </label>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.form>
+          </div>
+        </motion.header>
+
+        {/* Results Section */}
+        <main className="clinic-results-section">
+          <div className="clinic-results-header">
+            <div className="results-info">
+              <h2 className="results-count">
+                {clinics.length} {clinics.length === 1 ? 'Clinic' : 'Clinics'} Found
+              </h2>
+              <p className="results-subtitle">Choose the best healthcare provider for you</p>
             </div>
-          </form>
-        </header>
-        <main className="clinic-list-main-content clinic-list-container">
-          {loading && <p className="loading-text">Loading clinics...</p>}
-          {error && <p className="error-text">{error}</p>}
-          <div>
-            <div className="clinic-list-count">
-              {clinics.length} Clinics found
+          </div>
+
+          {loading && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p className="loading-text">Finding the best clinics for you...</p>
             </div>
-            <div className="clinic-list-cards-modern">
-              {clinicsToShow && clinicsToShow.length > 0
-                ? clinicsToShow.map((clinic) => {
-                    const { avg, count } = getStarRating(clinic.feedbacks);
-                    const consultantCount = clinic.consultants
-                      ? clinic.consultants.length
-                      : 0;
-                    const doctorCount = clinic.doctors
-                      ? clinic.doctors.length
-                      : 0;
-                    return (
-                      <div className="clinic-modern-card" key={clinic.id}>
-                        <div className="clinic-modern-card-left">
+          )}
+          
+          {error && (
+            <div className="error-container">
+              <p className="error-text">{error}</p>
+            </div>
+          )}
+
+          <div className="clinic-cards-grid">
+            {clinicsToShow && clinicsToShow.length > 0
+              ? clinicsToShow.map((clinic, index) => {
+                  const { avg, count } = getStarRating(clinic.feedbacks);
+                  const consultantCount = clinic.consultants ? clinic.consultants.length : 0;
+                  const doctorCount = clinic.doctors ? clinic.doctors.length : 0;
+                  
+                  return (
+                    <motion.div 
+                      className="clinic-card"
+                      key={clinic.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(4, 102, 141, 0.15)" }}
+                    >
+                      {/* Card Header */}
+                      <div className="clinic-card-header">
+                        <div className="clinic-image-container">
                           <img
                             src={
                               clinic.imageUrl && clinic.imageUrl.fileUrl
@@ -189,129 +266,120 @@ const ClinicList = () => {
                                 : "/images/clinic-placeholder.png"
                             }
                             alt={clinic.name}
-                            className="clinic-modern-avatar"
+                            className="clinic-image"
                           />
-                          <div className="clinic-modern-name">
-                            {clinic.name}
+                          <div className="clinic-badges">
+                            {avg > 4 && (
+                              <span className="clinic-badge premium">
+                                ⭐ Top Rated
+                              </span>
+                            )}
+                            {clinic.isInsuranceAccepted && (
+                              <span className="clinic-badge insurance">
+                                ✓ Insurance
+                              </span>
+                            )}
                           </div>
                         </div>
-                        <div className="clinic-modern-card-body">
-                          <div className="clinic-modern-header-row">
-                            <div>
-                              <span className="clinic-modern-title">
-                                {clinic.name}
-                              </span>
-                              <span className="clinic-modern-rating">
-                                {renderStars(avg)}
-                                <span className="rating-value">
-                                  {avg.toFixed(1)}
-                                </span>
-                                <span className="review-count">
-                                  ({count} reviews)
-                                </span>
-                              </span>
-                            </div>
-                            <div className="clinic-modern-badges">
-                              {avg > 4 && (
-                                <span className="clinic-modern-badge green">
-                                  Highly Rated
-                                </span>
-                              )}
-                              {clinic.isInsuranceAccepted && (
-                                <span className="clinic-modern-badge teal">
-                                  Insurance Accepted
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="clinic-modern-info-row">
-                            <div className="clinic-modern-info-col">
-                              <div className="clinic-modern-info-item">
-                                <span
-                                  className="icon-card"
-                                  role="img"
-                                  aria-label="location"
-                                >
-                                  &#128205;
-                                </span>
-                                <span>
-                                  <a
-                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                      clinic.address
-                                    )}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="clinic-address-link"
-                                  >
-                                    {clinic.address}
-                                  </a>
-                                </span>
-                              </div>
-                              <div className="clinic-modern-info-item">
-                                <span>
-                                  {truncateText(clinic.description, 100)}
-                                </span>
-                              </div>
-                              <div className="clinic-modern-info-item">
-                                <span>
-                                  <b>Consultants:</b> {consultantCount}{" "}
-                                  &nbsp;|&nbsp; <b>Doctors:</b> {doctorCount}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="clinic-modern-info-col">
-                              <div className="clinic-modern-info-item">
-                                <span
-                                  className="icon-card"
-                                  role="img"
-                                  aria-label="specialties"
-                                >
-                                  &#128137;
-                                </span>
-                                <span>
-                                  <b>Specialties:</b>{" "}
-                                  {clinic.specializations || "N/A"}
-                                </span>
-                              </div>
-                              <div className="clinic-modern-info-item">
-                                <span
-                                  className="icon-card"
-                                  role="img"
-                                  aria-label="phone"
-                                >
-                                  &#128222;
-                                </span>
-                                <span>{clinic.user.phoneNo}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="clinic-modern-card-footer">
-                            <button
-                              className="clinic-modern-select-btn"
-                              onClick={() => navigate(`/clinic/${clinic.id}`)}
-                            >
-                              Select Clinic
-                            </button>
+                        
+                        <div className="clinic-header-info">
+                          <h3 className="clinic-name">{clinic.name}</h3>
+                          <div className="clinic-rating">
+                            {renderStars(avg)}
+                            <span className="rating-score">{avg.toFixed(1)}</span>
+                            <span className="rating-count">({count} reviews)</span>
                           </div>
                         </div>
                       </div>
-                    );
-                  })
-                : !loading && (
-                    <div className="no-clinics">No clinics found.</div>
-                  )}
-            </div>
-            {hasMore && (
-              <button className="see-more-btn" onClick={handleSeeMore}>
-                See More
-              </button>
-            )}
+
+                      {/* Card Body */}
+                      <div className="clinic-card-body">
+                        <p className="clinic-description">
+                          {truncateText(clinic.description)}
+                        </p>
+
+                        <div className="clinic-details">
+                          <div className="clinic-detail-item">
+                            <FaMapMarkerAlt className="detail-icon" />
+                            <a
+                              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                clinic.address
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="clinic-address-link"
+                            >
+                              {clinic.address}
+                            </a>
+                          </div>
+                          
+                          <div className="clinic-detail-item">
+                            <FaPhone className="detail-icon" />
+                            <span>{clinic.user.phoneNo}</span>
+                          </div>
+                          
+                          <div className="clinic-detail-item">
+                            <FaStethoscope className="detail-icon" />
+                            <span>{clinic.specializations || "General Practice"}</span>
+                          </div>
+                          
+                          <div className="clinic-stats">
+                            <div className="stat-item">
+                              <FaUserMd className="stat-icon" />
+                              <span>{doctorCount} Doctors</span>
+                            </div>
+                            <div className="stat-item">
+                              <FaUserMd className="stat-icon" />
+                              <span>{consultantCount} Consultants</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="clinic-card-footer">
+                        <motion.button
+                          className="clinic-select-btn"
+                          onClick={() => navigate(`/clinic/${clinic.id}`)}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                        >
+                          View Details & Book
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              : !loading && (
+                  <div className="no-clinics-container">
+                    <div className="no-clinics-content">
+                      <FaStethoscope className="no-clinics-icon" />
+                      <h3>No Clinics Found</h3>
+                      <p>Try adjusting your search criteria or removing filters</p>
+                    </div>
+                  </div>
+                )}
           </div>
+
+          {hasMore && (
+            <div className="load-more-container">
+              <motion.button 
+                className="load-more-btn" 
+                onClick={handleSeeMore}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Load More Clinics
+              </motion.button>
+            </div>
+          )}
         </main>
+
+        {/* Enhanced Chat Button */}
         <motion.div
-          className="contact-icon"
+          className="chat-fab"
           whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => setIsPopupOpen(!isPopupOpen)}
         >
           <svg

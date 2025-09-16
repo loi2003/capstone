@@ -9,7 +9,7 @@ const NutrientPolicy = () => {
   const [user, setUser] = useState(null);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
-  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
