@@ -52,6 +52,7 @@ import EditJournalEntryForm from "../components/form/EditJournalEntryForm";
 import DishManagement from "../pages/nutrientspecialist/DishManagement";
 import SystemMealPlanner from "../components/form/SystemMealPlanner";
 import NutrientInFoodManagement from "../pages/nutrientspecialist/NutrientInFoodManagement";
+import OfflineConsultationManagement from "../pages/consultation/OfflineConsultationManagement";
 import AdvicePage from "../pages/AdvicePage";
 import RecommendedNutritionalNeeds from "../components/form/RecommendedNutritionalNeeds";
 import NotificationPage from "../pages/NotificationPage";
@@ -157,6 +158,7 @@ const AppRoutes = () => {
         <Route path="/clinic/list" element={<ClinicList />} />
         <Route path="/clinic/:id" element={<ClinicDetail />} />
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
+        <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
       </Routes>
     </ThemeProvider>
   );

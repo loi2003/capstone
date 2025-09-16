@@ -101,7 +101,6 @@ export const createOnlineConsultation = async (consultationData, token) => {
 // Update an existing online consultation using the API
 export const updateOnlineConsultation = async (consultationData, token) => {
   try {
-    // Prepare form data for FromForm API
     const formData = new FormData();
     formData.append("Id", consultationData.Id ?? "");
     formData.append("Trimester", consultationData.Trimester ?? "");
@@ -113,11 +112,23 @@ export const updateOnlineConsultation = async (consultationData, token) => {
     formData.append("VitalSigns", consultationData.VitalSigns ?? "");
     formData.append("Recommendations", consultationData.Recommendations ?? "");
 
-    // If Attachments is an array, append each file (if any)
+    // Append all files (existing and new uploads) as binary (IFormFile)
+    // Only File objects can be sent as binary
     if (Array.isArray(consultationData.Attachments)) {
       consultationData.Attachments.forEach((file) => {
-        if (file) formData.append("Attachments", file);
+        if (file instanceof File) {
+          formData.append("Attachments", file);
+        }
       });
+    }
+
+    // If you want to keep existing files without re-uploading,
+    // send their file names in ExistingFileNames (as JSON string)
+    if (Array.isArray(consultationData.ExistingFileNames)) {
+      formData.append(
+        "ExistingFileNames",
+        JSON.stringify(consultationData.ExistingFileNames)
+      );
     }
 
     const response = await apiClient.put(
@@ -127,7 +138,7 @@ export const updateOnlineConsultation = async (consultationData, token) => {
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: 'application/json',
-          "Content-Type": "multipart/form-data",
+          // Do NOT set Content-Type for FormData; browser will handle it
         },
       }
     );

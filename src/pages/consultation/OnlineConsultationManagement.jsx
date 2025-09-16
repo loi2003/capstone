@@ -2,12 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import { viewConsultantByUserId } from "../../apis/consultant-api";
+import { viewConsultantByUserId, getAllUsers } from "../../apis/consultant-api";
 import {
   getAllOnlineConsultationsByConsultantId,
   updateOnlineConsultation,
   softDeleteOnlineConsultation,
   createOnlineConsultation,
+  getOnlineConsultationById,
 } from "../../apis/online-consultation-api";
 import "../../styles/OnlineConsultationManagement.css";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
@@ -36,6 +37,24 @@ const OnlineConsultationManagement = () => {
   const [editLoading, setEditLoading] = useState(false);
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [userList, setUserList] = useState([]);
+  const [userListLoading, setUserListLoading] = useState(true);
+  const [showUserListModal, setShowUserListModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const sortedConsultations = consultations
+    .slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+  const totalItems = sortedConsultations.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const paginatedConsultations = sortedConsultations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const [userSearch, setUserSearch] = useState("");
 
   const [createForm, setCreateForm] = useState({
     Trimester: "",
@@ -84,6 +103,22 @@ const OnlineConsultationManagement = () => {
     };
     fetchUserAndConsultant();
   }, [navigate]);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setUserListLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        const users = await getAllUsers(token);
+        // Ensure users is always an array
+        setUserList(Array.isArray(users) ? users : users?.data || []);
+      } catch (err) {
+        setUserList([]);
+      }
+      setUserListLoading(false);
+    };
+    fetchUsers();
+  }, []);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -158,26 +193,35 @@ const OnlineConsultationManagement = () => {
   };
 
   // --- Edit Modal Logic ---
-  const handleEditClick = (item) => {
-    setEditForm({
-      Id: item.id,
-      Trimester: item.trimester ?? "",
-      Date: item.date ? item.date.slice(0, 16) : "",
-      GestationalWeek: item.gestationalWeek ?? "",
-      Summary: item.summary ?? "",
-      ConsultantNote: item.consultantNote ?? "",
-      UserNote: item.userNote ?? "",
-      VitalSigns: item.vitalSigns ?? "",
-      Recommendations: item.recommendations ?? "",
-      Attachments: item.attachments || [],
-    });
-    setShowEditModal(true);
+  const handleEditClick = async (item) => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await getOnlineConsultationById(item.id, token);
+      const data = res?.data || res;
+      // Step 1: Load all data including existing attachments
+      setEditForm({
+        Id: data.id,
+        Trimester: data.trimester ?? "",
+        Date: data.date ? data.date.slice(0, 16) : "",
+        GestationalWeek: data.gestationalWeek ?? "",
+        Summary: data.summary ?? "",
+        ConsultantNote: data.consultantNote ?? "",
+        UserNote: data.userNote ?? "",
+        VitalSigns: data.vitalSigns ?? "",
+        Recommendations: data.recommendations ?? "",
+        Attachments: Array.isArray(data.attachments) ? data.attachments : [],
+        selectedAttachments: [],
+        user: data.user || null,
+      });
+      setShowEditModal(true);
+    } catch (err) {
+      alert("Failed to load consultation details.", err.message);
+    }
   };
 
   const handleEditChange = (e) => {
-    const { name, value, type, files } = e.target;
+    const { type, files } = e.target;
     if (type === "file") {
-      // Only update the selected files, do not add to the list yet
       setEditForm((prev) => ({
         ...prev,
         selectedAttachments: Array.from(files),
@@ -185,7 +229,7 @@ const OnlineConsultationManagement = () => {
     } else {
       setEditForm((prev) => ({
         ...prev,
-        [name]: value,
+        [e.target.name]: e.target.value,
       }));
     }
   };
@@ -201,23 +245,15 @@ const OnlineConsultationManagement = () => {
     }));
   };
 
-  const handleRemoveAttachment = (idx) => {
-    setEditForm((prev) => ({
-      ...prev,
-      Attachments: prev.Attachments.filter((_, i) => i !== idx),
-    }));
-  };
-
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!editForm.Summary || !editForm.Summary.trim()) {
-      alert("Summary is required.");
-      setEditLoading(false);
-      return;
-    }
     setEditLoading(true);
 
-    // Use PascalCase keys to match backend [FromForm] DTO
+    // Only send File objects (binary) in Attachments
+    const filesToSend = editForm.Attachments.filter(
+      (file) => file instanceof File
+    );
+
     const payload = {
       Id: editForm.Id,
       Trimester: Number(editForm.Trimester),
@@ -228,32 +264,25 @@ const OnlineConsultationManagement = () => {
       UserNote: editForm.UserNote,
       VitalSigns: editForm.VitalSigns,
       Recommendations: editForm.Recommendations,
-      Attachments: editForm.Attachments,
+      Attachments: filesToSend, // Only File objects for upload
     };
 
     try {
-      await updateOnlineConsultation(payload);
-      setConsultations((prev) =>
-        prev.map((c) =>
-          c.id === editForm.Id
-            ? {
-                ...c,
-                trimester: Number(editForm.Trimester),
-                date: editForm.Date,
-                gestationalWeek: Number(editForm.GestationalWeek),
-                summary: editForm.Summary,
-                consultantNote: editForm.ConsultantNote,
-                userNote: editForm.UserNote,
-                vitalSigns: editForm.VitalSigns,
-                recommendations: editForm.Recommendations,
-                attachments: editForm.Attachments,
-              }
-            : c
-        )
-      );
+      const token = localStorage.getItem("token");
+      await updateOnlineConsultation(payload, token);
       setShowEditModal(false);
+      setSuccessMessage("Update Consultation Successful!");
+      setTimeout(() => setSuccessMessage(""), 3000);
+      // Optionally refresh the list
+      if (consultant?.id) {
+        const consultationsRes = await getAllOnlineConsultationsByConsultantId(
+          consultant.id
+        );
+        setConsultations(consultationsRes?.data || consultationsRes || []);
+      }
     } catch (err) {
-      alert("Failed to update consultation.", err.message);
+      setErrorMessage("Update Consultation Fail!");
+      setTimeout(() => setErrorMessage(""), 3000);
     }
     setEditLoading(false);
   };
@@ -263,8 +292,11 @@ const OnlineConsultationManagement = () => {
       try {
         await softDeleteOnlineConsultation(id);
         setConsultations((prev) => prev.filter((c) => c.id !== id));
+        setSuccessMessage("Remove Consultation Successful!");
+        setTimeout(() => setSuccessMessage(""), 3000);
       } catch (err) {
-        alert("Failed to remove consultation.", err.message);
+        setErrorMessage("Remove Consultation Fail!");
+        setTimeout(() => setErrorMessage(""), 3000);
       }
     }
   };
@@ -302,11 +334,28 @@ const OnlineConsultationManagement = () => {
     }));
   };
 
+  // const handleOpenCreateFlow = () => {
+  //   setShowUserListModal(true);
+  //   setSelectedUser(null);
+  // };
+
+  // const handleSelectUser = (user) => {
+  //   setSelectedUser(user);
+  //   setShowUserListModal(false);
+  //   setShowCreateModal(true);
+  // };
+
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("token");
     if (!createForm.Summary || !createForm.Summary.trim()) {
-      alert("Summary is required.");
+      setErrorMessage("Summary is required.");
+      setTimeout(() => setErrorMessage(""), 3000);
+      return;
+    }
+    if (!selectedUser) {
+      setErrorMessage("Please select a user.");
+      setTimeout(() => setErrorMessage(""), 3000);
       return;
     }
     try {
@@ -315,7 +364,7 @@ const OnlineConsultationManagement = () => {
           ...createForm,
           Attachments: createForm.Attachments,
           ConsultantId: consultant?.id,
-          UserId: user?.id,
+          UserId: selectedUser?.id,
         },
         token
       );
@@ -337,13 +386,60 @@ const OnlineConsultationManagement = () => {
         Attachments: [],
         selectedAttachments: [],
       });
+      setSuccessMessage("Create Consultation Successful!");
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      alert("Failed to create consultation.", err.message);
+      setErrorMessage("Create Consultation Fail!");
+      setTimeout(() => setErrorMessage(""), 3000);
     }
   };
 
   return (
     <div className="consultant-homepage">
+      {(successMessage || errorMessage) && (
+        <div
+          className={`notification-popup ${
+            errorMessage ? "notification-error" : "notification-success"
+          }`}
+          style={{
+            position: "fixed",
+            top: 24,
+            right: 24,
+            zIndex: 9999,
+            background: errorMessage ? "#ffe6e6" : "#e6ffed",
+            color: errorMessage ? "#d32f2f" : "#2d5a3d",
+            border: errorMessage ? "1px solid #d32f2f" : "1px solid #34C759",
+            borderRadius: "8px",
+            padding: "12px 24px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            fontWeight: 500,
+          }}
+        >
+          <span className="notification-icon">
+            {errorMessage ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                  fill="#EF4444"
+                />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                  fill="#34C759"
+                />
+              </svg>
+            )}
+          </span>
+          <span className="notification-message">
+            {errorMessage || successMessage}
+          </span>
+        </div>
+      )}
       <motion.aside
         className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
@@ -362,7 +458,7 @@ const OnlineConsultationManagement = () => {
               whileHover="hover"
               className="logo-svg-container"
             >
-              <svg
+              {/* <svg
                 width="48"
                 height="48"
                 viewBox="0 0 24 24"
@@ -402,13 +498,13 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
             </motion.div>
             {isSidebarOpen && (
               <span className="logo-text">Consultant Panel</span>
             )}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title">Consultant Tools</h2>}
+          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -450,7 +546,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Dashboard"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -490,7 +586,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>📊</span>
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
@@ -500,7 +597,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Schedule"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -516,7 +613,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>📅</span>
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
@@ -526,7 +624,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Clients"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -542,7 +640,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>👥</span>
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
@@ -552,7 +651,7 @@ const OnlineConsultationManagement = () => {
               onClick={() => setIsSidebarOpen(true)}
               title="Support"
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -568,7 +667,8 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>❓</span>
               {isSidebarOpen && <span>Support</span>}
             </Link>
           </motion.div>
@@ -580,7 +680,7 @@ const OnlineConsultationManagement = () => {
                 navigate("/consultation/online-consultation-management")
               }
             >
-              <svg
+              {/* <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
@@ -596,8 +696,38 @@ const OnlineConsultationManagement = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
-              </svg>
+              </svg> */}
+              <span>💻</span>
               {isSidebarOpen && <span>Online Consultation</span>}
+            </button>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <button
+              className="sidebar-action-button"
+              title="Add Consultation"
+              onClick={() =>
+                navigate("/consultation/offline-consultation-management")
+              }
+            >
+              {/* <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-label="Plus icon for add consultation"
+              >
+                <path
+                  d="M12 5v14m-7-7h14"
+                  fill="var(--consultant-background)"
+                  stroke="var(--consultant-light-accent)"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg> */}
+              <span>🏥</span>
+              {isSidebarOpen && <span>Offline Consultation</span>}
             </button>
           </motion.div>
           {user ? (
@@ -709,437 +839,116 @@ const OnlineConsultationManagement = () => {
           <div className="create-online-consultation-section">
             <button
               className="create-online-consultation-btn"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => setShowUserListModal(true)}
             >
               <span>➕</span>
               Add Online Consultation
             </button>
           </div>
-          {showCreateModal && (
+          {showCreateModal && selectedUser && (
             <div className="modal-overlay">
-              <div className="consultation-container">
-                <div className="form-header">
-                  <h1 className="header-title">Add Online Consultation</h1>
-                  <p className="header-subtitle">
-                    Enter new online consultation information
-                  </p>
-                </div>
-                <form onSubmit={handleCreateSubmit}>
-                  <div className="form-content">
-                    <div className="form-grid">
-                      {/* Patient Information Section */}
-                      <div className="form-section">
-                        <div className="section-header">
-                          <div className="section-icon">
-                            <i className="fas fa-user-md"></i>
-                          </div>
-                          <h2 className="section-title">Patient Information</h2>
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">
-                            Trimester <span className="required">*</span>
-                          </label>
-                          <div className="input-icon">
-                            <input
-                              type="number"
-                              className="form-input"
-                              name="Trimester"
-                              value={createForm.Trimester}
-                              min={1}
-                              max={3}
-                              required
-                              onChange={handleCreateChange}
-                            />
-                            <i className="fas fa-hashtag"></i>
-                          </div>
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">
-                            Date <span className="required">*</span>
-                          </label>
-                          <div className="datetime-wrapper">
-                            <input
-                              type="date"
-                              className="form-input"
-                              value={
-                                createForm.Date
-                                  ? createForm.Date.slice(0, 10)
-                                  : ""
-                              }
-                              onChange={(e) =>
-                                setCreateForm((prev) => ({
-                                  ...prev,
-                                  Date:
-                                    e.target.value +
-                                    "T" +
-                                    (createForm.Date
-                                      ? createForm.Date.slice(11, 16)
-                                      : "00:00"),
-                                }))
-                              }
-                              required
-                            />
-                            <span className="datetime-separator">at</span>
-                            <input
-                              type="time"
-                              className="form-input"
-                              value={
-                                createForm.Date
-                                  ? createForm.Date.slice(11, 16)
-                                  : ""
-                              }
-                              onChange={(e) =>
-                                setCreateForm((prev) => ({
-                                  ...prev,
-                                  Date:
-                                    (createForm.Date
-                                      ? createForm.Date.slice(0, 10)
-                                      : new Date().toISOString().slice(0, 10)) +
-                                    "T" +
-                                    e.target.value,
-                                }))
-                              }
-                              required
-                            />
-                          </div>
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Gestational Week</label>
-                          <div className="input-icon">
-                            <input
-                              type="number"
-                              className="form-input"
-                              name="GestationalWeek"
-                              value={createForm.GestationalWeek}
-                              min={1}
-                              max={42}
-                              placeholder="Enter week"
-                              onChange={handleCreateChange}
-                            />
-                            <i className="fas fa-calendar-week"></i>
-                          </div>
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Summary</label>
-                          <textarea
-                            className="form-textarea"
-                            name="Summary"
-                            placeholder="Enter detailed consultation summary..."
-                            value={createForm.Summary}
-                            onChange={handleCreateChange}
-                            required
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Attachments</label>
-                          {/* List current attachments */}
-                          {createForm.Attachments &&
-                            createForm.Attachments.length > 0 && (
-                              <ul
-                                style={{
-                                  margin: "8px 0 0 0",
-                                  padding: 0,
-                                  listStyle: "none",
-                                  fontSize: "0.95em",
-                                }}
-                              >
-                                {createForm.Attachments.map((file, idx) => (
-                                  <li
-                                    key={idx}
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 8,
-                                    }}
-                                  >
-                                    {file.fileName
-                                      ? file.fileName
-                                      : file.name
-                                      ? file.name
-                                      : typeof file === "string"
-                                      ? file
-                                      : "Attachment"}
-                                    <button
-                                      type="button"
-                                      style={{
-                                        marginLeft: 8,
-                                        background: "none",
-                                        border: "none",
-                                        color: "#d32f2f",
-                                        cursor: "pointer",
-                                        fontSize: "1em",
-                                      }}
-                                      title="Remove"
-                                      onClick={() =>
-                                        handleRemoveCreateAttachment(idx)
-                                      }
-                                    >
-                                      &times;
-                                    </button>
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
-                          {/* Select new attachments to add */}
-                          <input
-                            type="file"
-                            name="Attachments"
-                            multiple
-                            onChange={handleCreateChange}
-                            className="form-input"
-                            style={{ marginTop: 8 }}
-                          />
-                          {/* Show selected files before adding */}
-                          {createForm.selectedAttachments &&
-                            createForm.selectedAttachments.length > 0 && (
-                              <div style={{ marginTop: 8 }}>
-                                <strong>Selected to add:</strong>
-                                <ul
-                                  style={{
-                                    margin: "4px 0 0 0",
-                                    padding: 0,
-                                    listStyle: "none",
-                                    fontSize: "0.95em",
-                                  }}
-                                >
-                                  {createForm.selectedAttachments.map(
-                                    (file, idx) => (
-                                      <li key={idx}>{file.name}</li>
-                                    )
-                                  )}
-                                </ul>
-                                <button
-                                  type="button"
-                                  className="btn btn-save"
-                                  style={{
-                                    marginTop: 6,
-                                    padding: "6px 18px",
-                                    fontSize: "0.98em",
-                                  }}
-                                  onClick={handleAddCreateAttachments}
-                                >
-                                  Add Attachment
-                                  {createForm.selectedAttachments.length > 1
-                                    ? "s"
-                                    : ""}
-                                </button>
-                              </div>
-                            )}
-                        </div>
-                      </div>
-                      {/* Medical Information Section */}
-                      <div className="form-section">
-                        <div className="section-header">
-                          <div className="section-icon">
-                            <i className="fas fa-heartbeat"></i>
-                          </div>
-                          <h2 className="section-title">Medical Records</h2>
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Vital Signs</label>
-                          <textarea
-                            className="form-textarea"
-                            name="VitalSigns"
-                            placeholder="Record vital signs and measurements..."
-                            value={createForm.VitalSigns}
-                            onChange={handleCreateChange}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Consultant Note</label>
-                          <textarea
-                            className="form-textarea"
-                            name="ConsultantNote"
-                            placeholder="Professional medical observations..."
-                            value={createForm.ConsultantNote}
-                            onChange={handleCreateChange}
-                            required
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">User Note</label>
-                          <textarea
-                            className="form-textarea"
-                            name="UserNote"
-                            placeholder="Patient's personal notes or concerns..."
-                            value={createForm.UserNote}
-                            onChange={handleCreateChange}
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">Recommendations</label>
-                          <textarea
-                            className="form-textarea"
-                            name="Recommendations"
-                            placeholder="Treatment recommendations and follow-up instructions..."
-                            value={createForm.Recommendations}
-                            onChange={handleCreateChange}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="actions-section">
-                      <button
-                        className="btn btn-cancel"
-                        type="button"
-                        onClick={() => setShowCreateModal(false)}
-                      >
-                        <i className="fas fa-times"></i> Cancel
-                      </button>
-                      <button className="btn btn-save" type="submit">
-                        <i className="fas fa-save"></i> Create
-                      </button>
-                    </div>
+              <div className="online-consultation-modal">
+                <div className="online-consultation-modal-content">
+                  <div className="online-consultation-modal-header">
+                    <h3>
+                      <span>📝</span> Consultation Information
+                    </h3>
+                    <span
+                      className="close"
+                      onClick={() => setShowCreateModal(false)}
+                    >
+                      &times;
+                    </span>
                   </div>
-                </form>
-              </div>
-            </div>
-          )}
-          {loading ? (
-            <div>Loading consultations...</div>
-          ) : consultations.length === 0 ? (
-            <div>No consultations found.</div>
-          ) : (
-            <table className="online-consultation-table">
-              <thead>
-                <tr>
-                  <th>No.</th>
-                  <th>Patient</th>
-                  <th>Summary</th>
-                  <th>Date</th>
-                  <th>Status</th>
-                  <th>Note</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {consultations.map((item, idx) => (
-                  <tr key={item.id || idx}>
-                    <td>{idx + 1}</td>
-                    <td>
-                      {item.user?.userName} <br />
-                      <span className="online-consultation-table-email">
-                        {item.user?.email}
-                      </span>
-                    </td>
-                    <td>{item.summary}</td>
-                    <td>
-                      {item.date
-                        ? new Date(item.date).toLocaleString("en-GB", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })
-                        : ""}
-                    </td>
-                    <td>
-                      {item.consultant?.isCurrentlyConsulting
-                        ? "Consulting"
-                        : "Completed"}
-                    </td>
-                    <td>{item.consultantNote}</td>
-                    <td>
-                      <div style={{ display: "flex", gap: "4px" }}>
-                        <button
-                          className="action-btn view"
-                          title="View Detail"
-                          onClick={() => handleEditClick(item)}
-                        >
-                          <FaEye />
-                        </button>
-                        <button
-                          className="action-btn remove"
-                          title="Remove"
-                          onClick={() => handleRemoveClick(item.id)}
-                        >
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-        {/* Edit Modal */}
-        {showEditModal && (
-          <div className="modal-overlay">
-            <div className="consultation-container">
-              <div className="form-header">
-                <h1 className="header-title">Online Consultation Detail</h1>
-                <p className="header-subtitle">
-                  Complete patient consultation information
-                </p>
-              </div>
-              <form onSubmit={handleEditSubmit}>
-                <div className="form-content">
-                  <div className="form-grid">
-                    {/* Patient Information Section */}
-                    <div className="form-section">
-                      <div className="section-header">
-                        <div className="section-icon">
-                          <i className="fas fa-user-md"></i>
+                  <div className="online-consultation-modal-body">
+                    <form
+                      className="online-consultation-form"
+                      id="onlineConsultationForm"
+                      onSubmit={handleCreateSubmit}
+                    >
+                      <div className="online-consultation-selected-info">
+                        <div className="online-consultation-selected-title">
+                          <span>🧑</span> Selected Patient
                         </div>
-                        <h2 className="section-title">Patient Information</h2>
+                        <div className="online-consultation-selected-details">
+                          <div className="online-consultation-selected-item">
+                            <div className="online-consultation-selected-avatar">
+                              {selectedUser.userName
+                                ? selectedUser.userName.split(" ")[1]
+                                  ? selectedUser.userName
+                                      .split(" ")[1]
+                                      .charAt(0)
+                                  : selectedUser.userName.charAt(0)
+                                : "U"}
+                            </div>
+                            <div>
+                              <div className="online-consultation-doctor-card-name">
+                                {selectedUser.userName}
+                              </div>
+                              <div className="online-consultation-doctor-card-email">
+                                {selectedUser.email}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">
-                          Trimester <span className="required">*</span>
-                        </label>
-                        <div className="input-icon">
-                          <input
-                            type="number"
-                            className="form-input"
+                      <div className="online-consultation-form-row">
+                        <div className="online-consultation-form-group">
+                          <label>
+                            Trimester{" "}
+                            <span style={{ color: "#e74c3c" }}>*</span>
+                          </label>
+                          <select
                             name="Trimester"
-                            value={editForm.Trimester}
-                            min={1}
-                            max={3}
+                            value={createForm.Trimester}
                             required
-                            onChange={handleEditChange}
-                          />
-                          <i className="fas fa-hashtag"></i>
+                            onChange={handleCreateChange}
+                          >
+                            <option value="">Select Trimester</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                          </select>
                         </div>
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">
-                          Date <span className="required">*</span>
-                        </label>
-                        <div className="datetime-wrapper">
+                        <div className="online-consultation-form-group">
+                          <label>
+                            Date <span style={{ color: "#e74c3c" }}>*</span>
+                          </label>
                           <input
                             type="date"
-                            className="form-input"
+                            name="Date"
                             value={
-                              editForm.Date ? editForm.Date.slice(0, 10) : ""
+                              createForm.Date
+                                ? createForm.Date.slice(0, 10)
+                                : ""
                             }
                             onChange={(e) =>
-                              setEditForm((prev) => ({
+                              setCreateForm((prev) => ({
                                 ...prev,
                                 Date:
                                   e.target.value +
                                   "T" +
-                                  (editForm.Date
-                                    ? editForm.Date.slice(11, 16)
+                                  (createForm.Date
+                                    ? createForm.Date.slice(11, 16)
                                     : "00:00"),
                               }))
                             }
                             required
                           />
-                          <span className="datetime-separator">at</span>
                           <input
                             type="time"
-                            className="form-input"
+                            name="Time"
                             value={
-                              editForm.Date ? editForm.Date.slice(11, 16) : ""
+                              createForm.Date
+                                ? createForm.Date.slice(11, 16)
+                                : ""
                             }
                             onChange={(e) =>
-                              setEditForm((prev) => ({
+                              setCreateForm((prev) => ({
                                 ...prev,
                                 Date:
-                                  (editForm.Date
-                                    ? editForm.Date.slice(0, 10)
+                                  (createForm.Date
+                                    ? createForm.Date.slice(0, 10)
                                     : new Date().toISOString().slice(0, 10)) +
                                   "T" +
                                   e.target.value,
@@ -1149,38 +958,80 @@ const OnlineConsultationManagement = () => {
                           />
                         </div>
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">Gestational Week</label>
-                        <div className="input-icon">
+                      <div className="online-consultation-form-row">
+                        <div className="online-consultation-form-group">
+                          <label>Gestational Week</label>
                           <input
                             type="number"
-                            className="form-input"
                             name="GestationalWeek"
-                            value={editForm.GestationalWeek}
+                            value={createForm.GestationalWeek}
                             min={1}
                             max={42}
                             placeholder="Enter week"
-                            onChange={handleEditChange}
+                            onChange={handleCreateChange}
                           />
-                          <i className="fas fa-calendar-week"></i>
+                        </div>
+                        <div className="online-consultation-form-group">
+                          <label>
+                            Summary <span style={{ color: "#e74c3c" }}>*</span>
+                          </label>
+                          <textarea
+                            name="Summary"
+                            placeholder="Enter detailed consultation summary..."
+                            value={createForm.Summary}
+                            onChange={handleCreateChange}
+                            required
+                          />
                         </div>
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">Summary</label>
-                        <textarea
-                          className="form-textarea"
-                          name="Summary"
-                          placeholder="Enter detailed consultation summary..."
-                          value={editForm.Summary}
-                          onChange={handleEditChange}
-                          required
-                        />
+                      <div className="online-consultation-form-row">
+                        <div className="online-consultation-form-group">
+                          <label>Vital Signs</label>
+                          <textarea
+                            name="VitalSigns"
+                            placeholder="Record vital signs and measurements..."
+                            value={createForm.VitalSigns}
+                            onChange={handleCreateChange}
+                          />
+                        </div>
+                        <div className="online-consultation-form-group">
+                          <label>
+                            Consultant Note{" "}
+                            <span style={{ color: "#e74c3c" }}>*</span>
+                          </label>
+                          <textarea
+                            name="ConsultantNote"
+                            placeholder="Professional medical observations..."
+                            value={createForm.ConsultantNote}
+                            onChange={handleCreateChange}
+                            required
+                          />
+                        </div>
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">Attachments</label>
-                        {/* List current attachments */}
-                        {editForm.Attachments &&
-                          editForm.Attachments.length > 0 && (
+                      <div className="online-consultation-form-row">
+                        <div className="online-consultation-form-group">
+                          <label>User Note</label>
+                          <textarea
+                            name="UserNote"
+                            placeholder="Patient's personal notes or concerns..."
+                            value={createForm.UserNote}
+                            onChange={handleCreateChange}
+                          />
+                        </div>
+                        <div className="online-consultation-form-group">
+                          <label>Recommendations</label>
+                          <textarea
+                            name="Recommendations"
+                            placeholder="Treatment recommendations and follow-up instructions..."
+                            value={createForm.Recommendations}
+                            onChange={handleCreateChange}
+                          />
+                        </div>
+                      </div>
+                      <div className="online-consultation-form-group">
+                        <label>Attachments</label>
+                        {createForm.Attachments &&
+                          createForm.Attachments.length > 0 && (
                             <ul
                               style={{
                                 margin: "8px 0 0 0",
@@ -1189,7 +1040,7 @@ const OnlineConsultationManagement = () => {
                                 fontSize: "0.95em",
                               }}
                             >
-                              {editForm.Attachments.map((file, idx) => (
+                              {createForm.Attachments.map((file, idx) => (
                                 <li
                                   key={idx}
                                   style={{
@@ -1198,7 +1049,6 @@ const OnlineConsultationManagement = () => {
                                     gap: 8,
                                   }}
                                 >
-                                  {/* Show fileName if object has fileName, else fallback to .name or string */}
                                   {file.fileName
                                     ? file.fileName
                                     : file.name
@@ -1217,7 +1067,9 @@ const OnlineConsultationManagement = () => {
                                       fontSize: "1em",
                                     }}
                                     title="Remove"
-                                    onClick={() => handleRemoveAttachment(idx)}
+                                    onClick={() =>
+                                      handleRemoveCreateAttachment(idx)
+                                    }
                                   >
                                     &times;
                                   </button>
@@ -1225,18 +1077,15 @@ const OnlineConsultationManagement = () => {
                               ))}
                             </ul>
                           )}
-                        {/* Select new attachments to add */}
                         <input
                           type="file"
                           name="Attachments"
                           multiple
-                          onChange={handleEditChange}
-                          className="form-input"
+                          onChange={handleCreateChange}
                           style={{ marginTop: 8 }}
                         />
-                        {/* Show selected files before adding */}
-                        {editForm.selectedAttachments &&
-                          editForm.selectedAttachments.length > 0 && (
+                        {createForm.selectedAttachments &&
+                          createForm.selectedAttachments.length > 0 && (
                             <div style={{ marginTop: 8 }}>
                               <strong>Selected to add:</strong>
                               <ul
@@ -1247,7 +1096,7 @@ const OnlineConsultationManagement = () => {
                                   fontSize: "0.95em",
                                 }}
                               >
-                                {editForm.selectedAttachments.map(
+                                {createForm.selectedAttachments.map(
                                   (file, idx) => (
                                     <li key={idx}>{file.name}</li>
                                   )
@@ -1255,45 +1104,405 @@ const OnlineConsultationManagement = () => {
                               </ul>
                               <button
                                 type="button"
-                                className="btn btn-save"
+                                className="online-consultation-modal-btn online-consultation-btn-primary"
                                 style={{
                                   marginTop: 6,
                                   padding: "6px 18px",
                                   fontSize: "0.98em",
                                 }}
-                                onClick={handleAddAttachments}
+                                onClick={handleAddCreateAttachments}
                               >
                                 Add Attachment
-                                {editForm.selectedAttachments.length > 1
+                                {createForm.selectedAttachments.length > 1
                                   ? "s"
                                   : ""}
                               </button>
                             </div>
                           )}
                       </div>
-                    </div>
-                    {/* Medical Information Section */}
-                    <div className="form-section">
-                      <div className="section-header">
-                        <div className="section-icon">
-                          <i className="fas fa-heartbeat"></i>
-                        </div>
-                        <h2 className="section-title">Medical Records</h2>
+                      <div className="online-consultation-modal-actions">
+                        <button
+                          type="button"
+                          className="online-consultation-modal-btn online-consultation-btn-secondary"
+                          onClick={() => {
+                            setShowCreateModal(false);
+                            setShowUserListModal(true);
+                          }}
+                        >
+                          <span>⬅️</span> Back to user list
+                        </button>
+                        <button
+                          type="submit"
+                          className="online-consultation-modal-btn online-consultation-btn-primary"
+                        >
+                          <span>✅</span> Create Consultation
+                        </button>
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">Vital Signs</label>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {loading ? (
+            <div>Loading consultations...</div>
+          ) : totalItems === 0 ? (
+            <div>No consultations found.</div>
+          ) : (
+            <>
+              <table className="online-consultation-table">
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th>Patient</th>
+                    <th>Summary</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Note</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedConsultations.map((item, idx) => (
+                    <tr key={item.id || idx}>
+                      <td>{(currentPage - 1) * itemsPerPage + idx + 1}</td>
+                      <td>
+                        {item.user?.userName} <br />
+                        <span className="online-consultation-table-email">
+                          {item.user?.email}
+                        </span>
+                      </td>
+                      <td>{item.summary}</td>
+                      <td>
+                        {item.date
+                          ? new Date(item.date).toLocaleString("en-GB", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : ""}
+                      </td>
+                      <td>
+                        {item.consultant?.isCurrentlyConsulting
+                          ? "Consulting"
+                          : "Completed"}
+                      </td>
+                      <td>{item.consultantNote}</td>
+                      <td>
+                        <div style={{ display: "flex", gap: "4px" }}>
+                          <button
+                            className="action-btn view"
+                            title="View Detail"
+                            onClick={() => handleEditClick(item)}
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            className="action-btn remove"
+                            title="Remove"
+                            onClick={() => handleRemoveClick(item.id)}
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Pagination Controls */}
+              <div style={{ marginTop: "16px", textAlign: "center" }}>
+                <button
+                  className="onlineConsultation-pagination-btn"
+                  onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={{ marginRight: "8px" }}
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="onlineConsultation-pagination-btn"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(p + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages}
+                  style={{ marginLeft: "8px" }}
+                >
+                  Next
+                </button>
+              </div>
+            </>
+          )}
+        </section>
+
+        {showUserListModal && (
+          <div className="modal-overlay">
+            <div className="online-consultation-modal">
+              <div className="online-consultation-modal-content">
+                <div className="online-consultation-modal-header">
+                  <h3>
+                    <span>🧑</span> Select Patient
+                  </h3>
+                  <span
+                    className="close"
+                    onClick={() => {
+                      setShowUserListModal(false);
+                      setSelectedUser(null);
+                    }}
+                  >
+                    &times;
+                  </span>
+                </div>
+                <div className="online-consultation-modal-body">
+                  <div className="search-box">
+                    <span className="search-icon">🔍</span>
+                    <input
+                      type="text"
+                      className="search-input"
+                      placeholder="Search patients by name"
+                      value={userSearch || ""}
+                      onChange={(e) => setUserSearch(e.target.value)}
+                    />
+                  </div>
+                  <div className="card-grid" id="userGrid">
+                    {userListLoading ? (
+                      <div style={{ textAlign: "center", padding: "24px" }}>
+                        Loading patients...
+                      </div>
+                    ) : userList.length === 0 ? (
+                      <div style={{ textAlign: "center", padding: "24px" }}>
+                        No patients found
+                      </div>
+                    ) : (
+                      userList
+                        .filter(
+                          (u) =>
+                            !userSearch ||
+                            u.userName
+                              ?.toLowerCase()
+                              .includes(userSearch.toLowerCase())
+                        )
+                        .map((user) => (
+                          <div
+                            key={user.id}
+                            className={`online-consultation-user-card${
+                              selectedUser?.id === user.id ? " selected" : ""
+                            }`}
+                            onClick={() => setSelectedUser(user)}
+                          >
+                            <div className="online-consultation-user-card-header">
+                              <div className="online-consultation-user-avatar">
+                                {user.userName
+                                  ? user.userName.split(" ")[1]
+                                    ? user.userName.split(" ")[1].charAt(0)
+                                    : user.userName.charAt(0)
+                                  : "U"}
+                              </div>
+                              <div className="online-consultation-user-card-info">
+                                <div className="online-consultation-user-card-name">
+                                  {user.userName}
+                                </div>
+                                <div className="online-consultation-user-card-email">
+                                  {user.email}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="online-consultation-user-card-details">
+                              <div className="online-consultation-user-card-detail-item">
+                                <span className="online-consultation-user-card-detail-icon">
+                                  📞
+                                </span>
+                                <span>{user.phoneNo ?? "N/A"}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                  </div>
+                  <div
+                    className="online-consultation-modal-actions"
+                    style={{ marginTop: 24 }}
+                  >
+                    <button
+                      className="online-consultation-modal-btn online-consultation-btn-secondary"
+                      onClick={() => {
+                        setShowUserListModal(false);
+                        setSelectedUser(null);
+                      }}
+                    >
+                      <span>❌</span> Cancel
+                    </button>
+                    <button
+                      className="online-consultation-modal-btn online-consultation-btn-primary"
+                      disabled={!selectedUser}
+                      onClick={() => {
+                        setShowUserListModal(false);
+                        setShowCreateModal(true);
+                      }}
+                    >
+                      <span>📝</span> Select Patient
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Modal */}
+        {showEditModal && (
+          <div className="modal-overlay">
+            <div className="online-consultation-modal">
+              <div className="online-consultation-modal-content">
+                <div className="online-consultation-modal-header">
+                  <h3>
+                    <span>📝</span> Edit Consultation Information
+                  </h3>
+                  <span
+                    className="close"
+                    onClick={() => setShowEditModal(false)}
+                  >
+                    &times;
+                  </span>
+                </div>
+                <div className="online-consultation-modal-body">
+                  <form
+                    className="online-consultation-form"
+                    id="editOnlineConsultationForm"
+                    onSubmit={handleEditSubmit}
+                  >
+                    <div className="online-consultation-selected-info">
+                      <div className="online-consultation-selected-title">
+                        <span>🧑</span> Patient
+                      </div>
+                      <div className="online-consultation-selected-details">
+                        <div className="online-consultation-selected-item">
+                          <div className="online-consultation-selected-avatar">
+                            {editForm.user?.userName
+                              ? editForm.user.userName.split(" ")[1]
+                                ? editForm.user.userName.split(" ")[1].charAt(0)
+                                : editForm.user.userName.charAt(0)
+                              : "U"}
+                          </div>
+                          <div>
+                            <div className="online-consultation-doctor-card-name">
+                              {editForm.user?.userName}
+                            </div>
+                            <div className="online-consultation-doctor-card-email">
+                              {editForm.user?.email}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="online-consultation-form-row">
+                      <div className="online-consultation-form-group">
+                        <label>
+                          Trimester <span style={{ color: "#e74c3c" }}>*</span>
+                        </label>
+                        <select
+                          name="Trimester"
+                          value={editForm.Trimester}
+                          required
+                          onChange={handleEditChange}
+                        >
+                          <option value="">Select Trimester</option>
+                          <option value="1">1</option>
+                          <option value="2">2</option>
+                          <option value="3">3</option>
+                        </select>
+                      </div>
+                      <div className="online-consultation-form-group">
+                        <label>
+                          Date <span style={{ color: "#e74c3c" }}>*</span>
+                        </label>
+                        <input
+                          type="date"
+                          name="Date"
+                          value={
+                            editForm.Date ? editForm.Date.slice(0, 10) : ""
+                          }
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              Date:
+                                e.target.value +
+                                "T" +
+                                (editForm.Date
+                                  ? editForm.Date.slice(11, 16)
+                                  : "00:00"),
+                            }))
+                          }
+                          required
+                        />
+                        <input
+                          type="time"
+                          name="Time"
+                          value={
+                            editForm.Date ? editForm.Date.slice(11, 16) : ""
+                          }
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              Date:
+                                (editForm.Date
+                                  ? editForm.Date.slice(0, 10)
+                                  : new Date().toISOString().slice(0, 10)) +
+                                "T" +
+                                e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="online-consultation-form-row">
+                      <div className="online-consultation-form-group">
+                        <label>Gestational Week</label>
+                        <input
+                          type="number"
+                          name="GestationalWeek"
+                          value={editForm.GestationalWeek}
+                          min={1}
+                          max={42}
+                          placeholder="Enter week"
+                          onChange={handleEditChange}
+                        />
+                      </div>
+                      <div className="online-consultation-form-group">
+                        <label>
+                          Summary <span style={{ color: "#e74c3c" }}>*</span>
+                        </label>
                         <textarea
-                          className="form-textarea"
+                          name="Summary"
+                          placeholder="Enter detailed consultation summary..."
+                          value={editForm.Summary}
+                          onChange={handleEditChange}
+                          required
+                        />
+                      </div>
+                    </div>
+                    <div className="online-consultation-form-row">
+                      <div className="online-consultation-form-group">
+                        <label>Vital Signs</label>
+                        <textarea
                           name="VitalSigns"
                           placeholder="Record vital signs and measurements..."
                           value={editForm.VitalSigns}
                           onChange={handleEditChange}
                         />
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">Consultant Note</label>
+                      <div className="online-consultation-form-group">
+                        <label>
+                          Consultant Note{" "}
+                          <span style={{ color: "#e74c3c" }}>*</span>
+                        </label>
                         <textarea
-                          className="form-textarea"
                           name="ConsultantNote"
                           placeholder="Professional medical observations..."
                           value={editForm.ConsultantNote}
@@ -1301,20 +1510,20 @@ const OnlineConsultationManagement = () => {
                           required
                         />
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">User Note</label>
+                    </div>
+                    <div className="online-consultation-form-row">
+                      <div className="online-consultation-form-group">
+                        <label>User Note</label>
                         <textarea
-                          className="form-textarea"
                           name="UserNote"
                           placeholder="Patient's personal notes or concerns..."
                           value={editForm.UserNote}
                           onChange={handleEditChange}
                         />
                       </div>
-                      <div className="form-group">
-                        <label className="form-label">Recommendations</label>
+                      <div className="online-consultation-form-group">
+                        <label>Recommendations</label>
                         <textarea
-                          className="form-textarea"
                           name="Recommendations"
                           placeholder="Treatment recommendations and follow-up instructions..."
                           value={editForm.Recommendations}
@@ -1322,33 +1531,120 @@ const OnlineConsultationManagement = () => {
                         />
                       </div>
                     </div>
-                  </div>
-                  <div className="actions-section">
-                    <button
-                      className="btn btn-cancel"
-                      type="button"
-                      onClick={() => setShowEditModal(false)}
-                    >
-                      <i className="fas fa-times"></i> Cancel
-                    </button>
-                    <button
-                      className="btn btn-save"
-                      type="submit"
-                      disabled={editLoading}
-                    >
-                      {editLoading ? (
-                        <>
-                          <i className="fas fa-spinner fa-spin"></i> Saving...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fas fa-save"></i> Save Changes
-                        </>
-                      )}
-                    </button>
-                  </div>
+                    <div className="online-consultation-form-group">
+                      <label>Attachments</label>
+                      {editForm.Attachments &&
+                        editForm.Attachments.length > 0 && (
+                          <ul
+                            style={{
+                              margin: "8px 0 0 0",
+                              padding: 0,
+                              listStyle: "none",
+                              fontSize: "0.95em",
+                            }}
+                          >
+                            {editForm.Attachments.map((file, idx) => (
+                              <li
+                                key={idx}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 8,
+                                }}
+                              >
+                                {file.fileName
+                                  ? file.fileName
+                                  : file.name
+                                  ? file.name
+                                  : typeof file === "string"
+                                  ? file
+                                  : "Attachment"}
+                                <button
+                                  type="button"
+                                  style={{
+                                    marginLeft: 8,
+                                    background: "none",
+                                    border: "none",
+                                    color: "#d32f2f",
+                                    cursor: "pointer",
+                                    fontSize: "1em",
+                                  }}
+                                  title="Remove"
+                                  onClick={() => {
+                                    setEditForm((prev) => ({
+                                      ...prev,
+                                      Attachments: prev.Attachments.filter(
+                                        (_, i) => i !== idx
+                                      ),
+                                    }));
+                                  }}
+                                >
+                                  &times;
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      <input
+                        type="file"
+                        name="Attachments"
+                        multiple
+                        onChange={handleEditChange}
+                        style={{ marginTop: 8 }}
+                      />
+                      {editForm.selectedAttachments &&
+                        editForm.selectedAttachments.length > 0 && (
+                          <div style={{ marginTop: 8 }}>
+                            <strong>Selected to add:</strong>
+                            <ul
+                              style={{
+                                margin: "4px 0 0 0",
+                                padding: 0,
+                                listStyle: "none",
+                                fontSize: "0.95em",
+                              }}
+                            >
+                              {editForm.selectedAttachments.map((file, idx) => (
+                                <li key={idx}>{file.name}</li>
+                              ))}
+                            </ul>
+                            <button
+                              type="button"
+                              className="online-consultation-modal-btn online-consultation-btn-primary"
+                              style={{
+                                marginTop: 6,
+                                padding: "6px 18px",
+                                fontSize: "0.98em",
+                              }}
+                              onClick={handleAddAttachments}
+                            >
+                              Add Attachment
+                              {editForm.selectedAttachments.length > 1
+                                ? "s"
+                                : ""}
+                            </button>
+                          </div>
+                        )}
+                    </div>
+                    <div className="online-consultation-modal-actions">
+                      <button
+                        type="button"
+                        className="online-consultation-modal-btn online-consultation-btn-secondary"
+                        onClick={() => setShowEditModal(false)}
+                      >
+                        <span>❌</span> Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="online-consultation-modal-btn online-consultation-btn-primary"
+                        disabled={editLoading}
+                      >
+                        <span>✅</span> Save Changes
+                      </button>
+                    </div>
+                  </form>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
