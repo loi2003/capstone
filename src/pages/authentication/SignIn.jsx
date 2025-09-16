@@ -431,11 +431,11 @@ const SignIn = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className={`notification-popup ${
-                errors.server ? "notification-error" : "notification-success"
+              className={`signin-notification-popup ${
+                errors.server ? "signin-notification-error" : "signin-notification-success"
               }`}
             >
-              <span className="notification-icon">
+              <span className="signin-notification-icon">
                 {errors.server ? (
                   <svg
                     width="24"
@@ -464,7 +464,7 @@ const SignIn = () => {
                   </svg>
                 )}
               </span>
-              <p className="notification-message">
+              <p className="signin-notification-message">
                 {errors.server || successMessage}
               </p>
             </motion.div>

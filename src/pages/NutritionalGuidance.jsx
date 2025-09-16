@@ -14,261 +14,413 @@ import ChatBoxPage from "../components/chatbox/ChatBoxPage";
 import "../styles/NutritionalGuidance.css";
 
 const NutritionalGuidance = () => {
+  const [selectedTrimester, setSelectedTrimester] = useState('first');
   const navigate = useNavigate();
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const trimesters = [
-    {
-      id: 1,
-      title: "First Trimester (Weeks 1–12)",
-      highlight:
-        "During the first trimester, focus on nutrients that support embryonic development and help manage morning sickness. Small, frequent meals can help with nausea.",
+
+  // Framer Motion variants for enhanced animations
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 24
+      }
+    }
+  };
+
+  const nutritionData = {
+    first: {
+      title: 'First Trimester',
+      subtitle: 'Building the Foundation (Weeks 1-12)',
       nutrients: [
         {
-          name: "Folic Acid",
-          description:
-            "Essential for preventing neural tube defects. Aim for 600–800 mcg daily.",
-          sources: "Leafy greens, fortified cereals, beans, citrus fruits",
+          name: 'Folic Acid',
+          description: 'Critical for neural tube development and preventing birth defects. Essential during the first few weeks of pregnancy.',
+          sources: 'Leafy greens, fortified cereals, citrus fruits, legumes, asparagus',
+          icon: <BsCloud className="nutrient-icon" />
         },
         {
-          name: "Iron",
-          description:
-            "Supports increased blood volume and prevents anemia. Aim for 27mg daily.",
-          sources: "Lean red meat, beans, spinach, fortified cereals",
+          name: 'Iron',
+          description: 'Supports increased blood volume and prevents anemia. Important for oxygen transport to your baby.',
+          sources: 'Lean meats, poultry, fish, dried beans, fortified cereals, spinach',
+          icon: <FaTint className="nutrient-icon" />
         },
         {
-          name: "Vitamin B6",
-          description:
-            "Helps reduce nausea and supports brain development. Aim for 1.9mg daily.",
-          sources: "Chicken, fish, potatoes, bananas, chickpeas",
+          name: 'Calcium',
+          description: 'Essential for developing strong bones and teeth. If you don\'t get enough, your baby will take calcium from your bones.',
+          sources: 'Dairy products, fortified plant milks, leafy greens, canned fish with bones',
+          icon: <FaCheckCircle className="nutrient-icon" />
         },
         {
-          name: "Calcium",
-          description: "Develops bones and teeth. Aim for 1,000mg daily.",
-          sources: "Dairy products, fortified plant milks, leafy greens",
-        },
+          name: 'Protein',
+          description: 'Building blocks for your baby\'s cells, especially important for brain development.',
+          sources: 'Lean meats, eggs, dairy, legumes, nuts, quinoa, tofu',
+          icon: <AiFillApple className="nutrient-icon" />
+        }
       ],
       embrace: [
-        "Whole grains (brown rice, oatmeal) for energy and fiber",
-        "Lean proteins (chicken, fish, tofu) for tissue development",
-        "Fruits and vegetables for vitamins and minerals",
-        "Dairy or fortified plant alternatives for calcium",
-        "Ginger tea or crackers to help with morning sickness",
+        'Whole grain breads and cereals',
+        'Fresh fruits and vegetables',
+        'Lean proteins (chicken, fish, eggs)',
+        'Dairy products or fortified alternatives',
+        'Prenatal vitamins with folic acid',
+        'Plenty of water (8-10 glasses daily)'
       ],
       avoid: [
-        "Alcohol (no safe amount during pregnancy)",
-        "High-mercury fish (shark, swordfish, king mackerel)",
-        "Raw/undercooked meat, fish, and eggs",
-        "Unpasteurized dairy products and juices",
-        "Excessive caffeine (limit to 200mg per day)",
+        'Raw or undercooked meats and eggs',
+        'High-mercury fish (shark, swordfish)',
+        'Unpasteurized dairy products',
+        'Alcohol and smoking',
+        'Excessive caffeine (limit to 200mg/day)',
+        'Raw sprouts and unwashed produce'
       ],
       tips: [
-        "Eat small, frequent meals",
-        "Keep crackers nearby and eat before getting up",
-        "Try ginger tea, ginger candies, or supplements",
-        "Stay hydrated with small sips of water",
-        "Avoid strong smells and foods that trigger nausea",
-      ],
+        'Take prenatal vitamins daily, even before conception if possible',
+        'Eat small, frequent meals to combat morning sickness',
+        'Stay hydrated - dehydration can worsen nausea',
+        'Choose nutrient-dense foods when appetite is limited',
+        'Cook foods thoroughly to prevent foodborne illness',
+        'Listen to your body and rest when needed'
+      ]
     },
-    {
-      id: 2,
-      title: "Second Trimester (Weeks 13–27)",
-      highlight:
-        "In the second trimester, focus on calcium and protein to support rapid fetal growth and bone development.",
+    second: {
+      title: 'Second Trimester',
+      subtitle: 'The Golden Period (Weeks 13-26)',
       nutrients: [
         {
-          name: "Protein",
-          description:
-            "Essential for growth of fetal tissue, including the brain. Aim for ~75–100g daily.",
-          sources: "Lean meats, poultry, eggs, legumes, dairy",
+          name: 'Iron',
+          description: 'Your iron needs increase significantly as blood volume expands. Iron deficiency can lead to fatigue and complications.',
+          sources: 'Red meat, poultry, fish, fortified cereals, spinach, lentils',
+          icon: <FaTint className="nutrient-icon" />
         },
         {
-          name: "Calcium",
-          description: "Strengthens bones and teeth. Aim for 1,000mg daily.",
-          sources: "Milk, yogurt, cheese, fortified plant milks",
+          name: 'Calcium',
+          description: 'Your baby\'s bones are hardening, requiring more calcium. This is crucial for skeletal development.',
+          sources: 'Milk, yogurt, cheese, fortified foods, sardines, broccoli',
+          icon: <FaCheckCircle className="nutrient-icon" />
         },
         {
-          name: "Iron",
-          description: "Supports oxygen transport and prevents anemia.",
-          sources: "Lean red meat, lentils, spinach, fortified cereals",
+          name: 'Omega-3 Fatty Acids',
+          description: 'Critical for brain and eye development. DHA is especially important during this period.',
+          sources: 'Fatty fish (salmon, sardines), walnuts, flaxseeds, chia seeds',
+          icon: <BsCloud className="nutrient-icon" />
         },
         {
-          name: "Vitamin D",
-          description: "Helps absorb calcium and supports immune function.",
-          sources: "Sunlight, fatty fish, fortified dairy",
-        },
+          name: 'Vitamin D',
+          description: 'Works with calcium for bone development and immune system support.',
+          sources: 'Fortified milk, fatty fish, egg yolks, sunlight exposure',
+          icon: <AiFillApple className="nutrient-icon" />
+        }
       ],
       embrace: [
-        "Dairy or fortified plant-based alternatives",
-        "Lean proteins for growth",
-        "Iron-rich foods paired with vitamin C for absorption",
-        "Fruits and vegetables for fiber and nutrients",
-        "Healthy fats like avocado and olive oil",
+        'Colorful fruits and vegetables (5-9 servings daily)',
+        'Whole grains for sustained energy',
+        'Lean proteins at every meal',
+        'Healthy fats (avocados, nuts, olive oil)',
+        'Iron-rich foods with vitamin C',
+        'Regular, balanced meals'
       ],
       avoid: [
-        "Alcohol",
-        "High-mercury fish",
-        "Unpasteurized dairy",
-        "Highly processed junk foods",
+        'High-mercury fish and raw seafood',
+        'Processed and high-sodium foods',
+        'Excessive sugar and refined carbs',
+        'Large amounts of caffeine',
+        'Alcohol and tobacco products',
+        'Foods high in trans fats'
       ],
       tips: [
-        "Keep snacks like nuts and fruit on hand",
-        "Include a variety of colorful vegetables daily",
-        "Stay hydrated throughout the day",
-      ],
+        'Your appetite should return - focus on quality nutrition',
+        'Combine iron-rich foods with vitamin C for better absorption',
+        'Start gentle exercise as approved by your doctor',
+        'Monitor weight gain - aim for 1-2 pounds per week',
+        'Stay active but avoid overheating',
+        'Continue prenatal vitamins consistently'
+      ]
     },
-    {
-      id: 3,
-      title: "Third Trimester (Weeks 28–40)",
-      highlight:
-        "In the final trimester, your baby's brain is rapidly developing, and weight gain increases. Focus on omega-3s, energy-rich foods, and hydration.",
+    third: {
+      title: 'Third Trimester',
+      subtitle: 'Final Preparations (Weeks 27-40)',
       nutrients: [
         {
-          name: "Omega-3 Fatty Acids",
-          description: "Supports brain and eye development.",
-          sources: "Salmon, walnuts, chia seeds, flaxseeds",
+          name: 'Iron',
+          description: 'Iron needs peak during the third trimester. Your baby is storing iron for the first 6 months of life.',
+          sources: 'Lean red meat, poultry, fish, fortified cereals, dried fruits',
+          icon: <FaTint className="nutrient-icon" />
         },
         {
-          name: "Iron",
-          description: "Prevents anemia and supports increased blood volume.",
-          sources: "Lean meats, beans, spinach",
+          name: 'Calcium',
+          description: 'Final bone mineralization occurs. Your baby needs calcium for strong bones and teeth.',
+          sources: 'Dairy products, leafy greens, fortified foods, almonds',
+          icon: <FaCheckCircle className="nutrient-icon" />
         },
         {
-          name: "Calcium",
-          description: "Supports skeletal development.",
-          sources: "Dairy products, leafy greens, fortified plant milks",
+          name: 'Fiber',
+          description: 'Helps prevent constipation, which is common in late pregnancy due to hormonal changes.',
+          sources: 'Whole grains, fruits, vegetables, legumes, nuts and seeds',
+          icon: <AiFillApple className="nutrient-icon" />
         },
         {
-          name: "Fiber",
-          description: "Helps with digestion and prevents constipation.",
-          sources: "Whole grains, fruits, vegetables",
-        },
+          name: 'Protein',
+          description: 'Supports rapid fetal growth and prepares your body for breastfeeding.',
+          sources: 'Lean meats, fish, eggs, dairy, legumes, nuts, quinoa',
+          icon: <BsCloud className="nutrient-icon" />
+        }
       ],
       embrace: [
-        "Whole grains for sustained energy",
-        "Omega-3 rich foods for brain development",
-        "Fruits and vegetables for vitamins and minerals",
-        "High-protein snacks",
-        "Plenty of water",
+        'Small, frequent meals to avoid heartburn',
+        'High-fiber foods for digestive health',
+        'Adequate protein for fetal growth',
+        'Healthy snacks (fruits, nuts, yogurt)',
+        'Foods rich in vitamins K and C',
+        'Plenty of fluids for hydration'
       ],
       avoid: [
-        "Alcohol",
-        "Excessive caffeine",
-        "Unpasteurized foods",
-        "Raw seafood",
+        'Large meals that can cause discomfort',
+        'Spicy or acidic foods if experiencing heartburn',
+        'Excessive sweets and empty calories',
+        'Raw or undercooked foods',
+        'High-sodium processed foods',
+        'Lying down immediately after eating'
       ],
       tips: [
-        "Eat smaller, more frequent meals to avoid heartburn",
-        "Include omega-3 sources several times per week",
-        "Stay physically active with gentle exercise",
-      ],
-    },
+        'Eat smaller, more frequent meals to manage heartburn',
+        'Include fiber-rich foods to prevent constipation',
+        'Stay hydrated but limit fluids before bedtime',
+        'Prepare freezer meals for after baby arrives',
+        'Continue moderate exercise as tolerated',
+        'Get adequate rest and prepare for breastfeeding'
+      ]
+    }
+  };
+
+  const trimesterOptions = [
+    { key: 'first', label: 'First Trimester', weeks: '1-12 weeks' },
+    { key: 'second', label: 'Second Trimester', weeks: '13-26 weeks' },
+    { key: 'third', label: 'Third Trimester', weeks: '27-40 weeks' }
   ];
 
-  const [selectedTrimester, setSelectedTrimester] = useState(trimesters[0]);
+  const currentData = nutritionData[selectedTrimester];
 
   return (
-    <div className="nutrition-page-wrapper">
+    <>
       <Header />
-      <div className="nutrition-heading">
-        <h1>Pregnancy Nutrition Guide</h1>
-        <p>
-          Discover the essential nutrients you need during each stage of your
-          pregnancy journey. Our trimester-specific guidance helps ensure you
-          and your baby get optimal nutrition.
-        </p>
-      </div>
+      <div className="nutrition-page-wrapper">
+        <motion.div 
+          className="nutrition-heading"
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
+          <h1>Nutritional Guidance During Pregnancy</h1>
+          <p>
+            Proper nutrition during pregnancy is essential for both you and your baby's health. 
+            Each trimester brings unique nutritional needs to support your growing baby's development.
+          </p>
+        </motion.div>
 
-      <div className="nutritional-guidance-layout">
-        <aside className="nutrition-sidebar">
-          <h3>Select Your Trimester</h3>
-          {trimesters.map((t) => (
-            <button
-              key={t.id}
-              className={`trimester-btn ${
-                selectedTrimester.id === t.id ? "active" : ""
-              }`}
-              onClick={() => setSelectedTrimester(t)}
-            >
-              {t.title}
-            </button>
-          ))}
-
-          <div className="consult-card">
-            <h4>Need personalized advice?</h4>
-            <p>
-              Connect with our nutrition experts for a customized meal plan
-              tailored to your needs.
-            </p>
-            <button className="consult-btn" onClick={() => navigate("/signin")}>
-              Sign in now!
-            </button>
-          </div>
-        </aside>
-
-        <main className="nutrition-main-content">
-          <h2>{selectedTrimester.title} Nutrition Guide</h2>
-          <div className="highlight-box">{selectedTrimester.highlight}</div>
-
-          <h3>Key Nutrients</h3>
-          <div className="nutrient-grid">
-            {selectedTrimester.nutrients.map((n, i) => (
-              <div key={i} className="nutrient-card">
-                <div className="nutrient-header">
-                  <BsCloud className="nutrient-icon" />
-                  <h4>{n.name}</h4>
+        <motion.div 
+          className="nutritional-guidance-layout"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div className="nutrition-sidebar" variants={itemVariants}>
+            <h3>
+              {/* <BsCloud style={{ marginRight: '0.5rem', color: 'var(--co-2)' }} /> */}
+              Select Trimester
+            </h3>
+            
+            {trimesterOptions.map((option) => (
+              <motion.button
+                key={option.key}
+                className={`trimester-btn ${selectedTrimester === option.key ? 'active' : ''}`}
+                onClick={() => setSelectedTrimester(option.key)}
+                aria-pressed={selectedTrimester === option.key}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              >
+                <div>
+                  <div style={{ fontWeight: '700', marginBottom: '0.2rem' }}>
+                    {option.label}
+                  </div>
+                  <div style={{ fontSize: '0.9rem', opacity: '0.8' }}>
+                    {option.weeks}
+                  </div>
                 </div>
-                <p>{n.description}</p>
-                <small className="nutrient-card-source">
-                  <strong>Sources:</strong> {n.sources}
-                </small>
-              </div>
+              </motion.button>
             ))}
-          </div>
-          <div className="nutrition-warning-card">
+
+            <motion.div 
+              className="consult-card"
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
+              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            >
+              <FaCircleInfo size={32} style={{ color: 'var(--co-2)', marginBottom: '1rem' }} />
+              <h4 style={{ color: 'var(--co-1)', marginBottom: '0.5rem' }}>
+                Need Personalized Advice?
+              </h4>
+              <p>
+                Connect with our certified nutritionists for personalized meal plans 
+                and dietary recommendations tailored to your specific needs.
+              </p>
+              <motion.button 
+                className="consult-btn"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/consultation')}
+              >
+                <FaCircleInfo style={{ marginRight: '0.5rem' }} />
+                Consult Expert
+              </motion.button>
+            </motion.div>
+          </motion.div>
+
+          <motion.div className="nutrition-main-content" variants={itemVariants}>
+            <motion.h2
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+            >
+              {currentData.title} Nutrition Guide
+            </motion.h2>
+            
+            <motion.div 
+              className="highlight-box"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
+              <FaCircleInfo className="icon-info" />
+              <strong>{currentData.subtitle}:</strong> {currentData.title === 'First Trimester' ? 
+                'Focus on foundational nutrients like folic acid and managing morning sickness.' :
+                currentData.title === 'Second Trimester' ?
+                'Your energy returns - focus on balanced nutrition and steady weight gain.' :
+                'Support rapid growth and prepare for breastfeeding with increased nutrients.'
+              }
+            </motion.div>
+
+            <h3>Key Nutrients</h3>
+            <motion.div 
+              className="nutrient-grid"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {currentData.nutrients.map((nutrient, index) => (
+                <motion.div 
+                  key={index} 
+                  className="nutrient-card"
+                  variants={itemVariants}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <div className="nutrient-header">
+                    {nutrient.icon}
+                    <h4>{nutrient.name}</h4>
+                  </div>
+                  <p>{nutrient.description}</p>
+                  <div className="nutrient-card-source">
+                    <strong>Best Sources:</strong> {nutrient.sources}
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+
             <h3>Foods to Embrace</h3>
-            <ul className="food-list embrace">
-              {selectedTrimester.embrace.map((f, i) => (
-                <li key={i}>
-                  <FaCheckCircle className="icon-embrace" /> {f}
-                </li>
+            <motion.ul 
+              className="food-list"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {currentData.embrace.map((food, index) => (
+                <motion.li 
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <FaCheckCircle className="icon-embrace" />
+                  <span>{food}</span>
+                </motion.li>
               ))}
-            </ul>
-          </div>
+            </motion.ul>
 
-          <div className="nutrition-warning-card">
             <h3>Foods to Avoid</h3>
-            <ul className="food-list avoid">
-              {selectedTrimester.avoid.map((f, i) => (
-                <li key={i}>
-                  <MdCancel className="icon-avoid" /> {f}
-                </li>
+            <motion.ul 
+              className="food-list"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {currentData.avoid.map((food, index) => (
+                <motion.li 
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <MdCancel className="icon-avoid" />
+                  <span>{food}</span>
+                </motion.li>
               ))}
-            </ul>
-          </div>
+            </motion.ul>
 
-          <h3>Tips</h3>
-          <ul className="food-list tips">
-            {selectedTrimester.tips.map((t, i) => (
-              <li key={i}>
-                <AiOutlineCheck className="icon-check" /> {t}
-              </li>
-            ))}
-          </ul>
-        </main>
+            <h3>Helpful Tips</h3>
+            <motion.ul 
+              className="food-list"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {currentData.tips.map((tip, index) => (
+                <motion.li 
+                  key={index}
+                  variants={itemVariants}
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                >
+                  <AiOutlineCheck className="icon-check" />
+                  <span>{tip}</span>
+                </motion.li >
+              ))}
+            </motion.ul>
+          </motion.div>
+        </motion.div>
+
+        <motion.div 
+          className="contact-icon" 
+          role="button" 
+          tabIndex={0} 
+          aria-label="Contact nutritionist"
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          whileTap={{ scale: 0.9 }}
+          transition={{ type: "spring", stiffness: 400, damping: 17 }}
+          onClick={() => navigate('/consultation')}
+        >
+          <FaCircleInfo size={24} />
+        </motion.div>
+
+        <ChatBoxPage />
       </div>
-      <motion.div
-        className="contact-icon"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsPopupOpen(!isPopupOpen)}
-      >
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </motion.div>
-      <ChatBoxPage isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)} />
       <Footer />
-    </div>
+    </>
   );
 };
 
