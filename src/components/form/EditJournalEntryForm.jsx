@@ -332,7 +332,15 @@ const EditJournalEntryForm = ({ onError }) => {
         {/* Blood Sugar – only on clinic weeks */}
         {bloodTestClinicWeeks.includes(Number(formData.CurrentWeek)) && (
           <div className="entry-form-section">
-            <label>Blood Sugar (mg/dL)</label>
+            <label>
+              Blood Sugar (mg/dL)
+              <span
+                className="entry-info-tooltip"
+                title="Blood sugar level is typically between 70-130 mg/dL before meals"
+              >
+                ⓘ
+              </span>
+            </label>
             <input
               type="number"
               name="BloodSugarLevelMgDl"
