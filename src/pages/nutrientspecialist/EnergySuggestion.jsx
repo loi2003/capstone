@@ -51,7 +51,12 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const EnergySuggestionModal = ({ suggestion, onClose }) => {
+const EnergySuggestionModal = ({ suggestion, onClose, ageGroups }) => {
+  const getAgeGroupRange = (ageGroupId) => {
+    const ageGroup = ageGroups.find((group) => group.id === ageGroupId);
+    return ageGroup ? `${ageGroup.fromAge}-${ageGroup.toAge} years` : "Unknown";
+  };
+
   return (
     <motion.div
       className="modal-overlay"
@@ -68,9 +73,9 @@ const EnergySuggestionModal = ({ suggestion, onClose }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>Energy Suggestion #{suggestion.id}</h2>
+        <h2>Energy Suggestion for Age Group {getAgeGroupRange(suggestion.ageGroupId)}</h2>
         <p>
-          <strong>Age Group ID:</strong> {suggestion.ageGroupId}
+          <strong>Age Group:</strong> {getAgeGroupRange(suggestion.ageGroupId)}
         </p>
         <p>
           <strong>Activity Level:</strong>{" "}
@@ -175,6 +180,11 @@ const EnergySuggestion = () => {
     return activityLevel || "";
   };
 
+  const getAgeGroupRange = (ageGroupId) => {
+    const ageGroup = ageGroups.find((group) => group.id === ageGroupId);
+    return ageGroup ? `${ageGroup.fromAge}-${ageGroup.toAge} years` : "Unknown";
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -232,69 +242,68 @@ const EnergySuggestion = () => {
     }
   };
 
- const fetchSuggestionById = async (id) => {
-  console.log("Fetching suggestion with ID:", id);
-  if (!id) {
-    showNotification("Invalid suggestion ID", "error");
-    console.error("fetchSuggestionById called with invalid ID:", id);
-    return;
-  }
-  setLoading(true);
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      showNotification("Authentication token is missing. Please sign in again.", "error");
-      navigate("/signin", { replace: true });
+  const fetchSuggestionById = async (id) => {
+    console.log("Fetching suggestion with ID:", id);
+    if (!id) {
+      showNotification("Invalid suggestion ID", "error");
+      console.error("fetchSuggestionById called with invalid ID:", id);
       return;
     }
-    const response = await getEnergySuggestionById(id, token);
-    console.log("Raw API response:", response);
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        showNotification("Authentication token is missing. Please sign in again.", "error");
+        navigate("/signin", { replace: true });
+        return;
+      }
+      const response = await getEnergySuggestionById(id, token);
+      console.log("Raw API response:", response);
 
-    // Check if response is empty or invalid
-    if (!response) {
-      showNotification("Energy suggestion not found", "error");
-      console.warn("No data in response:", response);
-      return;
+      if (!response) {
+        showNotification("Energy suggestion not found", "error");
+        console.warn("No data in response:", response);
+        return;
+      }
+
+      const data = response;
+      console.log("Extracted data:", data);
+
+      if (!data || typeof data !== "object" || !data.id) {
+        throw new Error("Invalid response data format. Expected an object with an ID.");
+      }
+
+      const normalizedData = {
+        ...data,
+        activityLevel: normalizeActivityLevel(data.activityLevel),
+        activityLevelDisplay: normalizeActivityLevel(data.activityLevel),
+      };
+      console.log("setSelectedSuggestion called with:", normalizedData);
+      setSelectedSuggestion(normalizedData);
+      setNewSuggestion({
+        ageGroupId: normalizedData.ageGroupId || "",
+        activityLevel: normalizedData.activityLevel || "",
+        baseCalories: normalizedData.baseCalories || "",
+        trimester: normalizedData.trimester || "",
+        additionalCalories: normalizedData.additionalCalories || "",
+      });
+      setIsEditing(true);
+      return normalizedData;
+    } catch (err) {
+      const errorMessage =
+        err.response?.data?.message || err.message || "An unexpected error occurred.";
+      showNotification(`Failed to fetch suggestion details: ${errorMessage}`, "error");
+      console.error("Fetch suggestion error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        stack: err.stack,
+      });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Use response directly since getEnergySuggestionById returns response.data
-    const data = response;
-    console.log("Extracted data:", data);
-
-    if (!data || typeof data !== "object" || !data.id) {
-      throw new Error("Invalid response data format. Expected an object with an ID.");
-    }
-
-    const normalizedData = {
-      ...data,
-      activityLevel: normalizeActivityLevel(data.activityLevel),
-      activityLevelDisplay: normalizeActivityLevel(data.activityLevel),
-    };
-    console.log("setSelectedSuggestion called with:", normalizedData);
-    setSelectedSuggestion(normalizedData);
-    setNewSuggestion({
-      ageGroupId: normalizedData.ageGroupId || "",
-      activityLevel: normalizedData.activityLevel || "",
-      baseCalories: normalizedData.baseCalories || "",
-      trimester: normalizedData.trimester || "",
-      additionalCalories: normalizedData.additionalCalories || "",
-    });
-    setIsEditing(true);
-    return normalizedData;
-  } catch (err) {
-    const errorMessage =
-      err.response?.data?.message || err.message || "An unexpected error occurred.";
-    showNotification(`Failed to fetch suggestion details: ${errorMessage}`, "error");
-    console.error("Fetch suggestion error details:", {
-      message: err.message,
-      response: err.response?.data,
-      status: err.response?.status,
-      stack: err.stack,
-    });
-  } finally {
-    setLoading(false);
-  }
-};
   const createSuggestionHandler = async () => {
     if (!newSuggestion.ageGroupId || newSuggestion.ageGroupId.trim() === "") {
       showNotification("Age Group is required", "error");
@@ -487,6 +496,9 @@ const EnergySuggestion = () => {
         .toLowerCase()
         .includes(searchTerm.toLowerCase()) ||
       (suggestion.activityLevelDisplay || suggestion.activityLevel || "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      getAgeGroupRange(suggestion.ageGroupId)
         .toLowerCase()
         .includes(searchTerm.toLowerCase())
   );
@@ -1657,7 +1669,7 @@ const EnergySuggestion = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by age group ID or activity level"
+                placeholder="Search by age group or activity level"
                 className="search-input"
               />
             </div>
@@ -1698,10 +1710,10 @@ const EnergySuggestion = () => {
                       whileHover={{ y: -5 }}
                     >
                       <div className="card-header">
-                        <h3>Energy Suggestion #{suggestion.id}</h3>
+                        <h3>Energy Suggestion for Age Group {getAgeGroupRange(suggestion.ageGroupId)}</h3>
                       </div>
                       <p>
-                        <strong>Age Group ID:</strong> {suggestion.ageGroupId}
+                        <strong>Age Group:</strong> {getAgeGroupRange(suggestion.ageGroupId)}
                       </p>
                       <p>
                         <strong>Activity Level:</strong>{" "}
@@ -1771,6 +1783,7 @@ const EnergySuggestion = () => {
             <EnergySuggestionModal
               suggestion={selectedViewSuggestion}
               onClose={() => setSelectedViewSuggestion(null)}
+              ageGroups={ageGroups}
             />
           )}
         </AnimatePresence>

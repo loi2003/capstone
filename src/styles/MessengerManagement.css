@@ -1,0 +1,685 @@
+/* Root container */
+.messenger-management {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Roboto', sans-serif;
+  background-color: #e8f5e9;
+  color: #1a3c34;
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+/* Dark theme */
+.messenger-management.dark-theme,
+.messenger-management.dark-theme .content,
+.messenger-management.dark-theme .management-header,
+.messenger-management.dark-theme .chat-section,
+.messenger-management.dark-theme .chat-card {
+  background: #1a3c34;
+  color: #ffffff;
+}
+
+.messenger-management.dark-theme .input-field {
+  background: #2e7d32;
+  color: #ffffff;
+  border-color: #4caf50;
+}
+
+.messenger-management.dark-theme .section-header h2,
+.messenger-management.dark-theme .management-header h1,
+.messenger-management.dark-theme .message-sender,
+.messenger-management.dark-theme .message-timestamp {
+  color: #ffffff;
+}
+
+.messenger-management.dark-theme .management-header p {
+  color: #a5d6a7;
+}
+
+.messenger-management.dark-theme .sidebar,
+.messenger-management.dark-theme .sidebar-nav a,
+.messenger-management.dark-theme .sidebar-nav button,
+.messenger-management.dark-theme .profile-info,
+.messenger-management.dark-theme .profile-email {
+  background: #1a3c34;
+  color: #ffffff;
+}
+
+.messenger-management.dark-theme .sidebar-nav a:hover,
+.messenger-management.dark-theme .sidebar-nav button:hover,
+.messenger-management.dark-theme .profile-info:hover {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+.messenger-management.dark-theme .logo-svg-container svg path {
+  stroke: #a5d6a7;
+  fill: #ffca28;
+}
+
+.messenger-management.dark-theme .button.primary {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+.messenger-management.dark-theme .button.primary:hover:not(:disabled) {
+  background: #66bb6a;
+}
+
+/* Sidebar */
+.messenger-management .sidebar {
+  background: linear-gradient(180deg, #2e7d32, #a5d6a7);
+  color: #ffffff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
+  z-index: 1000;
+  transition: width 0.3s ease;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.messenger-management .sidebar.open {
+  width: 280px;
+}
+
+.messenger-management .sidebar.closed {
+  width: 60px;
+}
+
+.messenger-management .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.messenger-management .sidebar.closed .sidebar-header {
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  gap: 0.5rem;
+}
+
+.messenger-management .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.messenger-management .logo-text {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.messenger-management .sidebar.closed .logo-text {
+  display: none;
+}
+
+.messenger-management .logo-svg-container {
+  display: inline-flex;
+}
+
+.messenger-management .logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+
+.messenger-management .sidebar.closed .logo-svg-container svg {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+}
+
+.messenger-management .sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #ffffff;
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.messenger-management .sidebar.closed .sidebar-toggle {
+  margin: 0 auto;
+}
+
+.messenger-management .sidebar-toggle:hover,
+.messenger-management .sidebar-toggle:focus {
+  background: #ffffff;
+  border-color: #2e7d32;
+}
+
+.messenger-management .sidebar-toggle svg path {
+  stroke: #ffffff;
+  fill: none;
+}
+
+.messenger-management .sidebar-toggle:hover svg path,
+.messenger-management .sidebar-toggle:focus svg path {
+  stroke: #2e7d32;
+}
+
+.messenger-management .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  flex-grow: 1;
+  flex-shrink: 0;
+  overflow-y: hidden;
+}
+
+.messenger-management .sidebar.closed .sidebar-nav {
+  padding: 0;
+  gap: 0.5rem;
+}
+
+.messenger-management .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.messenger-management .sidebar.closed .sidebar-nav-item {
+  justify-content: center;
+}
+
+.messenger-management .sidebar-nav a,
+.messenger-management .sidebar-nav button,
+.messenger-management .profile-info {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.messenger-management .sidebar.closed .sidebar-nav a,
+.messenger-management .sidebar.closed .sidebar-nav button,
+.messenger-management .sidebar.closed .profile-info {
+  padding: 0.5rem 0;
+  justify-content: center;
+}
+
+.messenger-management .sidebar-nav a svg,
+.messenger-management .sidebar-nav button svg,
+.messenger-management .profile-info svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.messenger-management .sidebar.closed .sidebar-nav a span,
+.messenger-management .sidebar.closed .sidebar-nav button span,
+.messenger-management .sidebar.closed .profile-email {
+  display: none;
+}
+
+.messenger-management .sidebar-nav a:hover,
+.messenger-management .sidebar-nav button:hover,
+.messenger-management .profile-info:hover {
+  background: #4caf50;
+  transform: translateY(-2px);
+}
+
+.messenger-management .food-dropdown,
+.messenger-management .nutrient-dropdown {
+  overflow: hidden;
+}
+
+.messenger-management .food-dropdown-item,
+.messenger-management .nutrient-dropdown-item {
+  padding-left: 1.5rem;
+}
+
+.messenger-management .sidebar.closed .food-dropdown-item,
+.messenger-management .sidebar.closed .nutrient-dropdown-item {
+  padding-left: 0;
+}
+
+.messenger-management .dropdown-icon {
+  margin-left: auto;
+  transition: all 0.3s ease;
+}
+
+.messenger-management .dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.messenger-management .profile-section {
+  margin-top: auto;
+}
+
+.messenger-management .profile-email {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ffffff;
+}
+
+.messenger-management .logout-button svg path {
+  stroke: #d32f2f;
+  fill: none;
+}
+
+.messenger-management .logout-button:hover svg path {
+  stroke: #ffffff;
+  fill: #ffffff;
+}
+
+.messenger-management .page-switcher {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.messenger-management .page-switcher button {
+  flex: 1;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.messenger-management .page-switcher button.active {
+  background: #4caf50;
+}
+
+.messenger-management .page-switcher button:hover {
+  background: #4caf50;
+}
+
+.messenger-management .sidebar.closed .page-switcher {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.messenger-management .sidebar.closed .page-switcher button {
+  padding: 0.5rem 0;
+  font-size: 0.8rem;
+}
+
+/* Main content */
+.messenger-management .content {
+  flex: 1;
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+  padding: 1rem;
+  width: calc(100% - 280px);
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.messenger-management .content.sidebar-closed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+/* Header */
+.messenger-management .management-header {
+  background: #ffffff;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #a5d6a7;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.messenger-management .management-header h1 {
+  color: #2e7d32;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.messenger-management .management-header p {
+  color: #1a3c34;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Management container */
+.messenger-management .management-container {
+  padding: 1.5rem;
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Chat section */
+.messenger-management .chat-section {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.1);
+  flex: 1;
+  min-width: 300px;
+  box-sizing: border-box;
+}
+
+.messenger-management .chat-section h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2e7d32;
+  margin-bottom: 1rem;
+}
+
+.messenger-management .chat-card {
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.messenger-management .chat-messages {
+  flex: 1;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  background: #e8f5e9;
+}
+
+.messenger-management .messages-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.messenger-management .message-bubble {
+  background: #e8f5e9;
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid #a5d6a7;
+  max-width: 80%;
+  align-self: flex-start;
+}
+
+.messenger-management .message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.messenger-management .message-sender {
+  font-weight: 600;
+  color: #2e7d32;
+  font-size: 0.85rem;
+}
+
+.messenger-management .message-timestamp {
+  font-size: 0.75rem;
+  color: #1a3c34;
+  opacity: 0.7;
+}
+
+.messenger-management .message-content {
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.messenger-management .chat-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.messenger-management .chat-input .form-group {
+  flex: 1;
+  min-width: 200px;
+}
+
+.messenger-management .chat-input .input-field {
+  width: 100%;
+}
+
+.messenger-management .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.messenger-management .input-field {
+  padding: 0.75rem;
+  border: 1px solid #a5d6a7;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #e8f5e9;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.messenger-management .input-field:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+/* Button styles */
+.messenger-management .button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  width: 100%;
+  max-width: 200px;
+  box-sizing: border-box;
+}
+
+.messenger-management .button.primary {
+  background: #ffca28;
+  color: #1a3c34;
+  border: none;
+}
+
+.messenger-management .button.primary:hover:not(:disabled) {
+  background: #4caf50;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.15);
+}
+
+.messenger-management .button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading and empty states */
+.messenger-management .loading-state,
+.messenger-management .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.messenger-management .loading-state svg {
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+}
+
+.messenger-management .empty-state svg {
+  width: 3rem;
+  height: 3rem;
+  stroke: #1a3c34;
+  opacity: 0.5;
+  margin-bottom: 0.75rem;
+}
+
+.messenger-management .empty-state h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.messenger-management .empty-state p {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+/* Notification */
+.messenger-management .notification {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(46, 125, 50, 0.15);
+  max-width: calc(100% - 2rem);
+  box-sizing: border-box;
+}
+
+.messenger-management .notification.success {
+  background: #4caf50;
+  color: #ffffff;
+}
+
+.messenger-management .notification.error {
+  background: #d32f2f;
+  color: #ffffff;
+}
+
+.messenger-management .notification-content h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.messenger-management .notification-content p {
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0;
+}
+
+/* Animation for loader */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .messenger-management .sidebar {
+    width: 60px;
+  }
+
+  .messenger-management .content {
+    margin-left: 60px;
+    width: calc(100% - 60px);
+  }
+
+  .messenger-management .sidebar.open {
+    width: 280px;
+  }
+
+  .messenger-management .content.sidebar-closed {
+    margin-left: 60px;
+    width: calc(100% - 60px);
+  }
+
+  .messenger-management .management-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .messenger-management .notification {
+    top: 0.5rem;
+    right: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .messenger-management .chat-section {
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .messenger-management .management-header h1 {
+    font-size: 1.25rem;
+  }
+
+  .messenger-management .chat-section h2 {
+    font-size: 1.25rem;
+  }
+
+  .messenger-management .button {
+    max-width: 100%;
+  }
+
+  .messenger-management .chat-input {
+    flex-direction: column;
+  }
+
+  .messenger-management .chat-input .form-group {
+    min-width: 100%;
+  }
+}

@@ -55,6 +55,28 @@
   color: var(--nutrient-specialist-white);
 }
 
+.disease-management.dark-theme .pagination-button {
+  background: #2e7d32;
+  color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-accent);
+}
+
+.disease-management.dark-theme .pagination-button:disabled {
+  border-color: #4caf50;
+  color: #4caf50;
+  opacity: 0.5;
+}
+
+.disease-management.dark-theme .pagination-button:hover:not(:disabled) {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-highlight);
+}
+
+.disease-management.dark-theme .pagination-info {
+  color: var(--nutrient-specialist-accent);
+}
+
 .disease-management.dark-theme .management-header p {
   color: var(--nutrient-specialist-accent);
 }
@@ -672,6 +694,43 @@
   cursor: not-allowed;
 }
 
+/* Pagination */
+.disease-management .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.disease-management .pagination-button {
+  padding: 8px 16px;
+  border: 1px solid var(--nutrient-specialist-primary);
+  border-radius: var(--nutrient-specialist-border-radius);
+  background-color: var(--nutrient-specialist-white);
+  color: var(--nutrient-specialist-primary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: var(--nutrient-specialist-transition);
+}
+
+.disease-management .pagination-button:disabled {
+  border-color: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-secondary);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.disease-management .pagination-button:hover:not(:disabled) {
+  background-color: var(--nutrient-specialist-primary);
+  color: var(--nutrient-specialist-white);
+}
+
+.disease-management .pagination-info {
+  font-size: 14px;
+  color: var(--nutrient-specialist-primary);
+}
+
 /* Nutrient list section */
 .disease-management .nutrient-list-section {
   margin-top: 1.5rem;
@@ -891,5 +950,15 @@
     max-width: 90%;
     right: 50%;
     transform: translateX(50%);
+  }
+
+  .disease-management .pagination {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .disease-management .pagination-button {
+    width: 100%;
+    max-width: 200px;
   }
 }
