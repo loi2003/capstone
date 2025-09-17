@@ -1617,7 +1617,6 @@ export const getAllMeals = async () => {
   }
 };
 // Warning Food Management APIs
-// Warning Food Management APIs
 export const createWarningFoodForDisease = async (warningData) => {
   try {
     if (!warningData.diseaseId || warningData.diseaseId === "") {
@@ -1728,11 +1727,15 @@ export const createWarningFoodForAllergy = async (warningData) => {
     if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
       throw new Error("All warning foods must have a valid foodId");
     }
+    // Validate non-empty descriptions
+    if (warningData.warningFoodDtos.some((food) => !food.description || food.description.trim() === "")) {
+      throw new Error("Description is required for each warning food");
+    }
     const payload = {
       allergyId: warningData.allergyId,
       warningFoodDtos: warningData.warningFoodDtos.map((food) => ({
         foodId: food.foodId,
-        description: food.description || "",
+        description: food.description,
       })),
     };
     console.log("Sending create warning food for allergy request with payload:", payload);
@@ -2149,6 +2152,12 @@ export const deleteNutrientSuggestion = async (id, token) => {
       throw new Error("Nutrient Suggestion ID is null or empty");
     }
 
+    // Validate GUID format
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(id)) {
+      throw new Error("Invalid Nutrient Suggestion ID format");
+    }
+
     console.log("Sending delete nutrient suggestion request for ID:", id);
 
     const headers = {
@@ -2175,6 +2184,10 @@ export const deleteNutrientSuggestion = async (id, token) => {
       response: error.response?.data,
       status: error.response?.status,
     });
+    // Provide a more specific error message based on status code
+    if (error.response?.status === 400 && error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
     throw error;
   }
 };

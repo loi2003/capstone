@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  getAllDiseases,
-  getDiseaseById,
-  createDisease,
-  updateDisease,
-  deleteDisease,
-} from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/DiseaseManagement.css";
+import "../../styles/MessengerManagement.css";
 
 const LoaderIcon = () => (
   <svg
@@ -31,10 +24,9 @@ const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       document.dispatchEvent(new CustomEvent("closeNotification"));
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -51,55 +43,69 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const DiseaseManagement = () => {
-  const [diseases, setDiseases] = useState([]);
-  const [newDisease, setNewDisease] = useState({
-    name: "",
-    description: "",
-    symptoms: "",
-    treatmentOptions: "",
-    pregnancyRelated: false,
-    riskLevel: "",
-    typeOfDesease: "",
-  });
-  const [selectedDisease, setSelectedDisease] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+const MessengerManagement = () => {
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
-  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const diseasesPerPage = 6;
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const messagesEndRef = useRef(null);
 
-  // Fetch user data
+  const toggleFoodDropdown = () => {
+    setIsFoodDropdownOpen((prev) => !prev);
+  };
+
+  const toggleNutrientDropdown = () => {
+    setIsNutrientDropdownOpen((prev) => !prev);
+  };
+
+  const dropdownVariants = {
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
+
+  const handleHomepageNavigation = () => {
+    setIsSidebarOpen(true);
+    navigate("/nutrient-specialist");
+  };
+
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUser = () => {
       if (!token) {
         navigate("/signin", { replace: true });
         return;
       }
-      try {
-        const response = await getCurrentUser(token);
-        const userData = response.data?.data || response.data;
-        if (userData && Number(userData.roleId) === 4) {
-          setUser(userData);
-        } else {
+      getCurrentUser(token)
+        .then((response) => {
+          const userData = response.data?.data || response.data;
+          if (userData && Number(userData.roleId) === 4) {
+            setUser(userData);
+          } else {
+            localStorage.removeItem("token");
+            setUser(null);
+            navigate("/signin", { replace: true });
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error.message);
           localStorage.removeItem("token");
           setUser(null);
           navigate("/signin", { replace: true });
-        }
-      } catch (error) {
-        console.error("Error fetching user:", error.message);
-        localStorage.removeItem("token");
-        setUser(null);
-        navigate("/signin", { replace: true });
-      }
+        });
     };
     fetchUser();
   }, [navigate, token]);
@@ -113,308 +119,38 @@ const DiseaseManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  const fetchData = async () => {
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) {
+      showNotification("Message cannot be empty", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      const apiResponse = await getAllDiseases(token);
-      console.log("Fetched diseases response:", apiResponse);
-      if (apiResponse.error !== 0) {
-        throw new Error(apiResponse.message || "Failed to fetch diseases");
-      }
-      const diseasesData = apiResponse.data || [];
-      setDiseases(Array.isArray(diseasesData) ? diseasesData : []);
-      setCurrentPage(1);
+      const message = {
+        id: Date.now(),
+        content: newMessage,
+        sender: user?.email || "User",
+        timestamp: new Date().toLocaleTimeString(),
+      };
+      setMessages((prev) => [...prev, message]);
+      setNewMessage("");
+      showNotification("Message sent successfully", "success");
     } catch (err) {
-      console.error("Fetch error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
-      setDiseases([]);
+      showNotification("Failed to send message", "error");
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchDiseaseById = async (id) => {
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      showNotification("Invalid Disease ID provided", "error");
-      return;
-    }
-    if (!token) {
-      showNotification("Authentication token missing", "error");
-      navigate("/signin", { replace: true });
-      return;
-    }
-    setLoading(true);
-    try {
-      console.log("Fetching disease with ID:", id, "Token:", token.substring(0, 10) + "...");
-      const apiResponse = await getDiseaseById(id, token);
-      console.log("Raw API response:", apiResponse);
-
-      let data;
-      if (apiResponse && typeof apiResponse === "object" && "error" in apiResponse) {
-        if (apiResponse.error !== 0) {
-          throw new Error(apiResponse.message || "Disease not found");
-        }
-        data = apiResponse.data;
-      } else {
-        data = apiResponse;
-      }
-
-      if (!data || typeof data !== "object" || !data.id) {
-        throw new Error("Invalid or empty response data from API");
-      }
-
-      console.log("Fetched disease data:", data);
-      setSelectedDisease(data);
-      setNewDisease({
-        name: data.name || "",
-        description: data.description || "",
-        symptoms: data.symptoms || "",
-        treatmentOptions: data.treatmentOptions || "",
-        pregnancyRelated: !!data.pregnancyRelated,
-        riskLevel: data.riskLevel || "",
-        typeOfDesease: data.typeOfDesease || "",
-      });
-      setIsEditing(true);
-    } catch (err) {
-      console.error("Fetch disease by ID error:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        id,
-        token: token ? "Token present" : "Token missing",
-        axiosError: err.isAxiosError ? {
-          code: err.code,
-          request: err.request,
-          response: err.response,
-        } : null,
-      });
-
-      let errorMessage = "Failed to fetch disease";
-      if (err.message.includes("not found")) {
-        errorMessage = "Disease not found.";
-      } else if (err.response?.status === 400) {
-        errorMessage = err.response?.data?.message || "Disease not found";
-      } else if (err.response?.status === 401) {
-        errorMessage = "Session expired. Please sign in again.";
-        localStorage.removeItem("token");
-        navigate("/signin", { replace: true });
-      } else if (err.response?.status === 404) {
-        errorMessage = "Disease not found.";
-      } else if (err.code === "ERR_NETWORK") {
-        errorMessage = "Network error: Unable to connect to the server.";
-      } else {
-        errorMessage = err.response?.data?.message || err.message || "Unknown error";
-      }
-
-      showNotification(errorMessage, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const createDiseaseHandler = async () => {
-    if (!newDisease.name || newDisease.name.trim() === "") {
-      showNotification("Disease name is required", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      console.log("Creating disease with data:", newDisease);
-      const apiResponse = await createDisease(
-        {
-          name: newDisease.name,
-          description: newDisease.description || "",
-          symptoms: newDisease.symptoms || "",
-          treatmentOptions: newDisease.treatmentOptions || "",
-          pregnancyRelated: !!newDisease.pregnancyRelated,
-          riskLevel: newDisease.riskLevel || "",
-          typeOfDesease: newDisease.typeOfDesease || "",
-        },
-        token
-      );
-      console.log("Create disease response:", apiResponse);
-      if (apiResponse.error !== 0) {
-        throw new Error(apiResponse.message || "Failed to create disease");
-      }
-      setNewDisease({
-        name: "",
-        description: "",
-        symptoms: "",
-        treatmentOptions: "",
-        pregnancyRelated: false,
-        riskLevel: "",
-        typeOfDesease: "",
-      });
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Disease created successfully", "success");
-    } catch (err) {
-      console.error("Create disease error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
-      showNotification(
-        `Failed to create disease: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateDiseaseHandler = async () => {
-    if (!newDisease.name || newDisease.name.trim() === "") {
-      showNotification("Disease name is required", "error");
-      return;
-    }
-    if (!selectedDisease || !selectedDisease.id) {
-      showNotification("No disease selected for update", "error");
-      return;
-    }
-    if (!token) {
-      showNotification("Authentication token missing", "error");
-      navigate("/signin", { replace: true });
-      return;
-    }
-    if (newDisease.riskLevel && !["Low", "Medium", "High"].includes(newDisease.riskLevel)) {
-      showNotification("Risk level must be Low, Medium, or High", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      console.log("Updating disease with ID:", selectedDisease.id, "Data:", newDisease);
-      const apiResponse = await updateDisease(
-        {
-          diseaseId: selectedDisease.id,
-          name: newDisease.name,
-          description: newDisease.description || "",
-          symptoms: newDisease.symptoms || "",
-          treatmentOptions: newDisease.treatmentOptions || "",
-          pregnancyRelated: !!newDisease.pregnancyRelated,
-          riskLevel: newDisease.riskLevel || "",
-          typeOfDesease: newDisease.typeOfDesease || "",
-        },
-        token
-      );
-      console.log("Update disease response:", apiResponse);
-      if (apiResponse.error !== 0) {
-        throw new Error(apiResponse.message || "Failed to update disease");
-      }
-      setNewDisease({
-        name: "",
-        description: "",
-        symptoms: "",
-        treatmentOptions: "",
-        pregnancyRelated: false,
-        riskLevel: "",
-        typeOfDesease: "",
-      });
-      setSelectedDisease(null);
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Disease updated successfully", "success");
-    } catch (err) {
-      console.error("Update disease error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-        config: err.config,
-      });
-      let errorMessage = "Failed to update disease";
-      if (err.response?.status === 400) {
-        errorMessage = err.response?.data?.message || "Invalid data provided";
-      } else if (err.response?.status === 401) {
-        errorMessage = "Session expired. Please sign in again.";
-        localStorage.removeItem("token");
-        navigate("/signin", { replace: true });
-      } else if (err.response?.status === 404) {
-        errorMessage = "Disease not found.";
-      } else if (err.code === "ERR_NETWORK") {
-        errorMessage = "Network error: Unable to connect to the server.";
-      } else {
-        errorMessage = err.response?.data?.message || err.message || "Unknown error";
-      }
-      showNotification(errorMessage, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteDiseaseHandler = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this disease?")) return;
-    setLoading(true);
-    try {
-      console.log("Deleting disease with ID:", id);
-      const apiResponse = await deleteDisease(id, token);
-      console.log("Delete disease response:", apiResponse);
-      if (apiResponse.error !== 0) {
-        throw new Error(apiResponse.message || "Failed to delete disease");
-      }
-      setSelectedDisease(null);
-      setIsEditing(false);
-      setNewDisease({
-        name: "",
-        description: "",
-        symptoms: "",
-        treatmentOptions: "",
-        pregnancyRelated: false,
-        riskLevel: "",
-        typeOfDesease: "",
-      });
-      await fetchData();
-      showNotification("Disease deleted successfully", "success");
-    } catch (err) {
-      console.error("Delete disease error details:", {
-        message: err.message,
-        response: err.response?.data,
-        status: err.response?.status,
-      });
-      showNotification(
-        `Failed to delete disease: ${err.response?.data?.message || err.message}`,
-        "error"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const cancelEdit = () => {
-    setNewDisease({
-      name: "",
-      description: "",
-      symptoms: "",
-      treatmentOptions: "",
-      pregnancyRelated: false,
-      riskLevel: "",
-      typeOfDesease: "",
-    });
-    setSelectedDisease(null);
-    setIsEditing(false);
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
-    if (isNutrientDropdownOpen) setIsNutrientDropdownOpen(false);
-    if (isFoodDropdownOpen) setIsFoodDropdownOpen(false);
-  };
-
-  const toggleNutrientDropdown = () => {
-    setIsNutrientDropdownOpen((prev) => !prev);
-  };
-
-  const toggleFoodDropdown = () => {
-    setIsFoodDropdownOpen((prev) => !prev);
   };
 
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
     try {
-      if (user?.userId) await logout(user.userId);
+      if (user?.userId) await logout(user.userId, token);
     } catch (error) {
       console.error("Error logging out:", error.message);
     } finally {
@@ -423,11 +159,6 @@ const DiseaseManagement = () => {
       setIsSidebarOpen(true);
       navigate("/signin", { replace: true });
     }
-  };
-
-  const handleHomepageNavigation = () => {
-    setIsSidebarOpen(true);
-    navigate("/nutrient-specialist");
   };
 
   useEffect(() => {
@@ -439,32 +170,8 @@ const DiseaseManagement = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const filteredDiseases = diseases.filter(
-    (disease) =>
-      (disease.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (disease.description || "").toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Pagination logic
-  const indexOfLastDisease = currentPage * diseasesPerPage;
-  const indexOfFirstDisease = indexOfLastDisease - diseasesPerPage;
-  const currentDiseases = filteredDiseases.slice(indexOfFirstDisease, indexOfLastDisease);
-  const totalPages = Math.ceil(filteredDiseases.length / diseasesPerPage);
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -489,39 +196,33 @@ const DiseaseManagement = () => {
   };
 
   const sidebarVariants = {
-    open: { width: "min(260px, 25vw)", transition: { duration: 0.3, ease: "easeOut" } },
-    closed: { width: "min(60px, 15vw)", transition: { duration: 0.3, ease: "easeIn" } },
+    open: {
+      width: "280px",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      width: "60px",
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
   };
 
   const navItemVariants = {
-    initial: { opacity: 0, x: -20 },
+    initial: { opacity: 0, x: -20, backgroundColor: "rgba(0, 0, 0, 0)" },
     animate: {
       opacity: 1,
       x: 0,
+      backgroundColor: "rgba(0, 0, 0, 0)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     hover: {
-      backgroundColor: "var(--nutrient-specialist-secondary)",
+      backgroundColor: "#4caf50",
       transform: "translateY(-2px)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
-  const dropdownVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
-  };
-
   return (
-    <div className="disease-management">
+    <div className="messenger-management">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -530,9 +231,8 @@ const DiseaseManagement = () => {
           />
         )}
       </AnimatePresence>
-
       <motion.aside
-        className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className={`sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
@@ -559,8 +259,8 @@ const DiseaseManagement = () => {
               >
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
-                  fill="var(--nutrient-specialist-highlight)"
-                  stroke="var(--nutrient-specialist-primary)"
+                  fill="#ffca28"
+                  stroke="#2e7d32"
                   strokeWidth="1.5"
                 />
               </svg>
@@ -576,7 +276,7 @@ const DiseaseManagement = () => {
           >
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path
-                stroke="var(--nutrient-specialist-white)"
+                stroke="#ffffff"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -614,20 +314,20 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Home icon for homepage"
+                    aria-label="Home icon"
                   >
                     <path
                       d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M9 22V12h6v10"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -652,12 +352,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Blog icon for blog management"
+                    aria-label="Blog icon"
                   >
                     <path
                       d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -687,12 +387,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Food icon for food management"
+                    aria-label="Food icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4l2 6-6 2 6 2 2-6-2-6z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -710,7 +410,7 @@ const DiseaseManagement = () => {
                       }`}
                     >
                       <path
-                        stroke="var(--nutrient-specialist-white)"
+                        stroke="#ffffff"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -725,9 +425,7 @@ const DiseaseManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={
-                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
-                }
+                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
                 initial="closed"
               >
                 <motion.div
@@ -746,12 +444,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Category icon for food category management"
+                      aria-label="Category icon"
                     >
                       <path
                         d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                        fill="var(--nutrient-specialist-secondary)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#4caf50"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -776,12 +474,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Food item icon for food management"
+                      aria-label="Food item icon"
                     >
                       <path
                         d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
-                        fill="var(--nutrient-specialist-accent)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#a5d6a7"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -809,15 +507,15 @@ const DiseaseManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 20"
+                    viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Nutrient icon for nutrient management"
+                    aria-label="Nutrient icon"
                   >
                     <path
                       d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -835,7 +533,7 @@ const DiseaseManagement = () => {
                       }`}
                     >
                       <path
-                        stroke="var(--nutrient-specialist-white)"
+                        stroke="#ffffff"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -853,7 +551,7 @@ const DiseaseManagement = () => {
                 className="nutrient-dropdown"
                 variants={dropdownVariants}
                 animate={
-                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                  isSidebarOpen && isNutrientDropdownOpen ? "open" : "closed"
                 }
                 initial="closed"
               >
@@ -873,12 +571,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Category icon for nutrient category management"
+                      aria-label="Category icon"
                     >
                       <path
                         d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                        fill="var(--nutrient-specialist-secondary)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#4caf50"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -903,12 +601,12 @@ const DiseaseManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Nutrient item icon for nutrient management"
+                      aria-label="Nutrient item icon"
                     >
                       <path
                         d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
-                        fill="var(--nutrient-specialist-accent)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#a5d6a7"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -931,15 +629,15 @@ const DiseaseManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 23"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Nutrient in food icon"
                   >
                     <path
                       d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-3 2h6v2H9v-2zm0 4h6v2H9v-2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -964,12 +662,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Users icon for age group management"
+                    aria-label="Users icon"
                   >
                     <path
                       d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m14-10a4 4 0 010-8m-6 4a4 4 0 11-8 0 4 4 0 018 0zm10 13v-2a4 4 0 00-3-3.87"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -994,12 +692,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Plate icon for dish management"
+                    aria-label="Plate icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 8a4 4 0 014-4 4 4 0 014 4"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1028,12 +726,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Category icon for allergy category management"
+                    aria-label="Category icon"
                   >
                     <path
                       d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                      fill="var(--nutrient-specialist-secondary)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#4caf50"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1058,12 +756,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Allergy icon for allergy management"
+                    aria-label="Allergy icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1074,7 +772,7 @@ const DiseaseManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item active"
+                className="sidebar-nav-item"
                 whileHover="hover"
               >
                 <Link
@@ -1088,12 +786,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Medical icon for disease management"
+                    aria-label="Medical icon"
                   >
                     <path
                       d="M19 7h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3H5a2 2 0 00-2 2v6a2 2 0 002 2h3v3a2 2 0 002 2h4a2 2 0 002-2v-3h3a2 2 0 002-2V9a2 2 0 00-2-2zm-7 10v3h-2v-3H7v-2h3V9h2v3h3v2h-3z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1118,12 +816,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for warning management"
+                    aria-label="Warning icon"
                   >
                     <path
                       d="M12 2l10 20H2L12 2zm0 4v8m0 4v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1148,12 +846,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Meal icon for meal management"
+                    aria-label="Meal icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 4h8v2H8v-2zm0 4h8v2H8v-2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1178,12 +876,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Energy icon for energy suggestion"
+                    aria-label="Energy icon"
                   >
                     <path
                       d="M12 2l-6 9h4v7l6-9h-4V2zm-2 9h4m-4-7v3m4 3v3"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1208,12 +906,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Nutrient suggestion icon for nutrient suggestion"
+                    aria-label="Nutrient suggestion icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4h4m-4 2v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1224,7 +922,7 @@ const DiseaseManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="sidebar-nav-item active"
                 whileHover="hover"
               >
                 <Link
@@ -1238,12 +936,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Messenger icon for messenger management"
+                    aria-label="Messenger icon"
                   >
                     <path
                       d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1268,12 +966,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Document icon for nutrient policy"
+                    aria-label="Document icon"
                   >
                     <path
                       d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1298,12 +996,12 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Book icon for nutrient tutorial"
+                    aria-label="Book icon"
                   >
                     <path
                       d="M4 19.5A2.5 2.5 0 016.5 17H20m-16 0V5a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6.5"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1340,13 +1038,13 @@ const DiseaseManagement = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item nutrient-specialist-profile-section"
+                className="sidebar-nav-item profile-section"
                 whileHover="hover"
               >
                 <Link
                   to="/profile"
-                  className="nutrient-specialist-profile-info"
-                  title={isSidebarOpen ? user.email : ""}
+                  className="profile-info"
+                  title={isSidebarOpen ? user.email : "Profile"}
                 >
                   <svg
                     width="24"
@@ -1354,17 +1052,15 @@ const DiseaseManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="User icon for profile"
+                    aria-label="User icon"
                   >
                     <path
                       d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--nutrient-specialist-white)"
+                      fill="#ffffff"
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="nutrient-specialist-profile-email">
-                      {user.email}
-                    </span>
+                    <span className="profile-email">{user.email}</span>
                   )}
                 </Link>
               </motion.div>
@@ -1387,7 +1083,7 @@ const DiseaseManagement = () => {
                     aria-label="Logout icon"
                   >
                     <path
-                      stroke="var(--nutrient-specialist-logout)"
+                      stroke="#d32f2f"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1417,7 +1113,7 @@ const DiseaseManagement = () => {
                   aria-label="Login icon"
                 >
                   <path
-                    stroke="var(--nutrient-specialist-white)"
+                    stroke="#ffffff"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1430,319 +1126,94 @@ const DiseaseManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
       <motion.main
-        className={`nutrient-specialist-content ${
-          isSidebarOpen ? "sidebar-open" : "sidebar-closed"
-        }`}
+        className={`content ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Manage Diseases</h1>
-            <p>Create, edit, and manage diseases for nutritional guidance</p>
+            <h1>Messenger Management</h1>
+            <p>Communicate and manage messages for nutrient-related queries</p>
           </div>
         </div>
-
         <div className="management-container">
-          <div className="form-section">
+          <div className="chat-section">
             <div className="section-header">
-              <h2>{isEditing ? "Edit Disease" : "Add New Disease"}</h2>
+              <h2>Chat Box</h2>
             </div>
-            <div className="form-card">
-              <div className="form-group">
-                <label htmlFor="disease-name">Disease Name *</label>
-                <input
-                  id="disease-name"
-                  type="text"
-                  value={newDisease.name}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      name: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter disease name"
-                  className="input-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="disease-description">Description</label>
-                <textarea
-                  id="disease-description"
-                  value={newDisease.description}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter disease description"
-                  className="textarea-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="disease-symptoms">Symptoms</label>
-                <textarea
-                  id="disease-symptoms"
-                  value={newDisease.symptoms}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      symptoms: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter disease symptoms"
-                  className="textarea-field"
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="disease-treatment">Treatment Options</label>
-                <textarea
-                  id="disease-treatment"
-                  value={newDisease.treatmentOptions}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      treatmentOptions: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter treatment options"
-                  className="textarea-field"
-                />
-              </div>
-              <div className="form-group pregnancy-related-group">
-                <label htmlFor="disease-pregnancy">Pregnancy Related</label>
-                <input
-                  id="disease-pregnancy"
-                  type="checkbox"
-                  className="pregnancy-checkbox"
-                  checked={newDisease.pregnancyRelated}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      pregnancyRelated: e.target.checked,
-                    }))
-                  }
-                />
-                <label htmlFor="disease-pregnancy" className="pregnancy-checkbox-label">
-                  <svg
-                    className="checkbox-icon"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M20 6L9 17L4 12"
-                      stroke="var(--nutrient-specialist-primary)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <span>{newDisease.pregnancyRelated ? "Yes" : "No"}</span>
-                </label>
-              </div>
-              <div className="form-group">
-                <label htmlFor="disease-risk-level">Risk Level</label>
-                <select
-                  id="disease-risk-level"
-                  value={newDisease.riskLevel}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      riskLevel: e.target.value,
-                    }))
-                  }
-                  className="input-field"
-                >
-                  <option value="">Select Risk Level</option>
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label htmlFor="disease-type">Type of Disease</label>
-                <input
-                  id="disease-type"
-                  type="text"
-                  value={newDisease.typeOfDesease}
-                  onChange={(e) =>
-                    setNewDisease((prev) => ({
-                      ...prev,
-                      typeOfDesease: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter type of disease"
-                  className="input-field"
-                />
-              </div>
-              <div className="button-group">
-                <motion.button
-                  onClick={
-                    isEditing ? updateDiseaseHandler : createDiseaseHandler
-                  }
-                  disabled={loading}
-                  className="submit-button nutrient-specialist-button primary"
-                  whileHover={{
-                    scale: loading ? 1 : 1.05,
-                  }}
-                  whileTap={{
-                    scale: loading ? 1 : 0.95,
-                  }}
-                >
-                  {loading
-                    ? isEditing
-                      ? "Updating..."
-                      : "Creating..."
-                    : isEditing
-                    ? "Update Disease"
-                    : "Create Disease"}
-                </motion.button>
-                {isEditing && (
-                  <motion.button
-                    onClick={cancelEdit}
-                    disabled={loading}
-                    className="cancel-button nutrient-specialist-button secondary"
-                    whileHover={{ scale: loading ? 1 : 1.05 }}
-                    whileTap={{ scale: loading ? 1 : 0.95 }}
-                  >
-                    Cancel
-                  </motion.button>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="nutrient-list-section">
-            <div className="section-header">
-              <h2>Disease List</h2>
-              <div className="nutrient-count">
-                {filteredDiseases.length}{" "}
-                {filteredDiseases.length === 1 ? "disease" : "diseases"} found
-              </div>
-            </div>
-            {loading ? (
-              <div className="loading-state">
-                <LoaderIcon />
-                <p>Loading diseases...</p>
-              </div>
-            ) : !Array.isArray(diseases) || diseases.length === 0 ? (
-              <div className="empty-state">
-                <svg
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <h3>No diseases found</h3>
-                <p>Create your first disease to get started</p>
-              </div>
-            ) : (
-              <>
-                <div className="nutrient-grid">
-                  {currentDiseases.map((disease) => (
-                    <motion.div
-                      key={disease.id}
-                      className="nutrient-card"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      whileHover={{ y: -5 }}
+            <div className="chat-card">
+              <div className="chat-messages">
+                {loading ? (
+                  <div className="loading-state">
+                    <LoaderIcon />
+                    <p>Loading messages...</p>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="empty-state">
+                    <svg
+                      width="64"
+                      height="64"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
                     >
-                      <div className="card-header">
-                        <h3>{disease.name || `Disease #${disease.id}`}</h3>
-                      </div>
-                      <div className="disease-description">
-                        <h4>Description:</h4>
-                        <p>{disease.description || "No description available"}</p>
-                      </div>
-                      <div className="disease-description">
-                        <h4>Symptoms:</h4>
-                        <p>{disease.symptoms || "No symptoms available"}</p>
-                      </div>
-                      <div className="disease-description">
-                        <h4>Treatment Options:</h4>
-                        <p>
-                          {disease.treatmentOptions ||
-                            "No treatment options available"}
-                        </p>
-                      </div>
-                      <div className="disease-description">
-                        <h4>Pregnancy Related:</h4>
-                        <p>{disease.pregnancyRelated ? "Yes" : "No"}</p>
-                      </div>
-                      <div className="disease-description">
-                        <h4>Risk Level:</h4>
-                        <p>{disease.riskLevel || "Not specified"}</p>
-                      </div>
-                      <div className="disease-description">
-                        <h4>Type of Disease:</h4>
-                        <p>{disease.typeOfDesease || "Not specified"}</p>
-                      </div>
-                      <div className="card-actions">
-                        <motion.button
-                          onClick={() => fetchDiseaseById(disease.id)}
-                          className="edit-button nutrient-specialist-button primary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          disabled={loading}
-                        >
-                          <span>Edit</span>
-                        </motion.button>
-                        <motion.button
-                          onClick={() => deleteDiseaseHandler(disease.id)}
-                          className="delete-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          disabled={loading}
-                        >
-                          <span>Delete</span>
-                        </motion.button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                {totalPages > 1 && (
-                  <div className="pagination">
-                    <motion.button
-                      onClick={handlePreviousPage}
-                      className="pagination-button"
-                      disabled={currentPage === 1}
-                      whileHover={{ scale: currentPage === 1 ? 1 : 1.1 }}
-                      whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
-                    >
-                      Previous
-                    </motion.button>
-                    <span className="pagination-info">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <motion.button
-                      onClick={handleNextPage}
-                      className="pagination-button"
-                      disabled={currentPage === totalPages}
-                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.1 }}
-                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
-                    >
-                      Next
-                    </motion.button>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                      />
+                    </svg>
+                    <h3>No messages yet</h3>
+                    <p>Start a conversation by sending a message</p>
+                  </div>
+                ) : (
+                  <div className="messages-container">
+                    {messages.map((message) => (
+                      <motion.div
+                        key={message.id}
+                        className="message-bubble"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="message-header">
+                          <span className="message-sender">{message.sender}</span>
+                          <span className="message-timestamp">{message.timestamp}</span>
+                        </div>
+                        <p className="message-content">{message.content}</p>
+                      </motion.div>
+                    ))}
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
-              </>
-            )}
+              </div>
+              <div className="chat-input">
+                <div className="form-group">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="input-field"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") handleSendMessage();
+                    }}
+                  />
+                </div>
+                <motion.button
+                  onClick={handleSendMessage}
+                  disabled={loading}
+                  className="button primary"
+                  whileHover={{ scale: loading ? 1 : 1.05 }}
+                  whileTap={{ scale: loading ? 1 : 0.95 }}
+                >
+                  {loading ? "Sending..." : "Send"}
+                </motion.button>
+              </div>
+            </div>
           </div>
         </div>
       </motion.main>
@@ -1750,4 +1221,4 @@ const DiseaseManagement = () => {
   );
 };
 
-export default DiseaseManagement;
+export default MessengerManagement;

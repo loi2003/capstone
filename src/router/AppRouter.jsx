@@ -61,7 +61,9 @@ import DiseaseManagement from "../pages/nutrientspecialist/DiseaseManagement";
 import MealManagement from "../pages/nutrientspecialist/MealManagement";
 import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
-import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
+import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; 
+import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -105,7 +107,8 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/nutrient-specialist/warning-management" element={<WarningManagement />} />
         <Route path="/nutrient-specialist/energy-suggestion" element={<EnergySuggestion />} />
-        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> 
+        <Route path="/nutrient-specialist/messenger-management" element={<MessengerManagement />} /> 
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
