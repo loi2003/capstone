@@ -73,7 +73,7 @@ const Footer = () => {
           </div>
 
           {/* Healthcare Services */}
-          <div className="footer-section">
+          {/* <div className="footer-section">
             <h3>Healthcare Services</h3>
             <div className="footer-links">
               <Link to="/prenatal-care">Prenatal Care</Link>
@@ -83,7 +83,7 @@ const Footer = () => {
               <Link to="/emergency">Emergency Care</Link>
               <Link to="/postpartum">Postpartum Support</Link>
             </div>
-          </div>
+          </div> */}
 
           {/* Newsletter & Social */}
           <div className="footer-section center">
@@ -106,7 +106,7 @@ const Footer = () => {
 
             <div className="social-links">
               <a
-                href="https://facebook.com/momcareplus"
+                href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Facebook"
@@ -116,7 +116,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://instagram.com/momcareplus"
+                href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Instagram"
@@ -126,7 +126,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://twitter.com/momcareplus"
+                href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Twitter"
@@ -136,7 +136,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://youtube.com/momcareplus"
+                href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on YouTube"

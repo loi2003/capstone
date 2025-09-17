@@ -255,43 +255,37 @@ const RecommendedNutritionalNeeds = () => {
       return;
     }
 
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--; 
+    }
+
+    if (age < 20) {
+      setError("This feature is only available for users 20 years and older. Data is from 20+ years old mothers.");
+      setLoading(false);
+      return;
+    }
+
     try {
-      // Update user DOB if changed - Fix undefined values
-      if (dob && dob !== savedDob) {
-        // Get current user info
-        const storedUser = localStorage.getItem("user");
-        let parsedUser = storedUser ? JSON.parse(storedUser) : null;
-
-        if (!parsedUser) {
-          const response = await getCurrentUser(token);
-          parsedUser = response.data.data;
-        }
-
-        // Create complete payload
-        const updateData = {
-          Id: parsedUser.id,
-          UserName: parsedUser.userName,
-          PhoneNumber: parsedUser.phoneNumber,
-          DateOfBirth: dob ? new Date(dob).toISOString() : null,
-        };
-
-        await editUserProfile(updateData, token);
-
-        // Update local storage
-        parsedUser.DateOfBirth = dob;
-        localStorage.setItem("user", JSON.stringify(parsedUser));
-
-        setSavedDob(dob);
-      }
-
-      // Fetch nutritional needs
-      const rawData = await getEssentialNutritionalNeeds({
-        currentWeek: week,
-        dateOfBirth: dob,
-        activityLevel: activityLevel || 1,
+      console.log("Submitting with values:", {
+        week,
+        dob,
+        activityLevel,
+        age,
       });
 
-      console.log("API data:", rawData); // Debugging
+      const rawData = await getEssentialNutritionalNeeds({
+        currentWeek: week,
+        dateOfBirth: dob, 
+        activityLevel: activityLevel || 1,
+      });
+      console.log("API data:", rawData);
 
       // Transform backend data into table format with capitalized names
       const formattedData = [
@@ -371,7 +365,7 @@ const RecommendedNutritionalNeeds = () => {
               </option>
             ))}
           </select>
-          <label>Date of Birth</label>
+          <label>Date of Birth (Optional)</label>
           <input
             type="date"
             id="dob"
