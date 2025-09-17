@@ -26,7 +26,7 @@
 
 /* Main Background */
 .clinic-list-background-container {
-  background: linear-gradient(180deg, var(--co-5) 0%, #ffffff 40%);
+  background: linear-gradient(180deg, #04668D 0%, #ffffff 40%);
   min-height: 100vh;
 }
 

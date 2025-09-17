@@ -62,6 +62,7 @@ import MealManagement from "../pages/nutrientspecialist/MealManagement";
 import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
 import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
+import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -128,6 +129,7 @@ const AppRoutes = () => {
         <Route path="/pregnancy-tracking/system-meal-planner" element={<SystemMealPlanner />} />
         <Route path="/pregnancy-tracking/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
         <Route path="/pregnancy-tracking/nutritional-guidance-foodwarning" element={<FoodWarning />} />
+        <Route path="/subscriptionplan" element={<SubscriptionPlan />} />
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />

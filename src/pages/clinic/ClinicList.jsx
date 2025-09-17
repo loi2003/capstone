@@ -161,14 +161,14 @@ const ClinicList = () => {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                <button 
+                {/* <button 
                   type="button" 
                   className="clinic-filter-toggle"
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <FaFilter />
                   Filters
-                </button>
+                </button> */}
                 <button type="submit" className="clinic-search-main-btn">
                   <FaSearch />
                   Search
@@ -176,7 +176,7 @@ const ClinicList = () => {
               </div>
 
               {/* Collapsible Filters */}
-              <motion.div 
+              {/* <motion.div 
                 className={`clinic-filters-panel ${showFilters ? 'expanded' : ''}`}
                 initial={false}
                 animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }}
@@ -211,7 +211,7 @@ const ClinicList = () => {
                     </label>
                   </div>
                 </div>
-              </motion.div>
+              </motion.div> */}
             </motion.form>
           </div>
         </motion.header>
