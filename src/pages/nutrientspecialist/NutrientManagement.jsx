@@ -1255,8 +1255,8 @@ const NutrientManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
-          >
+
+            >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
