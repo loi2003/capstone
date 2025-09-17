@@ -1,27 +1,28 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  getAllBlogs, 
-  getAllLikedBlogs, 
-  getAllBookmarkedBlogs, 
-  deleteLike, 
-  deleteBookmark 
+import {
+  getAllBlogs,
+  getAllLikedBlogs,
+  getAllBookmarkedBlogs,
+  deleteLike,
+  deleteBookmark,
 } from "../apis/blog-api";
 import apiClient from "../apis/url-api";
 import "../styles/BlogPage.css";
 import ChatBoxPage from "../components/chatbox/ChatBoxPage";
 
 // React Icons imports
-import { 
-  FaCalendarAlt, 
-  FaBook, 
-  FaHeart, 
-  FaSearch, 
+import {
+  FaCalendarAlt,
+  FaBook,
+  FaHeart,
+  FaSearch,
   FaTimes,
   FaBookmark,
-  FaComments
+  FaComments,
 } from "react-icons/fa";
+import { IoTrashBinSharp } from 'react-icons/io5';
 
 const BlogPage = () => {
   // State management
@@ -30,7 +31,7 @@ const BlogPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedTag, setSelectedTag] = useState("All");
   const [sortOption, setSortOption] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [bookmarks, setBookmarks] = useState([]);
@@ -54,6 +55,27 @@ const BlogPage = () => {
     "src/assets/find-a-health-service.svg",
     "src/assets/pregnancy-tracker.svg",
   ];
+
+  // ViewBookmarkedBlog function
+  const ViewBookmarkedBlog = useCallback(() => {
+    if (!token) {
+      setShowAuthPopup(true);
+      return;
+    }
+
+    // Filter blogs to get only bookmarked ones
+    const bookmarkedBlogs = blogs.filter((blog) =>
+      bookmarks.includes(String(blog.id))
+    );
+
+    if (bookmarkedBlogs.length === 0) {
+      // You can show a message or handle empty bookmarks
+      setShowBookmarkPopup(true);
+      return;
+    }
+
+    setShowBookmarkPopup(true);
+  }, [token, blogs, bookmarks]);
 
   const getRandomPlaceholder = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * placeholderImages.length);
@@ -126,8 +148,26 @@ const BlogPage = () => {
     fetchData();
   }, [token]);
 
+  // Popular blogs for sidebar (add this after recentPosts)
+  const popularBlogs = useMemo(() => {
+    return blogs
+      .filter((blog) => blog.likeCount > 0) // Only show blogs with likes
+      .sort((a, b) => (b.likeCount || 0) - (a.likeCount || 0)) // Sort by likes descending
+      .slice(0, 5) // Show top 5 most liked
+      .map((blog) => ({
+        id: String(blog.id),
+        title: blog.title,
+        likeCount: blog.likeCount || 0,
+        image: blog.images?.[0]?.fileUrl || getRandomPlaceholder(),
+        createdAt: blog.createdAt,
+        categoryName: blog.categoryName || "N/A",
+        tag: blog.tags?.[0] || "General",
+        body: blog.body,
+      }));
+  }, [blogs, getRandomPlaceholder]);
+
   // Enhanced category management with colors
-  const categoryData = useMemo(() => {
+  const tagData = useMemo(() => {
     const colors = ["#04668D", "#02808F", "#00A996", "#03C39A", "#F0F3BE"];
     const tagCounts = blogs
       .flatMap((blog) => blog.tags || [])
@@ -146,7 +186,7 @@ const BlogPage = () => {
       }));
   }, [blogs]);
 
-  const categories = useMemo(
+  const tags = useMemo(
     () => ["All", ...new Set(blogs.flatMap((blog) => blog.tags || []))],
     [blogs]
   );
@@ -162,20 +202,20 @@ const BlogPage = () => {
       (sum, blog) => sum + (blog.viewCount || 0),
       0
     );
-    const uniqueCategories = new Set(blogs.flatMap((blog) => blog.tags || []))
+    const uniqueTags = new Set(blogs.flatMap((blog) => blog.tags || []))
       .size;
 
     return {
       totalBlogs,
       totalLikes,
       totalViews,
-      uniqueCategories,
+      uniqueTags,
     };
   }, [blogs]);
 
   // Enhanced filtering and sorting
   const filterBlogs = useCallback(
-    (term, category, sort) => {
+    (term, tag, sort) => {
       let filtered = [...blogs];
 
       if (term) {
@@ -183,12 +223,12 @@ const BlogPage = () => {
           (blog) =>
             blog.title?.toLowerCase().includes(term) ||
             blog.body?.toLowerCase().includes(term) ||
-            blog.tags?.some((tag) => tag.toLowerCase().includes(term))
+            blog.tags?.some((blogTag) => blogTag.toLowerCase().includes(term))
         );
       }
 
-      if (category !== "All") {
-        filtered = filtered.filter((blog) => blog.tags?.includes(category));
+      if (tag !== "All") {
+        filtered = filtered.filter((blog) => blog.tags?.includes(tag));
       }
 
       switch (sort) {
@@ -225,16 +265,16 @@ const BlogPage = () => {
     (e) => {
       const term = e.target.value.toLowerCase();
       setSearchTerm(term);
-      filterBlogs(term, selectedCategory, sortOption);
+      filterBlogs(term, selectedTag, sortOption);
       setCurrentPage(1);
     },
-    [filterBlogs, selectedCategory, sortOption]
+    [filterBlogs, selectedTag, sortOption]
   );
 
-  const handleCategoryFilter = useCallback(
-    (category) => {
-      setSelectedCategory(category);
-      filterBlogs(searchTerm, category, sortOption);
+  const handleTagFilter = useCallback(
+    (tag) => {
+      setSelectedTag(tag);
+      filterBlogs(searchTerm, tag, sortOption);
       setCurrentPage(1);
     },
     [filterBlogs, searchTerm, sortOption]
@@ -244,17 +284,17 @@ const BlogPage = () => {
     (e) => {
       const sort = e.target.value;
       setSortOption(sort);
-      filterBlogs(searchTerm, selectedCategory, sort);
+      filterBlogs(searchTerm, selectedTag, sort);
       setCurrentPage(1);
     },
-    [filterBlogs, searchTerm, selectedCategory]
+    [filterBlogs, searchTerm, selectedTag]
   );
 
   const clearSearch = useCallback(() => {
     setSearchTerm("");
-    filterBlogs("", selectedCategory, sortOption);
+    filterBlogs("", selectedTag, sortOption);
     setCurrentPage(1);
-  }, [filterBlogs, selectedCategory, sortOption]);
+  }, [filterBlogs, selectedTag, sortOption]);
 
   // Enhanced bookmark functionality
   const toggleBookmark = useCallback(
@@ -465,9 +505,9 @@ const BlogPage = () => {
                 </div>
                 <div className="blog-page__stat-item">
                   <span className="blog-page__stat-number">
-                    {blogStats.uniqueCategories}
+                    {blogStats.uniqueTags}
                   </span>
-                  <span className="blog-page__stat-label">Categories</span>
+                  <span className="blog-page__stat-label">Tags</span>
                 </div>
                 <div className="blog-page__stat-item">
                   <span className="blog-page__stat-number">
@@ -477,7 +517,7 @@ const BlogPage = () => {
                 </div>
                 <div className="blog-page__stat-item">
                   <span className="blog-page__stat-number">
-                    {blogStats.totalViews > 0 ? blogStats.totalViews : "1.2K"}
+                    {blogStats.totalViews > 0 ? blogStats.totalViews : "42"}
                   </span>
                   <span className="blog-page__stat-label">Readers</span>
                 </div>
@@ -505,7 +545,10 @@ const BlogPage = () => {
                     onChange={handleSearch}
                   />
                   {searchTerm && (
-                    <button className="blog-page__clear-btn" onClick={clearSearch}>
+                    <button
+                      className="blog-page__clear-btn"
+                      onClick={clearSearch}
+                    >
                       <FaTimes />
                     </button>
                   )}
@@ -526,22 +569,22 @@ const BlogPage = () => {
 
               {/* Category Filter Row */}
               <div className="blog-page__category-row">
-                <span className="blog-page__filter-label">Categories:</span>
+                <span className="blog-page__filter-label">Tags:</span>
                 <div className="blog-page__category-filters">
-                  {categories.slice(0, 8).map((category, index) => (
+                  {tags.slice(0, 8).map((tag, index) => (
                     <motion.button
-                      key={category}
+                      key={tag}
                       className={`blog-page__category-btn ${
-                        selectedCategory === category ? "active" : ""
+                        selectedTag === tag ? "active" : ""
                       }`}
-                      onClick={() => handleCategoryFilter(category)}
+                      onClick={() => handleTagFilter(tag)}
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      {category}
+                      {tag}
                     </motion.button>
                   ))}
                 </div>
@@ -608,11 +651,16 @@ const BlogPage = () => {
 
                                 {blog.tags && blog.tags.length > 0 && (
                                   <div className="blog-page__card-tags">
-                                    {blog.tags.slice(0, 3).map((tag, tagIndex) => (
-                                      <span key={tagIndex} className="blog-page__tag">
-                                        {tag}
-                                      </span>
-                                    ))}
+                                    {blog.tags
+                                      .slice(0, 3)
+                                      .map((tag, tagIndex) => (
+                                        <span
+                                          key={tagIndex}
+                                          className="blog-page__tag"
+                                        >
+                                          {tag}
+                                        </span>
+                                      ))}
                                   </div>
                                 )}
 
@@ -621,13 +669,16 @@ const BlogPage = () => {
                                     <div className="blog-page__meta-item">
                                       <FaCalendarAlt />
                                       <span>
-                                        {new Date(blog.createdAt).toLocaleDateString()}
+                                        {new Date(
+                                          blog.createdAt
+                                        ).toLocaleDateString()}
                                       </span>
                                     </div>
                                     <div className="blog-page__meta-item">
                                       <FaBook />
                                       <span>
-                                        {calculateReadingTime(blog.body)} min read
+                                        {calculateReadingTime(blog.body)} min
+                                        read
                                       </span>
                                     </div>
                                     <div className="blog-page__meta-item">
@@ -660,7 +711,9 @@ const BlogPage = () => {
 
                                     <motion.button
                                       className={`blog-page__like-btn ${
-                                        likes.includes(String(blog.id)) ? "liked" : ""
+                                        likes.includes(String(blog.id))
+                                          ? "liked"
+                                          : ""
                                       }`}
                                       onClick={(e) => {
                                         e.preventDefault();
@@ -690,7 +743,9 @@ const BlogPage = () => {
                         className={`blog-page__page-btn ${
                           currentPage === 1 ? "disabled" : ""
                         }`}
-                        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(prev - 1, 1))
+                        }
                         disabled={currentPage === 1}
                         whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
                         whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
@@ -707,11 +762,17 @@ const BlogPage = () => {
                           currentPage === totalPages ? "disabled" : ""
                         }`}
                         onClick={() =>
-                          setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                          setCurrentPage((prev) =>
+                            Math.min(prev + 1, totalPages)
+                          )
                         }
                         disabled={currentPage === totalPages}
-                        whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                        whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                        whileHover={
+                          currentPage !== totalPages ? { scale: 1.05 } : {}
+                        }
+                        whileTap={
+                          currentPage !== totalPages ? { scale: 0.95 } : {}
+                        }
                       >
                         Next →
                       </motion.button>
@@ -723,6 +784,70 @@ const BlogPage = () => {
 
             {/* Enhanced Sidebar */}
             <aside className="blog-page__sidebar">
+              {/* Popular Blogs Section - Add this after Recent Posts */}
+              <motion.div
+                className="blog-page__sidebar-section"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <h2 className="blog-page__sidebar-title">Most Popular</h2>
+                <div className="blog-page__popular-blogs">
+                  {popularBlogs.length > 0 ? (
+                    popularBlogs.map((blog, index) => (
+                      <motion.div
+                        key={blog.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        whileHover={{ y: -3 }}
+                      >
+                        <Link
+                          to={`/blog/${blog.id}`}
+                          className="blog-page__popular-item"
+                        >
+                          <div className="blog-page__popular-rank">
+                            {index + 1}
+                          </div>
+                          <img
+                            src={blog.image}
+                            alt={blog.title}
+                            className="blog-page__popular-image"
+                            onError={(e) => {
+                              e.target.src = getRandomPlaceholder();
+                            }}
+                          />
+                          <div className="blog-page__popular-content">
+                            <h3 className="blog-page__popular-title">
+                              {blog.title.length > 50
+                                ? `${blog.title.slice(0, 50)}...`
+                                : blog.title}
+                            </h3>
+                            <div className="blog-page__popular-meta">
+                              <span className="blog-page__popular-category">
+                                {blog.category}
+                              </span>
+                              <div className="blog-page__popular-stats">
+                                <span className="blog-page__popular-likes">
+                                  <FaHeart /> {blog.likeCount}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="blog-page__no-popular">
+                      <p>
+                        No popular articles yet. Be the first to like an
+                        article!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+
               {/* Popular Categories */}
               <motion.div
                 className="blog-page__sidebar-section"
@@ -730,24 +855,26 @@ const BlogPage = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <h2 className="blog-page__sidebar-title">Popular Categories</h2>
+                <h2 className="blog-page__sidebar-title">Popular Tags</h2>
                 <div className="blog-page__category-list">
-                  {categoryData.map((category, index) => (
+                  {tagData.map((tag, index) => (
                     <motion.div
-                      key={category.name}
+                      key={tag.name}
                       className="blog-page__category-item"
-                      style={{ background: category.color }}
+                      style={{ background: tag.color }}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ scale: 1.02, x: 5 }}
                       onClick={() =>
-                        handleCategoryFilter(category.name.toLowerCase())
+                        handleTagFilter(
+                          tag.name.toLowerCase()
+                        )
                       }
                     >
-                      <span>{category.name}</span>
+                      <span>{tag.name}</span>
                       <span className="blog-page__category-count">
-                        {category.count}
+                        {tag.count}
                       </span>
                     </motion.div>
                   ))}
@@ -771,7 +898,10 @@ const BlogPage = () => {
                       transition={{ delay: index * 0.1 }}
                       whileHover={{ y: -3 }}
                     >
-                      <Link to={`/blog/${blog.id}`} className="blog-page__recent-item">
+                      <Link
+                        to={`/blog/${blog.id}`}
+                        className="blog-page__recent-item"
+                      >
                         <img
                           src={blog.image || getRandomPlaceholder()}
                           alt={blog.title}
@@ -781,7 +911,9 @@ const BlogPage = () => {
                           }}
                         />
                         <div className="blog-page__recent-content">
-                          <h3 className="blog-page__recent-title">{blog.title}</h3>
+                          <h3 className="blog-page__recent-title">
+                            {blog.title}
+                          </h3>
                           <p className="blog-page__recent-date">
                             {new Date(blog.createdAt).toLocaleDateString()}
                           </p>
@@ -789,6 +921,43 @@ const BlogPage = () => {
                       </Link>
                     </motion.div>
                   ))}
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="blog-page__sidebar-section"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <h2 className="blog-page__sidebar-title">Your Bookmarks</h2>
+                <div className="blog-page__bookmarks-preview">
+                  {token ? (
+                    <>
+                      <p className="blog-page__bookmarks-count">
+                        {bookmarks.length} saved article
+                        {bookmarks.length !== 1 ? "s" : ""}
+                      </p>
+                      <motion.button
+                        className="blog-page__bookmarks-btn"
+                        onClick={ViewBookmarkedBlog}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <FaBookmark /> View All Bookmarks
+                      </motion.button>
+                    </>
+                  ) : (
+                    <div className="blog-page__bookmarks-login">
+                      <p>Sign in to save your favorite articles</p>
+                      <button
+                        onClick={() => setShowAuthPopup(true)}
+                        className="blog-page__bookmarks-login-btn"
+                      >
+                        Sign In
+                      </button>
+                    </div>
+                  )}
                 </div>
               </motion.div>
 
@@ -801,8 +970,8 @@ const BlogPage = () => {
               >
                 <h2 className="blog-page__sidebar-title">Stay Updated</h2>
                 <p>
-                  Get weekly pregnancy tips, health updates, and exclusive content
-                  delivered to your inbox.
+                  Get weekly pregnancy tips, health updates, and exclusive
+                  content delivered to your inbox.
                 </p>
 
                 <form
@@ -832,7 +1001,9 @@ const BlogPage = () => {
                   {subscriptionStatus && (
                     <motion.div
                       className={`blog-page__subscription-status ${
-                        subscriptionStatus.includes("Success") ? "success" : "error"
+                        subscriptionStatus.includes("Success")
+                          ? "success"
+                          : "error"
                       }`}
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -883,6 +1054,136 @@ const BlogPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      {showBookmarkPopup && (
+        <AnimatePresence>
+          <motion.div
+            className="blog-page__bookmark-popup"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="blog-page__bookmark-popup-content"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+            >
+              <div className="blog-page__bookmark-header">
+                <h3>Your Bookmarked Blogs</h3>
+                <button
+                  className="blog-page__bookmark-close"
+                  onClick={() => setShowBookmarkPopup(false)}
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="blog-page__bookmark-content">
+                {!token ? (
+                  <div className="blog-page__bookmark-auth">
+                    <p>Please log in to view your bookmarks</p>
+                    <div className="blog-page__bookmark-auth-buttons">
+                      <button
+                        onClick={() => {
+                          setShowBookmarkPopup(false);
+                          navigate("/signin");
+                        }}
+                        className="blog-page__auth-btn"
+                      >
+                        Sign In
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowBookmarkPopup(false);
+                          navigate("/signup");
+                        }}
+                        className="blog-page__auth-btn"
+                      >
+                        Sign Up
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {bookmarks.length > 0 ? (
+                      <div className="blog-page__bookmark-list">
+                        {blogs
+                          .filter((blog) => bookmarks.includes(String(blog.id)))
+                          .map((blog) => (
+                            <motion.div
+                              key={String(blog.id)}
+                              className="blog-page__bookmark-item"
+                              onClick={() => handleBookmarkClick(blog.id)}
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <img
+                                src={
+                                  blog.images?.[0]?.fileUrl ||
+                                  getRandomPlaceholder()
+                                }
+                                alt={blog.title}
+                                className="blog-page__bookmark-image"
+                                onError={(e) => {
+                                  e.target.src = getRandomPlaceholder();
+                                }}
+                              />
+                              <div className="blog-page__bookmark-info">
+                                <h4 className="blog-page__bookmark-title">
+                                  {blog.title}
+                                </h4>
+                                <p className="blog-page__bookmark-excerpt">
+                                  {blog.body?.slice(0, 100)}...
+                                </p>
+                                <div className="blog-page__bookmark-meta">
+                                  <span className="blog-page__bookmark-date">
+                                    {new Date(
+                                      blog.createdAt
+                                    ).toLocaleDateString("en-US", {
+                                      year: "numeric",
+                                      month: "short",
+                                      day: "numeric",
+                                    })}
+                                  </span>
+                                  <span className="blog-page__bookmark-category">
+                                    {blog.tags?.[0] || "General"}
+                                  </span>
+                                </div>
+                              </div>
+                              <button
+                                className="blog-page__remove-bookmark"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleBookmark(blog.id);
+                                }}
+                                title="Remove bookmark"
+                              >
+                                <IoTrashBinSharp />
+                              </button>
+                            </motion.div>
+                          ))}
+                      </div>
+                    ) : (
+                      <div className="blog-page__no-bookmarks">
+                        <p>
+                          No bookmarks yet. Start exploring and bookmark your
+                          favorite blogs!
+                        </p>
+                        <button
+                          onClick={() => setShowBookmarkPopup(false)}
+                          className="blog-page__explore-btn"
+                        >
+                          Explore More Blogs
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+      )}
 
       {/* Enhanced Contact Icon */}
       <motion.div
