@@ -137,7 +137,7 @@ const DueDateCalculator = () => {
               
               <div className="login-prompt">
                 Want to unlock the full potential of pregnancy tracking?{" "}
-                <Link to="/login" className="login-link">
+                <Link to="/signin" className="login-link">
                   Log in to access personalized insights, journal entries, and more!
                 </Link>
               </div>
