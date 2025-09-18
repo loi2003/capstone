@@ -3,80 +3,61 @@ import { useNavigate } from "react-router-dom";
 import "./SubscriptionPlan.css";
 import Footer from "../footer/Footer";
 import Header from "../header/Header";
-// React Icons imports
-import {
-  FaCheck,
-  FaCrown,
-  FaRocket,
-  FaUsers,
-  FaHeadset,
-  FaDatabase,
-  FaStar,
-  FaInfinity,
-  FaUserTie,
-  FaArrowRight,
-  FaGift,
-} from "react-icons/fa";
-import { MdWorkspacePremium } from "react-icons/md";
-import { BiSupport } from "react-icons/bi";
-
-const plans = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "/month",
-    features: [
-      { text: "Access to community", icon: <FaCheck /> },
-      { text: "Basic support", icon: <FaCheck /> },
-      { text: "Limited storage (5GB)", icon: <FaCheck /> },
-    ],
-    current: true,
-    popular: false,
-    color: "green",
-  },
-  {
-    name: "Plus",
-    price: "$5",
-    period: "/month",
-    features: [
-      { text: "Everything in Free", icon: <FaCheck /> },
-      { text: "Priority support", icon: <FaCheck /> },
-      { text: "Extra storage (50GB)", icon: <FaCheck /> },
-      { text: "Premium templates", icon: <FaCheck /> },
-    ],
-    current: false,
-    popular: true,
-    color: "blue",
-  },
-  {
-    name: "Pro",
-    price: "$10",
-    period: "/month",
-    features: [
-      { text: "Everything in Plus", icon: <FaCheck /> },
-      { text: "1-on-1 consultation", icon: <FaCheck /> },
-      { text: "Unlimited storage", icon: <FaCheck /> },
-      { text: "Custom integrations", icon: <FaCheck /> },
-      { text: "White-label options", icon: <FaCheck /> },
-    ],
-    current: false,
-    popular: false,
-    color: "purple",
-  },
-];
+import { FaCheck, FaStar, FaArrowRight } from "react-icons/fa";
+// import { plans } from "./Plan";
 
 const SubscriptionPlan = () => {
   const navigate = useNavigate();
   const [hoveredPlan, setHoveredPlan] = useState(null);
-  // const [isLoading, setIsLoading] = useState(false);
 
-  const handleCheckout = async (planName) => {
-    // Simulate API call
-    setTimeout(() => {
-      navigate(`/checkout/${planName.toLowerCase()}`);
-    },);
+  const handleCheckout = (planId) => {
+    navigate(`/checkout/${planId}`);
   };
-
+  const plans = [
+    {
+      id: "1",
+      name: "Free",
+      price: "$0",
+      period: "/month",
+      features: [
+        { text: "Access to community", icon: <FaCheck /> },
+        { text: "Pregnancy Tracking", icon: <FaCheck /> },
+        { text: "Access Most Of Nutritional Guidance", icon: <FaCheck /> },
+        { text: "Access AI Assistant", icon: <FaCheck /> },
+        { text: "Basic Support", icon: <FaCheck /> },
+      ],
+      current: true,
+      popular: false,
+      color: "green",
+    },
+    {
+      id: "2",
+      name: "Plus",
+      price: "$5",
+      period: "/month",
+      features: [
+        { text: "Everything in Free", icon: <FaCheck /> },
+        { text: "Consultation Booking", icon: <FaCheck /> },
+        { text: "Custom Meal Planner", icon: <FaCheck /> },
+      ],
+      current: false,
+      popular: true,
+      color: "blue",
+    },
+    {
+      id: "3",
+      name: "Pro",
+      price: "$55",
+      period: "/year",
+      features: [
+        { text: "Everything in Plus", icon: <FaCheck /> },
+        { text: "Billed annually", icon: <FaCheck /> },
+      ],
+      current: false,
+      popular: false,
+      color: "purple",
+    },
+  ];
   return (
     <div className="subscription-wrapper">
       <Header />
@@ -120,9 +101,6 @@ const SubscriptionPlan = () => {
               )}
 
               <div className="plan-header">
-                {/* <div className="plan-icon-wrapper">
-                  {plan.icon}
-                </div> */}
                 <h3 className="plan-name">{plan.name}</h3>
                 <div className="plan-price">
                   <span className="price-amount">{plan.price}</span>
@@ -144,7 +122,7 @@ const SubscriptionPlan = () => {
                   plan.current ? "current-btn" : ""
                 } ${plan.popular ? "popular-btn" : ""}`}
                 disabled={plan.current}
-                onClick={() => !plan.current && handleCheckout(plan.name)}
+                onClick={() => !plan.current && handleCheckout(plan.id)}
               >
                 {plan.current ? (
                   <>
@@ -161,13 +139,6 @@ const SubscriptionPlan = () => {
             </div>
           ))}
         </div>
-
-        {/* <div className="subscription-footer-info">
-          <p className="footer-note">
-            <FaCheck className="info-icon" />
-            14-day free trial • Cancel anytime • No setup fees
-          </p>
-        </div> */}
       </main>
 
       <Footer />
