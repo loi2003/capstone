@@ -1,0 +1,261 @@
+
+/* Reset default margins and paddings */
+.notification-page * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Base styles for the notification page */
+.notification-page {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: linear-gradient(180deg, #F0F3BE 0%, #ffffff 40%);
+  color: #333;
+  min-height: 100vh;
+  padding: 80px 20px;
+}
+
+/* Color and style variables consistent with HomePage.css */
+.notification-page {
+  --co-1: #04668D;
+  --co-2: #02808F;
+  --co-3: #00A996;
+  --co-4: #03C39A;
+  --co-5: #F0F3BE;
+  --white: #ffffff;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --color-text: #848785;
+  --color-general: #f4f4f4;
+
+  --gradient-primary: linear-gradient(135deg, var(--co-1) 0%, var(--co-2) 50%, var(--co-3) 100%);
+  --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  --shadow-light: 0 4px 20px rgba(4, 102, 141, 0.08);
+  --shadow-medium: 0 8px 30px rgba(4, 102, 141, 0.12);
+  --shadow-heavy: 0 15px 40px rgba(4, 102, 141, 0.15);
+  --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --border-radius: 16px;
+  --border-radius-small: 12px;
+  --border-radius-large: 24px;
+}
+
+/* Notification container */
+.notification-page .notification-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--gradient-card);
+  padding: 40px;
+  border-radius: var(--border-radius-large);
+  box-shadow: var(--shadow-medium);
+  border: 1px solid rgba(4, 102, 141, 0.08);
+}
+
+/* Notification title */
+.notification-page .notification-title {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  color: rgba(4, 102, 141, 0.7);
+  margin-bottom: 40px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* Notification list */
+.notification-page .notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Notification item */
+.notification-page .notification-item {
+  background: var(--white);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-light);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: var(--transition);
+  border: 1px solid rgba(4, 102, 141, 0.08);
+}
+
+.notification-page .notification-item.read {
+  background: rgba(4, 102, 141, 0.05);
+  opacity: 0.7;
+}
+
+.notification-page .notification-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-medium);
+}
+
+.notification-page .notification-message {
+  font-size: 1.1rem;
+  color: var(--color-text);
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+.notification-page .notification-date {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  font-style: italic;
+}
+
+.notification-page .notification-action-btn {
+  align-self: flex-end;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--gradient-primary);
+  border: none;
+  border-radius: var(--border-radius-small);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-light);
+}
+
+.notification-page .notification-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Clear notifications button */
+.notification-page .clear-notifications-btn {
+  display: block;
+  margin: 30px auto 0;
+  padding: 12px 24px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--white);
+  background: #4E93AE;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-light);
+}
+
+.notification-page .clear-notifications-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Loading and error states */
+.notification-page .notification-loading,
+.notification-page .notification-error {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  text-align: center;
+  padding: 20px;
+}
+
+.notification-page .notification-error {
+  color: #e63946;
+}
+
+/* No notifications message */
+.notification-page .no-notifications {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .notification-page {
+    padding: 60px 15px;
+  }
+
+  .notification-page .notification-container {
+    padding: 30px;
+  }
+
+  .notification-page .notification-title {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    margin-bottom: 30px;
+  }
+
+  .notification-page .notification-item {
+    padding: 15px;
+  }
+
+  .notification-page .notification-action-btn {
+    padding: 7px 14px;
+    font-size: 0.9rem;
+  }
+
+  .notification-page .clear-notifications-btn {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .notification-page {
+    padding: 50px 10px;
+  }
+
+  .notification-page .notification-container {
+    padding: 20px;
+  }
+
+  .notification-page .notification-title {
+    font-size: clamp(1.6rem, 4vw, 2rem);
+  }
+
+  .notification-page .notification-item {
+    padding: 12px;
+  }
+
+  .notification-page .notification-message {
+    font-size: 1rem;
+  }
+
+  .notification-page .notification-date {
+    font-size: 0.85rem;
+  }
+
+  .notification-page .notification-action-btn {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  }
+
+  .notification-page .clear-notifications-btn {
+    padding: 8px 16px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Accessibility improvements */
+.notification-page .notification-item:focus-within,
+.notification-page .notification-action-btn:focus,
+.notification-page .clear-notifications-btn:focus {
+  outline: 3px solid var(--co-2);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .notification-page .notification-item {
+    border: 2px solid var(--co-1);
+  }
+
+  .notification-page .notification-action-btn,
+  .notification-page .clear-notifications-btn {
+    border: 2px solid var(--co-1);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .notification-page .notification-item,
+  .notification-page .notification-action-btn,
+  .notification-page .clear-notifications-btn {
+    transition: none;
+  }
+}
