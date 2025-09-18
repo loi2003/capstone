@@ -1,56 +1,144 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
+import { viewNotificationsByUserId, markNotificationAsRead } from "../apis/notification-api";
+import MainLayout from "../layouts/MainLayout";
 import "../styles/NotificationPage.css";
 
-const NotificationPage = () => {
-  const notifications = [
-    {
-      id: 1,
-      message: "Please complete your profile by adding your date of birth.",
-      date: "August 28, 2025",
-    },
-    {
-      id: 2,
-      message: "New blog post: Nutrition Tips for Pregnancy.",
-      date: "August 27, 2025",
-    },
-    {
-      id: 3,
-      message: "Your consultation appointment is scheduled for tomorrow.",
-      date: "August 26, 2025",
-    },
-  ];
+const NotificationPage = ({ userId, token }) => {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleClearNotifications = () => {
-    // Placeholder for clearing notifications
-    console.log("Clearing all notifications");
+  // Fetch notifications on component mount
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await viewNotificationsByUserId(userId, token);
+        setNotifications(response.data || []); // Adjust based on API response structure
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to load notifications. Please try again.");
+        setLoading(false);
+      }
+    };
+    fetchNotifications();
+  }, [userId, token]);
+
+  // Handle marking a single notification as read
+  const handleMarkAsRead = async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId, token);
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  };
+
+  // Handle clearing all notifications
+  const handleClearNotifications = async () => {
+    try {
+      for (const notification of notifications) {
+        if (!notification.read) {
+          await markNotificationAsRead(notification.id, token);
+        }
+      }
+      setNotifications((prev) => prev.map((notif) => ({ ...notif, read: true })));
+    } catch (err) {
+      console.error("Failed to clear notifications:", err);
+    }
   };
 
   return (
-    <div className="notification-page">
-      <div className="notification-container">
-        <h1 className="notification-title">Notifications</h1>
-        <div className="notification-list">
-          {notifications.length > 0 ? (
-            notifications.map((notification) => (
-              <div key={notification.id} className="notification-item">
-                <span className="notification-message">{notification.message}</span>
-                <span className="notification-date">{notification.date}</span>
-              </div>
-            ))
+    <MainLayout>
+      <div className="notification-page">
+        {/* Header Section */}
+        <header className="notification-header">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="header-content"
+          >
+            <h1 className="header-title">Your Notifications</h1>
+           
+          </motion.div>
+        </header>
+
+        {/* Main Content */}
+        <motion.div
+          className="notification-container"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+        >
+          <h2 className="notification-title">Notifications</h2>
+          {loading ? (
+            <p className="notification-loading">Loading notifications...</p>
+          ) : error ? (
+            <p className="notification-error">{error}</p>
+          ) : notifications.length > 0 ? (
+            <div className="notification-list">
+              {notifications.map((notification) => (
+                <motion.div
+                  key={notification.id}
+                  className={`notification-item ${notification.read ? "read" : ""}`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <span className="notification-message">{notification.message}</span>
+                  <span className="notification-date">{notification.date}</span>
+                  {!notification.read && (
+                    <button
+                      className="notification-action-btn"
+                      onClick={() => handleMarkAsRead(notification.id)}
+                    >
+                      Mark as Read
+                    </button>
+                  )}
+                </motion.div>
+              ))}
+            </div>
           ) : (
             <p className="no-notifications">No new notifications.</p>
           )}
-        </div>
-        {notifications.length > 0 && (
-          <button
-            className="clear-notifications-btn"
-            onClick={handleClearNotifications}
+          {notifications.length > 0 && notifications.some((notif) => !notif.read) && (
+            <motion.button
+              className="clear-notifications-btn"
+              onClick={handleClearNotifications}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Clear All Notifications
+            </motion.button>
+          )}
+        </motion.div>
+
+        {/* Footer Section */}
+        <footer className="notification-footer">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7 }}
+            className="footer-content"
           >
-            Clear All Notifications
-          </button>
-        )}
+            <div className="footer-links">
+              <Link to="/about" className="footer-link">About</Link>
+              <Link to="/contact" className="footer-link">Contact</Link>
+              <Link to="/privacy" className="footer-link">Privacy Policy</Link>
+            </div>
+            <p className="footer-copyright">
+              &copy; {new Date().getFullYear()} Pregnancy Support. All rights reserved.
+            </p>
+          </motion.div>
+        </footer>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 
