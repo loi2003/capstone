@@ -4,7 +4,7 @@ import { getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
 import "./Header.css";
 import { set } from "lodash";
-import { FaIdCard } from 'react-icons/fa';
+import { FaIdCard, FaComments } from 'react-icons/fa';
 import { CgProfile } from 'react-icons/cg';
 import { FaCircleQuestion } from 'react-icons/fa6';
 
@@ -230,6 +230,10 @@ const Header = () => {
                       <Link to="/subscriptionplan" className="dropdown-item">
                         <FaIdCard />
                         <span>Subscription</span>
+                      </Link>
+                      <Link to="/consultation-chat" className="dropdown-item">
+                        <FaComments />
+                        <span>Consultation Chat</span>
                       </Link>
                       <Link to="/support" className="dropdown-item">
                         <FaCircleQuestion />

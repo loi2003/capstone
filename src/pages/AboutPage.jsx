@@ -104,7 +104,7 @@ const AboutPage = () => {
                 transition={{ duration: 0.6, delay: index * 0.15 }}
                 viewport={{ once: true }}
               >
-                <img src={member.avatar} alt={`${member.name} avatar`} className="about-team-avatar" />
+                {/* <img src={member.avatar} alt={`${member.name} avatar`} className="about-team-avatar" /> */}
                 <h3 className="about-team-name">{member.name}</h3>
                 <p className="about-team-role">{member.role}</p>
                 <p className="about-team-bio">{member.bio}</p>

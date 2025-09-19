@@ -58,6 +58,9 @@
   line-height: 1.2;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+.hero-title span {
+  color: #F9FBCF;
+}
 
 .hero-subtitle {
   font-size: 1.25rem;
@@ -229,10 +232,13 @@
 }
 
 /* Features */
-.plan-features {
+.plan-features {  
+  display: flex;
+  flex-direction: column;
   list-style: none;
+  gap: 1rem;
   padding: 0;
-  margin: 0 0 2.5rem 0;
+  margin: 2rem 0 2.5rem 0;
 }
 
 .feature-item {

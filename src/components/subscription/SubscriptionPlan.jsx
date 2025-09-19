@@ -18,7 +18,7 @@ const SubscriptionPlan = () => {
       id: "1",
       name: "Free",
       price: "$0",
-      period: "/month",
+      period: "USD/month",
       features: [
         { text: "Access to community", icon: <FaCheck /> },
         { text: "Pregnancy Tracking", icon: <FaCheck /> },
@@ -34,7 +34,7 @@ const SubscriptionPlan = () => {
       id: "2",
       name: "Plus",
       price: "$5",
-      period: "/month",
+      period: "USD/month",
       features: [
         { text: "Everything in Free", icon: <FaCheck /> },
         { text: "Consultation Booking", icon: <FaCheck /> },
@@ -48,7 +48,7 @@ const SubscriptionPlan = () => {
       id: "3",
       name: "Pro",
       price: "$55",
-      period: "/year",
+      period: "USD/year",
       features: [
         { text: "Everything in Plus", icon: <FaCheck /> },
         { text: "Billed annually", icon: <FaCheck /> },
@@ -65,7 +65,7 @@ const SubscriptionPlan = () => {
       {/* Hero Section */}
       <section className="subscription-hero">
         <div className="hero-content">
-          <h1 className="hero-title">Choose Your Perfect Plan</h1>
+          <h1 className="hero-title">Choose Your  <span>Perfect Plan</span></h1>
           <p className="hero-subtitle">
             Unlock powerful features and take your experience to the next level
           </p>
@@ -107,16 +107,6 @@ const SubscriptionPlan = () => {
                   <span className="price-period">{plan.period}</span>
                 </div>
               </div>
-
-              <ul className="plan-features">
-                {plan.features.map((feature, idx) => (
-                  <li key={idx} className="feature-item">
-                    <span className="feature-icon">{feature.icon}</span>
-                    <span className="feature-text">{feature.text}</span>
-                  </li>
-                ))}
-              </ul>
-
               <button
                 className={`subscribe-btn ${
                   plan.current ? "current-btn" : ""
@@ -136,6 +126,17 @@ const SubscriptionPlan = () => {
                   </>
                 )}
               </button>
+
+              <ul className="plan-features">
+                {plan.features.map((feature, idx) => (
+                  <li key={idx} className="feature-item">
+                    <span className="feature-icon">{feature.icon}</span>
+                    <span className="feature-text">{feature.text}</span>
+                  </li>
+                ))}
+              </ul>
+
+              
             </div>
           ))}
         </div>

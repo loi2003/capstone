@@ -1,16 +1,38 @@
 .about-page {
   min-height: 100vh;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 /* Hero Section */
 .about-hero-section {
-  padding: 120px 20px 80px;
-  background: linear-gradient(90deg, #e0f2f7, #a3c9e0);
-  color: #1e3a5f;
+  padding: 120px 20px 100px;
+  /* background: var(--gradient-primary); */
+  background: #0d7aa5;
+  color: var(--light-text);
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 -2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 -2px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.about-hero-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(
+      circle at 20% 30%,
+      rgba(240, 243, 190, 0.1) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(3, 195, 154, 0.1) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
 }
 
 .about-hero-content {
@@ -28,44 +50,43 @@
 }
 
 .about-hero-title {
-  font-size: 3.5rem;
+  color: var(--light-text);
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
   font-weight: 800;
   margin-bottom: 1.5rem;
-  line-height: 1.2;
-  color: #1e3a5f;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  line-height: 1.1;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .about-hero-subtitle {
-  font-size: 1.5rem;
-  font-weight: 400;
-  margin-left: 50px;
-  margin-bottom: 2.5rem;
-  color: #2e6da4;
-  max-width: 85%;
-  line-height: 1.6;
+  color: rgba(250, 249, 245, 0.95);
+  font-size: clamp(1.2rem, 3vw, 1.6rem);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .about-hero-button {
-  padding: 16px 36px;
-  font-size: 1.2rem;
+  padding: 16px 32px;
+  font-size: 1.1rem;
   font-weight: 700;
   text-decoration: none;
-  border-radius: 30px;
-  background: #2e6da4;
-  color: #ffffff;
-  border: 2px solid #2e6da4;
-  box-shadow: 0 4px 15px rgba(46, 109, 164, 0.3);
-  transition: all 0.3s ease;
+  border-radius: var(--border-radius-large);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  color: var(--light-text);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: var(--transition);
   display: inline-block;
-  position: relative;
-  overflow: hidden;
+  box-shadow: var(--shadow-medium);
 }
 
 .about-hero-button:hover {
-  background: #245a8d;
-  box-shadow: 0 6px 20px rgba(46, 109, 164, 0.4);
-  transform: translateY(-3px);
+  background: var(--white);
+  color: var(--co-1);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-heavy);
 }
 
 .about-hero-button:focus {
@@ -185,7 +206,7 @@
 }
 
 .about-history-timeline::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 50%;

@@ -64,6 +64,7 @@ import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
 import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
 import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
 import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
+import ConsultationChat from "../components/consultationchat/ConsultationChat";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -164,6 +165,7 @@ const AppRoutes = () => {
         <Route path="/clinic/:id" element={<ClinicDetail />} />
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
+        <Route path="/consultation-chat" element={<ConsultationChat />} />
       </Routes>
     </ThemeProvider>
   );

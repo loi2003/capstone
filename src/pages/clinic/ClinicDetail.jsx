@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getClinicById } from "../../apis/clinic-api";
-import { startChatThread } from "../../apis/message-api";
 import { createFeedback } from "../../apis/feedback-api";
 import { getCurrentUser } from "../../apis/authentication-api";
+import { FaStar } from "react-icons/fa";
+import { FaRegStar } from "react-icons/fa";
+import { FaMapMarkerAlt } from "react-icons/fa";
+import { HiPaperAirplane } from "react-icons/hi2";
 import MainLayout from "../../layouts/MainLayout";
+import ConsultationChat from "../../components/consultationchat/ConsultationChat";
 import "../../styles/ClinicDetail.css";
 
 // Helper to calculate average rating and convert to 5-star scale
@@ -17,115 +21,54 @@ function getStarRating(feedbacks) {
   return { avg: avg5, stars: avg5, count: feedbacks.length };
 }
 
+const handleStartConsultation = (consultant) => {
+  if (!currentUserId) {
+    setShowLoginModal(true);
+    return;
+  }
+
+  // Navigate to ConsultationChat with consultant data
+  // The ConsultationChat component will handle checking for existing threads
+  navigate("/consultation-chat", {
+    state: {
+      currentUserId,
+      selectedConsultant: {
+        ...consultant,
+        clinic: {
+          id: clinic.id,
+          name: clinic.user?.userName || clinic.name,
+          address: clinic.address,
+        },
+      },
+    },
+  });
+};
+
 // Star rendering helper (with half star support)
 const renderStars = (stars) => {
   const filled = Math.floor(stars);
-  const half = stars - filled >= 0.5;
+
   return (
     <>
-      {[...Array(5)].map((_, i) => {
-        if (i < filled) {
-          return (
-            <span key={i} className="star" style={{ color: "#f7b801" }}>
-              &#9733;
-            </span>
-          );
-        } else if (i === filled && half) {
-          return (
-            <span
-              key={i}
-              className="star star-half"
-              style={{ color: "#f7b801" }}
-              aria-label="half star"
-            >
-              &#9733;
-            </span>
-          );
-        } else {
-          return (
-            <span key={i} className="star star-empty" style={{ color: "#ccc" }}>
-              &#9733;
-            </span>
-          );
-        }
-      })}
+      {[...Array(5)].map((_, i) =>
+        i < filled ? (
+          <FaStar key={i} style={{ color: "#f7b801", marginRight: "2px" }} />
+        ) : (
+          <FaRegStar key={i} style={{ color: "#ccc", marginRight: "2px" }} />
+        )
+      )}
     </>
   );
 };
 
-// Floating chat box like Messenger
-const ChatBox = ({ consultant, onClose, userId, chatThread, onImageError, onImageLoad, imageErrors, imageLoading }) => (
-  <div className="floating-chatbox-container">
-    <div className="floating-chatbox-window">
-      <div className="floating-chatbox-header">
-        <div className="floating-chatbox-header-left">
-          <div className="floating-chatbox-avatar-container">
-            {imageLoading[`chat-${consultant.user.id}`] && (
-              <div className="image-loading-overlay">
-                <div className="loading-spinner"></div>
-              </div>
-            )}
-            <img
-              className={`floating-chatbox-avatar ${imageErrors[`chat-${consultant.user.id}`] ? 'placeholder-image' : ''}`}
-              src={
-                imageErrors[`chat-${consultant.user.id}`] || !consultant.user.avatar?.fileUrl
-                  ? "/images/doctor-placeholder.png"
-                  : consultant.user.avatar.fileUrl
-              }
-              alt={consultant.user.userName}
-              onError={() => onImageError(`chat-${consultant.user.id}`)}
-              onLoad={() => onImageLoad(`chat-${consultant.user.id}`)}
-            />
-            {(imageErrors[`chat-${consultant.user.id}`] || !consultant.user.avatar?.fileUrl) && (
-              <div className="placeholder-overlay">
-                <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                </svg>
-              </div>
-            )}
-          </div>
-          <div>
-            <div className="floating-chatbox-username">
-              {consultant.user.userName}
-            </div>
-          </div>
-        </div>
-        <div className="floating-chatbox-header-actions">
-          <button
-            className="floating-chatbox-action-btn"
-            title="Close"
-            onClick={onClose}
-          >
-            <svg width="20" height="20" fill="#fff" viewBox="0 0 24 24">
-              <path d="M18.3 5.71a1 1 0 00-1.41 0L12 10.59 7.11 5.7A1 1 0 105.7 7.11L10.59 12l-4.89 4.89a1 1 0 101.41 1.41L12 13.41l4.89 4.89a1 1 0 001.41-1.41L13.41 12l4.89-4.89a1 1 0 000-1.4z" />
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div className="floating-chatbox-body">
-        <div className="floating-chatbox-loading">
-          <div className="floating-chatbox-spinner"></div>
-        </div>
-      </div>
-      <div className="floating-chatbox-footer">
-        <button className="floating-chatbox-footer-btn" title="Image">
-          <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
-            <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zm-2 0H5V5h14zm-7-3l2.03 2.71a1 1 0 001.54 0L19 14.13V19H5v-2.87l3.47-4.6a1 1 0 011.54 0z" />
-          </svg>
-        </button>
-        <input className="floating-chatbox-input" placeholder="Aa" />
-        <button className="floating-chatbox-send-btn" title="Send">
-          <svg width="22" height="22" fill="#2196f3" viewBox="0 0 24 24">
-            <path d="M2 21l21-9-21-9v7l15 2-15 2z" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  </div>
-);
-
 // Show username, phone, email for both doctors and consultants
-const DoctorCard = ({ user, onImageError, onImageLoad, imageErrors, imageLoading }) => (
+const DoctorCard = ({
+  user,
+  onImageError,
+  onImageLoad,
+  imageErrors,
+  imageLoading,
+}) => (
   <div className="clinic-doctor-card">
     <div className="clinic-doctor-avatar">
       {imageLoading[`doctor-${user.id}`] && (
@@ -135,19 +78,23 @@ const DoctorCard = ({ user, onImageError, onImageLoad, imageErrors, imageLoading
       )}
       <img
         src={
-          imageErrors[`doctor-${user.id}`] || !user?.avatar?.fileUrl
-            ? "/images/doctor-placeholder.png"
-            : user.avatar.fileUrl
+          imageErrors[`doctor-${user.id}`]
+            ? imageErrors[`doctor-${user.id}`]
+            : user?.avatar?.fileUrl || "https://placehold.co/400"
         }
         alt={user?.userName}
-        className={imageErrors[`doctor-${user.id}`] ? 'placeholder-image' : ''}
+        className={imageErrors[`doctor-${user.id}`] ? "placeholder-image" : ""}
         onError={() => onImageError(`doctor-${user.id}`)}
         onLoad={() => onImageLoad(`doctor-${user.id}`)}
       />
       {(imageErrors[`doctor-${user.id}`] || !user?.avatar?.fileUrl) && (
         <div className="placeholder-overlay">
-          <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          <svg
+            className="placeholder-icon"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
           </svg>
         </div>
       )}
@@ -166,8 +113,16 @@ const DoctorCard = ({ user, onImageError, onImageLoad, imageErrors, imageLoading
   </div>
 );
 
-// ConsultantCard with only "Send Message" button
-const ConsultantCard = ({ consultant, onSendMessage, chatLoading, onImageError, onImageLoad, imageErrors, imageLoading }) => (
+// ConsultantCard with "Start Consultation" button
+const ConsultantCard = ({
+  consultant,
+  onStartConsultation,
+  currentUserId,
+  onImageError,
+  onImageLoad,
+  imageErrors,
+  imageLoading,
+}) => (
   <div className="clinic-doctor-card">
     <div className="clinic-doctor-avatar">
       {imageLoading[`consultant-${consultant.user.id}`] && (
@@ -177,19 +132,29 @@ const ConsultantCard = ({ consultant, onSendMessage, chatLoading, onImageError, 
       )}
       <img
         src={
-          imageErrors[`consultant-${consultant.user.id}`] || !consultant.user?.avatar?.fileUrl
-            ? "/images/doctor-placeholder.png"
+          imageErrors[`consultant-${consultant.user.id}`] ||
+          !consultant.user?.avatar?.fileUrl
+            ? "https://placehold.co/400"
             : consultant.user.avatar.fileUrl
         }
         alt={consultant.user?.userName}
-        className={imageErrors[`consultant-${consultant.user.id}`] ? 'placeholder-image' : ''}
+        className={
+          imageErrors[`consultant-${consultant.user.id}`]
+            ? "placeholder-image"
+            : ""
+        }
         onError={() => onImageError(`consultant-${consultant.user.id}`)}
         onLoad={() => onImageLoad(`consultant-${consultant.user.id}`)}
       />
-      {(imageErrors[`consultant-${consultant.user.id}`] || !consultant.user?.avatar?.fileUrl) && (
+      {(imageErrors[`consultant-${consultant.user.id}`] ||
+        !consultant.user?.avatar?.fileUrl) && (
         <div className="placeholder-overlay">
-          <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          <svg
+            className="placeholder-icon"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
           </svg>
         </div>
       )}
@@ -198,7 +163,8 @@ const ConsultantCard = ({ consultant, onSendMessage, chatLoading, onImageError, 
       <div className="clinic-doctor-name">{consultant.user?.userName}</div>
       <div className="clinic-doctor-contact">
         <div>
-          <strong>Phone:</strong> {consultant.user?.phone || consultant.user?.phoneNo}
+          <strong>Phone:</strong>{" "}
+          {consultant.user?.phone || consultant.user?.phoneNo}
         </div>
         <div>
           <strong>Email:</strong> {consultant.user?.email}
@@ -206,22 +172,14 @@ const ConsultantCard = ({ consultant, onSendMessage, chatLoading, onImageError, 
       </div>
       <button
         className="consultant-send-message-btn"
-        title="Send Message & Start Chat"
-        onClick={() => onSendMessage(consultant)}
+        title="Start Consultation"
+        onClick={() => onStartConsultation(consultant)}
+        disabled={!currentUserId}
         type="button"
         style={{ marginTop: 8 }}
-        disabled={chatLoading}
       >
-        <svg
-          width="18"
-          height="18"
-          fill="#1976d2"
-          style={{ marginRight: 4, verticalAlign: "middle" }}
-          viewBox="0 0 24 24"
-        >
-          <path d="M2 21l21-9-21-9v7l15 2-15 2z" />
-        </svg>
-        {chatLoading ? "Starting..." : "Send Message"}
+        <HiPaperAirplane />
+        Start Consultation
       </button>
     </div>
   </div>
@@ -251,25 +209,48 @@ const ClinicDetail = () => {
   const [showAllConsultants, setShowAllConsultants] = useState(false);
 
   // Chat state
-  const [chatConsultant, setChatConsultant] = useState(null);
-  const [chatThread, setChatThread] = useState(null);
-  const [chatLoading, setChatLoading] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-
   const [currentUserId, setCurrentUserId] = useState("");
+
+  // MOVE handleStartConsultation INSIDE the component
+  const handleStartConsultation = (consultant) => {
+    if (!currentUserId) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    // Navigate to ConsultationChat page with consultant data, but don't auto-start
+    navigate("/consultation-chat", {
+      state: {
+        selectedConsultant: {
+          ...consultant,
+          clinic: {
+            id: clinic.id,
+            name: clinic.user?.userName || clinic.name,
+            address: clinic.address,
+          },
+        },
+        currentUserId: currentUserId,
+        autoStart: false, // Changed from true to false
+      },
+    });
+  };
 
   // Image handling functions
   const handleImageError = (imageId) => {
-    setImageErrors(prev => ({ ...prev, [imageId]: true }));
-    setImageLoading(prev => ({ ...prev, [imageId]: false }));
+    setImageErrors((prev) => ({
+      ...prev,
+      [imageId]: "https://placehold.co/400",
+    }));
+    setImageLoading((prev) => ({ ...prev, [imageId]: false }));
   };
 
   const handleImageLoad = (imageId) => {
-    setImageLoading(prev => ({ ...prev, [imageId]: false }));
+    setImageLoading((prev) => ({ ...prev, [imageId]: false }));
   };
 
   const handleImageLoadStart = (imageId) => {
-    setImageLoading(prev => ({ ...prev, [imageId]: true }));
+    setImageLoading((prev) => ({ ...prev, [imageId]: true }));
   };
 
   useEffect(() => {
@@ -295,29 +276,53 @@ const ClinicDetail = () => {
       }
       try {
         const userRes = await getCurrentUser(token);
-        setCurrentUserId(userRes?.data?.id || userRes?.id || "");
+        // Try multiple possible response structures
+        const userId =
+          userRes?.data?.data?.id || userRes?.data?.id || userRes?.id || "";
+        console.log("Extracted userId:", userId);
+        setCurrentUserId(userId);
       } catch (err) {
+        console.error("Failed to get user:", err);
         setCurrentUserId("");
       }
     };
     fetchCurrentUser();
   }, []);
 
-  // Handler for Send Message button
-  const handleSendMessage = async (consultant) => {
-    setChatLoading(true);
-    try {
-      const thread = await startChatThread({
-        userId: currentUserId,
-        consultantId: consultant.user.id,
-      });
-      setChatThread(thread);
-      setChatConsultant(consultant);
-    } catch (err) {
-      alert("Failed to start chat thread.", err);
-    }
-    setChatLoading(false);
-  };
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setCurrentUserId("");
+        return;
+      }
+      try {
+        const userRes = await getCurrentUser(token);
+        // Add console.log to debug the response structure
+        console.log("User response:", userRes);
+
+        // Try multiple possible response structures
+        const userId =
+          userRes?.data?.data?.id || userRes?.data?.id || userRes?.id || "";
+
+        console.log("Extracted userId:", userId);
+        setCurrentUserId(userId);
+      } catch (err) {
+        console.error("Failed to get user:", err);
+        setCurrentUserId("");
+      }
+    };
+    fetchCurrentUser();
+  }, []);
+
+  // // Handler to open chat window
+  // const handleOpenChatWindow = () => {
+  //   if (!currentUserId) {
+  //     setShowLoginModal(true);
+  //     return;
+  //   }
+  //   setShowChatWindow(true);
+  // };
 
   const handleOpenFeedbackModal = async () => {
     const token = localStorage.getItem("token");
@@ -447,48 +452,42 @@ const ClinicDetail = () => {
           </svg>
           Back
         </button>
-        
+
         <div className="clinic-header-banner">
           <div className="clinic-header-logo">
-            {imageLoading['clinic-main'] && (
+            {imageLoading["clinic-main"] && (
               <div className="image-loading-overlay">
                 <div className="loading-spinner"></div>
               </div>
             )}
             <img
               src={
-                imageErrors['clinic-main'] || !clinic.imageUrl?.fileUrl
-                  ? "/images/clinic-placeholder.png"
-                  : clinic.imageUrl.fileUrl
+                imageErrors["clinic-main"]
+                  ? imageErrors["clinic-main"]
+                  : clinic.imageUrl?.fileUrl || "https://placehold.co/400"
               }
               alt={clinic.name}
-              className={imageErrors['clinic-main'] ? 'placeholder-image' : ''}
-              onError={() => handleImageError('clinic-main')}
-              onLoad={() => handleImageLoad('clinic-main')}
-              onLoadStart={() => handleImageLoadStart('clinic-main')}
+              onError={() => handleImageError("clinic-main")}
+              onLoad={() => handleImageLoad("clinic-main")}
             />
-            {(imageErrors['clinic-main'] || !clinic.imageUrl?.fileUrl) && (
+            {(imageErrors["clinic-main"] || !clinic.imageUrl?.fileUrl) && (
               <div className="placeholder-overlay">
-                <svg className="placeholder-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-2 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                <svg
+                  className="placeholder-icon"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path d="M21 19V5c0-1.1-.9-2-2-2H5c-2 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
                 </svg>
               </div>
             )}
           </div>
-          
+
           <div className="clinic-header-meta">
-            <div className="clinic-header-title">{clinic.name}</div>
+            <div className="clinic-header-title">{clinic?.user?.userName}</div>
             <div className="clinic-header-address">
               <span className="clinic-header-location">
-                <svg
-                  width="18"
-                  height="18"
-                  fill="#757575"
-                  style={{ marginRight: 4, verticalAlign: "middle" }}
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-                </svg>
+                <FaMapMarkerAlt className="detail-icon" />
                 {clinic.address}
               </span>
             </div>
@@ -532,7 +531,19 @@ const ClinicDetail = () => {
                   {clinic.isInsuranceAccepted ? "Yes" : "No"}
                 </div>
                 <div>
-                  <strong>Specializations:</strong> {clinic.specializations}
+                  <strong>Specializations:</strong>{" "}
+                  <div className="clinic-specializations">
+                    {clinic.specializations
+                      ? clinic.specializations
+                          .split(";")
+                          .filter((s) => s.trim() !== "")
+                          .map((spec, idx) => (
+                            <span key={idx} className="specialization-badge">
+                              {spec.trim()}
+                            </span>
+                          ))
+                      : "General Practice"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -542,9 +553,9 @@ const ClinicDetail = () => {
               <div className="clinic-doctor-list">
                 {doctorsToShow && doctorsToShow.length > 0 ? (
                   doctorsToShow.map((doctor) => (
-                    <DoctorCard 
-                      key={doctor.id} 
-                      user={doctor.user} 
+                    <DoctorCard
+                      key={doctor.id}
+                      user={doctor.user}
                       onImageError={handleImageError}
                       onImageLoad={handleImageLoad}
                       imageErrors={imageErrors}
@@ -579,8 +590,8 @@ const ClinicDetail = () => {
                     <ConsultantCard
                       key={consultant.id}
                       consultant={consultant}
-                      onSendMessage={handleSendMessage}
-                      chatLoading={chatLoading}
+                      onStartConsultation={handleStartConsultation} // Updated handler
+                      currentUserId={currentUserId}
                       onImageError={handleImageError}
                       onImageLoad={handleImageLoad}
                       imageErrors={imageErrors}
@@ -621,21 +632,29 @@ const ClinicDetail = () => {
                     return (
                       <div className="clinic-feedback-card" key={feedback.id}>
                         <div className="feedback-stars">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={i < stars ? "" : "star-empty"}
-                              style={{
-                                color: i < stars ? "#f7b801" : "#ccc",
-                                fontSize: "1.2em",
-                                marginRight: "2px",
-                              }}
-                            >
-                              ★
-                            </span>
-                          ))}
+                          {[...Array(5)].map((_, i) =>
+                            i < stars ? (
+                              <FaStar
+                                key={i}
+                                style={{
+                                  color: "#f7b801",
+                                  fontSize: "1.2em",
+                                  marginRight: "2px",
+                                }}
+                              />
+                            ) : (
+                              <FaRegStar
+                                key={i}
+                                style={{
+                                  color: "#ccc",
+                                  fontSize: "1.2em",
+                                  marginRight: "2px",
+                                }}
+                              />
+                            )
+                          )}
                         </div>
-                        <div style={{ color: "#1976d2", marginTop: 4 }}>
+                        <div style={{ color: "#848785", marginTop: 4 }}>
                           {feedback.comment}
                         </div>
                       </div>
@@ -653,7 +672,7 @@ const ClinicDetail = () => {
               </button>
             </div>
 
-            {/* Feedback Modal */}
+            {/* Feedback Modal - Removed duplicate */}
             {showFeedbackModal && (
               <div className="modal-overlay clinic-feedback-modal-overlay">
                 <div className="clinic-feedback-modal">
@@ -677,20 +696,19 @@ const ClinicDetail = () => {
                         {[1, 2, 3, 4, 5].map((star) => (
                           <span
                             key={star}
-                            className={`star ${
-                              feedbackRating >= star ? "selected" : ""
-                            }`}
                             style={{
                               cursor: "pointer",
-                              color:
-                                feedbackRating >= star ? "#f7b801" : "#ccc",
+                              marginRight: "6px",
                               fontSize: "2em",
-                              marginRight: "4px",
                             }}
                             onClick={() => setFeedbackRating(star)}
                             aria-label={`Rate ${star}`}
                           >
-                            ★
+                            {feedbackRating >= star ? (
+                              <FaStar color="#f7b801" />
+                            ) : (
+                              <FaRegStar color="#ccc" />
+                            )}
                           </span>
                         ))}
                       </div>
@@ -698,6 +716,7 @@ const ClinicDetail = () => {
                         Click to rate
                       </div>
                     </div>
+
                     <div className="clinic-feedback-modal-group">
                       <label>Comment</label>
                       <textarea
@@ -708,6 +727,7 @@ const ClinicDetail = () => {
                         required
                       />
                     </div>
+
                     {feedbackError && (
                       <div className="clinic-feedback-modal-error">
                         {feedbackError}
@@ -718,6 +738,7 @@ const ClinicDetail = () => {
                         {feedbackSuccess}
                       </div>
                     )}
+
                     <div className="clinic-feedback-modal-actions">
                       <button
                         type="button"
@@ -738,42 +759,8 @@ const ClinicDetail = () => {
                 </div>
               </div>
             )}
-
-            {showLoginModal && (
-              <div className="modal-overlay clinic-feedback-modal-overlay">
-                <div className="clinic-feedback-modal">
-                  <div className="clinic-feedback-modal-header">
-                    <span>Login Required</span>
-                    <span
-                      className="close"
-                      style={{ cursor: "pointer", fontSize: "1.5em" }}
-                      onClick={() => setShowLoginModal(false)}
-                    >
-                      &times;
-                    </span>
-                  </div>
-                  <div
-                    className="clinic-feedback-modal-body"
-                    style={{ textAlign: "center", padding: "24px" }}
-                  >
-                    <div style={{ marginBottom: "16px", fontSize: "1.1em" }}>
-                      You need to log in to send feedback.
-                    </div>
-                    <button
-                      className="clinic-detail-send-feedback-btn"
-                      onClick={() => {
-                        setShowLoginModal(false);
-                        navigate("/signin");
-                      }}
-                    >
-                      Go to Login
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-          
+
           <aside className="clinic-main-right">
             <div className="clinic-booking-widget">
               <div className="clinic-booking-title">Book Appointment</div>
@@ -795,22 +782,28 @@ const ClinicDetail = () => {
             </div>
           </aside>
         </div>
-        
-        {/* Floating ChatBox overlay */}
-        {chatConsultant && (
-          <ChatBox
-            consultant={chatConsultant}
+
+        {/* ConsultationChat Integration */}
+        {/* {showChatWindow && (
+          <ConsultationChat
             userId={currentUserId}
-            chatThread={chatThread}
-            onClose={() => {
-              setChatConsultant(null);
-              setChatThread(null);
-            }}
+            consultants={clinic.consultants || []}
+            onClose={() => setShowChatWindow(false)}
             onImageError={handleImageError}
             onImageLoad={handleImageLoad}
             imageErrors={imageErrors}
             imageLoading={imageLoading}
           />
+        )} */}
+
+        {/* Login Modal Placeholder - You can implement this based on your needs */}
+        {showLoginModal && (
+          <div className="modal-overlay">
+            <div className="login-modal">
+              <p>Please log in to start a consultation</p>
+              <button onClick={() => setShowLoginModal(false)}>Close</button>
+            </div>
+          </div>
         )}
       </MainLayout>
     </div>

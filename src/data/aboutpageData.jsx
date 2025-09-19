@@ -1,6 +1,6 @@
 export const aboutpageData = {
   hero: {
-    title: 'About GenderHealthWeb',
+    title: 'About NestlyCare',
     subtitle: 'We provide comprehensive health solutions focused on gender-specific care, particularly supporting women throughout their pregnancy journey and beyond.',
     cta: 'Learn More',
     ctaLink: '/explore',
