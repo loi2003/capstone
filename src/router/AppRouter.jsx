@@ -65,6 +65,8 @@ import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion";
 import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
 import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
 import ConsultationChat from "../components/consultationchat/ConsultationChat";
+import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -108,7 +110,8 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/nutrient-specialist/warning-management" element={<WarningManagement />} />
         <Route path="/nutrient-specialist/energy-suggestion" element={<EnergySuggestion />} />
-        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> 
+        <Route path="/nutrient-specialist/messenger-management" element={<MessengerManagement />} /> 
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />

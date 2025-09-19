@@ -10,7 +10,7 @@ import {
   getAllNutrients,
   addNutrientSuggestionAttribute,
   getAllAgeGroups,
-} from "../../apis/nutriet-api"; // Fixed typo in import
+} from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/NutrientSuggestion.css";
 
@@ -55,12 +55,10 @@ const Notification = ({ message, type }) => {
 
 // NutrientSuggestionModal Component
 const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
-  // Ensure nutrientSuggestionAttributes is an array
   const attributes = Array.isArray(suggestion?.nutrientSuggestionAttributes)
     ? suggestion.nutrientSuggestionAttributes
     : [];
 
-  // Log the suggestion data for debugging
   console.log("NutrientSuggestionModal - suggestion data:", suggestion);
 
   return (
@@ -133,18 +131,18 @@ const NutrientAttributeModal = ({
   onSave,
 }) => {
   const [attributeData, setAttributeData] = useState({
-    nutrientSuggestionId: suggestionId || "", // Ensure suggestionId is set
-    ageGroudId: "", // Fixed to match backend typo: ageGroudId
-    trimester: 0,
-    maxEnergyPercentage: 0,
-    minEnergyPercentage: 0,
-    maxValuePerDay: 0,
-    minValuePerDay: 0,
+    nutrientSuggestionId: suggestionId || "",
+    ageGroudId: "",
+    trimester: "",
+    maxEnergyPercentage: "",
+    minEnergyPercentage: "",
+    maxValuePerDay: "",
+    minValuePerDay: "",
     unit: "milligrams",
-    amount: 0,
-    minAnimalProteinPercentageRequire: 0,
+    amount: "",
+    minAnimalProteinPercentageRequire: "",
     nutrientId: "",
-    type: 0,
+    type: "",
   });
 
   const handleInputChange = (field, value) => {
@@ -162,17 +160,17 @@ const NutrientAttributeModal = ({
     }
 
     if (
-      attributeData.minValuePerDay !== 0 &&
-      attributeData.maxValuePerDay !== 0 &&
-      attributeData.minValuePerDay > attributeData.maxValuePerDay
+      attributeData.minValuePerDay !== "" &&
+      attributeData.maxValuePerDay !== "" &&
+      parseFloat(attributeData.minValuePerDay) > parseFloat(attributeData.maxValuePerDay)
     ) {
       return "MinValuePerDay cannot be greater than MaxValuePerDay";
     }
 
     if (
-      attributeData.minAnimalProteinPercentageRequire !== 0 &&
-      (attributeData.minAnimalProteinPercentageRequire < 0 ||
-        attributeData.minAnimalProteinPercentageRequire > 100)
+      attributeData.minAnimalProteinPercentageRequire !== "" &&
+      (parseFloat(attributeData.minAnimalProteinPercentageRequire) < 0 ||
+        parseFloat(attributeData.minAnimalProteinPercentageRequire) > 100)
     ) {
       return "MinAnimalProteinPercentageRequire must be between 0 and 100";
     }
@@ -181,7 +179,7 @@ const NutrientAttributeModal = ({
       return "Unit is required";
     }
 
-    if (attributeData.amount < 0) {
+    if (attributeData.amount !== "" && parseFloat(attributeData.amount) < 0) {
       return "Amount must be non-negative";
     }
 
@@ -189,12 +187,12 @@ const NutrientAttributeModal = ({
       return "NutrientId is required and must be a valid GUID";
     }
 
-    if (attributeData.type < 0) {
+    if (attributeData.type !== "" && parseInt(attributeData.type) < 0) {
       return "Type must be non-negative";
     }
 
-    if (attributeData.trimester < 0 || attributeData.trimester > 3) {
-      return "Trimester must be between 0 and 3";
+    if (attributeData.trimester !== "" && ![1, 2, 3].includes(parseInt(attributeData.trimester))) {
+      return "Trimester must be 1, 2, or 3";
     }
 
     return null;
@@ -217,7 +215,17 @@ const NutrientAttributeModal = ({
     }
 
     try {
-      await onSave(attributeData);
+      await onSave({
+        ...attributeData,
+        trimester: attributeData.trimester ? parseInt(attributeData.trimester) : undefined,
+        maxEnergyPercentage: attributeData.maxEnergyPercentage ? parseFloat(attributeData.maxEnergyPercentage) : undefined,
+        minEnergyPercentage: attributeData.minEnergyPercentage ? parseFloat(attributeData.minEnergyPercentage) : undefined,
+        maxValuePerDay: attributeData.maxValuePerDay ? parseFloat(attributeData.maxValuePerDay) : undefined,
+        minValuePerDay: attributeData.minValuePerDay ? parseFloat(attributeData.minValuePerDay) : undefined,
+        amount: attributeData.amount ? parseFloat(attributeData.amount) : undefined,
+        minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire ? parseFloat(attributeData.minAnimalProteinPercentageRequire) : undefined,
+        type: attributeData.type ? parseInt(attributeData.type) : undefined,
+      });
       onClose();
     } catch (error) {
       console.error("Error saving attribute:", error);
@@ -268,7 +276,7 @@ const NutrientAttributeModal = ({
           )}
         </div>
         <div className="form-group">
-          <label htmlFor="ageGroudId">Age Group</label> {/* Updated label to match typo for clarity */}
+          <label htmlFor="ageGroudId">Age Group</label>
           <select
             id="ageGroudId"
             value={attributeData.ageGroudId}
@@ -294,17 +302,17 @@ const NutrientAttributeModal = ({
         </div>
         <div className="form-group">
           <label htmlFor="trimester">Trimester</label>
-          <input
+          <select
             id="trimester"
-            type="number"
             value={attributeData.trimester}
-            onChange={(e) =>
-              handleInputChange("trimester", parseInt(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("trimester", e.target.value)}
             className="input-field"
-            min="0"
-            max="3"
-          />
+          >
+            <option value="">Select Trimester</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
         </div>
         <div className="form-group">
           <label htmlFor="minEnergyPercentage">Min Energy Percentage</label>
@@ -312,12 +320,11 @@ const NutrientAttributeModal = ({
             id="minEnergyPercentage"
             type="number"
             value={attributeData.minEnergyPercentage}
-            onChange={(e) =>
-              handleInputChange("minEnergyPercentage", parseFloat(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("minEnergyPercentage", e.target.value)}
             className="input-field"
             min="0"
             step="0.1"
+            placeholder="Enter min energy percentage"
           />
         </div>
         <div className="form-group">
@@ -326,12 +333,11 @@ const NutrientAttributeModal = ({
             id="maxEnergyPercentage"
             type="number"
             value={attributeData.maxEnergyPercentage}
-            onChange={(e) =>
-              handleInputChange("maxEnergyPercentage", parseFloat(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("maxEnergyPercentage", e.target.value)}
             className="input-field"
             min="0"
             step="0.1"
+            placeholder="Enter max energy percentage"
           />
         </div>
         <div className="form-group">
@@ -340,12 +346,11 @@ const NutrientAttributeModal = ({
             id="minValuePerDay"
             type="number"
             value={attributeData.minValuePerDay}
-            onChange={(e) =>
-              handleInputChange("minValuePerDay", parseFloat(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("minValuePerDay", e.target.value)}
             className="input-field"
             min="0"
             step="0.1"
+            placeholder="Enter min value per day"
           />
         </div>
         <div className="form-group">
@@ -354,12 +359,11 @@ const NutrientAttributeModal = ({
             id="maxValuePerDay"
             type="number"
             value={attributeData.maxValuePerDay}
-            onChange={(e) =>
-              handleInputChange("maxValuePerDay", parseFloat(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("maxValuePerDay", e.target.value)}
             className="input-field"
             min="0"
             step="0.1"
+            placeholder="Enter max value per day"
           />
         </div>
         <div className="form-group">
@@ -381,12 +385,11 @@ const NutrientAttributeModal = ({
             id="amount"
             type="number"
             value={attributeData.amount}
-            onChange={(e) =>
-              handleInputChange("amount", parseFloat(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("amount", e.target.value)}
             className="input-field"
             min="0"
             step="0.1"
+            placeholder="Enter amount"
           />
         </div>
         <div className="form-group">
@@ -398,15 +401,13 @@ const NutrientAttributeModal = ({
             type="number"
             value={attributeData.minAnimalProteinPercentageRequire}
             onChange={(e) =>
-              handleInputChange(
-                "minAnimalProteinPercentageRequire",
-                parseFloat(e.target.value) || 0
-              )
+              handleInputChange("minAnimalProteinPercentageRequire", e.target.value)
             }
             className="input-field"
             min="0"
             max="100"
             step="0.1"
+            placeholder="Enter min animal protein percentage"
           />
         </div>
         <div className="form-group">
@@ -415,11 +416,10 @@ const NutrientAttributeModal = ({
             id="type"
             type="number"
             value={attributeData.type}
-            onChange={(e) =>
-              handleInputChange("type", parseInt(e.target.value) || 0)
-            }
+            onChange={(e) => handleInputChange("type", e.target.value)}
             className="input-field"
             min="0"
+            placeholder="Enter type"
           />
         </div>
         <div className="button-group">
@@ -462,13 +462,12 @@ const NutrientSuggestion = () => {
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false); // Added state for food dropdown
-  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false); // Added state for nutrient dropdown
+  const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const itemsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Added toggle functions for dropdowns
   const toggleFoodDropdown = () => {
     setIsFoodDropdownOpen((prev) => !prev);
   };
@@ -477,7 +476,6 @@ const NutrientSuggestion = () => {
     setIsNutrientDropdownOpen((prev) => !prev);
   };
 
-  // Define dropdown variants
   const dropdownVariants = {
     open: {
       height: "auto",
@@ -553,7 +551,6 @@ const NutrientSuggestion = () => {
       console.log("Nutrients Response:", nutrientsResponse);
       console.log("Age Groups Response:", ageGroupsResponse);
 
-      // Handle suggestions
       const suggestionsData = extractData(suggestionsResponse);
       if (!Array.isArray(suggestionsData)) {
         console.warn("Suggestions data is not an array:", suggestionsData);
@@ -562,7 +559,6 @@ const NutrientSuggestion = () => {
         setSuggestions(suggestionsData);
       }
 
-      // Handle nutrients
       const nutrientsData = extractData(nutrientsResponse);
       if (!Array.isArray(nutrientsData)) {
         console.warn("Nutrients data is not an array:", nutrientsData);
@@ -574,7 +570,6 @@ const NutrientSuggestion = () => {
         setNutrients(validNutrients);
       }
 
-      // Handle age groups
       const ageGroupsData = extractData(ageGroupsResponse);
       if (!Array.isArray(ageGroupsData)) {
         console.warn("Age groups data is not an array:", ageGroupsData);
@@ -603,10 +598,20 @@ const NutrientSuggestion = () => {
       setLoading(false);
     }
   };
+
   const fetchSuggestionById = async (id) => {
+    if (!id || id === "") {
+      showNotification("Invalid suggestion ID", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      const data = await getNutrientSuggestionById(id, token);
+      const response = await getNutrientSuggestionById(id, token);
+      const data = response.data?.data || response.data || response;
+      if (!data?.id || !data?.nutrientSuggestionName) {
+        throw new Error("Invalid suggestion data returned from API");
+      }
       setSelectedSuggestion(data);
       setNewSuggestion({
         name: data.nutrientSuggestionName || "",
@@ -614,6 +619,11 @@ const NutrientSuggestion = () => {
       setIsEditing(true);
       return data;
     } catch (err) {
+      console.error("Fetch suggestion error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
     } finally {
       setLoading(false);
@@ -621,33 +631,31 @@ const NutrientSuggestion = () => {
   };
 
   const fetchSuggestionByIdForView = async (id) => {
-  setLoading(true);
-  try {
-    const response = await getNutrientSuggestionById(id, token);
-    // Extract data safely
-    const data = response?.data?.data || response?.data || response;
-    console.log("fetchSuggestionByIdForView - response data:", data);
+    setLoading(true);
+    try {
+      const response = await getNutrientSuggestionById(id, token);
+      const data = response.data?.data || response.data || response;
+      console.log("fetchSuggestionByIdForView - response data:", data);
 
-    // Ensure nutrientSuggestionAttributes is an array
-    if (!Array.isArray(data.nutrientSuggestionAttributes)) {
-      console.warn("nutrientSuggestionAttributes is not an array, setting to empty array:", data.nutrientSuggestionAttributes);
-      data.nutrientSuggestionAttributes = [];
+      if (!Array.isArray(data.nutrientSuggestionAttributes)) {
+        console.warn("nutrientSuggestionAttributes is not an array, setting to empty array:", data.nutrientSuggestionAttributes);
+        data.nutrientSuggestionAttributes = [];
+      }
+
+      setSelectedViewSuggestion(data);
+      return data;
+    } catch (err) {
+      console.error("fetchSuggestionByIdForView error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
+      return null;
+    } finally {
+      setLoading(false);
     }
-
-    setSelectedViewSuggestion(data);
-    return data;
-  } catch (err) {
-    console.error("fetchSuggestionByIdForView error:", {
-      message: err.message,
-      response: err.response?.data,
-      status: err.response?.status,
-    });
-    showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
-    return null;
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const createSuggestionHandler = async () => {
     if (!newSuggestion.name || newSuggestion.name.trim() === "") {
@@ -678,12 +686,17 @@ const NutrientSuggestion = () => {
       showNotification("Suggestion name is required", "error");
       return;
     }
+    if (!selectedSuggestion?.id || selectedSuggestion.id === "") {
+      showNotification("Invalid or missing suggestion ID", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       await updateNutrientSuggestion(
         {
-          suggestionId: selectedSuggestion?.id,
-          name: newSuggestion.name,
+          id: selectedSuggestion.id,
+          nutrientSuggetionName: newSuggestion.name,
         },
         token
       );
@@ -693,6 +706,11 @@ const NutrientSuggestion = () => {
       await fetchData();
       showNotification("Nutrient suggestion updated successfully", "success");
     } catch (err) {
+      console.error("Update suggestion error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       showNotification(
         `Failed to update suggestion: ${err.response?.data?.message || err.message}`,
         "error"
@@ -703,7 +721,13 @@ const NutrientSuggestion = () => {
   };
 
   const deleteSuggestionHandler = async (id) => {
+    if (!id || id === "") {
+      showNotification("Invalid suggestion ID", "error");
+      return;
+    }
+
     if (!window.confirm("Are you sure you want to delete this suggestion?")) return;
+
     setLoading(true);
     try {
       await deleteNutrientSuggestion(id, token);
@@ -713,7 +737,22 @@ const NutrientSuggestion = () => {
       await fetchData();
       showNotification("Nutrient suggestion deleted successfully", "success");
     } catch (err) {
-      showNotification(`Failed to delete suggestion: ${err.message}`, "error");
+      console.error("Delete suggestion error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      if (err.message.includes("associated attributes")) {
+        showNotification(
+          "Cannot delete suggestion because it has associated attributes. Please remove attributes first.",
+          "error"
+        );
+      } else {
+        showNotification(
+          `Failed to delete suggestion: ${err.response?.data?.message || err.message}`,
+          "error"
+        );
+      }
     } finally {
       setLoading(false);
     }
@@ -1623,7 +1662,6 @@ const NutrientSuggestion = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1884,7 +1922,7 @@ const NutrientSuggestion = () => {
                           className="edit-button nutrient-specialist-button primary"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                        >
+                             >
                           Edit
                         </motion.button>
                         <motion.button

@@ -167,7 +167,11 @@ const MealManagement = () => {
         getAllDishes(),
       ]);
       const mealsData = mealsResponse?.data || [];
-      setMeals(Array.isArray(mealsData) ? mealsData : []);
+      setMeals(
+        Array.isArray(mealsData)
+          ? mealsData.filter((meal) => meal.id && meal.id.trim() !== "")
+          : []
+      );
       setDishes(Array.isArray(dishesData?.data) ? dishesData.data : []);
     } catch (err) {
       console.error("Fetch error details:", {
@@ -182,11 +186,18 @@ const MealManagement = () => {
       setLoading(false);
     }
   };
-
   const fetchMealById = async (id) => {
+    if (!id || id.trim() === "") {
+      showNotification("Invalid meal ID", "error");
+      return;
+    }
     setLoading(true);
     try {
-      const data = await getMealById(id);
+      const response = await getMealById(id);
+      const data = response.data?.data || response.data; // Normalize response
+      if (!data || !data.id) {
+        throw new Error("Invalid meal data returned from server");
+      }
       setSelectedMeal(data);
       setNewMeal({
         mealType: data.mealType || "Breakfast",
@@ -198,7 +209,13 @@ const MealManagement = () => {
       });
       setIsEditing(true);
     } catch (err) {
+      console.error("Error fetching meal by ID:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       showNotification(`Failed to fetch meal details: ${err.message}`, "error");
+      setSelectedMeal(null); // Reset on error to avoid stale state
     } finally {
       setLoading(false);
     }
@@ -238,6 +255,13 @@ const MealManagement = () => {
   };
 
   const updateMealHandler = async () => {
+    if (!selectedMeal?.id) {
+      showNotification(
+        "No meal selected for update. Please select a meal to edit.",
+        "error"
+      );
+      return;
+    }
     if (!newMeal.mealType || newMeal.mealType.trim() === "") {
       showNotification("Meal type is required", "error");
       return;
@@ -248,7 +272,7 @@ const MealManagement = () => {
     }
     setLoading(true);
     try {
-      await updateMeal(selectedMeal?.id, {
+      await updateMeal(selectedMeal.id, {
         mealType: newMeal.mealType,
         dishMeals: newMeal.dishMeals,
       });
@@ -261,6 +285,11 @@ const MealManagement = () => {
       await fetchData();
       showNotification("Meal updated successfully", "success");
     } catch (err) {
+      console.error("Update meal error:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       showNotification(
         `Failed to update meal: ${err.response?.data?.message || err.message}`,
         "error"
@@ -269,7 +298,6 @@ const MealManagement = () => {
       setLoading(false);
     }
   };
-
   const deleteMealHandler = async (id) => {
     if (!window.confirm("Are you sure you want to delete this meal?")) return;
     setLoading(true);
@@ -302,7 +330,9 @@ const MealManagement = () => {
   const handleDishSelect = (dishId) => {
     setNewMeal((prev) => {
       const currentDishes = [...prev.dishMeals];
-      const index = currentDishes.findIndex((dishMeal) => dishMeal.dishId === dishId);
+      const index = currentDishes.findIndex(
+        (dishMeal) => dishMeal.dishId === dishId
+      );
       if (index > -1) {
         currentDishes.splice(index, 1);
       } else {
@@ -352,9 +382,8 @@ const MealManagement = () => {
     fetchData();
   }, []);
 
-  const filteredMeals = meals.filter(
-    (meal) =>
-      (meal.mealType || "").toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredMeals = meals.filter((meal) =>
+    (meal.mealType || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastMeal = currentPage * itemsPerPage;
@@ -642,7 +671,9 @@ const MealManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
+                animate={
+                  isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -1232,7 +1263,6 @@ const MealManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1409,7 +1439,22 @@ const MealManagement = () => {
                     >
                       <span className="dish-name">{dish.dishName}</span>
                       {newMeal.dishMeals.some((d) => d.dishId === dish.id) && (
-                        <span className="checkmark">✓</span>
+                        <span className="checkmark">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </span>
                       )}
                     </motion.div>
                   ))}
@@ -1418,22 +1463,38 @@ const MealManagement = () => {
               <div className="button-group">
                 <motion.button
                   onClick={isEditing ? updateMealHandler : createMealHandler}
-                  disabled={loading || dishes.length === 0}
-                  className="submit-button nutrient-specialist-button primary"
+                  disabled={
+                    loading ||
+                    dishes.length === 0 ||
+                    (!isEditing && !newMeal.dishMeals.length)
+                  }
+                  className={`submit-button nutrient-specialist-button primary ${
+                    loading ? "loading" : ""
+                  }`}
                   whileHover={{
-                    scale: loading || dishes.length === 0 ? 1 : 1.05,
+                    scale:
+                      loading ||
+                      dishes.length === 0 ||
+                      (!isEditing && !newMeal.dishMeals.length)
+                        ? 1
+                        : 1.05,
                   }}
                   whileTap={{
-                    scale: loading || dishes.length === 0 ? 1 : 0.95,
+                    scale:
+                      loading ||
+                      dishes.length === 0 ||
+                      (!isEditing && !newMeal.dishMeals.length)
+                        ? 1
+                        : 0.95,
                   }}
                 >
-                  {loading
-                    ? isEditing
-                      ? "Updating..."
-                      : "Creating..."
-                    : isEditing
-                    ? "Update Meal"
-                    : "Create Meal"}
+                  {loading ? (
+                    <LoaderIcon />
+                  ) : isEditing ? (
+                    "Update Meal"
+                  ) : (
+                    "Create Meal"
+                  )}
                 </motion.button>
                 {isEditing && (
                   <motion.button
@@ -1511,11 +1572,12 @@ const MealManagement = () => {
                       <div className="dish-list">
                         <h4>Dishes:</h4>
                         <ul>
-                          {Array.isArray(meal.dishMeals) && meal.dishMeals.length > 0 ? (
+                          {Array.isArray(meal.dishMeals) &&
+                          meal.dishMeals.length > 0 ? (
                             meal.dishMeals.map((dishMeal) => (
                               <li key={dishMeal.dishId}>
-                                {dishes.find((d) => d.id === dishMeal.dishId)?.dishName ||
-                                  "Unknown Dish"}
+                                {dishes.find((d) => d.id === dishMeal.dishId)
+                                  ?.dishName || "Unknown Dish"}
                               </li>
                             ))
                           ) : (
@@ -1570,8 +1632,12 @@ const MealManagement = () => {
                       onClick={handleNextPage}
                       disabled={currentPage === totalPages}
                       className="nutrient-specialist-button secondary"
-                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
-                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                      whileHover={{
+                        scale: currentPage === totalPages ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: currentPage === totalPages ? 1 : 0.95,
+                      }}
                     >
                       Next
                     </motion.button>

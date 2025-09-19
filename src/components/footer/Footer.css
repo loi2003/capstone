@@ -356,6 +356,10 @@
   flex: 1;
 }
 
+.footer-copyright p {
+  color: #C4D9DD;
+}
+
 .footer-legal-links {
   display: flex;
   gap: 30px;

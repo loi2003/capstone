@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -6,6 +6,7 @@ import {
   getDishById,
   createDish,
   addDishImage,
+  updateDishImage,
   updateDish,
   deleteDish,
   getAllFoods,
@@ -135,6 +136,7 @@ const DishManagement = () => {
   const foodsPerPage = 50;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  const fileInputRef = useRef(null);
 
   const handleHomepageNavigation = () => {
     setIsSidebarOpen(true);
@@ -217,6 +219,9 @@ const DishManagement = () => {
           : [],
         image: null,
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
       setIsEditing(true);
       return data;
     } catch (err) {
@@ -262,6 +267,9 @@ const DishManagement = () => {
         foodList: [],
         image: null,
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
       setIsEditing(false);
       await fetchData();
       showNotification("Dish created successfully", "success");
@@ -281,7 +289,6 @@ const DishManagement = () => {
       showNotification("Dish name is required", "error");
       return;
     }
-    
     if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
       showNotification(
         "Please provide valid unit and amount for all selected foods",
@@ -301,12 +308,18 @@ const DishManagement = () => {
           amount: food.amount,
         })),
       });
+      if (newDish.image) {
+        await updateDishImage(selectedDish?.id, newDish.image);
+      }
       setNewDish({
         dishName: "",
         description: "",
         foodList: [],
         image: null,
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
       setSelectedDish(null);
       setIsEditing(false);
       await fetchData();
@@ -316,6 +329,27 @@ const DishManagement = () => {
         `Failed to update dish: ${err.response?.data?.message || err.message}`,
         "error"
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const removeDishImageHandler = async () => {
+    if (!window.confirm("Are you sure you want to remove the dish image?")) return;
+    setLoading(true);
+    try {
+      await updateDishImage(selectedDish?.id, null); // Assuming API supports null to remove image
+      setNewDish((prev) => ({ ...prev, image: null }));
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
+      const updatedDish = await fetchDishById(selectedDish?.id);
+      setDishes((prev) =>
+        prev.map((dish) => (dish.id === updatedDish?.id ? updatedDish : dish))
+      );
+      showNotification("Dish image removed successfully", "success");
+    } catch (err) {
+      showNotification(`Failed to remove dish image: ${err.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -334,6 +368,9 @@ const DishManagement = () => {
         foodList: [],
         image: null,
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
       await fetchData();
       showNotification("Dish deleted successfully", "success");
     } catch (err) {
@@ -401,39 +438,41 @@ const DishManagement = () => {
       foodList: [],
       image: null,
     });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = null;
+    }
     setSelectedDish(null);
     setIsEditing(false);
   };
 
   const handleFoodSelect = async (foodId) => {
-  if (isEditing) {
-    const isSelected = newDish.foodList.some(
-      (food) => food.foodId === foodId
-    );
-    if (isSelected) {
-      await deleteFoodInDishHandler(foodId);
-    } else {
-      setNewDish((prev) => ({
-        ...prev,
-        foodList: [...prev.foodList, { foodId, unit: "grams", amount: 1 }],
-      }));
-    }
-  } else {
-    setNewDish((prev) => {
-      const currentFoods = [...prev.foodList];
-      const index = currentFoods.findIndex(
+    if (isEditing) {
+      const isSelected = newDish.foodList.some(
         (food) => food.foodId === foodId
       );
-      if (index > -1) {
-        currentFoods.splice(index, 1);
+      if (isSelected) {
+        await deleteFoodInDishHandler(foodId);
       } else {
-        currentFoods.push({ foodId, unit: "grams", amount: 1 });
+        setNewDish((prev) => ({
+          ...prev,
+          foodList: [...prev.foodList, { foodId, unit: "grams", amount: 1 }],
+        }));
       }
-      return { ...prev, foodList: currentFoods };
-    });
-  }
-};
-
+    } else {
+      setNewDish((prev) => {
+        const currentFoods = [...prev.foodList];
+        const index = currentFoods.findIndex(
+          (food) => food.foodId === foodId
+        );
+        if (index > -1) {
+          currentFoods.splice(index, 1);
+        } else {
+          currentFoods.push({ foodId, unit: "grams", amount: 1 });
+        }
+        return { ...prev, foodList: currentFoods };
+      });
+    }
+  };
 
   const handleFoodDetailChange = (foodId, field, value) => {
     setNewDish((prev) => ({
@@ -1390,7 +1429,6 @@ const DishManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1562,6 +1600,7 @@ const DishManagement = () => {
               <div className="form-group">
                 <label htmlFor="dish-image">Dish Image (Optional)</label>
                 <input
+                  ref={fileInputRef}
                   id="dish-image"
                   type="file"
                   accept="image/*"
@@ -1573,6 +1612,30 @@ const DishManagement = () => {
                   }
                   className="input-field"
                 />
+                {isEditing && selectedDish?.imageUrl && (
+                  <div className="image-link-container">
+                    <label>Current Image</label>
+                    <div className="image-link-wrapper">
+                      <a
+                        href={selectedDish.imageUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="image-link"
+                      >
+                        {selectedDish.imageUrl}
+                      </a>
+                      <motion.button
+                        onClick={removeDishImageHandler}
+                        disabled={loading}
+                        className="remove-image-button nutrient-specialist-button secondary"
+                        whileHover={{ scale: loading ? 1 : 1.05 }}
+                        whileTap={{ scale: loading ? 1 : 0.95 }}
+                      >
+                        Remove Image
+                      </motion.button>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="food-selection">Select Foods</label>

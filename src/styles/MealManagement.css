@@ -566,6 +566,7 @@
   align-items: center;
   justify-content: space-between;
   transition: var(--nutrient-specialist-transition);
+  min-height: 40px; /* Ensure enough height for content */
 }
 
 .meal-management .dish-item:hover {
@@ -575,6 +576,7 @@
 .meal-management .dish-item.selected {
   background: var(--nutrient-specialist-secondary);
   color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-white); /* Add border contrast */
 }
 
 .meal-management .dish-item .dish-name {
@@ -582,11 +584,27 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1; /* Allow dish-name to take available space */
 }
 
 .meal-management .dish-item .checkmark {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1rem; /* Slightly larger for visibility */
+  font-weight: 700; /* Bolder for emphasis */
+  color: var(--nutrient-specialist-white); /* Explicit color for light theme */
+  flex-shrink: 0; /* Prevent checkmark from being compressed */
+  width: 20px; /* Fixed width to ensure space */
+  text-align: center; /* Center the checkmark */
+}
+
+/* Dark theme adjustments for dish-item */
+.meal-management.dark-theme .dish-item.selected {
+  background: var(--nutrient-specialist-secondary);
+  color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-accent); /* Slightly different border for dark theme */
+}
+
+.meal-management.dark-theme .dish-item .checkmark {
+  color: var(--nutrient-specialist-highlight); /* Use highlight color for better contrast in dark theme */
 }
 
 .meal-management .dish-details-container {
@@ -1060,7 +1078,20 @@
   }
 
   .meal-management .dish-selection-container {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Adjusted for better layout */
+  }
+
+  .meal-management .dish-item {
+    padding: 0.5rem 0.75rem; /* More padding for touch targets */
+  }
+
+  .meal-management .dish-item .dish-name {
+    font-size: 0.8rem; /* Slightly smaller font for small screens */
+  }
+
+  .meal-management .dish-item .checkmark {
+    font-size: 0.9rem; /* Adjust for smaller screens */
+    width: 18px; /* Slightly smaller but still visible */
   }
 
   .meal-management .modal-content {

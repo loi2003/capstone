@@ -1,29 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import Chart from "chart.js/auto";
-import {
-  getAllNutrients,
-  getNutrientById,
-  createNutrient,
-  updateNutrient,
-  deleteNutrient,
-  getAllNutrientCategories,
-} from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/NutrientManagement.css";
-
-// SVG Icons
-const SearchIcon = () => (
-  <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth="2"
-      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-    />
-  </svg>
-);
+import "../../styles/MessengerManagement.css";
 
 const LoaderIcon = () => (
   <svg
@@ -41,15 +20,13 @@ const LoaderIcon = () => (
   </svg>
 );
 
-// Notification Component
 const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       document.dispatchEvent(new CustomEvent("closeNotification"));
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -66,33 +43,73 @@ const Notification = ({ message, type }) => {
   );
 };
 
-const NutrientManagement = () => {
-  const [user, setUser] = useState(null);
-  const [nutrients, setNutrients] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [filteredNutrients, setFilteredNutrients] = useState([]);
-  const [newNutrient, setNewNutrient] = useState({
-    name: "",
-    categoryId: "",
-    description: "",
-  });
-  const [selectedNutrient, setSelectedNutrient] = useState(null);
+const MessengerManagement = () => {
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
-  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(true); // Open by default
+  const [user, setUser] = useState(null);
+  const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
-  const nutrientsPerPage = 6;
-  const chartRef = useRef(null);
-  const chartInstanceRef = useRef(null);
+  const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
+  const messagesEndRef = useRef(null);
 
-  // Show notification
+  const toggleFoodDropdown = () => {
+    setIsFoodDropdownOpen((prev) => !prev);
+  };
+
+  const toggleNutrientDropdown = () => {
+    setIsNutrientDropdownOpen((prev) => !prev);
+  };
+
+  const dropdownVariants = {
+    open: {
+      height: "auto",
+      opacity: 1,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      height: 0,
+      opacity: 0,
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
+
+  const handleHomepageNavigation = () => {
+    setIsSidebarOpen(true);
+    navigate("/nutrient-specialist");
+  };
+
+  useEffect(() => {
+    const fetchUser = () => {
+      if (!token) {
+        navigate("/signin", { replace: true });
+        return;
+      }
+      getCurrentUser(token)
+        .then((response) => {
+          const userData = response.data?.data || response.data;
+          if (userData && Number(userData.roleId) === 4) {
+            setUser(userData);
+          } else {
+            localStorage.removeItem("token");
+            setUser(null);
+            navigate("/signin", { replace: true });
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user:", error.message);
+          localStorage.removeItem("token");
+          setUser(null);
+          navigate("/signin", { replace: true });
+        });
+    };
+    fetchUser();
+  }, [navigate, token]);
+
   const showNotification = (message, type) => {
     setNotification({ message, type });
     const closeListener = () => {
@@ -102,196 +119,38 @@ const NutrientManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  // Fetch user, nutrients, and categories
-  const fetchData = async () => {
-    if (!token) {
-      navigate("/signin", { replace: true });
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) {
+      showNotification("Message cannot be empty", "error");
       return;
     }
+
     setLoading(true);
     try {
-      const [userResponse, nutrientsData, categoriesData] = await Promise.all([
-        getCurrentUser(token),
-        getAllNutrients(),
-        getAllNutrientCategories(),
-      ]);
-      const userData = userResponse.data?.data || userResponse.data;
-      if (userData && Number(userData.roleId) === 4) {
-        setUser(userData);
-        setNutrients(nutrientsData);
-        setFilteredNutrients(nutrientsData);
-        setCategories(categoriesData);
-        setCurrentPage(1);
-      } else {
-        localStorage.removeItem("token");
-        setUser(null);
-        navigate("/signin", { replace: true });
-      }
+      const message = {
+        id: Date.now(),
+        content: newMessage,
+        sender: user?.email || "User",
+        timestamp: new Date().toLocaleTimeString(),
+      };
+      setMessages((prev) => [...prev, message]);
+      setNewMessage("");
+      showNotification("Message sent successfully", "success");
     } catch (err) {
-      console.error("Error in fetchData:", err);
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
-      localStorage.removeItem("token");
-      setUser(null);
-      navigate("/signin", { replace: true });
+      showNotification("Failed to send message", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  // Fetch nutrient by ID
-  const fetchNutrientById = async (id) => {
-    setLoading(true);
-    try {
-      const data = await getNutrientById(id);
-      setSelectedNutrient(data);
-      setNewNutrient({
-        name: data.name,
-        categoryId: data.categoryId,
-        description: data.description,
-      });
-      setIsEditing(true);
-    } catch (err) {
-      showNotification(`Failed to fetch nutrient: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Create new nutrient
-  const createNewNutrient = async () => {
-    if (!newNutrient.name.trim() || !newNutrient.categoryId) {
-      showNotification("Nutrient name and category are required", "error");
-      return;
-    }
-    if (
-      nutrients.some(
-        (nut) =>
-          nut.name.toLowerCase() === newNutrient.name.trim().toLowerCase()
-      )
-    ) {
-      showNotification("Duplicate nutrient name", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      await createNutrient(newNutrient);
-      setNewNutrient({ name: "", categoryId: "", description: "" });
-      await fetchData();
-      showNotification("Nutrient created successfully", "success");
-    } catch (err) {
-      showNotification(`Failed to create nutrient: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Update nutrient
-  const updateExistingNutrient = async () => {
-    if (!newNutrient.name.trim() || !newNutrient.categoryId) {
-      showNotification("Nutrient name and category are required", "error");
-      return;
-    }
-    if (
-      nutrients.some(
-        (nut) =>
-          nut.name.toLowerCase() === newNutrient.name.trim().toLowerCase() &&
-          nut.id !== selectedNutrient.id
-      )
-    ) {
-      showNotification("Duplicate nutrient name", "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateNutrient({
-        nutrientId: selectedNutrient.id,
-        name: newNutrient.name,
-        categoryId: newNutrient.categoryId,
-        description: newNutrient.description,
-      });
-      setNewNutrient({ name: "", categoryId: "", description: "" });
-      setSelectedNutrient(null);
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Nutrient updated successfully", "success");
-    } catch (err) {
-      showNotification(`Failed to update nutrient: ${err.message}`, "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Delete nutrient
-  const deleteExistingNutrient = async (id) => {
-    if (window.confirm("Are you sure you want to delete this nutrient?")) {
-      setLoading(true);
-      try {
-        await deleteNutrient(id);
-        await fetchData();
-        showNotification("Nutrient deleted successfully", "success");
-      } catch (err) {
-        showNotification(`Failed to delete nutrient: ${err.message}`, "error");
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  // Handle input changes
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewNutrient({ ...newNutrient, [name]: value });
-  };
-
-  // Handle search
-  const handleSearch = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    const filtered = nutrients.filter((nutrient) =>
-      nutrient.name?.toLowerCase().includes(term.toLowerCase())
-    );
-    setFilteredNutrients(filtered);
-    setCurrentPage(1);
-  };
-
-  // Cancel edit
-  const cancelEdit = () => {
-    setIsEditing(false);
-    setSelectedNutrient(null);
-    setNewNutrient({ name: "", categoryId: "", description: "" });
-  };
-
-  // Pagination
-  const indexOfLastNutrient = currentPage * nutrientsPerPage;
-  const indexOfFirstNutrient = indexOfLastNutrient - nutrientsPerPage;
-  const currentNutrients = filteredNutrients.slice(
-    indexOfFirstNutrient,
-    indexOfLastNutrient
-  );
-  const totalPages = Math.ceil(filteredNutrients.length / nutrientsPerPage);
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  // Toggle sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  // Handle logout
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
     try {
-      if (user?.userId) await logout(user.userId);
+      if (user?.userId) await logout(user.userId, token);
     } catch (error) {
       console.error("Error logging out:", error.message);
     } finally {
@@ -302,95 +161,21 @@ const NutrientManagement = () => {
     }
   };
 
-  // Toggle dropdowns
-  const toggleNutrientDropdown = () => {
-    setIsNutrientDropdownOpen((prev) => !prev);
-  };
-
-  const toggleFoodDropdown = () => {
-    setIsFoodDropdownOpen((prev) => !prev);
-  };
-
-  // Initialize data
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  // Initialize chart
-  useEffect(() => {
-    if (chartRef.current && !chartInstanceRef.current) {
-      chartInstanceRef.current = new Chart(chartRef.current, {
-        type: "bar",
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: "Nutrients per Category",
-              data: [],
-              backgroundColor: "rgba(46, 125, 50, 0.6)",
-              borderColor: "rgba(46, 125, 50, 1)",
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Number of Nutrients" },
-              ticks: { stepSize: 1 },
-            },
-            x: { title: { display: true, text: "Categories" } },
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true },
-          },
-          animation: {
-            duration: 1000,
-            easing: "easeOutQuart",
-          },
-        },
-      });
-    }
-
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-        chartInstanceRef.current = null;
-      }
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > 768);
     };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Update chart data
   useEffect(() => {
-    if (chartInstanceRef.current) {
-      const categoryCounts = categories.map((cat) => ({
-        name: cat.name || "Unnamed",
-        count: nutrients.filter((nut) => nut.categoryId === cat.id).length,
-      }));
-      chartInstanceRef.current.data.labels = categoryCounts.map(
-        (cat) => cat.name
-      );
-      chartInstanceRef.current.data.datasets[0].data = categoryCounts.map(
-        (cat) => cat.count
-      );
-      chartInstanceRef.current.update();
-    }
-  }, [nutrients, categories]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  // Sidebar animation variants
-  const sidebarVariants = {
-    open: {
-      width: "min(260px, 25vw)",
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      width: "min(60px, 15vw)",
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
+  const containerVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1, transition: { duration: 0.5 } },
   };
 
   const logoVariants = {
@@ -410,53 +195,34 @@ const NutrientManagement = () => {
     },
   };
 
-  const containerVariants = {
-    initial: { opacity: 0, y: 30 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 },
+  const sidebarVariants = {
+    open: {
+      width: "280px",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      width: "60px",
+      transition: { duration: 0.3, ease: "easeIn" },
     },
   };
 
   const navItemVariants = {
-    initial: { opacity: 0, x: -20 },
+    initial: { opacity: 0, x: -20, backgroundColor: "rgba(0, 0, 0, 0)" },
     animate: {
       opacity: 1,
       x: 0,
+      backgroundColor: "rgba(0, 0, 0, 0)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     hover: {
-      backgroundColor: "var(--blue-secondary)",
+      backgroundColor: "#4caf50",
       transform: "translateY(-2px)",
       transition: { duration: 0.3, ease: "easeOut" },
     },
   };
 
-  const dropdownVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
-  };
-
-  // Handle window resize to toggle sidebar
-  useEffect(() => {
-    const handleResize = () => {
-      setIsSidebarOpen(window.innerWidth > 768);
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   return (
-    <div className="nutrient-management">
+    <div className="messenger-management">
       <AnimatePresence>
         {notification && (
           <Notification
@@ -465,15 +231,11 @@ const NutrientManagement = () => {
           />
         )}
       </AnimatePresence>
-
-      {/* Sidebar */}
       <motion.aside
-        className={`nutrient-specialist-sidebar ${
-          isSidebarOpen ? "open" : "closed"
-        }`}
+        className={`sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
-        initial="open"
+        initial={window.innerWidth > 768 ? "open" : "closed"}
       >
         <div className="sidebar-header">
           <Link
@@ -497,8 +259,8 @@ const NutrientManagement = () => {
               >
                 <path
                   d="M12 2C6.48 2 2 6.48 2 12c0 3.5 2.5 6.5 5.5 8C6 21 5 22 5 22s2-2 4-2c2 0 3 1 3 1s1-1 3-1c2 0 4 2 4 2s-1-1-2.5-2C17.5 18.5 20 15.5 20 12c0-5.52-4.48-10-10-10zm0 14c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"
-                  fill="var(--nutrient-specialist-highlight)"
-                  stroke="var(--nutrient-specialist-primary)"
+                  fill="#ffca28"
+                  stroke="#2e7d32"
                   strokeWidth="1.5"
                 />
               </svg>
@@ -514,7 +276,7 @@ const NutrientManagement = () => {
           >
             <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path
-                stroke="var(--nutrient-specialist-white)"
+                stroke="#ffffff"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -541,10 +303,10 @@ const NutrientManagement = () => {
                 className="sidebar-nav-item"
                 whileHover="hover"
               >
-                <Link
-                  to="/nutrient-specialist"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Home"
+                <button
+                  onClick={handleHomepageNavigation}
+                  title="Homepage"
+                  aria-label="Navigate to homepage"
                 >
                   <svg
                     width="24"
@@ -552,27 +314,27 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Home icon for home page"
+                    aria-label="Home icon"
                   >
                     <path
                       d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                     <path
                       d="M9 22V12h6v10"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
                   </svg>
-                  {isSidebarOpen && <span>Home</span>}
-                </Link>
+                  {isSidebarOpen && <span>Homepage</span>}
+                </button>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
@@ -590,12 +352,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Blog icon for blog management"
+                    aria-label="Blog icon"
                   >
                     <path
                       d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -625,12 +387,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Food icon for food management"
+                    aria-label="Food icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4l2 6-6 2 6 2 2-6-2-6z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -648,7 +410,7 @@ const NutrientManagement = () => {
                       }`}
                     >
                       <path
-                        stroke="var(--nutrient-specialist-white)"
+                        stroke="#ffffff"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -663,9 +425,7 @@ const NutrientManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={
-                  isSidebarOpen && !isFoodDropdownOpen ? "closed" : "open"
-                }
+                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
                 initial="closed"
               >
                 <motion.div
@@ -684,12 +444,12 @@ const NutrientManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Category icon for food category management"
+                      aria-label="Category icon"
                     >
                       <path
                         d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                        fill="var(--nutrient-specialist-secondary)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#4caf50"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -714,12 +474,12 @@ const NutrientManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Food item icon for food management"
+                      aria-label="Food item icon"
                     >
                       <path
                         d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
-                        fill="var(--nutrient-specialist-accent)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#a5d6a7"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -750,12 +510,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Nutrient icon for nutrient management"
+                    aria-label="Nutrient icon"
                   >
                     <path
                       d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -773,7 +533,7 @@ const NutrientManagement = () => {
                       }`}
                     >
                       <path
-                        stroke="var(--nutrient-specialist-white)"
+                        stroke="#ffffff"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -791,9 +551,9 @@ const NutrientManagement = () => {
                 className="nutrient-dropdown"
                 variants={dropdownVariants}
                 animate={
-                  isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
+                  isSidebarOpen && isNutrientDropdownOpen ? "open" : "closed"
                 }
-                initial="open"
+                initial="closed"
               >
                 <motion.div
                   variants={navItemVariants}
@@ -811,12 +571,12 @@ const NutrientManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Category icon for nutrient category management"
+                      aria-label="Category icon"
                     >
                       <path
                         d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                        fill="var(--nutrient-specialist-secondary)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#4caf50"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -827,7 +587,7 @@ const NutrientManagement = () => {
                 </motion.div>
                 <motion.div
                   variants={navItemVariants}
-                  className="sidebar-nav-item nutrient-dropdown-item active"
+                  className="sidebar-nav-item nutrient-dropdown-item"
                   whileHover="hover"
                 >
                   <Link
@@ -841,12 +601,12 @@ const NutrientManagement = () => {
                       viewBox="0 0 24 24"
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
-                      aria-label="Nutrient item icon for nutrient management"
+                      aria-label="Nutrient item icon"
                     >
                       <path
                         d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-2 2h4v8h-4V6z"
-                        fill="var(--nutrient-specialist-accent)"
-                        stroke="var(--nutrient-specialist-white)"
+                        fill="#a5d6a7"
+                        stroke="#ffffff"
                         strokeWidth="1.5"
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -869,15 +629,15 @@ const NutrientManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 23"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Nutrient in food icon"
                   >
                     <path
                       d="M12 2c4 0 7 4 7 8s-3 8-7 8-7-4-7-8 3-8 7-8zm0 2c-3 0-5 2-5 6s2 6 5 6 5-2 5-6-2-6-5-6zm-3 2h6v2H9v-2zm0 4h6v2H9v-2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -902,12 +662,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Users icon for age group management"
+                    aria-label="Users icon"
                   >
                     <path
                       d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2m14-10a4 4 0 010-8m-6 4a4 4 0 11-8 0 4 4 0 018 0zm10 13v-2a4 4 0 00-3-3.87"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -932,12 +692,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Plate icon for dish management"
+                    aria-label="Plate icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 8a4 4 0 014-4 4 4 0 014 4"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -956,66 +716,6 @@ const NutrientManagement = () => {
                 whileHover="hover"
               >
                 <Link
-                  to="/nutrient-specialist/energy-suggestion"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Energy Suggestion"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Energy icon for energy suggestion"
-                  >
-                    <path
-                      d="M12 2l-6 9h4v7l6-9h-4V2zm-2 9h4m-4-7v3m4 3v3"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Energy Suggestion</span>}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
-                  to="/nutrient-specialist/nutrient-suggestion"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Nutrient Suggestion"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Nutrient suggestion icon for nutrient suggestion"
-                  >
-                    <path
-                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4h4m-4 2v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Nutrient Suggestion</span>}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Allergy Category Management"
@@ -1026,12 +726,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Category icon for allergy category management"
+                    aria-label="Category icon"
                   >
                     <path
                       d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                      fill="var(--nutrient-specialist-secondary)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#4caf50"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1056,12 +756,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Allergy icon for allergy management"
+                    aria-label="Allergy icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1086,12 +786,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Medical icon for disease management"
+                    aria-label="Medical icon"
                   >
                     <path
                       d="M19 7h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3H5a2 2 0 00-2 2v6a2 2 0 002 2h3v3a2 2 0 002 2h4a2 2 0 002-2v-3h3a2 2 0 002-2V9a2 2 0 00-2-2zm-7 10v3h-2v-3H7v-2h3V9h2v3h3v2h-3z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1116,12 +816,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for warning management"
+                    aria-label="Warning icon"
                   >
                     <path
                       d="M12 2l10 20H2L12 2zm0 4v8m0 4v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1146,12 +846,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Meal icon for meal management"
+                    aria-label="Meal icon"
                   >
                     <path
                       d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 4h8v2H8v-2zm0 4h8v2H8v-2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1166,6 +866,66 @@ const NutrientManagement = () => {
                 whileHover="hover"
               >
                 <Link
+                  to="/nutrient-specialist/energy-suggestion"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Energy Suggestion"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Energy icon"
+                  >
+                    <path
+                      d="M12 2l-6 9h4v7l6-9h-4V2zm-2 9h4m-4-7v3m4 3v3"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Energy Suggestion</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+                whileHover="hover"
+              >
+                <Link
+                  to="/nutrient-specialist/nutrient-suggestion"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Nutrient Suggestion"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Nutrient suggestion icon"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4h4m-4 2v2"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Nutrient Suggestion</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item active"
+                whileHover="hover"
+              >
+                <Link
                   to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
                   title="Messenger Management"
@@ -1176,12 +936,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Messenger icon for messenger management"
+                    aria-label="Messenger icon"
                   >
                     <path
                       d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1206,12 +966,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Document icon for nutrient policy"
+                    aria-label="Document icon"
                   >
                     <path
                       d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zM6 20V4h6v6h6v10H6z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1236,12 +996,12 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Book icon for nutrient tutorial"
+                    aria-label="Book icon"
                   >
                     <path
                       d="M4 19.5A2.5 2.5 0 016.5 17H20m-16 0V5a2 2 0 012-2h12a2 2 0 012 2v12a2 2 0 01-2 2H6.5"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
+                      fill="#a5d6a7"
+                      stroke="#ffffff"
                       strokeWidth="1.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1255,8 +1015,7 @@ const NutrientManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-
-            >
+          >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
@@ -1278,13 +1037,13 @@ const NutrientManagement = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item nutrient-specialist-profile-section"
+                className="sidebar-nav-item profile-section"
                 whileHover="hover"
               >
                 <Link
                   to="/profile"
-                  className="nutrient-specialist-profile-info"
-                  title={isSidebarOpen ? user.email : ""}
+                  className="profile-info"
+                  title={isSidebarOpen ? user.email : "Profile"}
                 >
                   <svg
                     width="24"
@@ -1292,17 +1051,15 @@ const NutrientManagement = () => {
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    aria-label="User icon for profile"
+                    aria-label="User icon"
                   >
                     <path
                       d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--nutrient-specialist-white)"
+                      fill="#ffffff"
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="nutrient-specialist-profile-email">
-                      {user.email}
-                    </span>
+                    <span className="profile-email">{user.email}</span>
                   )}
                 </Link>
               </motion.div>
@@ -1325,7 +1082,7 @@ const NutrientManagement = () => {
                     aria-label="Logout icon"
                   >
                     <path
-                      stroke="var(--nutrient-specialist-logout)"
+                      stroke="#d32f2f"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -1355,7 +1112,7 @@ const NutrientManagement = () => {
                   aria-label="Login icon"
                 >
                   <path
-                    stroke="var(--nutrient-specialist-white)"
+                    stroke="#ffffff"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1368,256 +1125,94 @@ const NutrientManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
-      {/* Main Content */}
       <motion.main
-        className={`nutrient-specialist-content ${
-          isSidebarOpen ? "sidebar-open" : "sidebar-closed"
-        }`}
+        className={`content ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Nutrient Management</h1>
-            <p>Create, edit, and manage nutrients for better organization</p>
+            <h1>Messenger Management</h1>
+            <p>Communicate and manage messages for nutrient-related queries</p>
           </div>
         </div>
-
         <div className="management-container">
-          {/* Chart Section */}
-          <div className="chart-section">
+          <div className="chat-section">
             <div className="section-header">
-              <h2>Nutrient Overview</h2>
-              <div className="chart-legend">
-                <div className="legend-item">
-                  <div className="legend-color"></div>
-                  <span>Nutrients per Category</span>
-                </div>
-              </div>
+              <h2>Chat Box</h2>
             </div>
-            <div className="chart-container">
-              <canvas ref={chartRef}></canvas>
-            </div>
-          </div>
-
-          {/* Form Section */}
-          <div className="form-section">
-            <div className="section-header">
-              <h2>{isEditing ? "Edit Nutrient" : "Create New Nutrient"}</h2>
-            </div>
-            <div className="form-card">
-              <div className="form-group">
-                <label htmlFor="nutrient-name">Nutrient Name</label>
-                <input
-                  id="nutrient-name"
-                  type="text"
-                  name="name"
-                  value={newNutrient.name}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Vitamin C"
-                  className="input-field"
-                  aria-label="Nutrient name"
-                />
-                <label htmlFor="category-id">Category</label>
-                <select
-                  id="category-id"
-                  name="categoryId"
-                  value={newNutrient.categoryId}
-                  onChange={handleInputChange}
-                  className="input-field"
-                  aria-label="Nutrient category"
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                <label htmlFor="nutrient-description">Description</label>
-                <textarea
-                  id="nutrient-description"
-                  name="description"
-                  value={newNutrient.description}
-                  onChange={handleInputChange}
-                  placeholder="e.g., Essential for immune function"
-                  className="textarea-field"
-                  rows="4"
-                  aria-label="Nutrient description"
-                />
-                <div className="button-group">
-                  <motion.button
-                    onClick={
-                      isEditing ? updateExistingNutrient : createNewNutrient
-                    }
-                    disabled={loading}
-                    className="submit-button nutrient-specialist-button primary"
-                    whileHover={{ scale: loading ? 1 : 1.05 }}
-                    whileTap={{ scale: loading ? 1 : 0.95 }}
-                    aria-label={
-                      isEditing ? "Update nutrient" : "Create nutrient"
-                    }
-                  >
-                    {loading
-                      ? "Loading..."
-                      : isEditing
-                      ? "Update Nutrient"
-                      : "Create Nutrient"}
-                  </motion.button>
-                  {isEditing && (
-                    <motion.button
-                      onClick={cancelEdit}
-                      disabled={loading}
-                      className="cancel-button nutrient-specialist-button secondary"
-                      whileHover={{ scale: loading ? 1 : 1.05 }}
-                      whileTap={{ scale: loading ? 1 : 0.95 }}
-                      aria-label="Cancel edit"
+            <div className="chat-card">
+              <div className="chat-messages">
+                {loading ? (
+                  <div className="loading-state">
+                    <LoaderIcon />
+                    <p>Loading messages...</p>
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div className="empty-state">
+                    <svg
+                      width="64"
+                      height="64"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
                     >
-                      Cancel
-                    </motion.button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Nutrient List Section */}
-          <div className="nutrient-list-section">
-            <div className="section-header">
-              <h2>All Nutrients</h2>
-              <div className="nutrient-count">
-                {filteredNutrients.length}{" "}
-                {filteredNutrients.length === 1 ? "nutrient" : "nutrients"}{" "}
-                found
-              </div>
-            </div>
-            <div className="search-section">
-              <SearchIcon />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={handleSearch}
-                placeholder="Search nutrients..."
-                className="search-input"
-                aria-label="Search nutrients"
-              />
-            </div>
-            {loading ? (
-              <div className="loading-state">
-                <LoaderIcon />
-                <p>Loading nutrients...</p>
-              </div>
-            ) : filteredNutrients.length === 0 ? (
-              <div className="empty-state">
-                <svg
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="var(--nutrient-specialist-text)"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <h3>No nutrients found</h3>
-                <p>Create your first nutrient to get started</p>
-                {searchTerm && (
-                  <motion.button
-                    onClick={() => setSearchTerm("")}
-                    className="clear-search-button nutrient-specialist-button secondary"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    aria-label="Clear search"
-                  >
-                    Clear Search
-                  </motion.button>
-                )}
-              </div>
-            ) : (
-              <>
-                <div className="nutrient-grid">
-                  {currentNutrients.map((nutrient) => (
-                    <motion.div
-                      key={nutrient.id}
-                      className="nutrient-card"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      whileHover={{ y: -5 }}
-                    >
-                      <div className="card-header">
-                        <h3>{nutrient.name}</h3>
-                        <div className="category-badge">
-                          {categories.find(
-                            (cat) => cat.id === nutrient.categoryId
-                          )?.name || "No Category"}
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="1.5"
+                        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+                      />
+                    </svg>
+                    <h3>No messages yet</h3>
+                    <p>Start a conversation by sending a message</p>
+                  </div>
+                ) : (
+                  <div className="messages-container">
+                    {messages.map((message) => (
+                      <motion.div
+                        key={message.id}
+                        className="message-bubble"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="message-header">
+                          <span className="message-sender">{message.sender}</span>
+                          <span className="message-timestamp">{message.timestamp}</span>
                         </div>
-                      </div>
-                      <p className="card-description">
-                        {nutrient.description || "No description provided"}
-                      </p>
-                      <div className="card-actions">
-                        <motion.button
-                          onClick={() => fetchNutrientById(nutrient.id)}
-                          className="edit-button nutrient-specialist-button primary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          aria-label="Edit nutrient"
-                        >
-                          Edit
-                        </motion.button>
-                        <motion.button
-                          onClick={() => deleteExistingNutrient(nutrient.id)}
-                          className="delete-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          aria-label="Delete nutrient"
-                        >
-                          Delete
-                        </motion.button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                {filteredNutrients.length > nutrientsPerPage && (
-                  <div className="pagination-controls">
-                    <motion.button
-                      onClick={handlePrevPage}
-                      disabled={currentPage === 1}
-                      className="pagination-button prev nutrient-specialist-button secondary"
-                      whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
-                      whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
-                      aria-label="Previous page"
-                    >
-                      Previous
-                    </motion.button>
-                    <div className="page-indicator">
-                      Page {currentPage} of {totalPages}
-                    </div>
-                    <motion.button
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className="pagination-button next nutrient-specialist-button secondary"
-                      whileHover={{
-                        scale: currentPage === totalPages ? 1 : 1.05,
-                      }}
-                      whileTap={{
-                        scale: currentPage === totalPages ? 1 : 0.95,
-                      }}
-                      aria-label="Next page"
-                    >
-                      Next
-                    </motion.button>
+                        <p className="message-content">{message.content}</p>
+                      </motion.div>
+                    ))}
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
-              </>
-            )}
+              </div>
+              <div className="chat-input">
+                <div className="form-group">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type your message..."
+                    className="input-field"
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") handleSendMessage();
+                    }}
+                  />
+                </div>
+                <motion.button
+                  onClick={handleSendMessage}
+                  disabled={loading}
+                  className="button primary"
+                  whileHover={{ scale: loading ? 1 : 1.05 }}
+                  whileTap={{ scale: loading ? 1 : 0.95 }}
+                >
+                  {loading ? "Sending..." : "Send"}
+                </motion.button>
+              </div>
+            </div>
           </div>
         </div>
       </motion.main>
@@ -1625,4 +1220,4 @@ const NutrientManagement = () => {
   );
 };
 
-export default NutrientManagement;
+export default MessengerManagement;

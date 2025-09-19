@@ -1,4 +1,3 @@
-/* Scoped variables */
 .dish-management {
   --nutrient-specialist-primary: #2e7d32;
   --nutrient-specialist-secondary: #4caf50;
@@ -96,6 +95,35 @@
   background: #1a3c34;
   color: #6b7280;
   border-color: #6b7280;
+}
+
+.dish-management.dark-theme .image-link-container label {
+  color: var(--nutrient-specialist-white);
+}
+
+.dish-management.dark-theme .image-link {
+  color: var(--nutrient-specialist-accent);
+}
+
+.dish-management.dark-theme .image-link:hover {
+  color: var(--nutrient-specialist-white);
+}
+
+.dish-management.dark-theme .remove-image-button {
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+  border: 1px solid var(--nutrient-specialist-logout);
+}
+
+.dish-management.dark-theme .remove-image-button:hover:not(:disabled) {
+  background: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.dish-management.dark-theme .remove-image-button:disabled {
+  background: #6b7280;
+  border-color: #6b7280;
+  color: #1a3c34;
 }
 
 /* Sidebar */
@@ -567,6 +595,64 @@
   min-height: 80px;
 }
 
+/* Image link styles */
+.dish-management .image-link-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+
+.dish-management .image-link-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.dish-management .image-link {
+  color: var(--nutrient-specialist-secondary);
+  font-size: 0.85rem;
+  text-decoration: none;
+  word-break: break-all;
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dish-management .image-link:hover {
+  text-decoration: underline;
+  color: var(--nutrient-specialist-primary);
+}
+
+.dish-management .remove-image-button {
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+  border: none;
+  cursor: pointer;
+  transition: var(--nutrient-specialist-transition);
+  flex: 0 1 auto;
+  min-width: 100px;
+}
+
+.dish-management .remove-image-button:hover:not(:disabled) {
+  background: #b71c1c;
+  transform: translateY(-2px);
+  box-shadow: var(--nutrient-specialist-shadow-hover);
+}
+
+.dish-management .remove-image-button:disabled {
+  background: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
 /* Food selection container */
 .dish-management .food-selection-container {
   display: grid;
@@ -589,6 +675,7 @@
   align-items: center;
   justify-content: space-between;
   transition: var(--nutrient-specialist-transition);
+  position: relative; /* Added to ensure checkmark positioning */
 }
 
 .dish-management .food-item:hover {
@@ -598,6 +685,7 @@
 .dish-management .food-item.selected {
   background: var(--nutrient-specialist-secondary);
   color: var(--nutrient-specialist-white);
+  border-color: var(--nutrient-specialist-primary); /* Slightly darker border for emphasis */
 }
 
 .dish-management .food-item .food-name {
@@ -605,11 +693,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1; /* Ensure food-name takes available space */
 }
 
 .dish-management .food-item .checkmark {
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700; /* Bolder for visibility */
+  color: var(--nutrient-specialist-highlight); /* Use highlight color for contrast */
+  width: 20px; /* Fixed width for consistency */
+  text-align: center; /* Center the checkmark */
+}
+
+/* Ensure checkmark is visible in dark theme */
+.dish-management.dark-theme .food-item .checkmark {
+  color: var(--nutrient-specialist-highlight); /* Yellow highlight for visibility */
+}
+
+/* Ensure checkmark is visible when selected */
+.dish-management .food-item.selected .checkmark {
+  color: var(--nutrient-specialist-white); /* White for contrast against secondary background */
+  background: var(--nutrient-specialist-primary); /* Small background circle for emphasis */
+  border-radius: 50%; /* Circular background */
+  padding: 2px 4px; /* Small padding for background */
+}
+
+/* Dark theme selected state */
+.dish-management.dark-theme .food-item.selected .checkmark {
+  color: var(--nutrient-specialist-white);
+  background: var(--nutrient-specialist-primary); /* Consistent with light theme */
 }
 
 .dish-management .food-details-container {
@@ -1128,6 +1239,20 @@
   .dish-management .nutrient-grid {
     grid-template-columns: 1fr;
   }
+
+  .dish-management .image-link-wrapper {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dish-management .image-link {
+    max-width: 100%;
+  }
+
+  .dish-management .remove-image-button {
+    width: 100%;
+    max-width: 150px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -1155,5 +1280,14 @@
 
   .dish-management .modal-dish-image {
     max-height: 150px;
+  }
+
+  .dish-management .image-link {
+    font-size: 0.8rem;
+  }
+
+  .dish-management .remove-image-button {
+    padding: 0.5rem;
+    font-size: 0.8rem;
   }
 }
