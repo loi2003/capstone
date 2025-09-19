@@ -5,7 +5,18 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import ChatBoxPage from "../../components/chatbox/ChatBoxPage";
 import "../../styles/ClinicList.css";
-import { FaSearch, FaMapMarkerAlt, FaPhone, FaUserMd, FaStethoscope, FaStar, FaFilter } from "react-icons/fa";
+import {
+  FaSearch,
+  FaMapMarkerAlt,
+  FaPhone,
+  FaUserMd,
+  FaStethoscope,
+  FaStar,
+  FaFilter,
+  FaCheck,
+} from "react-icons/fa";
+import { FaRegStar } from "react-icons/fa";
+import LoadingOverlay from "../../components/popup/LoadingOverlay";
 
 const CLINICS_PER_PAGE = 6;
 
@@ -39,7 +50,13 @@ const ClinicList = () => {
     const fetchClinics = async () => {
       try {
         const data = await getAllClinics();
-        setClinics(data.data || data);
+        setClinics(
+          Array.isArray(data?.data)
+            ? data.data
+            : Array.isArray(data)
+            ? data
+            : []
+        );
       } catch (err) {
         setError("Failed to fetch clinics.", err.message);
       } finally {
@@ -48,7 +65,7 @@ const ClinicList = () => {
     };
     fetchClinics();
   }, []);
-  
+
   const [specialization, setSpecialization] = useState("");
   const [insuranceOnly, setInsuranceOnly] = useState(false);
 
@@ -69,7 +86,10 @@ const ClinicList = () => {
           insuranceOnly,
         });
       }
-      setClinics(data.data || data);
+
+      setClinics(
+        Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+      );
       setCurrentPage(1);
     } catch (err) {
       setError("Failed to search clinics.");
@@ -83,51 +103,46 @@ const ClinicList = () => {
 
   const handleSeeMore = () => setCurrentPage((prev) => prev + 1);
 
-// Star rendering helper
   const renderStars = (stars) => {
     const filled = Math.floor(stars);
-    const half = stars - filled >= 0.5;
+
     return (
       <>
-        {[...Array(5)].map((_, i) => {
-          if (i < filled) {
-            return (
-              <span key={i} className="star" style={{ color: "#f7b801" }}>
-                &#9733;
-              </span>
-            );
-          } else if (i === filled && half) {
-            return (
-              <span
-                key={i}
-                className="star star-half"
-                style={{ color: "#f7b801" }}
-                aria-label="half star"
-              >
-                &#9733;
-              </span>
-            );
-          } else {
-            return (
-              <span
-                key={i}
-                className="star star-empty"
-                style={{ color: "#ccc" }}
-              >
-                &#9733;
-              </span>
-            );
-          }
-        })}
+        {[...Array(5)].map((_, i) =>
+          i < filled ? (
+            <FaStar key={i} style={{ color: "#f7b801", marginRight: "2px" }} />
+          ) : (
+            <FaRegStar key={i} style={{ color: "#ccc", marginRight: "2px" }} />
+          )
+        )}
       </>
     );
   };
 
+  // Add these state variables after your existing useState declarations
+  const [imageErrors, setImageErrors] = useState({});
+  const [imageLoading, setImageLoading] = useState({});
+
+  // Add these handler functions before your useEffect
+  const handleImageError = (imageId) => {
+    setImageErrors((prev) => ({ ...prev, [imageId]: true }));
+    setImageLoading((prev) => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageLoad = (imageId) => {
+    setImageLoading((prev) => ({ ...prev, [imageId]: false }));
+  };
+
+  const handleImageLoadStart = (imageId) => {
+    setImageLoading((prev) => ({ ...prev, [imageId]: true }));
+  };
+
   return (
     <div className="clinic-list-background-container">
+      <LoadingOverlay show={loading} />
       <MainLayout>
         {/* Hero Section */}
-        <motion.header 
+        <motion.header
           className="clinic-hero-section"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,15 +150,17 @@ const ClinicList = () => {
         >
           <div className="clinic-hero-content">
             <h1 className="clinic-hero-title">
-              Find Your Perfect 
+              Find Your Perfect
               <span className="clinic-hero-accent"> Healthcare Partner</span>
             </h1>
             <p className="clinic-hero-description">
-              Discover trusted clinics with verified ratings, experienced professionals, and comprehensive healthcare services tailored to your needs.
+              Discover trusted clinics with verified ratings, experienced
+              professionals, and comprehensive healthcare services tailored to
+              your needs.
             </p>
-            
+
             {/* Enhanced Search Section */}
-            <motion.form 
+            <motion.form
               className="clinic-search-container"
               onSubmit={handleSearch}
               initial={{ opacity: 0, y: 20 }}
@@ -161,14 +178,14 @@ const ClinicList = () => {
                     onChange={(e) => setSearch(e.target.value)}
                   />
                 </div>
-                <button 
+                {/* <button 
                   type="button" 
                   className="clinic-filter-toggle"
                   onClick={() => setShowFilters(!showFilters)}
                 >
                   <FaFilter />
                   Filters
-                </button>
+                </button> */}
                 <button type="submit" className="clinic-search-main-btn">
                   <FaSearch />
                   Search
@@ -176,7 +193,7 @@ const ClinicList = () => {
               </div>
 
               {/* Collapsible Filters */}
-              <motion.div 
+              {/* <motion.div 
                 className={`clinic-filters-panel ${showFilters ? 'expanded' : ''}`}
                 initial={false}
                 animate={{ height: showFilters ? 'auto' : 0, opacity: showFilters ? 1 : 0 }}
@@ -211,7 +228,7 @@ const ClinicList = () => {
                     </label>
                   </div>
                 </div>
-              </motion.div>
+              </motion.div> */}
             </motion.form>
           </div>
         </motion.header>
@@ -221,19 +238,15 @@ const ClinicList = () => {
           <div className="clinic-results-header">
             <div className="results-info">
               <h2 className="results-count">
-                {clinics.length} {clinics.length === 1 ? 'Clinic' : 'Clinics'} Found
+                {clinics.length} {clinics.length === 1 ? "Clinic" : "Clinics"}{" "}
+                Found
               </h2>
-              <p className="results-subtitle">Choose the best healthcare provider for you</p>
+              <p className="results-subtitle">
+                Choose the best healthcare provider for you
+              </p>
             </div>
           </div>
 
-          {loading && (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <p className="loading-text">Finding the best clinics for you...</p>
-            </div>
-          )}
-          
           {error && (
             <div className="error-container">
               <p className="error-text">{error}</p>
@@ -244,56 +257,91 @@ const ClinicList = () => {
             {clinicsToShow && clinicsToShow.length > 0
               ? clinicsToShow.map((clinic, index) => {
                   const { avg, count } = getStarRating(clinic.feedbacks);
-                  const consultantCount = clinic.consultants ? clinic.consultants.length : 0;
-                  const doctorCount = clinic.doctors ? clinic.doctors.length : 0;
-                  
+                  const consultantCount = clinic.consultants
+                    ? clinic.consultants.length
+                    : 0;
+                  const doctorCount = clinic.doctors
+                    ? clinic.doctors.length
+                    : 0;
+
                   return (
-                    <motion.div 
+                    <motion.div
                       className="clinic-card"
                       key={clinic.id}
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
-                      whileHover={{ y: -5, boxShadow: "0 20px 40px rgba(4, 102, 141, 0.15)" }}
+                      whileHover={{
+                        y: -5,
+                        boxShadow: "0 20px 40px rgba(4, 102, 141, 0.15)",
+                      }}
                     >
                       {/* Card Header */}
                       <div className="clinic-card-header">
                         <div className="clinic-image-container">
+                          {/* {imageLoading[`clinic-${clinic.id}`] && (
+                            <div className="image-loading-overlay">
+                              <div className="loading-spinner"></div>
+                            </div>
+                          )} */}
                           <img
                             src={
-                              clinic.imageUrl && clinic.imageUrl.fileUrl
-                                ? clinic.imageUrl.fileUrl
-                                : "/images/clinic-placeholder.png"
+                              clinic.imageUrl?.fileUrl ||
+                              "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
                             }
                             alt={clinic.name}
                             className="clinic-image"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              e.currentTarget.src =
+                                "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png";
+                            }}
                           />
+                          {/* {(imageErrors[`clinic-${clinic.id}`] ||
+                            !clinic.imageUrl?.fileUrl) && (
+                            <div className="clinic-list-placeholder-overlay">
+                              <svg
+                                className="clinic-list-placeholder-icon"
+                                viewBox="0 0 24 24"
+                                fill="currentColor"
+                              >
+                                <path d="M21 19V5c0-1.1-.9-2-2-2H5c-2 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                              </svg>
+                            </div>
+                          )} */}
                           <div className="clinic-badges">
                             {avg > 4 && (
                               <span className="clinic-badge premium">
-                                ⭐ Top Rated
+                                <FaStar /> Top Rated
                               </span>
                             )}
                             {clinic.isInsuranceAccepted && (
                               <span className="clinic-badge insurance">
-                                ✓ Insurance
+                                <FaCheck /> Insurance
                               </span>
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="clinic-header-info">
                           <h3 className="clinic-name">{clinic.name}</h3>
                           <div className="clinic-rating">
                             {renderStars(avg)}
-                            <span className="rating-score">{avg.toFixed(1)}</span>
-                            <span className="rating-count">({count} reviews)</span>
+                            <span className="rating-score">
+                              {avg.toFixed(1)}
+                            </span>
+                            <span className="rating-count">
+                              ({count} reviews)
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       {/* Card Body */}
                       <div className="clinic-card-body">
+                        <p className="clinic-name">
+                          {truncateText(clinic?.user?.userName)}
+                        </p>
                         <p className="clinic-description">
                           {truncateText(clinic.description)}
                         </p>
@@ -312,17 +360,31 @@ const ClinicList = () => {
                               {clinic.address}
                             </a>
                           </div>
-                          
+
                           <div className="clinic-detail-item">
                             <FaPhone className="detail-icon" />
                             <span>{clinic.user.phoneNo}</span>
                           </div>
-                          
+
                           <div className="clinic-detail-item">
                             <FaStethoscope className="detail-icon" />
-                            <span>{clinic.specializations || "General Practice"}</span>
+                            <div className="clinic-specializations">
+                              {clinic.specializations
+                                ? clinic.specializations
+                                    .split(";")
+                                    .filter((s) => s.trim() !== "")
+                                    .map((spec, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="specialization-badge"
+                                      >
+                                        {spec.trim()}
+                                      </span>
+                                    ))
+                                : "General Practice"}
+                            </div>
                           </div>
-                          
+
                           <div className="clinic-stats">
                             <div className="stat-item">
                               <FaUserMd className="stat-icon" />
@@ -355,7 +417,9 @@ const ClinicList = () => {
                     <div className="no-clinics-content">
                       <FaStethoscope className="no-clinics-icon" />
                       <h3>No Clinics Found</h3>
-                      <p>Try adjusting your search criteria or removing filters</p>
+                      <p>
+                        Try adjusting your search criteria or removing filters
+                      </p>
                     </div>
                   </div>
                 )}
@@ -363,8 +427,8 @@ const ClinicList = () => {
 
           {hasMore && (
             <div className="load-more-container">
-              <motion.button 
-                className="load-more-btn" 
+              <motion.button
+                className="load-more-btn"
                 onClick={handleSeeMore}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

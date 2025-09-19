@@ -23,6 +23,7 @@ import {
   FaComments,
 } from "react-icons/fa";
 import { IoTrashBinSharp } from 'react-icons/io5';
+import LoadingOverlay from "../components/popup/LoadingOverlay";
 
 const BlogPage = () => {
   // State management
@@ -457,29 +458,10 @@ const BlogPage = () => {
     [blogs]
   );
 
-  // Loading state
-  if (loading) {
-    return (
-      <div className="blog-page">
-        <div className="blog-page__container">
-          <div className="blog-page__loading">
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              style={{ display: "inline-block", marginRight: "10px" }}
-            >
-              ⟳
-            </motion.div>
-            Loading amazing content for you...
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="blog-page">
+        <LoadingOverlay show={loading} />
         <div className="blog-page__container">
           {/* Enhanced Header Section */}
           <motion.header
