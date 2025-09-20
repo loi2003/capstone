@@ -848,7 +848,8 @@
 
 .blog-page__auth-popup-btn,
 .blog-page__bookmark-popup-close {
-  background: var(--gradient-primary);
+  margin-top: 1rem;
+  background: #0d7aa5;
   color: var(--white);
   border: none;
   padding: 15px 30px;
@@ -870,12 +871,24 @@
 
 .blog-page__auth-popup-close {
   background: var(--color-general);
+  border: none;
+  padding: 15px 30px;
+  border-radius: var(--border-radius-large);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: var(--shadow-light);
+  text-decoration: none;
+  display: inline-block;
   color: var(--color-text);
 }
 
 .blog-page__auth-popup-close:hover {
-  background: var(--co-2);
+  background: #0D7AA5;
   color: var(--white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
 }
 
 /* Enhanced Loading & Error States */
@@ -969,7 +982,7 @@
 .blog-page__bookmark-header h3 {
   font-size: 1.8rem;
   margin: 0;
-  background: #0D7AA5;
+  background: #0d7aa5;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1143,7 +1156,7 @@
 
 .blog-page__auth-btn,
 .blog-page__explore-btn {
-  background: #0D7AA5;
+  background: #0d7aa5;
   color: var(--white);
   border: none;
   padding: 15px 30px;
@@ -1181,7 +1194,7 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
-  background: #0D7AA5;
+  background: #0d7aa5;
   color: var(--white);
   border: none;
   padding: 15px 20px;
@@ -1234,33 +1247,33 @@
     padding: 30px 20px;
     max-width: 95%;
   }
-  
+
   .blog-page__bookmark-header h3 {
     font-size: 1.5rem;
   }
-  
+
   .blog-page__bookmark-item {
     padding: 12px;
   }
-  
+
   .blog-page__bookmark-image {
     width: 50px;
     height: 50px;
   }
-  
+
   .blog-page__bookmark-title {
     font-size: 0.95rem;
   }
-  
+
   .blog-page__bookmark-excerpt {
     font-size: 0.85rem;
   }
-  
+
   .blog-page__bookmark-auth-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .blog-page__auth-btn,
   .blog-page__explore-btn {
     width: 100%;
@@ -1272,18 +1285,18 @@
   .blog-page__bookmark-popup-content {
     padding: 25px 15px;
   }
-  
+
   .blog-page__bookmark-item {
     padding: 10px;
     flex-direction: column;
     text-align: center;
   }
-  
+
   .blog-page__bookmark-image {
     margin-right: 0;
     margin-bottom: 10px;
   }
-  
+
   .blog-page__remove-bookmark {
     position: static;
     margin-top: 10px;

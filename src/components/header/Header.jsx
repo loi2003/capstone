@@ -6,10 +6,15 @@ import { viewNotificationsByUserId } from "../../apis/notification-api";
 import { getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
 import "./Header.css";
+import { set } from "lodash";
+import { FaIdCard, FaComments } from 'react-icons/fa';
+import { CgProfile } from 'react-icons/cg';
+import { FaCircleQuestion } from 'react-icons/fa6';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // const [showSubscription, setShowSubscription] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
@@ -138,6 +143,11 @@ const Header = () => {
     setIsDropdownOpen(false);
   };
 
+  // const toggleSubscription = () => {
+  //   setShowSubscription((prev) => !prev);
+  //   setIsDropdownOpen(false);
+  // };
+
   const handleNotificationClick = () => {
     setShowNotification(false);
     navigate("/notifications");
@@ -248,6 +258,7 @@ const Header = () => {
                       <span className="notification-count">{notifications.filter((n) => !n.isRead).length}</span>
                     )}
                   </button>
+                  
                 </div>
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
@@ -258,35 +269,22 @@ const Header = () => {
                     </div>
                     <div className="dropdown-content">
                       <Link to="/profile" className="dropdown-item">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                            fill="var(--primary-bg)"
-                          />
-                        </svg>
+                        <CgProfile />
                         <span>Profile</span>
                       </Link>
+                      <Link to="/subscriptionplan" className="dropdown-item">
+                        <FaIdCard />
+                        <span>Subscription</span>
+                      </Link>
+                      <Link to="/consultation-chat" className="dropdown-item">
+                        <FaComments />
+                        <span>Consultation Chat</span>
+                      </Link>
                       <Link to="/support" className="dropdown-item">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"
-                            fill="var(--primary-bg)"
-                          />
-                        </svg>
+                        <FaCircleQuestion />
                         <span>Support</span>
                       </Link>
+                      
                       <button onClick={handleLogout} className="dropdown-item logout-btn">
                         <svg
                           width="20"

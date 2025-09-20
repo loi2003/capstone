@@ -271,7 +271,7 @@ const NutritionalGuidance = () => {
               whileHover={{ y: -5 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             >
-              <FaCircleInfo size={32} style={{ color: 'var(--co-2)', marginBottom: '1rem' }} />
+              {/* <FaCircleInfo size={32} style={{ color: 'var(--co-2)', marginBottom: '1rem' }} /> */}
               <h4 style={{ color: 'var(--co-1)', marginBottom: '0.5rem' }}>
                 Need Personalized Advice?
               </h4>
@@ -306,7 +306,7 @@ const NutritionalGuidance = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
             >
-              <FaCircleInfo className="icon-info" />
+              {/* <FaCircleInfo className="icon-info" />   */}
               <strong>{currentData.subtitle}:</strong> {currentData.title === 'First Trimester' ? 
                 'Focus on foundational nutrients like folic acid and managing morning sickness.' :
                 currentData.title === 'Second Trimester' ?

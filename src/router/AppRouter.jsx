@@ -61,7 +61,10 @@ import DiseaseManagement from "../pages/nutrientspecialist/DiseaseManagement";
 import MealManagement from "../pages/nutrientspecialist/MealManagement";
 import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
-import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; 
+import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
+import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
+import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
+import ConsultationChat from "../components/consultationchat/ConsultationChat";
 import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
 import SystemConfigurationManagement from "../pages/admin/SystemConfigurationManagement";
 import PaymentManagement from "../pages/admin/PaymentManagement";
@@ -134,6 +137,9 @@ const AppRoutes = () => {
         <Route path="/pregnancy-tracking/system-meal-planner" element={<SystemMealPlanner />} />
         <Route path="/pregnancy-tracking/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
         <Route path="/pregnancy-tracking/nutritional-guidance-foodwarning" element={<FoodWarning />} />
+        <Route path="/subscriptionplan" element={<SubscriptionPlan />} />
+        <Route path="/checkout/:planId" element={<SubscriptionCheckout />} />
+
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
@@ -165,6 +171,7 @@ const AppRoutes = () => {
         <Route path="/clinic/:id" element={<ClinicDetail />} />
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
+        <Route path="/consultation-chat" element={<ConsultationChat />} />
       </Routes>
     </ThemeProvider>
   );

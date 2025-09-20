@@ -102,7 +102,7 @@
   overflow: hidden;
 }
 
-.clinic-header-banner::before {
+/* .clinic-header-banner::before {
   content: "";
   position: absolute;
   top: 0;
@@ -116,7 +116,7 @@
   );
   border-radius: 50px;
   transform: translateX(50px);
-}
+} */
 
 .clinic-header-logo {
   width: 200px;
@@ -169,7 +169,8 @@
 
 .clinic-header-location {
   display: flex;
-  align-items: center;
+  gap: 1rem;
+  align-items: flex-start;
   color: var(--co-2);
   font-weight: 600;
 }
@@ -198,7 +199,7 @@
   gap: 2rem;
   max-width: 1400px;
   width: calc(100% - 4rem);
-  margin: 0 auto;
+  margin: 50px auto;
   padding: 0 0 4rem 0;
   box-sizing: border-box;
   position: relative;
@@ -487,7 +488,7 @@
   padding: 2rem;
   box-shadow: var(--shadow-medium);
   position: sticky;
-  top: 2rem;
+  top: 7rem;
 }
 
 .clinic-booking-title {
@@ -783,22 +784,29 @@
 /* Feedback Modal Styles */
 .clinic-detail-give-feedback-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background-color: #1a73e8;
-  color: #fff;
+  top: 12px;
+  right: 12px;
+  width: 200px;
+  background: white;
+  color: var(--co-1);
+  border: 2px solid var(--co-1);
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
   font-weight: 600;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
+  justify-content: center;
   cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s ease;
-  max-width: fit-content;
+  display: flex;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .clinic-detail-give-feedback-btn:hover {
-  background-color: #1669c1;
+  background: var(--co-1);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
 }
 
 .clinic-feedback-modal-overlay {
@@ -946,13 +954,13 @@
 
 /* Animations */
 @keyframes fadeIn {
-  from { 
-    opacity: 0; 
-    transform: scale(0.95); 
+  from {
+    opacity: 0;
+    transform: scale(0.95);
   }
-  to { 
-    opacity: 1; 
-    transform: scale(1); 
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 

@@ -1,0 +1,383 @@
+/* Theme color settings */
+:root {
+  --color-main: #067dad;
+  --color-secondary: #038474;
+  --color-accent: #fe6b6a;
+  --color-general: #f4f4f4;
+  --color-text: #848785;
+  --light-text: #faf9f5;
+  --dark-text: #013f50;
+  --nguyen-primary-bg: #04668d;
+  --white-text: #fafafa;
+  --nguyen-accent-color: #038474;
+  --co-1: #04668d;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f9fbcf;
+  /* Additional theme colors */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--co-1) 0%,
+    var(--co-2) 50%,
+    var(--co-3) 100%
+  );
+  --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  --shadow-light: 0 4px 20px rgba(4, 102, 141, 0.08);
+  --shadow-medium: 0 8px 30px rgba(4, 102, 141, 0.12);
+  --shadow-heavy: 0 15px 40px rgba(4, 102, 141, 0.15);
+}
+
+.subscription-checkout {
+  /* margin-top: 3rem; */
+  min-height: 100vh;
+  background: var(--color-general);
+  padding: 40px 20px;
+}
+
+.checkout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.subscription-checkout-back-btn {
+  padding: 1rem 1.5rem;
+  width: 200px;
+  background: #036B8D;
+  color: white;
+  width: auto;
+  /* border: 2px dashed #04668d; */
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.subscription-checkout-back-btn:hover {
+  /* background: #04668d; */
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.checkout-header {
+  text-align: left;
+  margin-bottom: 40px;
+}
+
+.checkout-header h1 {
+  color: #013f50;
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--color-text);
+}
+
+.step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.step-text {
+  font-weight: 500;
+}
+
+.checkout-content {
+  display: grid;
+  grid-template-columns: 1fr 400px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* Payment Section - Left Side */
+.payment-section {
+  background: var(--gradient-card);
+  border-radius: 16px;
+  padding: 32px;
+  height: auto;
+  box-shadow: var(--shadow-medium);
+}
+
+.payment-header {
+  margin-bottom: 24px;
+}
+
+.payment-header h2 {
+  color: var(--dark-text);
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.payment-header p {
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  color: var(--dark-text);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.required {
+  color: var(--color-accent);
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text);
+  z-index: 1;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 8px;
+  font-size: 16px;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.input-with-icon input {
+  padding-left: 40px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--color-main);
+  box-shadow: 0 0 0 3px rgba(6, 125, 173, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.confirm-payment-btn {
+  background: #046E8E;
+  color: white;
+  border: none;
+  padding: 16px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+}
+
+.confirm-payment-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Plan Summary - Right Side */
+.plan-summary {
+  position: sticky;
+  top: 20px;
+}
+
+.plan-card {
+  background: var(--gradient-card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow-medium);
+  border: 1px solid rgba(6, 125, 173, 0.1);
+}
+
+.plan-header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(6, 125, 173, 0.1);
+  margin-bottom: 20px;
+}
+
+.plan-header h3 {
+  color: var(--dark-text);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+}
+
+.price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #013f50;
+}
+
+.period {
+  color: var(--color-text);
+  font-size: 1rem;
+}
+
+.plan-features {
+  margin-bottom: 24px;
+}
+
+.plan-features h4 {
+  color: var(--dark-text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.plan-features ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.plan-features li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  color: var(--color-text);
+}
+
+.feature-icon {
+  color: var(--color-secondary);
+  font-size: 12px;
+}
+
+.billing-summary {
+  padding: 20px 0;
+  border-top: 1px solid rgba(6, 125, 173, 0.1);
+}
+
+.billing-summary h4 {
+  color: var(--dark-text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.billing-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  color: var(--color-text);
+}
+
+.billing-row.total {
+  font-weight: 600;
+  color: var(--dark-text);
+  font-size: 1.1rem;
+  padding-top: 12px;
+}
+
+.billing-summary hr {
+  border: none;
+  height: 1px;
+  background: rgba(6, 125, 173, 0.1);
+  margin: 12px 0;
+}
+
+.billing-cycle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(6, 125, 173, 0.1);
+  color: var(--color-text);
+  font-size: 14px;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-main);
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .checkout-content {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .plan-summary {
+    order: -1;
+    position: static;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .checkout-header h1 {
+    font-size: 2rem;
+  }
+
+  .payment-section,
+  .plan-card {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .subscription-checkout {
+    padding: 20px 16px;
+  }
+
+  .checkout-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .payment-section,
+  .plan-card {
+    padding: 16px;
+  }
+}
