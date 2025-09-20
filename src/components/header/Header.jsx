@@ -1,5 +1,8 @@
+// src/components/Header.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { viewNotificationsByUserId } from "../../apis/notification-api";
 import { getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
 import "./Header.css";
@@ -14,9 +17,78 @@ const Header = () => {
   // const [showSubscription, setShowSubscription] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [user, setUser] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
   const dropdownRef = useRef(null);
+
+  const getAuthToken = () => {
+    return (
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("token") ||
+      localStorage.getItem("jwtToken") ||
+      localStorage.getItem("accessToken") ||
+      localStorage.getItem("jwt") ||
+      null
+    );
+  };
+
+  const fetchNotifications = async () => {
+    const token = getAuthToken();
+    if (!token) {
+      setError("Authentication token is missing. Please log in.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const userResponse = await getCurrentUser(token);
+      const userId = userResponse.data?.data?.id;
+      if (!userId) {
+        setError("Unable to fetch user ID. Please log in again.");
+        setLoading(false);
+        return;
+      }
+
+      const notificationResponse = await viewNotificationsByUserId(userId, token);
+      if (notificationResponse.error === 0 && Array.isArray(notificationResponse.data)) {
+        const notificationsWithId = notificationResponse.data.map((notif, index) => ({
+          ...notif,
+          id: notif.notificationId || notif.id || `notif-${index}`,
+        }));
+        setNotifications(notificationsWithId);
+      } else {
+        setNotifications([]);
+      }
+      setLoading(false);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message;
+      console.error("Error fetching notifications:", errorMessage);
+      setError(errorMessage);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const token = getAuthToken();
+    if (token) {
+      getCurrentUser(token)
+        .then((response) => {
+          const userId = response.data?.data?.id;
+          if (userId) {
+            setUser({ userId, email: response.data?.data?.email || "user@example.com" });
+            fetchNotifications();
+          } else {
+            setUser(null);
+          }
+        })
+        .catch((err) => {
+          console.error("Error fetching user:", err);
+          setUser(null);
+        });
+    }
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -27,32 +99,6 @@ const Header = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (token) {
-        try {
-          const response = await getCurrentUser(token);
-          const userData = response.data?.data;
-          if (userData && userData.roleId === 2) {
-            setUser(userData);
-            console.log("User info:", userData);
-          } else {
-            console.warn("Invalid user role or data:", userData);
-            localStorage.removeItem("token");
-            setUser(null);
-          }
-        } catch (error) {
-          console.error("Error fetching user:", error.message);
-          localStorage.removeItem("token");
-          setUser(null);
-        }
-      } else {
-        console.log("No token found in localStorage");
-      }
-    };
-    fetchUser();
   }, []);
 
   const toggleMenu = () => {
@@ -76,12 +122,8 @@ const Header = () => {
         window.scrollTo(0, parseInt(scrollY || "0") * -1);
       }
 
-      if (isDropdownOpen) {
-        setIsDropdownOpen(false);
-      }
-      if (showNotification) {
-        setShowNotification(false);
-      }
+      if (isDropdownOpen) setIsDropdownOpen(false);
+      if (showNotification) setShowNotification(false);
       return newState;
     });
   };
@@ -92,7 +134,12 @@ const Header = () => {
   };
 
   const toggleNotification = () => {
-    setShowNotification((prev) => !prev);
+    setShowNotification((prev) => {
+      if (!prev) {
+        fetchNotifications(); // Refetch notifications when opening the dropdown
+      }
+      return !prev;
+    });
     setIsDropdownOpen(false);
   };
 
@@ -107,31 +154,26 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    if (!user?.userId) {
-      localStorage.removeItem("token");
-      setUser(null);
-      navigate("/signin", { replace: true });
-      console.log("Logout without userId");
-      return;
-    }
-
     try {
-      console.log("Sending logout request for userId:", user.userId);
-      await apiClient.post("/api/auth/user/logout", user.userId, {
-        headers: { "Content-Type": "application/json" },
-      });
-      console.log("Logout successful");
+      if (user?.userId) {
+        await apiClient.post("/api/auth/user/logout", { userId: user.userId }, {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
     } catch (error) {
       console.error("Error during logout:", error.message);
     } finally {
       localStorage.removeItem("token");
       setUser(null);
+      setNotifications([]);
       setIsDropdownOpen(false);
       setIsMenuOpen(false);
       setShowNotification(false);
       navigate("/signin", { replace: true });
     }
   };
+
+  const hasNewNotifications = notifications.some((notif) => !notif.isRead);
 
   return (
     <header className="header">
@@ -163,7 +205,7 @@ const Header = () => {
             Nutrition
           </Link>
           <Link to="/clinic/list" title="Consultation">
-           Consultation Booking
+            Consultation Booking
           </Link>
           <Link to="/blog" title="Blog">
             Blog & Community
@@ -212,6 +254,9 @@ const Header = () => {
                         fill="var(--white)"
                       />
                     </svg>
+                    {hasNewNotifications && (
+                      <span className="notification-count">{notifications.filter((n) => !n.isRead).length}</span>
+                    )}
                   </button>
                   
                 </div>
@@ -264,27 +309,85 @@ const Header = () => {
                       <span className="dropdown-title">Notifications</span>
                     </div>
                     <div className="notification-content">
-                      <span className="notification-message">
-                        You have new notifications.
-                      </span>
-                      <button
-                        onClick={handleNotificationClick}
-                        className="dropdown-item notification-btn"
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                            fill="var(--primary-bg)"
-                          />
-                        </svg>
-                        <span>View Notifications</span>
-                      </button>
+                      {loading ? (
+                        <span className="notification-message">Loading notifications...</span>
+                      ) : error ? (
+                        <span className="notification-message">{error}</span>
+                      ) : notifications.length > 0 ? (
+                        <>
+                          <span className="notification-message">
+                            {hasNewNotifications ? "You have new notifications." : "All notifications are read."}
+                          </span>
+                          {notifications.map((notification, index) => (
+                            <div
+                              key={notification.id || `notif-${index}`}
+                              className={`notification-item ${notification.isRead ? "read" : "unread"}`}
+                              onClick={handleNotificationClick}
+                            >
+                              <div className="notification-icon">
+                                <svg
+                                  width="18"
+                                  height="18"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <path
+                                    d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.1-.9-2-2-2s-2 .9-2 2v.68C6.63 5.36 5 7.93 5 11v5l-1.29 1.29c-.63.63-.18 1.71.71 1.71h13.17c.89 0 1.34-1.08.71-1.71L18 16z"
+                                    fill="var(--white)"
+                                  />
+                                </svg>
+                              </div>
+                              <div className="notification-details">
+                                <span className="notification-title">{notification.message}</span>
+                                <span className="notification-time">
+                                  {new Date(notification.createdAt || Date.now()).toLocaleString()}
+                                </span>
+                              </div>
+                              {!notification.isRead && <span className="notification-dot" />}
+                            </div>
+                          ))}
+                          <div className="notification-actions">
+                            <button
+                              onClick={handleNotificationClick}
+                              className="notification-btn primary"
+                            >
+                              <svg
+                                width="18"
+                                height="18"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                                  fill="var(--white)"
+                                />
+                              </svg>
+                              <span>View All Notifications</span>
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="notification-empty">
+                          <div className="notification-empty-icon">
+                            <svg
+                              width="28"
+                              height="28"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.1-.9-2-2-2s-2 .9-2 2v.68C6.63 5.36 5 7.93 5 11v5l-1.29 1.29c-.63.63-.18 1.71.71 1.71h13.17c.89 0 1.34-1.08.71-1.71L18 16z"
+                                fill="var(--accent-color)"
+                              />
+                            </svg>
+                          </div>
+                          <span className="notification-empty-title">No Notifications</span>
+                          <span className="notification-empty-message">You don't have any notifications.</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

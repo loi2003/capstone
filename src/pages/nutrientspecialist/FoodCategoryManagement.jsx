@@ -332,7 +332,33 @@ const FoodCategoryManagement = () => {
   };
 
   const deleteCategoryHandler = async (id) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
+    const category = foodCategories.find((cat) => cat.id === id);
+    if (!category) {
+      showNotification("Category not found", "error");
+      return;
+    }
+
+    const foodCount = foodCounts.find((count) => count.categoryId === id)?.count || 0;
+    if (foodCount > 0) {
+      try {
+        const foodsData = await getAllFoods();
+        const foodsInCategory = foodsData.filter((food) => food.foodCategoryId === id);
+        const foodNames = foodsInCategory.map((food) => food.name).join(", ");
+        showNotification(
+          `Cannot delete category "${category.name}" because it contains the following foods: ${foodNames}. Please reassign or delete these foods first.`,
+          "error"
+        );
+        return;
+      } catch (err) {
+        showNotification(
+          `Failed to fetch foods for category "${category.name}". Please try again.`,
+          "error"
+        );
+        return;
+      }
+    }
+
+    if (window.confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
       setLoading(true);
       try {
         await deleteFoodCategory(id);

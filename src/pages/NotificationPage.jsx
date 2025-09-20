@@ -26,31 +26,32 @@ const NotificationPage = ({ userId: propUserId, token: propToken }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-  const fetchUserId = async () => {
-    if (!token) {
-      setError("Authentication token is missing. Please log in.");
-      setLoading(false);
-      return;
-    }
+    const fetchUserId = async () => {
+      if (!token) {
+        setError("Authentication token is missing. Please log in.");
+        setLoading(false);
+        return;
+      }
 
-    try {
-      const response = await getCurrentUser(token);
-      const fetchedUserId = response.data?.data?.id;
-      if (fetchedUserId) {
-        setUserId(fetchedUserId);
-      } else {
-        setError("Unable to fetch user ID. Please log in again.");
+      try {
+        const response = await getCurrentUser(token);
+        const fetchedUserId = response.data?.data?.id;
+        if (fetchedUserId) {
+          setUserId(fetchedUserId);
+        } else {
+          setError("Unable to fetch user ID. Please log in again.");
+          setLoading(false);
+        }
+      } catch (err) {
+        const errorMessage = err.response?.data?.message || err.message;
+        console.error("Failed to fetch user information:", errorMessage);
+        setError(`Failed to fetch user information: ${errorMessage}. Please log in again.`);
         setLoading(false);
       }
-    } catch (err) {
-      const errorMessage = err.response?.data?.message || err.message;
-      console.error("Failed to fetch user information:", errorMessage);
-      setError(`Failed to fetch user information: ${errorMessage}. Please log in again.`);
-      setLoading(false);
-    }
-  };
-  fetchUserId();
-}, [token]); // Remove userId from dependencies to avoid infinite loops
+    };
+    fetchUserId();
+  }, [token]);
+
   useEffect(() => {
     const fetchNotifications = async () => {
       if (!userId || !token) {
@@ -61,9 +62,8 @@ const NotificationPage = ({ userId: propUserId, token: propToken }) => {
 
       try {
         const response = await viewNotificationsByUserId(userId, token);
-        console.log("Notifications data:", response.data); // Debug log
+        console.log("Notifications data:", response.data);
         if (response.error === 0 && Array.isArray(response.data)) {
-          // Use notificationId or fallback to index-based ID
           const notificationsWithId = response.data.map((notif, index) => ({
             ...notif,
             id: notif.notificationId || notif.id || `notif-${index}`,
@@ -87,30 +87,30 @@ const NotificationPage = ({ userId: propUserId, token: propToken }) => {
   }, [userId, token]);
 
   const handleMarkAsRead = async (notificationId) => {
-  try {
-    await markNotificationAsRead(notificationId, token);
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === notificationId ? { ...notif, isRead: true } : notif
-      )
-    );
-  } catch (err) {
-    const errorMessage = err.message || "Failed to mark notification as read. Please try again.";
-    console.error(`Failed to mark notification ${notificationId} as read:`, err);
-    setError(errorMessage);
-  }
-};
+    try {
+      await markNotificationAsRead(notificationId, token);
+      setNotifications((prev) =>
+        prev.map((notif) =>
+          notif.id === notificationId ? { ...notif, isRead: true } : notif
+        )
+      );
+    } catch (err) {
+      const errorMessage = err.message || "Failed to mark notification as read. Please try again.";
+      console.error(`Failed to mark notification ${notificationId} as read:`, err);
+      setError(errorMessage);
+    }
+  };
 
-const handleDeleteNotification = async (notificationId) => {
-  try {
-    await deleteNotification(notificationId, token);
-    setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId));
-  } catch (err) {
-    const errorMessage = err.message || "Failed to delete notification. Please try again.";
-    console.error(`Failed to delete notification ${notificationId}:`, err);
-    setError(errorMessage);
-  }
-};
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await deleteNotification(notificationId, token);
+      setNotifications((prev) => prev.filter((notif) => notif.id !== notificationId));
+    } catch (err) {
+      const errorMessage = err.message || "Failed to delete notification. Please try again.";
+      console.error(`Failed to delete notification ${notificationId}:`, err);
+      setError(errorMessage);
+    }
+  };
 
   const handleClearNotifications = async () => {
     try {
@@ -205,24 +205,6 @@ const handleDeleteNotification = async (notificationId) => {
             </motion.button>
           )}
         </motion.div>
-
-        <footer className="notification-footer">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="footer-content"
-          >
-            <div className="footer-links">
-              <Link to="/about" className="footer-link">About</Link>
-              <Link to="/contact" className="footer-link">Contact</Link>
-              <Link to="/privacy" className="footer-link">Privacy Policy</Link>
-            </div>
-            <p className="footer-copyright">
-              &copy; {new Date().getFullYear()} Pregnancy Support. All rights reserved.
-            </p>
-          </motion.div>
-        </footer>
       </div>
     </MainLayout>
   );
