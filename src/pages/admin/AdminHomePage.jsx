@@ -268,6 +268,42 @@ const AdminHomePage = () => {
               {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/admin/system-configuration"
+              onClick={() => setIsSidebarOpen(true)}
+              title="System Configuration"
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path
+                  stroke="var(--admin-background)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 8a4 4 0 100 8 4 4 0 000-8zm0 0v-6m0 18v-6m6 0h6m-18 0H3"
+                />
+              </svg>
+              {isSidebarOpen && <span>System Configuration</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/admin/payment-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Payment Management"
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path
+                  stroke="var(--admin-background)"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M3 6h18v12H3zm4 4h10m-10 4h10"
+                />
+              </svg>
+              {isSidebarOpen && <span>Payment Management</span>}
+            </Link>
+          </motion.div>
           {user ? (
             <>
               <motion.div
@@ -288,13 +324,7 @@ const AdminHomePage = () => {
                     aria-label="User icon for profile"
                   >
                     <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
-        10 10 10-4.48 10-10S17.52 2 12 2zm0 
-        4c1.66 0 3 1.34 3 3s-1.34 
-        3-3 3-3-1.34-3-3 1.34-3 
-        3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
-        4-3.08 6-3.08 1.99 0 5.97 1.09 
-        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 4c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 12.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
                       fill="var(--admin-background)"
                     />
                   </svg>
