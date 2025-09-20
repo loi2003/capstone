@@ -18,7 +18,11 @@ import {
   FaHospital,
   FaPhone,
   FaVideo,
+  FaFile,
+  FaPaperclip,
+  FaTimes,
 } from "react-icons/fa";
+import { FaFileAlt } from 'react-icons/fa';
 import { HiPaperAirplane } from "react-icons/hi2";
 import LoadingOverlay from "../popup/LoadingOverlay";
 
@@ -45,20 +49,58 @@ const ConsultationChat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [sendingMessage, setSendingMessage] = useState(false);
   const [startingChat, setStartingChat] = useState(false);
-  useEffect(() => {
-    // console.log("=== DEBUG: chatThreads ===", chatThreads);
-    // console.log("=== DEBUG: consultants ===", consultants);
-    // console.log("=== DEBUG: filteredConsultants ===", filteredConsultants);
 
-    // Check key matching
-    Object.keys(chatThreads).forEach((threadKey) => {
-      console.log("Thread key:", threadKey);
-      const matchingConsultant = consultants.find(
-        (c) => c.user.id === threadKey
-      );
-      console.log("Matching consultant found:", !!matchingConsultant);
-    });
-  }, [chatThreads, consultants, searchTerm]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Size formatter
+  const formatBytes = (bytes) => {
+    if (!bytes && bytes !== 0) return "";
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0,
+      n = bytes;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+  };
+
+  // Map mime/extension to icon
+  const getFileIcon = (fileName, fileType) => {
+    const name = (fileName || "").toLowerCase();
+    const type = (fileType || "").toLowerCase();
+    if (type.includes("pdf") || name.endsWith(".pdf")) return "pdf";
+    if (
+      type.includes("word") ||
+      name.endsWith(".doc") ||
+      name.endsWith(".docx")
+    )
+      return "doc";
+    if (
+      type.includes("excel") ||
+      name.endsWith(".xls") ||
+      name.endsWith(".xlsx")
+    )
+      return "xls";
+    if (
+      type.startsWith("text/") ||
+      name.endsWith(".txt") ||
+      name.endsWith(".log")
+    )
+      return "txt";
+    return "file";
+  };
+
+  // Supported file extensions
+  const supportedImageTypes = [".jpg", ".jpeg", ".png"];
+  const supportedDocTypes = [".docx", ".xls", ".xlsx", ".pdf"];
+  const allSupportedTypes = [...supportedImageTypes, ...supportedDocTypes];
+
+  useEffect(() => {
+    console.log("=== DEBUG: chatThreads ===", chatThreads);
+  }, [chatThreads]);
 
   useEffect(() => {
     initializePage();
@@ -101,47 +143,19 @@ const ConsultationChat = () => {
       console.log("Loading threads for userId:", userId);
       const threadsResponse = await getChatThreadByUserId(userId, token);
 
-      // COMPREHENSIVE DEBUGGING
-      // console.log(
-      //   "📡 RAW API Response (full):",
-      //   JSON.stringify(threadsResponse, null, 2)
-      // );
-      // console.log("🔍 Response type:", typeof threadsResponse);
-      // console.log("🔍 Is Array?", Array.isArray(threadsResponse));
-      // console.log("🔍 Has error property?", "error" in threadsResponse);
-      // console.log("🔍 Has data property?", "data" in threadsResponse);
-
-      if (threadsResponse?.data) {
-        // console.log(
-        //   "📊 Response.data:"
-        //   JSON.stringify(threadsResponse.data, null, 2)
-        // );
-        // console.log("🔍 Data is Array?", Array.isArray(threadsResponse.data));
-        // console.log("🔢 Data length:", threadsResponse.data?.length);
-      }
-
       console.log("API response:", threadsResponse);
-      // console.log(
-      //   "Response type:",
-      //   typeof threadsResponse,
-      //   Array.isArray(threadsResponse)
-      // );
 
       // Handle different response structures
       let threads = [];
 
       if (Array.isArray(threadsResponse)) {
-        // Direct array of threads
         threads = threadsResponse;
       } else if (threadsResponse?.data && Array.isArray(threadsResponse.data)) {
-        // Wrapped in data property
         threads = threadsResponse.data;
       } else if (threadsResponse?.id && threadsResponse?.consultantId) {
-        // Single thread object - wrap in array
         threads = [threadsResponse];
       }
 
-      // console.log("📊 Processed threads:", threads);
       console.log("Number of threads:", threads.length);
 
       if (threads.length > 0) {
@@ -164,9 +178,35 @@ const ConsultationChat = () => {
             );
 
             const consultantData = consultantRes?.data || null;
+
+            // Process messages to include attachment data
+            const processedMessages = (thread.messages || []).map((msg) => {
+              // Check if message has attachment data from backend
+              if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                return {
+                  ...msg,
+                  attachment: {
+                    fileName:
+                      msg.attachmentFileName || msg.fileName || "Attachment",
+                    fileSize: msg.attachmentFileSize || msg.fileSize,
+                    fileType: msg.attachmentFileType || msg.fileType,
+                    isImage: isImageFile(
+                      msg.attachmentFileName || msg.fileName || ""
+                    ),
+                    // Use the URL from backend, not local filePreview
+                    url:
+                      msg.attachmentUrl ||
+                      msg.attachmentPath ||
+                      msg.attachment?.url,
+                  },
+                };
+              }
+              return msg;
+            });
+
             threadsMap[consultantId] = {
               thread,
-              messages: thread.messages || [],
+              messages: processedMessages,
               consultant: consultantData,
             };
           } catch (err) {
@@ -174,7 +214,6 @@ const ConsultationChat = () => {
           }
         }
 
-        // console.log("Final threadsMap:", threadsMap);
         setChatThreads(threadsMap);
       }
     } catch (error) {
@@ -271,6 +310,72 @@ const ConsultationChat = () => {
     }
   };
 
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    const fileExtension = "." + fileName.split(".").pop();
+
+    if (!allSupportedTypes.includes(fileExtension)) {
+      alert(
+        `Unsupported file type. Supported types: ${allSupportedTypes.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Create preview for images
+    if (supportedImageTypes.includes(fileExtension)) {
+      const reader = new FileReader();
+      reader.onload = (e) => setFilePreview(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const isImageFile = (fileName) => {
+    if (!fileName) return false;
+    const extension = "." + fileName.toLowerCase().split(".").pop();
+    return supportedImageTypes.includes(extension);
+  };
+
+  const refreshCurrentThread = async () => {
+    if (!selectedConsultant?.user?.id) return;
+    const consultantId = selectedConsultant.user.id;
+    const token = localStorage.getItem("token");
+    const threadsResponse = await getChatThreadByUserId(currentUserId, token);
+    let threads = [];
+    if (Array.isArray(threadsResponse)) threads = threadsResponse;
+    else if (threadsResponse?.data && Array.isArray(threadsResponse.data))
+      threads = threadsResponse.data;
+    const active = threads.find((t) => t.consultantId === consultantId);
+    if (active) {
+      setChatThreads((prev) => ({
+        ...prev,
+        [consultantId]: {
+          ...(prev[consultantId] || {}),
+          thread: active,
+          messages: active.messages || [],
+          consultant: (prev[consultantId] || {}).consultant,
+        },
+      }));
+    }
+  };
+
+  // Enhanced send message function with file support
   const handleSendMessage = async () => {
     const consultantId = selectedConsultant?.user?.id;
     const activeThread =
@@ -278,28 +383,70 @@ const ConsultationChat = () => {
         ? chatThreads[consultantId].thread
         : null;
 
-    if (!newMessage.trim() || !activeThread || sendingMessage) return;
+    if (
+      (!newMessage.trim() && !selectedFile) ||
+      !activeThread ||
+      sendingMessage
+    )
+      return;
+    if (!selectedFile) {
+      alert("Please attach a file to send");
+      return;
+    }
 
     try {
       setSendingMessage(true);
       const token = localStorage.getItem("token");
-
       const formData = new FormData();
+
       formData.append("ChatThreadId", activeThread.id);
       formData.append("SenderId", currentUserId);
-      formData.append("MessageText", newMessage.trim());
+
+      if (newMessage.trim()) {
+        formData.append("MessageText", newMessage.trim());
+      }
+
+      if (selectedFile) {
+        formData.append("Attachment", selectedFile);
+        // Also append metadata to help backend process
+        formData.append("AttachmentFileName", selectedFile.name);
+        formData.append("AttachmentFileType", selectedFile.type);
+        formData.append("AttachmentFileSize", selectedFile.size.toString());
+      }
 
       const response = await sendMessage(formData, token);
+      console.log("Send message response:", response);
 
       if (response.error === 0) {
+        // Extract attachment URL from response
+        const attachmentUrl =
+          response.data?.attachmentUrl ||
+          response.data?.attachmentPath ||
+          response.data?.attachment?.url;
+
         const newMsg = {
           id: response.data?.id || Date.now().toString(),
           senderId: currentUserId,
           receiverId: consultantId,
-          messageText: newMessage.trim(),
+          messageText: newMessage.trim() || "",
           createdAt: response.data?.sentAt || new Date().toISOString(),
-          messageType: response.data?.messageType || "text",
+          messageType: selectedFile ? "attachment" : "text",
           isRead: false,
+          // Store attachment data from backend response
+          attachmentUrl: attachmentUrl,
+          attachmentFileName: selectedFile?.name,
+          attachmentFileType: selectedFile?.type,
+          attachmentFileSize: selectedFile?.size,
+          attachment: selectedFile
+            ? {
+                fileName: selectedFile.name,
+                fileSize: selectedFile.size,
+                fileType: selectedFile.type,
+                isImage: isImageFile(selectedFile.name),
+                // Use backend URL if available, otherwise use local preview temporarily
+                url: attachmentUrl || filePreview,
+              }
+            : null,
         };
 
         setChatThreads((prevThreads) => ({
@@ -311,12 +458,157 @@ const ConsultationChat = () => {
         }));
 
         setNewMessage("");
+        clearSelectedFile();
+
+        // Optionally refresh the thread to get the latest data from backend
+        // This ensures the attachment URL is properly stored
+        setTimeout(async () => {
+          try {
+            const updatedThread = await getChatThreadById(
+              activeThread.id,
+              token
+            );
+            if (updatedThread?.data?.messages) {
+              const processedMessages = updatedThread.data.messages.map(
+                (msg) => {
+                  if (
+                    msg.attachmentUrl ||
+                    msg.attachmentPath ||
+                    msg.attachment
+                  ) {
+                    return {
+                      ...msg,
+                      attachment: {
+                        fileName:
+                          msg.attachmentFileName ||
+                          msg.fileName ||
+                          "Attachment",
+                        fileSize: msg.attachmentFileSize || msg.fileSize,
+                        fileType: msg.attachmentFileType || msg.fileType,
+                        isImage: isImageFile(
+                          msg.attachmentFileName || msg.fileName || ""
+                        ),
+                        url:
+                          msg.attachmentUrl ||
+                          msg.attachmentPath ||
+                          msg.attachment?.url,
+                      },
+                    };
+                  }
+                  return msg;
+                }
+              );
+
+              setChatThreads((prevThreads) => ({
+                ...prevThreads,
+                [consultantId]: {
+                  ...prevThreads[consultantId],
+                  messages: processedMessages,
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Error refreshing thread:", error);
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error("Error sending message:", error);
+      alert("Failed to send message. Please try again.");
     } finally {
       setSendingMessage(false);
     }
+  };
+
+  // Enhanced message rendering
+  const renderMessage = (msg, idx) => {
+    const isSent = msg.senderId === currentUserId;
+    const messageClass = isSent ? "sent" : "received";
+    const media = Array.isArray(msg.media) ? msg.media : [];
+    const hasAttachment = msg.attachment;
+
+    return (
+      <div key={idx} className={`consultation-chat-message ${messageClass}`}>
+        <div className="consultation-chat-message-content">
+          {(msg.messageText || msg.message) && (
+            <p>{msg.messageText || msg.message}</p>
+          )}
+
+          {/* Handle attachments (images + files) */}
+          {hasAttachment && (
+            <>
+              {msg.attachment.isImage ? (
+                <img
+                  src={msg.attachment.url}
+                  alt={msg.attachment.fileName}
+                  className="consultation-chat-attachment-image"
+                  onClick={() => window.open(msg.attachment.url, "_blank")}
+                />
+              ) : (
+                <div className="consultation-chat-attachment">
+                  <AttachmentCard att={msg.attachment} />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Legacy media array handling */}
+          {media.map((m, i) => {
+            const isImg = (m.fileType || "").startsWith("image/");
+            const url = m.fileUrl || m.url;
+            if (!url) return null;
+
+            return isImg ? (
+              <img
+                key={i}
+                src={url}
+                alt={`attachment-${i}`}
+                className="consultation-chat-attachment-image"
+                onClick={() => window.open(url, "_blank")}
+              />
+            ) : (
+              <a
+                key={i}
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="consultation-chat-attachment-document"
+              >
+                <FaFileAlt className="document-file-icon"/>
+                <span className="chat-attachment-name">
+                  {m.fileName || "Download file"}
+                </span>
+                
+              </a>
+            );
+          })}
+
+          <span className="consultation-chat-message-time">
+            {formatMessageTime(msg.createdAt)}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  const AttachmentCard = ({ att }) => {
+    if (!att?.url) return null;
+    const iconKey = getFileIcon(att.fileName, att.fileType);
+    const onClick = () => window.open(att.url, "_blank");
+    return (
+      <div
+        className={`msg-attach-card icon-${iconKey}`}
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="msg-attach-icon" aria-hidden />
+        <div className="msg-attach-meta">
+          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
+          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
+        </div>
+      </div>
+    );
   };
 
   const handleKeyPress = (e) => {
@@ -325,6 +617,7 @@ const ConsultationChat = () => {
       handleSendMessage();
     }
   };
+
   const formatMessageTime = (timestamp) => {
     if (!timestamp) return "";
 
@@ -378,16 +671,8 @@ const ConsultationChat = () => {
   } else {
     const consultantsWithThreads = consultants.filter((c) => {
       const consultantId = c.user?.id || c.id;
-      // console.log(
-      //   "🔍 Checking consultant ID:",
-      //   consultantId,
-      //   "Has thread:",
-      //   !!chatThreads[consultantId]
-      // );
       return chatThreads[consultantId];
     });
-
-    // console.log("✅ consultantsWithThreads result:", consultantsWithThreads);
 
     const searchFilter = (consultant) => {
       if (!searchTerm) return true;
@@ -419,7 +704,7 @@ const ConsultationChat = () => {
   if (loading) {
     return (
       <MainLayout>
-        <LoadingOverlay show={loading}/>
+        <LoadingOverlay show={loading} />
       </MainLayout>
     );
   }
@@ -427,12 +712,6 @@ const ConsultationChat = () => {
   return (
     <MainLayout>
       <div className="consultation-chat">
-        {/* <div className="consultation-chat-header">
-          <h1 className="consultation-chat-title">
-            <FaComments /> Consultations
-          </h1>
-        </div> */}
-
         <div className="consultation-chat-content">
           {/* Sidebar */}
           <div className="consultation-chat-sidebar">
@@ -558,18 +837,7 @@ const ConsultationChat = () => {
                       </button>
                     ) : (
                       <div className="consultation-chat-call-actions">
-                        {/* <button
-                          className="consultation-chat-call-btn"
-                          title="Voice Call"
-                        >
-                          <FaPhone />
-                        </button>
-                        <button
-                          className="consultation-chat-call-btn"
-                          title="Video Call"
-                        >
-                          <FaVideo />
-                        </button> */}
+                        {/* Voice/Video call buttons can be added here */}
                       </div>
                     )}
                   </div>
@@ -588,42 +856,76 @@ const ConsultationChat = () => {
                           </p>
                         </div>
                       ) : (
-                        activeMessages.map((msg, idx) => (
-                          <div
-                            key={msg.id || `msg-${idx}`}
-                            className={`consultation-chat-message ${
-                              msg.senderId === currentUserId
-                                ? "sent"
-                                : "received"
-                            }`}
-                          >
-                            <div className="consultation-chat-message-content">
-                              <p>{msg.messageText || msg.message || ""}</p>
-                              <span className="consultation-chat-message-time">
-                                {formatMessageTime(msg.createdAt || msg.sentAt || msg.timestamp)}
-                              </span>
-                            </div>
-                          </div>
-                        ))
+                        activeMessages.map((msg, idx) =>
+                          renderMessage(msg, idx)
+                        )
                       )}
                       <div ref={messagesEndRef} />
                     </div>
 
                     <div className="consultation-chat-input-area">
                       <div className="consultation-chat-input-container">
-                        <textarea
-                          placeholder="Type your message..."
-                          value={newMessage}
-                          onChange={(e) => setNewMessage(e.target.value)}
-                          onKeyPress={handleKeyPress}
-                        />
-                        <button
-                          onClick={handleSendMessage}
-                          disabled={!newMessage.trim() || sendingMessage}
-                          className="consultation-chat-send-btn"
-                        >
-                          <HiPaperAirplane />
-                        </button>
+                        {/* File preview section - now inside input container */}
+                        {selectedFile && (
+                          <div className="consultation-chat-file-preview">
+                            <div className="consultation-chat-file-preview-content">
+                              {filePreview ? (
+                                <img
+                                  src={filePreview}
+                                  alt="Preview"
+                                  className="consultation-chat-file-preview-image"
+                                />
+                              ) : (
+                                <div className="consultation-chat-file-preview-document">
+                                  <FaFile />
+                                  <span>{selectedFile.name}</span>
+                                </div>
+                              )}
+                              <button
+                                type="button"
+                                onClick={clearSelectedFile}
+                                className="consultation-chat-file-preview-remove"
+                              >
+                                <FaTimes />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Input row with controls */}
+                        <div className="consultation-chat-input-row">
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileSelect}
+                            accept={allSupportedTypes.join(",")}
+                            style={{ display: "none" }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="consultation-chat-attachment-btn"
+                            title="Attach file"
+                          >
+                            <FaPaperclip />
+                          </button>
+                          <textarea
+                            placeholder="Type your message..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            onKeyPress={handleKeyPress}
+                          />
+                          <button
+                            onClick={handleSendMessage}
+                            disabled={
+                              (!newMessage.trim() && !selectedFile) ||
+                              sendingMessage
+                            }
+                            className="consultation-chat-send-btn"
+                          >
+                            <HiPaperAirplane />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </>
