@@ -633,7 +633,7 @@
   flex-direction: column;
   min-height: 300px;
   height: 100%;
-  overflow-y: auto;     /* always scrollable */
+  overflow-y: auto; /* always scrollable */
   overflow-x: hidden;
 }
 
@@ -730,7 +730,7 @@
 }
 
 .consultation-chat-message.sent .consultation-chat-message-content {
-  background: #1C80A2;
+  background: #1c80a2;
   color: white;
   border-bottom-right-radius: 6px;
 }
@@ -772,7 +772,7 @@
 .consultation-chat-input-container {
   display: flex;
   flex-direction: column;
-  background: #FDFDFD;
+  background: #fdfdfd;
   border-radius: 25px;
   box-shadow: var(--shadow-light);
   border: 2px solid rgba(13, 122, 165, 0.1);
@@ -796,7 +796,7 @@
   font-size: 14px;
   max-height: 120px;
   min-height: 44px;
-  background: #FDFDFD;
+  background: #fdfdfd;
   line-height: 1.4;
   transition: var(--transition);
 }
@@ -1092,6 +1092,93 @@
 .consultation-chat-attachment-name {
   font-weight: 500;
   opacity: 0.9;
+}
+
+/* Attachment card */
+.consultation-chat-attachment-document {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bubble-bg, #1c80a2);
+  color: var(--bubble-fg, #e8ecf1);
+  border: solid 1px #ffffff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  max-width: 260px;
+  user-select: none;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.consultation-chat-attachment-document .document-file-icon {
+  font-size: 1rem;
+}
+
+.chat-attachment-name {
+  font-size: 1rem;
+}
+.consultation-chat-attachment-document:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.consultation-chat-attachment-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  flex: 0 0 36px;
+}
+/* Simple icon variants by type */
+.icon-pdf .consultation-chat-attachment-icon {
+  background: #b71c1c33;
+}
+.icon-doc .consultation-chat-attachment-icon {
+  background: #1a73e833;
+}
+.icon-xls .consultation-chat-attachment-icon {
+  background: #0f9d5833;
+}
+.icon-txt .consultation-chat-attachment-icon {
+  background: #9aa0a633;
+}
+.icon-file .consultation-chat-attachment-icon {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.consultation-chat-attachment-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.consultation-chat-attachment-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.consultation-chat-attachment-size {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.consultation-chat-attachment-image {
+  max-width: 260px;
+  border-radius: 12px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+/* Make cards align like bubbles */
+.consultation-chat-message.sent .consultation-chat-attachment-document,
+.consultation-chat-message.sent .consultation-chat-attachment-image {
+  margin-left: auto;
+}
+.consultation-chat-message.received .consultation-chat-attachment-document,
+.consultation-chat-message.received .consultation-chat-attachment-image {
+  margin-right: auto;
 }
 
 /* Responsive adjustments for file preview */

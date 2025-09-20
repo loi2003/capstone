@@ -22,6 +22,7 @@ import {
   FaPaperclip,
   FaTimes,
 } from "react-icons/fa";
+import { FaFileAlt } from 'react-icons/fa';
 import { HiPaperAirplane } from "react-icons/hi2";
 import LoadingOverlay from "../popup/LoadingOverlay";
 
@@ -52,6 +53,45 @@ const ConsultationChat = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const fileInputRef = useRef(null);
+
+  // Size formatter
+  const formatBytes = (bytes) => {
+    if (!bytes && bytes !== 0) return "";
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0,
+      n = bytes;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
+  };
+
+  // Map mime/extension to icon
+  const getFileIcon = (fileName, fileType) => {
+    const name = (fileName || "").toLowerCase();
+    const type = (fileType || "").toLowerCase();
+    if (type.includes("pdf") || name.endsWith(".pdf")) return "pdf";
+    if (
+      type.includes("word") ||
+      name.endsWith(".doc") ||
+      name.endsWith(".docx")
+    )
+      return "doc";
+    if (
+      type.includes("excel") ||
+      name.endsWith(".xls") ||
+      name.endsWith(".xlsx")
+    )
+      return "xls";
+    if (
+      type.startsWith("text/") ||
+      name.endsWith(".txt") ||
+      name.endsWith(".log")
+    )
+      return "txt";
+    return "file";
+  };
 
   // Supported file extensions
   const supportedImageTypes = [".jpg", ".jpeg", ".png"];
@@ -349,6 +389,10 @@ const ConsultationChat = () => {
       sendingMessage
     )
       return;
+    if (!selectedFile) {
+      alert("Please attach a file to send");
+      return;
+    }
 
     try {
       setSendingMessage(true);
@@ -481,6 +525,7 @@ const ConsultationChat = () => {
     const isSent = msg.senderId === currentUserId;
     const messageClass = isSent ? "sent" : "received";
     const media = Array.isArray(msg.media) ? msg.media : [];
+    const hasAttachment = msg.attachment;
 
     return (
       <div key={idx} className={`consultation-chat-message ${messageClass}`}>
@@ -489,6 +534,25 @@ const ConsultationChat = () => {
             <p>{msg.messageText || msg.message}</p>
           )}
 
+          {/* Handle attachments (images + files) */}
+          {hasAttachment && (
+            <>
+              {msg.attachment.isImage ? (
+                <img
+                  src={msg.attachment.url}
+                  alt={msg.attachment.fileName}
+                  className="consultation-chat-attachment-image"
+                  onClick={() => window.open(msg.attachment.url, "_blank")}
+                />
+              ) : (
+                <div className="consultation-chat-attachment">
+                  <AttachmentCard att={msg.attachment} />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Legacy media array handling */}
           {media.map((m, i) => {
             const isImg = (m.fileType || "").startsWith("image/");
             const url = m.fileUrl || m.url;
@@ -510,7 +574,11 @@ const ConsultationChat = () => {
                 rel="noreferrer"
                 className="consultation-chat-attachment-document"
               >
-                {m.fileName || "Download file"}
+                <FaFileAlt className="document-file-icon"/>
+                <span className="chat-attachment-name">
+                  {m.fileName || "Download file"}
+                </span>
+                
               </a>
             );
           })}
@@ -518,6 +586,26 @@ const ConsultationChat = () => {
           <span className="consultation-chat-message-time">
             {formatMessageTime(msg.createdAt)}
           </span>
+        </div>
+      </div>
+    );
+  };
+
+  const AttachmentCard = ({ att }) => {
+    if (!att?.url) return null;
+    const iconKey = getFileIcon(att.fileName, att.fileType);
+    const onClick = () => window.open(att.url, "_blank");
+    return (
+      <div
+        className={`msg-attach-card icon-${iconKey}`}
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="msg-attach-icon" aria-hidden />
+        <div className="msg-attach-meta">
+          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
+          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
         </div>
       </div>
     );
