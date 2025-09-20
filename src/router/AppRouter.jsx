@@ -63,7 +63,8 @@ import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
 import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; 
 import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
-
+import SystemConfigurationManagement from "../pages/admin/SystemConfigurationManagement";
+import PaymentManagement from "../pages/admin/PaymentManagement";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -89,6 +90,8 @@ const AppRoutes = () => {
         <Route path="/admin" element={<AdminHomePage />} />
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
+        <Route path="/admin/system-configuration" element={<SystemConfigurationManagement />} />
+        <Route path="/admin/payment-management" element={<PaymentManagement />} />
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
