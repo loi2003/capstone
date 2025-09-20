@@ -1,20 +1,44 @@
 /* Theme color settings */
 :root {
-  --color-main: #067dad;
+  --color-main: #0d7aa5;
   --color-secondary: #038474;
   --color-accent: #fe6b6a;
   --color-general: #f4f4f4;
   --color-text: #848785;
   --light-text: #faf9f5;
   --dark-text: #013f50;
-  --nguyen-primary-bg: #04668D;
   --white-text: #fafafa;
-  --nguyen-accent-color: #038474;
-  --co-1: #04668D;
-  --co-2: #02808F;
-  --co-3: #00A996;
-  --co-4: #03C39A;
-  --co-5: #F0F3BE;
+  --co-1: #0d7aa5;
+  --co-2: #02808f;
+  --co-3: #00a996;
+  --co-4: #03c39a;
+  --co-5: #f9fbcf;
+
+  /* Enhanced theme colors */
+  --gradient-primary: linear-gradient(
+    135deg,
+    var(--co-1) 0%,
+    var(--co-2) 50%,
+    var(--co-3) 100%
+  );
+  --gradient-card: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  --gradient-message-sent: linear-gradient(
+    135deg,
+    var(--co-1) 0%,
+    var(--co-2) 100%
+  );
+  --gradient-message-received: linear-gradient(
+    135deg,
+    #f8f9fa 0%,
+    #e9ecef 100%
+  );
+  --shadow-light: 0 4px 20px rgba(13, 122, 165, 0.08);
+  --shadow-medium: 0 8px 30px rgba(13, 122, 165, 0.12);
+  --shadow-heavy: 0 15px 40px rgba(13, 122, 165, 0.15);
+  --shadow-message: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --border-radius: 12px;
+  --border-radius-small: 8px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Layout Utilities */
 .center-all {
