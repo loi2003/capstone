@@ -71,7 +71,7 @@ export const NotificationProvider = ({ children }) => {
 
     connection
       .start()
-      .then(() => console.log("SignalR connected"))
+      .then(() => console.log("NotificationHub connected"))
       .catch((err) =>
         console.error("Failed to connect to SignalR:", err.message)
       );

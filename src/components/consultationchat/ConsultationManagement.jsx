@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import * as signalR from "@microsoft/signalr";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   startChatThread,
@@ -26,11 +27,13 @@ import {
 import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
 import LoadingOverlay from "../popup/LoadingOverlay";
+import { useMessages } from "../../utils/useMessages";
 
 const ConsultationManagement = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const messagesEndRef = useRef(null);
+  const { connection, messages, addMessage } = useMessages();
 
   // State management
   const [currentConsultantId, setCurrentConsultantId] = useState(null);
@@ -45,6 +48,19 @@ const ConsultationManagement = () => {
   const [filePreview, setFilePreview] = useState(null);
   const fileInputRef = useRef(null);
   const [filterStatus, setFilterStatus] = useState("all"); // all, unread, active
+
+  const scrollToBottom = () => {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      }
+    });
+  };
 
   // File handling utilities (copied from original)
   const formatBytes = (bytes) => {
@@ -102,7 +118,6 @@ const ConsultationManagement = () => {
         return;
       }
 
-      // Get current consultant info (consultant is a user with role = 6)
       const consultantRes = await getCurrentUser(token);
       const consultantData =
         consultantRes?.data?.data || consultantRes?.data || consultantRes;
@@ -114,12 +129,13 @@ const ConsultationManagement = () => {
         return;
       }
 
-      // Verify this is actually a consultant (role = 6)
       if (consultantData.roleId !== 6) {
         console.error("User is not a consultant, role:", consultantData.roleId);
-        navigate("/"); // Redirect to appropriate page
+        navigate("/");
         return;
       }
+
+      localStorage.setItem("userId", consultantId);
 
       console.log("Current consultant:", consultantData);
       setCurrentConsultantId(consultantId);
@@ -328,6 +344,18 @@ const ConsultationManagement = () => {
 
   // Send message function
   const handleSendMessage = async () => {
+    console.log("Connection object:", connection);
+    console.log("Connection state:", connection?.state);
+    console.log("Expected state:", signalR.HubConnectionState.Connected);
+
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
+      console.error("SignalR connection not established");
+      alert("Connection lost. Please refresh the page.");
+      return;
+    }
     const patientUserId = selectedThread?.patientUserId;
     const activeThread = selectedThread?.thread;
 
@@ -357,7 +385,7 @@ const ConsultationManagement = () => {
       }
 
       if (selectedFile) {
-        formData.append("Attachment", selectedFile);
+        formData.append("Attachments", selectedFile);
         formData.append("AttachmentFileName", selectedFile.name);
         formData.append("AttachmentFileType", selectedFile.type);
         formData.append("AttachmentFileSize", selectedFile.size.toString());
@@ -412,9 +440,10 @@ const ConsultationManagement = () => {
         setNewMessage("");
         clearSelectedFile();
 
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
+        // setTimeout(() => {
+        //   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        // }, 100);
+        scrollToBottom();
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -429,6 +458,10 @@ const ConsultationManagement = () => {
     const isSent = msg.senderId === currentConsultantId;
     const messageClass = isSent ? "sent" : "received";
     const hasAttachment = msg.attachment;
+    const media = Array.isArray(msg.media) ? msg.media : [];
+
+    // Prioritize attachment object over media array to prevent duplicates
+    const shouldRenderMedia = !hasAttachment && media.length > 0;
 
     return (
       <div
@@ -438,6 +471,7 @@ const ConsultationManagement = () => {
         <div className="consultation-management-message-content">
           {msg.messageText && <p>{msg.messageText}</p>}
 
+          {/* Handle attachment object (priority) */}
           {hasAttachment &&
             (msg.attachment.isImage ? (
               <img
@@ -447,10 +481,70 @@ const ConsultationManagement = () => {
                 onClick={() => window.open(msg.attachment.url, "_blank")}
               />
             ) : (
-              <div className="consultation-management-attachment">
-                <AttachmentCard att={msg.attachment} />
+              // *** REPLACE AttachmentCard with direct document rendering ***
+              <div className="consultation-management-attachment-document">
+                <a
+                  href={msg.attachment.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="consultation-management-attachment-link"
+                >
+                  <div className="consultation-management-attachment-info">
+                    <FaFileAlt className="consultation-management-document-file-icon" />
+                    <div className="consultation-management-attachment-details">
+                      <span className="consultation-management-attachment-name">
+                        {msg.attachment.fileName}
+                      </span>
+                      {/* <span className="consultation-management-attachment-size">
+                      {formatBytes(msg.attachment.fileSize)}
+                    </span> */}
+                    </div>
+                  </div>
+                </a>
               </div>
             ))}
+
+          {/* Handle media array only if no attachment object exists */}
+          {shouldRenderMedia &&
+            media.map((m, i) => {
+              const isImg = m.fileType?.startsWith("image");
+              const url = m.fileUrl || m.url;
+              if (!url) return null;
+
+              return isImg ? (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`attachment-${i}`}
+                  className="consultation-management-attachment-image"
+                  onClick={() => window.open(url, "_blank")}
+                />
+              ) : (
+                <div
+                  key={i}
+                  className="consultation-management-attachment-document"
+                >
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="consultation-management-attachment-link"
+                  >
+                    <div className="consultation-management-attachment-info">
+                      <FaFileAlt className="consultation-management-document-file-icon" />
+                      <div className="consultation-management-attachment-details">
+                        <span className="consultation-management-attachment-name">
+                          {m.fileName}
+                        </span>
+                        {/* <span className="consultation-management-attachment-size">
+                          {formatBytes(m.fileSize)}
+                        </span> */}
+                      </div>
+                    </div>
+                  </a>
+                </div>
+              );
+            })}
 
           <span className="consultation-management-message-time">
             {formatMessageTime(msg.createdAt)}
@@ -536,9 +630,7 @@ const ConsultationManagement = () => {
           thread.user?.userName
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          thread.user?.email
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          thread.user?.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -558,6 +650,127 @@ const ConsultationManagement = () => {
 
     return filtered;
   };
+
+  useEffect(() => {
+    if (connection && selectedThread?.thread?.id) {
+      console.log("Joining thread:", selectedThread.thread.id);
+      connection
+        .invoke("JoinThread", selectedThread.thread.id)
+        .then(() => console.log("Successfully joined thread"))
+        .catch((err) => console.error("JoinThread failed:", err));
+    }
+  }, [connection, selectedThread]);
+
+  // Add this useEffect to handle incoming real-time messages
+  // In ConsultationManagement.jsx, update the useEffect for messages
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const latest = messages[messages.length - 1];
+    console.log(
+      "Processing incoming message in ConsultationManagement:",
+      latest
+    );
+
+    if (selectedThread?.patientUserId) {
+      const patientUserId = selectedThread.patientUserId;
+
+      // Try to join the thread (if needed)
+      if (
+        connection &&
+        connection.state === signalR.HubConnectionState.Connected
+      ) {
+        const threadId = selectedThread.thread?.id;
+        if (threadId) {
+          console.log("Joining thread:", threadId);
+          connection
+            .invoke("JoinThread", threadId)
+            .then(() => console.log("Successfully joined thread"))
+            .catch((err) => console.error("Failed to join thread:", err));
+        }
+      }
+
+      setChatThreads((prev) => {
+        const existingMessages = prev[patientUserId]?.messages || [];
+
+        // *** ADD THIS DUPLICATE CHECK ***
+        const messageExists = existingMessages.some((m) => m.id === latest.id);
+        if (messageExists) {
+          console.log("Message already exists in thread, skipping:", latest.id);
+          return prev;
+        }
+
+        console.log("Adding new message to thread for patient:", patientUserId);
+
+        // Process the message for attachments
+        const processedMessage = { ...latest };
+        if (
+          latest.media &&
+          Array.isArray(latest.media) &&
+          latest.media.length > 0
+        ) {
+          const firstMedia = latest.media[0];
+          processedMessage.attachment = {
+            fileName: firstMedia.fileName || "Attachment",
+            fileSize: firstMedia.fileSize,
+            fileType: firstMedia.fileType,
+            isImage: isImageFile(firstMedia.fileName),
+            url: firstMedia.fileUrl || firstMedia.url,
+          };
+        }
+
+        return {
+          ...prev,
+          [patientUserId]: {
+            ...prev[patientUserId],
+            messages: [...existingMessages, processedMessage],
+            lastActivity: latest.createdAt || latest.sentAt,
+          },
+        };
+      });
+
+      // Update selectedThread if this is the active thread
+      setSelectedThread((prev) => {
+        if (prev?.patientUserId === patientUserId) {
+          const existingMessages = prev.messages || [];
+          const messageExists = existingMessages.some(
+            (m) => m.id === latest.id
+          );
+          if (!messageExists) {
+            const processedMessage = { ...latest };
+            if (
+              latest.media &&
+              Array.isArray(latest.media) &&
+              latest.media.length > 0
+            ) {
+              const firstMedia = latest.media[0];
+              processedMessage.attachment = {
+                fileName: firstMedia.fileName || "Attachment",
+                fileSize: firstMedia.fileSize,
+                fileType: firstMedia.fileType,
+                isImage: isImageFile(firstMedia.fileName),
+                url: firstMedia.fileUrl || firstMedia.url,
+              };
+            }
+
+            return {
+              ...prev,
+              messages: [...existingMessages, processedMessage],
+            };
+          }
+        }
+        return prev;
+      });
+
+      // Auto scroll to bottom
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [
+    messages,
+    selectedThread?.patientUserId,
+    currentConsultantId,
+    connection,
+  ]);
 
   const filteredThreads = getFilteredThreads();
 

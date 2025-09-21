@@ -338,6 +338,7 @@
   padding: 20px 24px;
   background: #fafbfc;
   scroll-behavior: smooth;
+  padding-bottom: 20px; 
 }
 
 .consultation-management-message {
@@ -419,7 +420,7 @@
   margin-top: 8px;
 }
 
-/* Attachment card */
+/* Attachment card
 .msg-attach-card {
   display: flex;
   align-items: center;
@@ -491,7 +492,7 @@
 .msg-attach-size {
   font-size: 11px;
   opacity: 0.7;
-}
+} */
 
 /* Empty messages */
 .consultation-management-empty-messages {
@@ -565,9 +566,14 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 8px 12px;
+  background: white;
+  border-radius: var(--border-radius-small);
+  border: 1px solid rgba(13, 122, 165, 0.2);
+  color: var(--dark-text);
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 250px;
 }
 
 .consultation-management-file-preview-document svg {
@@ -617,18 +623,20 @@
 }
 
 .consultation-management-attachment-btn {
-  width: 44px;
+  font-size: 1.5rem;
   background: none;
+  color: #167995;
   border: none;
-  color: #64748b;
-  font-size: 18px;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-light);
 }
 
 .consultation-management-attachment-btn:hover {
@@ -656,20 +664,20 @@
 }
 
 .consultation-management-send-btn {
-  background: linear-gradient(135deg, #167995 0%, #1c7d98 100%);
+  font-size: 2rem;
+  background: #117ba2;
   color: white;
   border: none;
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
   cursor: pointer;
-  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(22, 121, 149, 0.3);
-  width: 44px;
-  height: 44px;
+  transition: var(--transition);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-light);
 }
 
 .consultation-management-send-btn:hover:not(:disabled) {
@@ -715,6 +723,147 @@
   line-height: 1.5;
   max-width: 400px;
 }
+
+
+.consultation-management-attachment {
+  margin-top: 8px;
+}
+
+.consultation-management-attachment-image {
+  max-width: 250px;
+  max-height: 200px;
+  border-radius: var(--border-radius-small);
+  object-fit: cover;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.consultation-management-message.sent .consultation-management-attachment-image {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.consultation-management-message.received .consultation-management-attachment-image {
+  border-color: rgba(13, 122, 165, 0.2);
+}
+
+.consultation-management-attachment-image:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-medium);
+}
+
+.consultation-management-attachment-document {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-small);
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.consultation-management-message.received .consultation-management-attachment-document {
+  background: rgba(13, 122, 165, 0.1);
+}
+
+.consultation-management-attachment-icon {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.consultation-management-attachment-name {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Attachment card */
+.consultation-management-attachment-document {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bubble-bg, #1c80a2);
+  color: var(--bubble-fg, #e8ecf1);
+  border: solid 1px #ffffff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  max-width: 260px;
+  user-select: none;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.consultation-management-attachment-document .document-file-icon {
+  font-size: 1rem;
+}
+
+.consultation-management-attachment-name {
+  font-size: 1rem;
+}
+.consultation-management-attachment-document:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.consultation-management-attachment-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  flex: 0 0 36px;
+}
+/* Simple icon variants by type */
+.icon-pdf .consultation-management-attachment-icon {
+  background: #b71c1c33;
+}
+.icon-doc .consultation-management-attachment-icon {
+  background: #1a73e833;
+}
+.icon-xls .consultation-management-attachment-icon {
+  background: #0f9d5833;
+}
+.icon-txt .consultation-management-attachment-icon {
+  background: #9aa0a633;
+}
+.icon-file .consultation-management-attachment-icon {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.consultation-management-attachment-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.consultation-management-attachment-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.consultation-management-attachment-size {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.consultation-management-attachment-image {
+  max-width: 260px;
+  border-radius: 12px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+/* Make cards align like bubbles */
+.consultation-management-message.sent .consultation-management-attachment-document,
+.consultation-management-message.sent .consultation-management-attachment-image {
+  margin-left: auto;
+}
+.consultation-management-message.received .consultation-management-attachment-document,
+.consultation-management-message.received .consultation-management-attachment-image {
+  margin-right: auto;
+}
+
 
 /* Responsive design */
 @media (max-width: 1024px) {
