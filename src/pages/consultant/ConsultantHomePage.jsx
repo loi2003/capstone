@@ -351,6 +351,16 @@ const ConsultantHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/consultation/consultation-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Consultation Chat"
+            >
+              <span>👥</span>
+              {isSidebarOpen && <span>Consultation Chat</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <button
               className="sidebar-action-button"
               title="Add Consultation"

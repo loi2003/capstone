@@ -389,10 +389,10 @@ const ConsultationChat = () => {
       sendingMessage
     )
       return;
-    if (!selectedFile) {
-      alert("Please attach a file to send");
-      return;
-    }
+    // if (!selectedFile) {
+    //   alert("Please attach a file to send");
+    //   return;
+    // }
 
     try {
       setSendingMessage(true);

@@ -66,6 +66,7 @@ import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
 import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
 import ConsultationChat from "../components/consultationchat/ConsultationChat";
 import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
+import ConsultationManagement from "../components/consultationchat/ConsultationManagement";
 
 
 const AppRoutes = () => {
@@ -168,6 +169,7 @@ const AppRoutes = () => {
         <Route path="/clinic/:id" element={<ClinicDetail />} />
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
+        <Route path="/consultation/consultation-management" element={<ConsultationManagement />} />
         <Route path="/consultation-chat" element={<ConsultationChat />} />
       </Routes>
     </ThemeProvider>

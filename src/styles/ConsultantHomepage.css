@@ -32,7 +32,7 @@
 
 /* Sidebar styles */
 .consultant-homepage .consultant-sidebar {
-  background: linear-gradient(180deg, var(--consultant-primary), var(--consultant-accent));
+  background: #05668D;
   color: var(--consultant-background);
   position: fixed;
   top: 0;
@@ -97,7 +97,7 @@
 .consultant-homepage .logo-text {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--consultant-background);
+  color: #f5f3ca;
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
@@ -146,7 +146,7 @@
 
 .consultant-homepage .sidebar-toggle:hover,
 .consultant-homepage .sidebar-toggle:focus {
-  background: var(--consultant-background);
+  background: #1E7699;
   border-color: var(--consultant-primary);
 }
 
@@ -231,7 +231,7 @@
 
 .consultant-homepage .sidebar-nav a:hover,
 .consultant-homepage .sidebar-nav button:hover {
-  background: var(--consultant-secondary);
+  background: #1E7699;
   transform: translateY(-2px);
 }
 

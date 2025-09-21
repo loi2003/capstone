@@ -1,0 +1,810 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  startChatThread,
+  sendMessage,
+  getChatThreadByUserId, // Use this to get consultant's threads
+  getChatThreadById,
+} from "../../apis/message-api";
+import { getCurrentUser } from "../../apis/authentication-api"; // Get current consultant
+import { getUserById } from "../../apis/user-api"; // Get patient details
+import MainLayout from "../../layouts/MainLayout";
+import "./ConsultationManagement.css";
+import {
+  FaComments,
+  FaSearch,
+  FaUser,
+  FaHospital,
+  FaPhone,
+  FaVideo,
+  FaFile,
+  FaPaperclip,
+  FaTimes,
+  FaClock,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { FaFileAlt } from "react-icons/fa";
+import { HiPaperAirplane } from "react-icons/hi2";
+import LoadingOverlay from "../popup/LoadingOverlay";
+
+const ConsultationManagement = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const messagesEndRef = useRef(null);
+
+  // State management
+  const [currentConsultantId, setCurrentConsultantId] = useState(null);
+  const [currentConsultantData, setCurrentConsultantData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [chatThreads, setChatThreads] = useState({});
+  const [selectedThread, setSelectedThread] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const [filterStatus, setFilterStatus] = useState("all"); // all, unread, active
+
+  // File handling utilities (copied from original)
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0;
+    let n = bytes;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return n.toFixed(n >= 10 || i === 0 ? 0 : 1) + " " + units[i];
+  };
+
+  const getFileIcon = (fileName, fileType) => {
+    const name = fileName?.toLowerCase();
+    const type = fileType?.toLowerCase();
+
+    if (type?.includes("pdf") || name?.endsWith(".pdf")) return "pdf";
+    if (
+      type?.includes("word") ||
+      name?.endsWith(".doc") ||
+      name?.endsWith(".docx")
+    )
+      return "doc";
+    if (
+      type?.includes("excel") ||
+      name?.endsWith(".xls") ||
+      name?.endsWith(".xlsx")
+    )
+      return "xls";
+    if (
+      type?.startsWith("text") ||
+      name?.endsWith(".txt") ||
+      name?.endsWith(".log")
+    )
+      return "txt";
+    return "file";
+  };
+
+  const supportedImageTypes = [".jpg", ".jpeg", ".png"];
+  const supportedDocTypes = [".docx", ".xls", ".xlsx", ".pdf"];
+  const allSupportedTypes = [...supportedImageTypes, ...supportedDocTypes];
+
+  // Initialize page for consultant
+  useEffect(() => {
+    initializePage();
+  }, []);
+
+  const initializePage = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/signin");
+        return;
+      }
+
+      // Get current consultant info (consultant is a user with role = 6)
+      const consultantRes = await getCurrentUser(token);
+      const consultantData =
+        consultantRes?.data?.data || consultantRes?.data || consultantRes;
+      const consultantId = consultantData?.id;
+
+      if (!consultantId) {
+        console.error("No consultant ID found");
+        navigate("/signin");
+        return;
+      }
+
+      // Verify this is actually a consultant (role = 6)
+      if (consultantData.roleId !== 6) {
+        console.error("User is not a consultant, role:", consultantData.roleId);
+        navigate("/"); // Redirect to appropriate page
+        return;
+      }
+
+      console.log("Current consultant:", consultantData);
+      setCurrentConsultantId(consultantId);
+      setCurrentConsultantData(consultantData);
+
+      await loadConsultantThreads(consultantId);
+    } catch (error) {
+      console.error("Failed to initialize consultation management", error);
+      navigate("/signin");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load all chat threads for the consultant
+  // Since consultant is a user, we can use getChatThreadByUserId with consultant's userId
+  const loadConsultantThreads = async (consultantUserId) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      console.log("Loading threads for consultant userId:", consultantUserId);
+
+      // Use getChatThreadByUserId with consultant's userId
+      // This will return all threads where the consultant is a participant
+      const threadsResponse = await getChatThreadByUserId(
+        consultantUserId,
+        token
+      );
+
+      // Handle different response structures
+      let threads = [];
+      if (Array.isArray(threadsResponse)) {
+        threads = threadsResponse;
+      } else if (threadsResponse?.data && Array.isArray(threadsResponse.data)) {
+        threads = threadsResponse.data;
+      } else if (threadsResponse?.id) {
+        threads = [threadsResponse];
+      }
+
+      console.log("Number of threads found:", threads.length);
+
+      if (threads.length > 0) {
+        const threadsMap = {};
+
+        for (const thread of threads) {
+          console.log("Processing thread:", thread);
+
+          // Find the patient userId (the other participant who is not the consultant)
+          let patientUserId = null;
+
+          // Method 1: If thread has userId and consultantId fields
+          if (thread.userId && thread.consultantId) {
+            if (thread.consultantId === consultantUserId) {
+              patientUserId = thread.userId; // Patient is the userId
+            } else if (thread.userId === consultantUserId) {
+              patientUserId = thread.consultantId; // Patient is the consultantId (shouldn't happen but handle it)
+            }
+          }
+          // Method 2: If thread only has userId (less likely but possible)
+          else if (thread.userId && thread.userId !== consultantUserId) {
+            patientUserId = thread.userId;
+          }
+
+          if (!patientUserId) {
+            console.log(
+              "Could not determine patient userId for thread:",
+              thread
+            );
+            continue;
+          }
+
+          console.log("Processing thread for patient userId:", patientUserId);
+
+          try {
+            // Get patient details using getUserById
+            const patientRes = await getUserById(patientUserId, token);
+            console.log(
+              "Patient response for userId:",
+              patientUserId,
+              patientRes
+            );
+
+            // Handle response structure from getUserById API
+            const patientData = patientRes?.data || patientRes || null;
+
+            // Process messages to include attachment data
+            const processedMessages =
+              thread.messages?.map((msg) => {
+                // Check if message has attachment data from backend
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  return {
+                    ...msg,
+                    attachment: {
+                      fileName:
+                        msg.attachmentFileName || msg.fileName || "Attachment",
+                      fileSize: msg.attachmentFileSize || msg.fileSize,
+                      fileType: msg.attachmentFileType || msg.fileType,
+                      isImage: isImageFile(
+                        msg.attachmentFileName || msg.fileName
+                      ),
+                      url:
+                        msg.attachmentUrl ||
+                        msg.attachmentPath ||
+                        msg.attachment?.url,
+                    },
+                  };
+                }
+                return msg;
+              }) || [];
+
+            // Calculate unread count - messages from patient that consultant hasn't read
+            const unreadCount = processedMessages.filter(
+              (msg) => !msg.isRead && msg.senderId === patientUserId
+            ).length;
+
+            threadsMap[patientUserId] = {
+              thread,
+              messages: processedMessages,
+              patient: patientData, // Patient data from getUserById
+              lastActivity: thread.updatedAt || thread.createdAt,
+              unreadCount: unreadCount,
+            };
+          } catch (err) {
+            console.error(`Failed to fetch patient ${patientUserId}:`, err);
+            // Continue processing other threads even if one fails
+          }
+        }
+
+        setChatThreads(threadsMap);
+        console.log("Threads processed:", Object.keys(threadsMap).length);
+      }
+    } catch (error) {
+      console.error("Failed to load consultant threads:", error);
+    }
+  };
+
+  // Handle selecting a chat thread
+  const handleSelectThread = (patientUserId) => {
+    const threadData = chatThreads[patientUserId];
+    if (threadData) {
+      setSelectedThread({
+        ...threadData,
+        patientUserId: patientUserId,
+      });
+
+      // Mark messages as read (you might want to call an API here)
+      setChatThreads((prevThreads) => ({
+        ...prevThreads,
+        [patientUserId]: {
+          ...prevThreads[patientUserId],
+          unreadCount: 0,
+          messages: prevThreads[patientUserId].messages.map((msg) => ({
+            ...msg,
+            isRead: msg.senderId === patientUserId ? true : msg.isRead,
+          })),
+        },
+      }));
+    }
+  };
+
+  // File handling functions (copied from original)
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    const fileExtension = "." + fileName.split(".").pop();
+
+    if (!allSupportedTypes.includes(fileExtension)) {
+      alert(
+        `Unsupported file type. Supported types: ${allSupportedTypes.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    setSelectedFile(file);
+
+    // Create preview for images
+    if (supportedImageTypes.includes(fileExtension)) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFilePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const isImageFile = (fileName) => {
+    if (!fileName) return false;
+    const extension = "." + fileName.toLowerCase().split(".").pop();
+    return supportedImageTypes.includes(extension);
+  };
+
+  // Send message function
+  const handleSendMessage = async () => {
+    const patientUserId = selectedThread?.patientUserId;
+    const activeThread = selectedThread?.thread;
+
+    if (
+      (!newMessage.trim() && !selectedFile) ||
+      !activeThread ||
+      sendingMessage
+    ) {
+      return;
+    }
+
+    if (!selectedFile && !newMessage.trim()) {
+      alert("Please enter a message or attach a file to send");
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      formData.append("ChatThreadId", activeThread.id);
+      formData.append("SenderId", currentConsultantId);
+
+      if (newMessage.trim()) {
+        formData.append("MessageText", newMessage.trim());
+      }
+
+      if (selectedFile) {
+        formData.append("Attachment", selectedFile);
+        formData.append("AttachmentFileName", selectedFile.name);
+        formData.append("AttachmentFileType", selectedFile.type);
+        formData.append("AttachmentFileSize", selectedFile.size.toString());
+      }
+
+      const response = await sendMessage(formData, token);
+      console.log("Send message response:", response);
+
+      if (response.error === 0) {
+        const attachmentUrl =
+          response.data?.attachmentUrl ||
+          response.data?.attachmentPath ||
+          response.data?.attachment?.url;
+
+        const newMsg = {
+          id: response.data?.id || Date.now().toString(),
+          senderId: currentConsultantId,
+          receiverId: patientUserId,
+          messageText: newMessage.trim(),
+          createdAt: response.data?.sentAt || new Date().toISOString(),
+          messageType: selectedFile ? "attachment" : "text",
+          isRead: false,
+          attachmentUrl: attachmentUrl,
+          attachmentFileName: selectedFile?.name,
+          attachmentFileType: selectedFile?.type,
+          attachmentFileSize: selectedFile?.size,
+          attachment: selectedFile
+            ? {
+                fileName: selectedFile.name,
+                fileSize: selectedFile.size,
+                fileType: selectedFile.type,
+                isImage: isImageFile(selectedFile.name),
+                url: attachmentUrl || filePreview,
+              }
+            : null,
+        };
+
+        setChatThreads((prevThreads) => ({
+          ...prevThreads,
+          [patientUserId]: {
+            ...prevThreads[patientUserId],
+            messages: [...(prevThreads[patientUserId]?.messages || []), newMsg],
+            lastActivity: newMsg.createdAt,
+          },
+        }));
+
+        setSelectedThread((prev) => ({
+          ...prev,
+          messages: [...(prev?.messages || []), newMsg],
+        }));
+
+        setNewMessage("");
+        clearSelectedFile();
+
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      alert("Failed to send message. Please try again.");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Message rendering
+  const renderMessage = (msg, idx) => {
+    const isSent = msg.senderId === currentConsultantId;
+    const messageClass = isSent ? "sent" : "received";
+    const hasAttachment = msg.attachment;
+
+    return (
+      <div
+        key={idx}
+        className={`consultation-management-message ${messageClass}`}
+      >
+        <div className="consultation-management-message-content">
+          {msg.messageText && <p>{msg.messageText}</p>}
+
+          {hasAttachment &&
+            (msg.attachment.isImage ? (
+              <img
+                src={msg.attachment.url}
+                alt={msg.attachment.fileName}
+                className="consultation-management-attachment-image"
+                onClick={() => window.open(msg.attachment.url, "_blank")}
+              />
+            ) : (
+              <div className="consultation-management-attachment">
+                <AttachmentCard att={msg.attachment} />
+              </div>
+            ))}
+
+          <span className="consultation-management-message-time">
+            {formatMessageTime(msg.createdAt)}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  const AttachmentCard = ({ att }) => {
+    if (!att?.url) return null;
+
+    const iconKey = getFileIcon(att.fileName, att.fileType);
+    const onClick = () => window.open(att.url, "_blank");
+
+    return (
+      <div
+        className={`msg-attach-card icon-${iconKey}`}
+        onClick={onClick}
+        role="button"
+        tabIndex={0}
+      >
+        <div className="msg-attach-icon" aria-hidden></div>
+        <div className="msg-attach-meta">
+          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
+          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const formatMessageTime = (timestamp) => {
+    if (!timestamp) return "";
+
+    try {
+      let date;
+      if (typeof timestamp === "string") {
+        date = new Date(timestamp);
+      } else if (typeof timestamp === "number") {
+        date =
+          timestamp > 1000000000000
+            ? new Date(timestamp)
+            : new Date(timestamp * 1000);
+      } else if (timestamp instanceof Date) {
+        date = timestamp;
+      } else {
+        return "";
+      }
+
+      if (isNaN(date.getTime())) return "";
+
+      return date.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      console.warn("Error formatting timestamp:", error);
+      return "";
+    }
+  };
+
+  // Filter threads based on status
+  const getFilteredThreads = () => {
+    const threadList = Object.entries(chatThreads).map(
+      ([patientUserId, data]) => ({
+        patientUserId,
+        ...data,
+      })
+    );
+
+    let filtered = threadList;
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (thread) =>
+          thread.user?.userName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          thread.user?.email
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filterStatus === "unread") {
+      filtered = filtered.filter((thread) => thread.unreadCount > 0);
+    } else if (filterStatus === "active") {
+      filtered = filtered.filter((thread) => {
+        const lastActivity = new Date(thread.lastActivity);
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        return lastActivity > oneDayAgo;
+      });
+    }
+
+    filtered.sort(
+      (a, b) => new Date(b.lastActivity) - new Date(a.lastActivity)
+    );
+
+    return filtered;
+  };
+
+  const filteredThreads = getFilteredThreads();
+
+  if (loading) {
+    return (
+      <div className="consultation-management-main-page">
+        <LoadingOverlay show={loading} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="consultation-management-main-page">
+      <div className="consultation-management">
+        <div className="consultation-management-header">
+          <h1 className="consultation-management-title">
+            <FaComments />
+            Patient Consultations
+          </h1>
+          {currentConsultantData && (
+            <div className="consultation-management-consultant-info">
+              <span>Dr. {currentConsultantData.userName}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="consultation-management-content">
+          {/* Sidebar - Patient list */}
+          <div className="consultation-management-sidebar">
+            <div className="consultation-management-sidebar-header">
+              <h3>Active Conversations ({Object.keys(chatThreads).length})</h3>
+
+              <div className="consultation-management-search-section">
+                <div className="consultation-management-search-bar">
+                  <FaSearch />
+                  <input
+                    type="text"
+                    placeholder="Search patients..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div className="consultation-management-filter">
+                  <select
+                    value={filterStatus}
+                    onChange={(e) => setFilterStatus(e.target.value)}
+                  >
+                    <option value="all">All Chats</option>
+                    <option value="unread">Unread</option>
+                    <option value="active">Active (24h)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div className="consultation-management-threads-list">
+              {filteredThreads.length > 0 ? (
+                filteredThreads.map((thread) => (
+                  <div
+                    key={thread.patientUserId}
+                    className={`consultation-management-thread-item ${
+                      selectedThread?.patientUserId === thread.patientUserId
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() => handleSelectThread(thread.patientUserId)}
+                  >
+                    <div className="consultation-management-thread-avatar">
+                      <img
+                        src={
+                          thread.patient?.avatar?.fileUrl ||
+                          "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                        }
+                        alt={thread.patient?.userName || "Patient"}
+                      />
+                      {thread.unreadCount > 0 && (
+                        <div className="consultation-management-unread-badge">
+                          {thread.unreadCount}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="consultation-management-thread-info">
+                      <h4>{thread.patient?.userName || "Unknown Patient"}</h4>
+                      <p className="consultation-management-last-message">
+                        {thread.messages?.length > 0
+                          ? thread.messages[thread.messages.length - 1]
+                              .messageText || "Attachment"
+                          : "No messages yet"}
+                      </p>
+                      <span className="consultation-management-thread-time">
+                        {formatMessageTime(thread.lastActivity)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="consultation-management-empty-thread-list">
+                  <FaComments />
+                  <h3>No Conversations</h3>
+                  <p>
+                    {searchTerm || filterStatus !== "all"
+                      ? "No conversations match your criteria."
+                      : "You don't have any patient conversations yet."}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Main chat area */}
+          <div className="consultation-management-main">
+            {selectedThread ? (
+              <>
+                {/* Patient header */}
+                <div className="consultation-management-patient-header">
+                  <div className="consultation-management-patient-details">
+                    <div className="consultation-management-patient-avatar">
+                      <img
+                        src={
+                          selectedThread.patient?.avatar?.fileUrl ||
+                          "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                        }
+                        alt={selectedThread.patient?.userName || "Patient"}
+                      />
+                    </div>
+                    <div className="consultation-management-patient-meta">
+                      <h2>
+                        {selectedThread.patient?.userName || "Unknown Patient"}
+                      </h2>
+                      <p>{selectedThread.patient?.email}</p>
+                    </div>
+                  </div>
+
+                  <div className="consultation-management-actions">
+                    {/* <button className="consultation-management-action-btn">
+                      <FaPhone />
+                      Call
+                    </button>
+                    <button className="consultation-management-action-btn">
+                      <FaVideo />
+                      Video
+                    </button> */}
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="consultation-management-messages">
+                  {selectedThread.messages?.length > 0 ? (
+                    selectedThread.messages.map((msg, idx) =>
+                      renderMessage(msg, idx)
+                    )
+                  ) : (
+                    <div className="consultation-management-empty-messages">
+                      <FaComments />
+                      <h3>Start the conversation</h3>
+                      <p>Send a message to begin the consultation.</p>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Input area */}
+                <div className="consultation-management-input-area">
+                  <div className="consultation-management-input-container">
+                    {selectedFile && (
+                      <div className="consultation-management-file-preview">
+                        <div className="consultation-management-file-preview-content">
+                          {filePreview ? (
+                            <img
+                              src={filePreview}
+                              alt="Preview"
+                              className="consultation-management-file-preview-image"
+                            />
+                          ) : (
+                            <div className="consultation-management-file-preview-document">
+                              <FaFile />
+                              <span>{selectedFile.name}</span>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={clearSelectedFile}
+                            className="consultation-management-file-preview-remove"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="consultation-management-input-row">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        accept={allSupportedTypes.join(",")}
+                        style={{ display: "none" }}
+                      />
+
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="consultation-management-attachment-btn"
+                        title="Attach file"
+                      >
+                        <FaPaperclip />
+                      </button>
+
+                      <textarea
+                        placeholder="Type your response..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyPress={handleKeyPress}
+                        rows={1}
+                      />
+
+                      <button
+                        onClick={handleSendMessage}
+                        disabled={
+                          (!newMessage.trim() && !selectedFile) ||
+                          sendingMessage
+                        }
+                        className="consultation-management-send-btn"
+                      >
+                        <HiPaperAirplane />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="consultation-management-no-selection">
+                <FaUser />
+                <h3>Select a Conversation</h3>
+                <p>
+                  Choose a patient conversation from the list to view and
+                  respond to messages.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ConsultationManagement;
