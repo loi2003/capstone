@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
-import { useNavigate, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   startChatThread,
   sendMessage,
@@ -23,6 +24,16 @@ import {
   FaTimes,
   FaClock,
   FaCheckCircle,
+  FaQuestion,
+  FaChartLine,
+  FaCalendarAlt,
+  FaUsers,
+  FaQuestionCircle,
+  FaSignOutAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaBars,
+  FaClipboardList,
 } from "react-icons/fa";
 import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
@@ -48,6 +59,9 @@ const ConsultationManagement = () => {
   const [filePreview, setFilePreview] = useState(null);
   const fileInputRef = useRef(null);
   const [filterStatus, setFilterStatus] = useState("all"); // all, unread, active
+
+  // const [user, setUser] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const scrollToBottom = () => {
     // Use requestAnimationFrame to ensure DOM is updated
@@ -495,9 +509,27 @@ const ConsultationManagement = () => {
                       <span className="consultation-management-attachment-name">
                         {msg.attachment.fileName}
                       </span>
-                      {/* <span className="consultation-management-attachment-size">
-                      {formatBytes(msg.attachment.fileSize)}
-                    </span> */}
+                      <span
+                        className="consultation-management-message-time"
+                        style={{
+                          fontSize: "11px",
+                          opacity: 0.7,
+                          fontWeight: 500,
+                          marginTop: "8px",
+                          display: "block",
+                          textAlign: isSent ? "right" : "left",
+                          color: isSent
+                            ? "rgba(255,255,255,0.7)"
+                            : "rgba(30,41,59,0.7)",
+                        }}
+                      >
+                        {formatMessageTime(
+                          msg.createdAt ||
+                            msg.sentAt ||
+                            msg.timestamp ||
+                            msg.CreationDate
+                        )}
+                      </span>
                     </div>
                   </div>
                 </a>
@@ -536,41 +568,28 @@ const ConsultationManagement = () => {
                         <span className="consultation-management-attachment-name">
                           {m.fileName}
                         </span>
-                        {/* <span className="consultation-management-attachment-size">
-                          {formatBytes(m.fileSize)}
-                        </span> */}
                       </div>
                     </div>
                   </a>
                 </div>
               );
             })}
-
-          <span className="consultation-management-message-time">
-            {formatMessageTime(msg.createdAt)}
+          <span
+            className="consultation-management-message-time"
+            style={{
+              fontSize: "11px",
+              opacity: 0.7,
+              fontWeight: 500,
+              marginTop: "8px",
+              display: "block",
+              textAlign: isSent ? "right" : "left",
+              color: isSent ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.7)",
+            }}
+          >
+            {formatMessageTime(
+              msg.createdAt || msg.sentAt || msg.timestamp || msg.creationDate
+            )}
           </span>
-        </div>
-      </div>
-    );
-  };
-
-  const AttachmentCard = ({ att }) => {
-    if (!att?.url) return null;
-
-    const iconKey = getFileIcon(att.fileName, att.fileType);
-    const onClick = () => window.open(att.url, "_blank");
-
-    return (
-      <div
-        className={`msg-attach-card icon-${iconKey}`}
-        onClick={onClick}
-        role="button"
-        tabIndex={0}
-      >
-        <div className="msg-attach-icon" aria-hidden></div>
-        <div className="msg-attach-meta">
-          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
-          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
         </div>
       </div>
     );
@@ -587,26 +606,51 @@ const ConsultationManagement = () => {
     if (!timestamp) return "";
 
     try {
-      let date;
+      let utcDate;
+
+      // Handle different timestamp formats
       if (typeof timestamp === "string") {
-        date = new Date(timestamp);
+        // If string doesn't end with 'Z', assume it's UTC and add 'Z'
+        if (
+          !timestamp.endsWith("Z") &&
+          !timestamp.includes("+") &&
+          !timestamp.includes("-")
+        ) {
+          utcDate = new Date(timestamp + "Z"); // Force UTC parsing
+        } else {
+          utcDate = new Date(timestamp);
+        }
       } else if (typeof timestamp === "number") {
-        date =
+        // Handle Unix timestamp (seconds or milliseconds)
+        utcDate =
           timestamp > 1000000000000
             ? new Date(timestamp)
             : new Date(timestamp * 1000);
       } else if (timestamp instanceof Date) {
-        date = timestamp;
+        utcDate = timestamp;
       } else {
         return "";
       }
 
-      if (isNaN(date.getTime())) return "";
+      // Check if date is valid
+      if (isNaN(utcDate.getTime())) {
+        console.warn("Invalid timestamp:", timestamp);
+        return "";
+      }
 
-      return date.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      // Convert to local timezone and format
+      try {
+        return utcDate.toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        });
+      } catch (e) {
+        // Manual fallback formatting (already in local time)
+        const hours = utcDate.getHours().toString().padStart(2, "0");
+        const minutes = utcDate.getMinutes().toString().padStart(2, "0");
+        return `${hours}:${minutes}`;
+      }
     } catch (error) {
       console.warn("Error formatting timestamp:", error);
       return "";
@@ -782,132 +826,378 @@ const ConsultationManagement = () => {
     );
   }
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen((prev) => !prev);
+  };
+
+  const logoVariants = {
+    animate: {
+      scale: [1, 1.05, 1],
+      transition: {
+        duration: 1.8,
+        ease: "easeInOut",
+        repeat: Infinity,
+        repeatType: "loop",
+      },
+    },
+    hover: {
+      scale: 1.1,
+      filter: "brightness(1.15)",
+      transition: { duration: 0.3 },
+    },
+  };
+
+  const containerVariants = {
+    initial: { opacity: 0, y: 30 },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut", staggerChildren: 0.1 },
+    },
+  };
+
+  const sidebarVariants = {
+    open: {
+      width: "250px",
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+    closed: {
+      width: "80px",
+      transition: { duration: 0.3, ease: "easeIn" },
+    },
+  };
+
+  const navItemVariants = {
+    initial: { opacity: 0, x: -20 },
+    animate: {
+      opacity: 1,
+      x: 0,
+      transition: { duration: 0.3, ease: "easeOut" },
+    },
+  };
+
+  const handleLogout = async () => {
+      if (!currentConsultantData?.userId) {
+        localStorage.removeItem("token");
+        setUser(null);
+        navigate("/signin", { replace: true });
+        return;
+      }
+      if (window.confirm("Are you sure you want to sign out?")) {
+        try {
+          await logout(currentConsultantData.userId);
+        } catch (error) {
+          console.error("Error logging out:", error.message);
+        } finally {
+          localStorage.removeItem("token");
+          setUser(null);
+          setIsSidebarOpen(true);
+          navigate("/signin", { replace: true });
+        }
+      }
+    };
+
   return (
-    <div className="consultation-management-main-page">
-      <div className="consultation-management">
-        <div className="consultation-management-header">
-          <h1 className="consultation-management-title">
-            <FaComments />
-            Patient Consultations
-          </h1>
-          {currentConsultantData && (
-            <div className="consultation-management-consultant-info">
-              <span>Dr. {currentConsultantData.userName}</span>
-            </div>
-          )}
+    <div className="consultant-homepage">
+      <motion.aside
+        className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        variants={sidebarVariants}
+        animate={isSidebarOpen ? "open" : "closed"}
+        initial="open"
+      >
+        <div className="sidebar-header">
+          <Link
+            to="/consultant"
+            className="logo"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <motion.div
+              variants={logoVariants}
+              animate="animate"
+              whileHover="hover"
+              className="logo-svg-container"
+            >
+              {/* <FaBars className="logo-svg" /> */}
+            </motion.div>
+            {isSidebarOpen && (
+              <span className="logo-text">Consultant Panel</span>
+            )}
+          </Link>
+          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
+          <motion.button
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isSidebarOpen ? (
+              <FaChevronLeft size={24} />
+            ) : (
+              <FaChevronRight size={24} />
+            )}
+          </motion.button>
         </div>
+        <motion.nav
+          className="sidebar-nav"
+          aria-label="Sidebar navigation"
+          initial="initial"
+          animate="animate"
+          variants={containerVariants}
+        >
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/consultant"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Dashboard"
+            >
+              <FaChartLine size={20} />
+              {isSidebarOpen && <span>Dashboard</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/consultant"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Schedule"
+            >
+              <FaCalendarAlt size={20} />
+              {isSidebarOpen && <span>Schedule</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/consultant"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Clients"
+            >
+              <FaUsers size={20} />
+              {isSidebarOpen && <span>Clients</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/consultant/support"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Support"
+            >
+              <FaQuestionCircle size={20} />
+              {isSidebarOpen && <span>Support</span>}
+            </Link>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="sidebar-nav-item active"
+          >
+            <Link
+              to="/consultation/consultation-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Consultation Chat"
+              className="active-nav-link"
+            >
+              <FaUsers size={20} />
+              {isSidebarOpen && <span>Patient Consultation</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <button
+              className="sidebar-action-button"
+              title="Online Consultation"
+              onClick={() =>
+                navigate("/consultation/online-consultation-management")
+              }
+            >
+              <FaClipboardList size={20} />
+              {isSidebarOpen && <span>Online Consultation</span>}
+            </button>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <button
+              className="sidebar-action-button"
+              title="Offline Consultation"
+              onClick={() =>
+                navigate("/consultation/offline-consultation-management")
+              }
+            >
+              <FaHospital size={20} />
+              {isSidebarOpen && <span>Offline Consultation</span>}
+            </button>
+          </motion.div>
+          {currentConsultantData ? (
+            <>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item consultant-profile-section"
+              >
+                <Link
+                  to="/profile"
+                  className="consultant-profile-info"
+                  title={isSidebarOpen ? currentConsultantData.email : ""}
+                >
+                  <FaUser size={20} />
+                  {isSidebarOpen && (
+                    <span className="consultant-profile-email">
+                      {currentConsultantData.email}
+                    </span>
+                  )}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <button
+                  className="logout-button"
+                  onClick={handleLogout}
+                  aria-label="Sign out"
+                >
+                  <FaSignOutAlt size={20} />
+                  {isSidebarOpen && <span>Sign out</span>}
+                </button>
+              </motion.div>
+            </>
+          ) : (
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link
+                to="/signin"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sign In"
+              >
+                <FaSignOutAlt size={20} />
+                {isSidebarOpen && <span>Sign out</span>}
+              </Link>
+            </motion.div>
+          )}
+        </motion.nav>
+      </motion.aside>
+      <div className="consultation-management-main-page">
+        <div className="consultation-management">
+          <div className="consultation-management-header">
+            <h1 className="consultation-management-title">
+              {/* <FaComments /> */}
+              Patient Consultation
+            </h1>
+            {currentConsultantData && (
+              <div className="consultation-management-consultant-info">
+                <span>{currentConsultantData.userName}</span>
+              </div>
+            )}
+          </div>
 
-        <div className="consultation-management-content">
-          {/* Sidebar - Patient list */}
-          <div className="consultation-management-sidebar">
-            <div className="consultation-management-sidebar-header">
-              <h3>Active Conversations ({Object.keys(chatThreads).length})</h3>
+          <div className="consultation-management-content">
+            {/* Sidebar - Patient list */}
+            <div className="consultation-management-sidebar">
+              <div className="consultation-management-sidebar-header">
+                <h3>
+                  Active Conversations ({Object.keys(chatThreads).length})
+                </h3>
 
-              <div className="consultation-management-search-section">
-                <div className="consultation-management-search-bar">
-                  <FaSearch />
-                  <input
-                    type="text"
-                    placeholder="Search patients..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                <div className="consultation-management-search-section">
+                  <div className="consultation-management-search-bar">
+                    <FaSearch />
+                    <input
+                      type="text"
+                      placeholder="Search patients..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+
+                  {/* <div className="consultation-management-filter">
+                    <select
+                      value={filterStatus}
+                      onChange={(e) => setFilterStatus(e.target.value)}
+                    >
+                      <option value="all">All Chats</option>
+                      <option value="unread">Unread</option>
+                      <option value="active">Active (24h)</option>
+                    </select>
+                  </div> */}
                 </div>
+              </div>
 
-                <div className="consultation-management-filter">
-                  <select
-                    value={filterStatus}
-                    onChange={(e) => setFilterStatus(e.target.value)}
-                  >
-                    <option value="all">All Chats</option>
-                    <option value="unread">Unread</option>
-                    <option value="active">Active (24h)</option>
-                  </select>
-                </div>
+              <div className="consultation-management-threads-list">
+                {filteredThreads.length > 0 ? (
+                  filteredThreads.map((thread) => (
+                    <div
+                      key={thread.patientUserId}
+                      className={`consultation-management-thread-item ${
+                        selectedThread?.patientUserId === thread.patientUserId
+                          ? "active"
+                          : ""
+                      }`}
+                      onClick={() => handleSelectThread(thread.patientUserId)}
+                    >
+                      <div className="consultation-management-thread-avatar">
+                        <img
+                          src={
+                            thread.patient?.avatar?.fileUrl ||
+                            "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                          }
+                          alt={thread.patient?.userName || "Patient"}
+                        />
+                        {thread.unreadCount > 0 && (
+                          <div className="consultation-management-unread-badge">
+                            {thread.unreadCount}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="consultation-management-thread-info">
+                        <h4>{thread.patient?.userName || "Unknown Patient"}</h4>
+                        <p className="consultation-management-last-message">
+                          {thread.messages?.length > 0
+                            ? thread.messages[thread.messages.length - 1]
+                                .messageText || "Attachment"
+                            : "No messages yet"}
+                        </p>
+                        <span className="consultation-management-thread-time">
+                          {formatMessageTime(thread.lastActivity)}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="consultation-management-empty-thread-list">
+                    <FaComments />
+                    <h3>No Conversations</h3>
+                    <p>
+                      {searchTerm || filterStatus !== "all"
+                        ? "No conversations match your criteria."
+                        : "You don't have any patient conversations yet."}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="consultation-management-threads-list">
-              {filteredThreads.length > 0 ? (
-                filteredThreads.map((thread) => (
-                  <div
-                    key={thread.patientUserId}
-                    className={`consultation-management-thread-item ${
-                      selectedThread?.patientUserId === thread.patientUserId
-                        ? "active"
-                        : ""
-                    }`}
-                    onClick={() => handleSelectThread(thread.patientUserId)}
-                  >
-                    <div className="consultation-management-thread-avatar">
-                      <img
-                        src={
-                          thread.patient?.avatar?.fileUrl ||
-                          "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
-                        }
-                        alt={thread.patient?.userName || "Patient"}
-                      />
-                      {thread.unreadCount > 0 && (
-                        <div className="consultation-management-unread-badge">
-                          {thread.unreadCount}
-                        </div>
-                      )}
+            {/* Main chat area */}
+            <div className="consultation-management-main">
+              {selectedThread ? (
+                <>
+                  {/* Patient header */}
+                  <div className="consultation-management-patient-header">
+                    <div className="consultation-management-patient-details">
+                      <div className="consultation-management-patient-avatar">
+                        <img
+                          src={
+                            selectedThread.patient?.avatar?.fileUrl ||
+                            "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                          }
+                          alt={selectedThread.patient?.userName || "Patient"}
+                        />
+                      </div>
+                      <div className="consultation-management-patient-meta">
+                        <h2>
+                          {selectedThread.patient?.userName ||
+                            "Unknown Patient"}
+                        </h2>
+                        <p>{selectedThread.patient?.email}</p>
+                      </div>
                     </div>
 
-                    <div className="consultation-management-thread-info">
-                      <h4>{thread.patient?.userName || "Unknown Patient"}</h4>
-                      <p className="consultation-management-last-message">
-                        {thread.messages?.length > 0
-                          ? thread.messages[thread.messages.length - 1]
-                              .messageText || "Attachment"
-                          : "No messages yet"}
-                      </p>
-                      <span className="consultation-management-thread-time">
-                        {formatMessageTime(thread.lastActivity)}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="consultation-management-empty-thread-list">
-                  <FaComments />
-                  <h3>No Conversations</h3>
-                  <p>
-                    {searchTerm || filterStatus !== "all"
-                      ? "No conversations match your criteria."
-                      : "You don't have any patient conversations yet."}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Main chat area */}
-          <div className="consultation-management-main">
-            {selectedThread ? (
-              <>
-                {/* Patient header */}
-                <div className="consultation-management-patient-header">
-                  <div className="consultation-management-patient-details">
-                    <div className="consultation-management-patient-avatar">
-                      <img
-                        src={
-                          selectedThread.patient?.avatar?.fileUrl ||
-                          "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
-                        }
-                        alt={selectedThread.patient?.userName || "Patient"}
-                      />
-                    </div>
-                    <div className="consultation-management-patient-meta">
-                      <h2>
-                        {selectedThread.patient?.userName || "Unknown Patient"}
-                      </h2>
-                      <p>{selectedThread.patient?.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="consultation-management-actions">
-                    {/* <button className="consultation-management-action-btn">
+                    <div className="consultation-management-actions">
+                      {/* <button className="consultation-management-action-btn">
                       <FaPhone />
                       Call
                     </button>
@@ -915,104 +1205,105 @@ const ConsultationManagement = () => {
                       <FaVideo />
                       Video
                     </button> */}
-                  </div>
-                </div>
-
-                {/* Messages */}
-                <div className="consultation-management-messages">
-                  {selectedThread.messages?.length > 0 ? (
-                    selectedThread.messages.map((msg, idx) =>
-                      renderMessage(msg, idx)
-                    )
-                  ) : (
-                    <div className="consultation-management-empty-messages">
-                      <FaComments />
-                      <h3>Start the conversation</h3>
-                      <p>Send a message to begin the consultation.</p>
                     </div>
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
+                  </div>
 
-                {/* Input area */}
-                <div className="consultation-management-input-area">
-                  <div className="consultation-management-input-container">
-                    {selectedFile && (
-                      <div className="consultation-management-file-preview">
-                        <div className="consultation-management-file-preview-content">
-                          {filePreview ? (
-                            <img
-                              src={filePreview}
-                              alt="Preview"
-                              className="consultation-management-file-preview-image"
-                            />
-                          ) : (
-                            <div className="consultation-management-file-preview-document">
-                              <FaFile />
-                              <span>{selectedFile.name}</span>
-                            </div>
-                          )}
-                          <button
-                            type="button"
-                            onClick={clearSelectedFile}
-                            className="consultation-management-file-preview-remove"
-                          >
-                            <FaTimes />
-                          </button>
-                        </div>
+                  {/* Messages */}
+                  <div className="consultation-management-messages">
+                    {selectedThread.messages?.length > 0 ? (
+                      selectedThread.messages.map((msg, idx) =>
+                        renderMessage(msg, idx)
+                      )
+                    ) : (
+                      <div className="consultation-management-empty-messages">
+                        <FaComments />
+                        <h3>Start the conversation</h3>
+                        <p>Send a message to begin the consultation.</p>
                       </div>
                     )}
+                    <div ref={messagesEndRef} />
+                  </div>
 
-                    <div className="consultation-management-input-row">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileSelect}
-                        accept={allSupportedTypes.join(",")}
-                        style={{ display: "none" }}
-                      />
+                  {/* Input area */}
+                  <div className="consultation-management-input-area">
+                    <div className="consultation-management-input-container">
+                      {selectedFile && (
+                        <div className="consultation-management-file-preview">
+                          <div className="consultation-management-file-preview-content">
+                            {filePreview ? (
+                              <img
+                                src={filePreview}
+                                alt="Preview"
+                                className="consultation-management-file-preview-image"
+                              />
+                            ) : (
+                              <div className="consultation-management-file-preview-document">
+                                <FaFile />
+                                <span>{selectedFile.name}</span>
+                              </div>
+                            )}
+                            <button
+                              type="button"
+                              onClick={clearSelectedFile}
+                              className="consultation-management-file-preview-remove"
+                            >
+                              <FaTimes />
+                            </button>
+                          </div>
+                        </div>
+                      )}
 
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="consultation-management-attachment-btn"
-                        title="Attach file"
-                      >
-                        <FaPaperclip />
-                      </button>
+                      <div className="consultation-management-input-row">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          accept={allSupportedTypes.join(",")}
+                          style={{ display: "none" }}
+                        />
 
-                      <textarea
-                        placeholder="Type your response..."
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        onKeyPress={handleKeyPress}
-                        rows={1}
-                      />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="consultation-management-attachment-btn"
+                          title="Attach file"
+                        >
+                          <FaPaperclip />
+                        </button>
 
-                      <button
-                        onClick={handleSendMessage}
-                        disabled={
-                          (!newMessage.trim() && !selectedFile) ||
-                          sendingMessage
-                        }
-                        className="consultation-management-send-btn"
-                      >
-                        <HiPaperAirplane />
-                      </button>
+                        <textarea
+                          placeholder="Type your response..."
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          rows={1}
+                        />
+
+                        <button
+                          onClick={handleSendMessage}
+                          disabled={
+                            (!newMessage.trim() && !selectedFile) ||
+                            sendingMessage
+                          }
+                          className="consultation-management-send-btn"
+                        >
+                          <HiPaperAirplane />
+                        </button>
+                      </div>
                     </div>
                   </div>
+                </>
+              ) : (
+                <div className="consultation-management-no-selection">
+                  <FaUser />
+                  <h3>Select a Conversation</h3>
+                  <p>
+                    Choose a patient conversation from the list to view and
+                    respond to messages.
+                  </p>
                 </div>
-              </>
-            ) : (
-              <div className="consultation-management-no-selection">
-                <FaUser />
-                <h3>Select a Conversation</h3>
-                <p>
-                  Choose a patient conversation from the list to view and
-                  respond to messages.
-                </p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </div>

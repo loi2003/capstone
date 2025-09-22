@@ -1,4 +1,48 @@
-/* Consultation Management - Main container */
+
+/* ===== CONSULTATION MANAGEMENT - UNIFIED STYLING ===== */
+/* CSS Variables for consistent theming - shared with ConsultationChat */
+:root {
+  --primary-color: #167995;
+  --primary-dark: #0d7aa5;
+  --primary-light: #1c7d98;
+  --secondary-color: #03c39a;
+  --accent-color: #fe6b6a;
+  --success-color: #00c851;
+
+  /* Message Colors - IDENTICAL to ConsultationChat */
+  --sent-message-bg: linear-gradient(135deg, #1c80a2 0%, #167995 100%);
+  --sent-message-text: #ffffff;
+  --received-message-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  --received-message-text: #1e293b;
+  --received-message-border: #e2e8f0;
+
+  /* Layout */
+  /* --border-radius: 16px;
+  --border-radius-small: 8px;
+  --shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.16); */
+  --transition: all 0.3s ease;
+
+  /* Text Colors */
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+
+  /* Backgrounds */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+}
+
+/* ===== MAIN PAGE WRAPPER ===== */
+.consultation-management-main-page {
+  min-height: 100vh;
+  background: var(--bg-secondary);
+  position: relative;
+}
+
+/* Main container */
 .consultation-management {
   max-width: 1400px;
   margin: 0 auto;
@@ -15,18 +59,18 @@
   align-items: center;
   margin-bottom: 30px;
   padding-bottom: 20px;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid #e2e8f0;
 }
 
 .consultation-management-title {
-  color: #167995;
+  color: var(--primary-color);
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 2.2rem;
   margin: 0;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(13, 122, 165, 0.1);
+  text-shadow: 0 2px 4px rgba(22, 121, 149, 0.1);
   animation: titleFadeIn 0.6s ease-out;
 }
 
@@ -39,6 +83,17 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.consultation-management-consultant-info {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.consultation-management-consultant-info span {
+  color: var(--primary-color);
+  font-weight: 600;
 }
 
 /* Content area */
@@ -54,28 +109,56 @@
   position: relative;
 }
 
-/* Sidebar - Patient/Thread list */
+/* ===== SIDEBAR STYLING ===== */
 .consultation-management-sidebar {
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  background: var(--bg-card);
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   max-height: 100%;
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .consultation-management-sidebar-header {
   padding: 24px;
-  background: linear-gradient(135deg, #167995 0%, #1c7d98 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.consultation-management-sidebar-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
 }
 
 .consultation-management-sidebar-header h3 {
+  color: white;
   margin: 0 0 20px 0;
   font-size: 1.3rem;
   font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
 
 /* Search and filter section */
@@ -83,6 +166,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .consultation-management-search-bar {
@@ -94,8 +179,9 @@
 .consultation-management-search-bar svg {
   position: absolute;
   left: 12px;
-  color: #64748b;
+  color: rgba(255, 255, 255, 0.7);
   z-index: 2;
+  font-size: 14px;
 }
 
 .consultation-management-search-bar input {
@@ -119,6 +205,11 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.consultation-management-filter {
+  position: relative;
+  z-index: 1;
+}
+
 .consultation-management-filter select {
   width: 100%;
   padding: 10px 12px;
@@ -128,6 +219,9 @@
   background: rgba(255, 255, 255, 0.1);
   color: white;
   backdrop-filter: blur(10px);
+}
+.consultation-management-filter select option {
+  color: black !important;
 }
 
 .consultation-management-filter select:focus {
@@ -140,6 +234,21 @@
   flex: 1;
   overflow-y: auto;
   padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-color) transparent;
+}
+
+.consultation-management-threads-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.consultation-management-threads-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consultation-management-threads-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: 6px;
 }
 
 .consultation-management-thread-item {
@@ -148,8 +257,32 @@
   padding: 16px 20px;
   cursor: pointer;
   border-bottom: 1px solid rgba(226, 232, 240, 0.5);
-  transition: all 0.3s ease;
+  transition: var(--transition);
   position: relative;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.consultation-management-thread-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+  z-index: 0;
 }
 
 .consultation-management-thread-item:hover {
@@ -157,10 +290,18 @@
   transform: translateX(4px);
 }
 
+.consultation-management-thread-item:hover::before {
+  width: 4px;
+}
+
 .consultation-management-thread-item.active {
   background: linear-gradient(135deg, rgba(22, 121, 149, 0.15) 0%, rgba(28, 125, 152, 0.1) 100%);
-  border-left: 4px solid #167995;
+  border-left: 4px solid var(--primary-color);
   transform: translateX(0);
+}
+
+.consultation-management-thread-item.active::before {
+  width: 4px;
 }
 
 .consultation-management-thread-avatar {
@@ -174,7 +315,13 @@
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
+  transition: var(--transition);
+}
+
+.consultation-management-thread-item:hover .consultation-management-thread-avatar img {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-medium);
 }
 
 .consultation-management-unread-badge {
@@ -202,16 +349,21 @@
   margin: 0 0 4px 0;
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: var(--transition);
+}
+
+.consultation-management-thread-item:hover .consultation-management-thread-info h4 {
+  color: var(--primary-color);
 }
 
 .consultation-management-last-message {
   margin: 0 0 2px 0;
   font-size: 13px;
-  color: #64748b;
+  color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -220,7 +372,7 @@
 
 .consultation-management-thread-time {
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
@@ -232,19 +384,48 @@
   justify-content: center;
   padding: 60px 30px;
   text-align: center;
-  color: #64748b;
+  color: var(--text-secondary);
   height: 100%;
+  background: linear-gradient(135deg, rgba(248, 249, 250, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .consultation-management-empty-thread-list svg {
   font-size: 3.5rem;
   color: #cbd5e1;
   margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
 }
 
 .consultation-management-empty-thread-list h3 {
   margin: 0 0 12px 0;
-  color: #475569;
+  color: var(--text-primary);
   font-size: 1.3rem;
   font-weight: 600;
 }
@@ -255,16 +436,28 @@
   line-height: 1.5;
 }
 
-/* Main chat area */
+/* ===== MAIN CHAT AREA ===== */
 .consultation-management-main {
-  background: #fff;
+  background: var(--bg-card);
   border: 1px solid #e2e8f0;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   max-height: 100%;
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* Patient header */
@@ -275,11 +468,26 @@
   padding: 24px 28px;
   background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   border-bottom: 1px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+}
+
+.consultation-management-patient-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+  pointer-events: none;
 }
 
 .consultation-management-patient-details {
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .consultation-management-patient-avatar img {
@@ -288,26 +496,36 @@
   border-radius: 50%;
   object-fit: cover;
   border: 4px solid #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
   margin-right: 16px;
+  transition: var(--transition);
+}
+
+.consultation-management-patient-avatar img:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-medium);
 }
 
 .consultation-management-patient-meta h2 {
   margin: 0 0 4px 0;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--text-primary);
+  display: flex;
+  align-items: flex-start;
 }
 
 .consultation-management-patient-meta p {
   margin: 0;
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
 .consultation-management-actions {
   display: flex;
   gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
 .consultation-management-action-btn {
@@ -315,14 +533,14 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: linear-gradient(135deg, #167995 0%, #1c7d98 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
   color: white;
   border: none;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: var(--transition);
   box-shadow: 0 4px 12px rgba(22, 121, 149, 0.3);
 }
 
@@ -331,70 +549,41 @@
   box-shadow: 0 6px 20px rgba(22, 121, 149, 0.4);
 }
 
-/* Messages area */
+/* ===== UNIFIED MESSAGE STYLING (IDENTICAL TO CONSULTATION CHAT) ===== */
 .consultation-management-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 24px;
-  background: #fafbfc;
+  padding: 25px;
+  background: var(--bg-secondary);
   scroll-behavior: smooth;
-  padding-bottom: 20px; 
+  padding-bottom: 20px;
 }
 
+.consultation-management-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.consultation-management-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consultation-management-messages::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+  border-radius: 6px;
+}
+
+/* UNIFIED MESSAGE BUBBLES - IDENTICAL TO CONSULTATION CHAT */
 .consultation-management-message {
   display: flex;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  width: 100%;
   animation: messageSlideIn 0.3s ease-out;
-}
-
-.consultation-management-message.sent {
-  justify-content: flex-end;
-}
-
-.consultation-management-message.received {
-  justify-content: flex-start;
-}
-
-.consultation-management-message-content {
-  max-width: 70%;
-  padding: 12px 16px;
-  border-radius: 18px;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.consultation-management-message.sent .consultation-management-message-content {
-  background: linear-gradient(135deg, #167995 0%, #1c7d98 100%);
-  color: white;
-  border-bottom-right-radius: 6px;
-}
-
-.consultation-management-message.received .consultation-management-message-content {
-  background: #fff;
-  color: #1e293b;
-  border: 1px solid #e2e8f0;
-  border-bottom-left-radius: 6px;
-}
-
-.consultation-management-message-content p {
-  margin: 0;
-  line-height: 1.5;
-  font-size: 14px;
-  word-wrap: break-word;
-}
-
-.consultation-management-message-time {
-  display: block;
-  font-size: 11px;
-  margin-top: 8px;
-  opacity: 0.7;
-  text-align: right;
 }
 
 @keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -402,85 +591,146 @@
   }
 }
 
-/* Attachment styles */
-.consultation-management-attachment-image {
-  max-width: 200px;
-  max-height: 200px;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  margin-top: 8px;
+.consultation-management-message.sent {
+  justify-content: flex-end;
+  align-self: flex-end;
 }
 
-.consultation-management-attachment-image:hover {
-  transform: scale(1.05);
+.consultation-management-message.received {
+  justify-content: flex-start;
+  align-self: flex-start;
 }
 
+.consultation-management-message-content {
+  max-width: 75%;
+  min-width: 60px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  box-shadow: var(--shadow-light);
+  transition: var(--transition);
+}
+
+.consultation-management-message-content:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Sent messages - IDENTICAL styling to ConsultationChat */
+.consultation-management-message.sent .consultation-management-message-content {
+  background: var(--sent-message-bg);
+  color: var(--sent-message-text);
+  border-bottom-right-radius: 6px;
+}
+
+/* Received messages - IDENTICAL styling to ConsultationChat */
+.consultation-management-message.received .consultation-management-message-content {
+  background: var(--received-message-bg);
+  color: var(--received-message-text);
+  border-bottom-left-radius: 6px;
+  border: 1px solid var(--received-message-border);
+}
+
+.consultation-management-message-content p {
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.consultation-management-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.consultation-management-message-time {
+  font-size: 11px;
+  opacity: 0.7;
+  font-weight: 500;
+  margin-top: 4px;
+  display: block;
+}
+
+/* ===== UNIFIED ATTACHMENT STYLING (IDENTICAL TO CONSULTATION CHAT) ===== */
 .consultation-management-attachment {
   margin-top: 8px;
 }
 
-/* Attachment card
-.msg-attach-card {
+/* Image attachments - IDENTICAL to ConsultationChat */
+.consultation-management-attachment-image {
+  max-width: 250px;
+  max-height: 200px;
+  border-radius: var(--border-radius-small);
+  object-fit: cover;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.consultation-management-message.sent .consultation-management-attachment-image {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.consultation-management-message.received .consultation-management-attachment-image {
+  border-color: rgba(22, 121, 149, 0.2);
+}
+
+.consultation-management-attachment-image:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-medium);
+}
+
+/* Document attachments - IDENTICAL to ConsultationChat */
+.consultation-management-attachment-document {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-small);
+  margin-top: 8px;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  color: inherit;
+  max-width: 280px;
+}
+
+.consultation-management-message.received .consultation-management-attachment-document {
+  background: rgba(22, 121, 149, 0.1);
+  border-color: rgba(22, 121, 149, 0.2);
+}
+
+.consultation-management-attachment-document:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-light);
+}
+
+.consultation-management-message.received .consultation-management-attachment-document:hover {
+  background: rgba(22, 121, 149, 0.15);
+}
+
+.consultation-management-attachment-info {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 100%;
 }
 
-.consultation-management-message.received .msg-attach-card {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-}
-
-.msg-attach-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.msg-attach-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.consultation-management-document-file-icon {
   font-size: 18px;
-  color: white;
+  opacity: 0.8;
   flex-shrink: 0;
 }
 
-.icon-pdf .msg-attach-icon {
-  background: #ef4444;
-}
-
-.icon-doc .msg-attach-icon {
-  background: #2563eb;
-}
-
-.icon-xls .msg-attach-icon {
-  background: #16a34a;
-}
-
-.icon-txt .msg-attach-icon {
-  background: #6b7280;
-}
-
-.icon-file .msg-attach-icon {
-  background: #8b5cf6;
-}
-
-.msg-attach-meta {
+.consultation-management-attachment-details {
   flex: 1;
   min-width: 0;
 }
 
-.msg-attach-name {
+.consultation-management-attachment-name {
   font-weight: 600;
   font-size: 13px;
   white-space: nowrap;
@@ -489,10 +739,15 @@
   margin-bottom: 2px;
 }
 
-.msg-attach-size {
+.consultation-management-attachment-size {
   font-size: 11px;
   opacity: 0.7;
-} */
+}
+
+.consultation-management-attachment-link {
+  color: inherit;
+  text-decoration: none;
+}
 
 /* Empty messages */
 .consultation-management-empty-messages {
@@ -502,19 +757,21 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  color: #64748b;
+  color: var(--text-secondary);
   padding: 40px;
+  animation: fadeIn 0.5s ease-out;
 }
 
 .consultation-management-empty-messages svg {
   font-size: 4rem;
   color: #cbd5e1;
   margin-bottom: 24px;
+  animation: float 3s ease-in-out infinite;
 }
 
 .consultation-management-empty-messages h3 {
   margin: 0 0 12px 0;
-  color: #475569;
+  color: var(--text-primary);
   font-size: 1.4rem;
   font-weight: 600;
 }
@@ -525,11 +782,12 @@
   line-height: 1.5;
 }
 
-/* Input area */
+/* ===== INPUT AREA ===== */
 .consultation-management-input-area {
   border-top: 1px solid #e2e8f0;
-  background: #fff;
+  background: var(--bg-primary);
   padding: 20px 24px;
+  position: relative;
 }
 
 .consultation-management-input-container {
@@ -559,7 +817,7 @@
   object-fit: cover;
   border-radius: 8px;
   border: 2px solid #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
 }
 
 .consultation-management-file-preview-document {
@@ -569,16 +827,23 @@
   padding: 8px 12px;
   background: white;
   border-radius: var(--border-radius-small);
-  border: 1px solid rgba(13, 122, 165, 0.2);
-  color: var(--dark-text);
+  border: 1px solid rgba(22, 121, 149, 0.2);
+  color: var(--text-primary);
   font-size: 13px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-light);
   max-width: 250px;
 }
 
 .consultation-management-file-preview-document svg {
-  color: #64748b;
+  color: var(--text-secondary);
   font-size: 18px;
+  flex-shrink: 0;
+}
+
+.consultation-management-file-preview-document span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .consultation-management-file-preview-remove {
@@ -614,18 +879,18 @@
   border: 2px solid #e2e8f0;
   border-radius: 20px;
   padding: 8px 12px;
-  transition: all 0.3s ease;
+  transition: var(--transition);
 }
 
 .consultation-management-input-row:focus-within {
-  border-color: #167995;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(22, 121, 149, 0.1);
 }
 
 .consultation-management-attachment-btn {
   font-size: 1.5rem;
   background: none;
-  color: #167995;
+  color: var(--primary-color);
   border: none;
   border-radius: 50%;
   width: 48px;
@@ -636,12 +901,12 @@
   justify-content: center;
   transition: var(--transition);
   flex-shrink: 0;
-  box-shadow: var(--shadow-light);
 }
 
 .consultation-management-attachment-btn:hover {
-  color: #167995;
+  color: var(--primary-color);
   background: rgba(22, 121, 149, 0.1);
+  transform: scale(1.05);
 }
 
 .consultation-management-input-row textarea {
@@ -654,18 +919,18 @@
   font-family: inherit;
   font-size: 14px;
   line-height: 1.5;
-  color: #1e293b;
+  color: var(--text-primary);
   min-height: 20px;
   max-height: 120px;
 }
 
 .consultation-management-input-row textarea::placeholder {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .consultation-management-send-btn {
   font-size: 2rem;
-  background: #117ba2;
+  background: var(--primary-dark);
   color: white;
   border: none;
   border-radius: 50%;
@@ -692,7 +957,7 @@
   box-shadow: 0 2px 8px rgba(22, 121, 149, 0.2);
 }
 
-/* No selection state */
+/* ===== NO SELECTION STATE ===== */
 .consultation-management-no-selection {
   display: flex;
   flex-direction: column;
@@ -700,19 +965,22 @@
   justify-content: center;
   height: 100%;
   text-align: center;
-  color: #64748b;
+  color: var(--text-secondary);
   padding: 60px 40px;
+  background: linear-gradient(135deg, rgba(248, 249, 250, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+  animation: fadeIn 0.5s ease-out;
 }
 
 .consultation-management-no-selection svg {
   font-size: 5rem;
   color: #cbd5e1;
   margin-bottom: 30px;
+  animation: float 3s ease-in-out infinite;
 }
 
 .consultation-management-no-selection h3 {
   margin: 0 0 16px 0;
-  color: #475569;
+  color: var(--text-primary);
   font-size: 1.6rem;
   font-weight: 600;
 }
@@ -724,148 +992,7 @@
   max-width: 400px;
 }
 
-
-.consultation-management-attachment {
-  margin-top: 8px;
-}
-
-.consultation-management-attachment-image {
-  max-width: 250px;
-  max-height: 200px;
-  border-radius: var(--border-radius-small);
-  object-fit: cover;
-  cursor: pointer;
-  transition: var(--transition);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-.consultation-management-message.sent .consultation-management-attachment-image {
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.consultation-management-message.received .consultation-management-attachment-image {
-  border-color: rgba(13, 122, 165, 0.2);
-}
-
-.consultation-management-attachment-image:hover {
-  transform: scale(1.02);
-  box-shadow: var(--shadow-medium);
-}
-
-.consultation-management-attachment-document {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius-small);
-  margin-top: 4px;
-  font-size: 13px;
-}
-
-.consultation-management-message.received .consultation-management-attachment-document {
-  background: rgba(13, 122, 165, 0.1);
-}
-
-.consultation-management-attachment-icon {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.consultation-management-attachment-name {
-  font-weight: 500;
-  opacity: 0.9;
-}
-
-/* Attachment card */
-.consultation-management-attachment-document {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--bubble-bg, #1c80a2);
-  color: var(--bubble-fg, #e8ecf1);
-  border: solid 1px #ffffff;
-  border-radius: 12px;
-  padding: 10px 12px;
-  cursor: pointer;
-  max-width: 260px;
-  user-select: none;
-  transition: background 0.15s ease;
-  text-decoration: none;
-}
-
-.consultation-management-attachment-document .document-file-icon {
-  font-size: 1rem;
-}
-
-.consultation-management-attachment-name {
-  font-size: 1rem;
-}
-.consultation-management-attachment-document:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.consultation-management-attachment-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.1);
-  position: relative;
-  flex: 0 0 36px;
-}
-/* Simple icon variants by type */
-.icon-pdf .consultation-management-attachment-icon {
-  background: #b71c1c33;
-}
-.icon-doc .consultation-management-attachment-icon {
-  background: #1a73e833;
-}
-.icon-xls .consultation-management-attachment-icon {
-  background: #0f9d5833;
-}
-.icon-txt .consultation-management-attachment-icon {
-  background: #9aa0a633;
-}
-.icon-file .consultation-management-attachment-icon {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.consultation-management-attachment-meta {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.consultation-management-attachment-name {
-  font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.consultation-management-attachment-size {
-  font-size: 12px;
-  opacity: 0.75;
-}
-
-.consultation-management-attachment-image {
-  max-width: 260px;
-  border-radius: 12px;
-  margin-top: 6px;
-  cursor: pointer;
-}
-
-/* Make cards align like bubbles */
-.consultation-management-message.sent .consultation-management-attachment-document,
-.consultation-management-message.sent .consultation-management-attachment-image {
-  margin-left: auto;
-}
-.consultation-management-message.received .consultation-management-attachment-document,
-.consultation-management-message.received .consultation-management-attachment-image {
-  margin-right: auto;
-}
-
-
-/* Responsive design */
+/* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 1024px) {
   .consultation-management-content {
     grid-template-columns: 320px 1fr;
@@ -903,6 +1030,10 @@
   .consultation-management-input-area {
     padding: 16px 20px;
   }
+
+  .consultation-management-messages {
+    padding: 20px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -936,23 +1067,28 @@
   .consultation-management-patient-meta h2 {
     font-size: 1.3rem;
   }
+
+  .consultation-management-message-content {
+    max-width: 90%;
+    padding: 14px 16px;
+  }
+
+  .consultation-management-attachment-image {
+    max-width: 200px;
+    max-height: 150px;
+  }
+
+  .consultation-management-attachment-document {
+    max-width: 240px;
+  }
 }
 
-/* Print styles */
-@media print {
-  .consultation-management-sidebar,
-  .consultation-management-input-area {
-    display: none;
-  }
-
-  .consultation-management-content {
-    grid-template-columns: 1fr;
-  }
-
-  .consultation-management-messages {
-    max-height: none;
-    overflow: visible;
-  }
+/* ===== ACCESSIBILITY ===== */
+.consultation-management-thread-item:focus,
+.consultation-management-action-btn:focus,
+.consultation-management-attachment-btn:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 /* High contrast mode */
@@ -986,5 +1122,22 @@
   .consultation-management-message,
   .titleFadeIn {
     animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .consultation-management-sidebar,
+  .consultation-management-input-area {
+    display: none;
+  }
+
+  .consultation-management-content {
+    grid-template-columns: 1fr;
+  }
+
+  .consultation-management-messages {
+    max-height: none;
+    overflow: visible;
   }
 }

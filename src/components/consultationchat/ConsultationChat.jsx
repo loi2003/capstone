@@ -41,6 +41,8 @@ const ConsultationChat = () => {
   const [currentUserId, setCurrentUserId] = useState(passedUserId || "");
   const [loading, setLoading] = useState(true);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
   const [consultants, setConsultants] = useState([]);
   const [chatThreads, setChatThreads] = useState({});
   const [selectedConsultant, setSelectedConsultant] = useState(
@@ -591,8 +593,22 @@ const ConsultationChat = () => {
                 onClick={() => window.open(msg.attachment.url, "_blank")}
               />
             ) : (
-              <div className="consultation-chat-attachment">
-                <AttachmentCard att={msg.attachment} />
+              <div className="consultation-chat-attachment-document">
+                <a
+                  href={msg.attachment.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="consultation-chat-attachment-link"
+                >
+                  <div className="consultation-chat-attachment-info">
+                    <FaFileAlt className="consultation-chat-document-file-icon" />
+                    <div className="consultation-chat-attachment-details">
+                      <span className="consultation-chat-attachment-name">
+                        {msg.attachment.fileName}
+                      </span>
+                    </div>
+                  </div>
+                </a>
               </div>
             ))}
 
@@ -627,29 +643,22 @@ const ConsultationChat = () => {
               );
             })}
 
-          <span className="consultation-chat-message-time">
-            {formatMessageTime(msg.createdAt)}
+          <span
+            className="consultation-chat-message-time"
+            style={{
+              fontSize: "11px",
+              opacity: 0.7,
+              fontWeight: 500,
+              marginTop: "8px",
+              display: "block",
+              textAlign: isSent ? "right" : "left",
+              color: isSent ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.7)",
+            }}
+          >
+            {formatMessageTime(
+              msg.createdAt || msg.sentAt || msg.timestamp || msg.creationDate
+            )}
           </span>
-        </div>
-      </div>
-    );
-  };
-
-  const AttachmentCard = ({ att }) => {
-    if (!att?.url) return null;
-    const iconKey = getFileIcon(att.fileName, att.fileType);
-    const onClick = () => window.open(att.url, "_blank");
-    return (
-      <div
-        className={`msg-attach-card icon-${iconKey}`}
-        onClick={onClick}
-        role="button"
-        tabIndex={0}
-      >
-        <div className="msg-attach-icon" aria-hidden />
-        <div className="msg-attach-meta">
-          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
-          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
         </div>
       </div>
     );
@@ -663,41 +672,55 @@ const ConsultationChat = () => {
   };
 
   const formatMessageTime = (timestamp) => {
+    // console.log("timestamp", timestamp);
     if (!timestamp) return "";
 
     try {
-      let date;
+      let utcDate;
 
       // Handle different timestamp formats
       if (typeof timestamp === "string") {
-        date = new Date(timestamp);
+        // If string doesn't end with 'Z', assume it's UTC and add 'Z'
+        // if (
+        //   !timestamp.endsWith("Z") &&
+        //   !timestamp.includes("+") &&
+        //   !timestamp.includes("-")
+        // ) {
+        if (!timestamp.endsWith("Z")) {
+          utcDate = new Date(timestamp + "Z"); // Force UTC parsing
+        } else {
+          utcDate = new Date(timestamp);
+        }
       } else if (typeof timestamp === "number") {
         // Handle Unix timestamp (seconds or milliseconds)
-        date =
+        utcDate =
           timestamp > 1000000000000
             ? new Date(timestamp)
             : new Date(timestamp * 1000);
       } else if (timestamp instanceof Date) {
-        date = timestamp;
+        utcDate = timestamp;
       } else {
         return "";
       }
 
       // Check if date is valid
-      if (isNaN(date.getTime())) {
+      if (isNaN(utcDate.getTime())) {
+        console.warn("Invalid timestamp:", timestamp);
         return "";
       }
+      // console.log("log utcDate", utcDate);
 
-      // Format with fallback
+      // Convert to local timezone and format
       try {
-        return date.toLocaleTimeString([], {
+        return utcDate.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         });
       } catch (e) {
-        // Manual fallback formatting
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
+        // Manual fallback formatting (already in local time)
+        const hours = utcDate.getHours().toString().padStart(2, "0");
+        const minutes = utcDate.getMinutes().toString().padStart(2, "0");
         return `${hours}:${minutes}`;
       }
     } catch (error) {
