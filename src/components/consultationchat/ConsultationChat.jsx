@@ -22,7 +22,7 @@ import {
   FaPaperclip,
   FaTimes,
 } from "react-icons/fa";
-import { FaFileAlt } from 'react-icons/fa';
+import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
 import LoadingOverlay from "../popup/LoadingOverlay";
 
@@ -389,10 +389,6 @@ const ConsultationChat = () => {
       sendingMessage
     )
       return;
-    if (!selectedFile) {
-      alert("Please attach a file to send");
-      return;
-    }
 
     try {
       setSendingMessage(true);
@@ -408,7 +404,6 @@ const ConsultationChat = () => {
 
       if (selectedFile) {
         formData.append("Attachment", selectedFile);
-        // Also append metadata to help backend process
         formData.append("AttachmentFileName", selectedFile.name);
         formData.append("AttachmentFileType", selectedFile.type);
         formData.append("AttachmentFileSize", selectedFile.size.toString());
@@ -418,7 +413,6 @@ const ConsultationChat = () => {
       console.log("Send message response:", response);
 
       if (response.error === 0) {
-        // Extract attachment URL from response
         const attachmentUrl =
           response.data?.attachmentUrl ||
           response.data?.attachmentPath ||
@@ -432,7 +426,6 @@ const ConsultationChat = () => {
           createdAt: response.data?.sentAt || new Date().toISOString(),
           messageType: selectedFile ? "attachment" : "text",
           isRead: false,
-          // Store attachment data from backend response
           attachmentUrl: attachmentUrl,
           attachmentFileName: selectedFile?.name,
           attachmentFileType: selectedFile?.type,
@@ -443,7 +436,6 @@ const ConsultationChat = () => {
                 fileSize: selectedFile.size,
                 fileType: selectedFile.type,
                 isImage: isImageFile(selectedFile.name),
-                // Use backend URL if available, otherwise use local preview temporarily
                 url: attachmentUrl || filePreview,
               }
             : null,
@@ -460,8 +452,6 @@ const ConsultationChat = () => {
         setNewMessage("");
         clearSelectedFile();
 
-        // Optionally refresh the thread to get the latest data from backend
-        // This ensures the attachment URL is properly stored
         setTimeout(async () => {
           try {
             const updatedThread = await getChatThreadById(
@@ -574,11 +564,10 @@ const ConsultationChat = () => {
                 rel="noreferrer"
                 className="consultation-chat-attachment-document"
               >
-                <FaFileAlt className="document-file-icon"/>
+                <FaFileAlt className="document-file-icon" />
                 <span className="chat-attachment-name">
                   {m.fileName || "Download file"}
                 </span>
-                
               </a>
             );
           })}
