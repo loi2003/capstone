@@ -93,8 +93,9 @@ export const createClinic = async (clinicData, token) => {
 // Update an existing clinic using the API
 export const updateClinic = async (clinicData, token) => {
   try {
-    const response = await apiClient.put('/api/clinic/update-clinic', null, {
-      params: {
+    const response = await apiClient.put(
+      '/api/clinic/update-clinic',
+      {
         Id: clinicData.id,
         Name: clinicData.name,
         Address: clinicData.address,
@@ -104,11 +105,14 @@ export const updateClinic = async (clinicData, token) => {
         IsInsuranceAccepted: clinicData.isInsuranceAccepted,
         Specializations: clinicData.specializations,
       },
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json',
-      },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      }
+    );
     return response.data;
   } catch (error) {
     console.error('Error updating clinic:', error.message);
