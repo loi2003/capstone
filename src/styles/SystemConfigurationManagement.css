@@ -1,18 +1,21 @@
-* {
+/* Reset and base styles */
+.system-configuration-management * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-.system-config-management {
+.system-configuration-management {
   font-family: 'Roboto', sans-serif;
   background-color: #f4f7fa;
   color: #124966;
   min-height: 100vh;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
-:root {
+/* Define custom properties for consistent theming */
+.system-configuration-management {
   --admin-primary: #146f89;
   --admin-primary-dark: #122f4b;
   --admin-secondary: #1aa3ab;
@@ -26,7 +29,8 @@
   --admin-transition: all 0.3s ease;
 }
 
-.system-config-management .admin-sidebar {
+/* Sidebar styles */
+.system-configuration-management__sidebar {
   background: linear-gradient(180deg, #146f89, #20dacc);
   color: var(--admin-background);
   position: fixed;
@@ -35,81 +39,79 @@
   height: 100vh;
   box-shadow: var(--admin-shadow);
   z-index: 1000;
-  transition: var(--admin-transition);
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-width: 280px;
+  transition: width var(--admin-transition);
+  overflow: hidden;
+  width: 240px;
 }
 
-.system-config-management .admin-sidebar.open {
-  width: 280px;
+.system-configuration-management__sidebar.closed {
+  width: 56px;
+  overflow: hidden;
 }
 
-.system-config-management .admin-sidebar.closed {
-  width: 60px;
-}
-
-.system-config-management .sidebar-header {
+.system-configuration-management__sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  padding: 0.8rem;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
 }
 
-.system-config-management .admin-sidebar.closed .sidebar-header {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-header {
   flex-direction: column;
-  padding: 1rem 0.5rem;
-  gap: 0.75rem;
+  padding: 0.6rem 0.4rem;
+  gap: 0.6rem;
+  align-items: center;
 }
 
-.system-config-management .logo {
+.system-configuration-management__logo {
   display: flex;
   align-items: center;
   text-decoration: none;
-  gap: 10px;
+  gap: 8px;
   max-width: 100%;
 }
 
-.system-config-management .logo span {
-  font-size: 1.25rem;
+.system-configuration-management__logo span {
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--admin-background);
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  max-width: 160px;
 }
 
-.system-config-management .admin-sidebar.closed .logo span {
+.system-configuration-management__sidebar.closed .system-configuration-management__logo span {
   display: none;
 }
 
-.system-config-management .logo-svg-container {
+.system-configuration-management__logo-svg-container {
   display: inline-flex;
 }
 
-.system-config-management .logo-svg-container svg {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+.system-configuration-management__logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
 }
 
-.system-config-management .admin-sidebar.closed .logo-svg-container svg {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+.system-configuration-management__sidebar.closed .system-configuration-management__logo-svg-container svg {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
 }
 
-.system-config-management .sidebar-toggle {
+.system-configuration-management__sidebar-toggle {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--admin-background);
   cursor: pointer;
-  padding: 8px;
-  width: 36px;
-  height: 36px;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,54 +119,54 @@
   transition: var(--admin-transition);
 }
 
-.system-config-management .admin-sidebar.closed .sidebar-toggle {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-toggle {
   margin: 0 auto;
 }
 
-.system-config-management .sidebar-toggle:hover,
-.system-config-management .sidebar-toggle:focus {
+.system-configuration-management__sidebar-toggle:hover,
+.system-configuration-management__sidebar-toggle:focus {
   background: var(--admin-background);
   border-color: var(--admin-primary);
 }
 
-.system-config-management .sidebar-toggle svg path {
+.system-configuration-management__sidebar-toggle svg path {
   stroke: var(--admin-background);
 }
 
-.system-config-management .sidebar-toggle:hover svg path,
-.system-config-management .sidebar-toggle:focus svg path {
+.system-configuration-management__sidebar-toggle:hover svg path,
+.system-configuration-management__sidebar-toggle:focus svg path {
   stroke: var(--admin-primary);
 }
 
-.system-config-management .sidebar-nav {
+.system-configuration-management__sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0 1rem;
+  gap: 0.6rem;
+  padding: 0 0.8rem;
 }
 
-.system-config-management .admin-sidebar.closed .sidebar-nav {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav {
   padding: 0;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
-.system-config-management .sidebar-nav-item {
+.system-configuration-management__sidebar-nav-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.system-config-management .admin-sidebar.closed .sidebar-nav-item {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav-item {
   justify-content: center;
 }
 
-.system-config-management .sidebar-nav a,
-.system-config-management .sidebar-nav button {
+.system-configuration-management__sidebar-nav a,
+.system-configuration-management__sidebar-nav button {
   color: var(--admin-background);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: var(--admin-border-radius);
   transition: var(--admin-transition);
   background: none;
@@ -173,55 +175,55 @@
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   width: 100%;
   max-width: 100%;
   white-space: normal;
   word-wrap: break-word;
 }
 
-.system-config-management .admin-sidebar.closed .sidebar-nav a,
-.system-config-management .admin-sidebar.closed .sidebar-nav button {
-  padding: 0.75rem 0;
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav a,
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav button {
+  padding: 0.6rem 0;
   justify-content: center;
 }
 
-.system-config-management .sidebar-nav a svg,
-.system-config-management .sidebar-nav button svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.system-configuration-management__sidebar-nav a svg,
+.system-configuration-management__sidebar-nav button svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
-.system-config-management .admin-sidebar.closed .sidebar-nav a span,
-.system-config-management .admin-sidebar.closed .sidebar-nav button span {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav a span,
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav button span {
   display: none;
 }
 
-.system-config-management .sidebar-nav a:hover,
-.system-config-management .sidebar-nav button:hover {
+.system-configuration-management__sidebar-nav a:hover,
+.system-configuration-management__sidebar-nav button:hover {
   background: var(--admin-primary-dark);
   transform: translateY(-2px);
 }
 
-.system-config-management .sidebar-nav a:hover svg path,
-.system-config-management .sidebar-nav button:hover svg path {
+.system-configuration-management__sidebar-nav a:hover svg path,
+.system-configuration-management__sidebar-nav button:hover svg path {
   stroke: var(--admin-background);
 }
 
-.system-config-management .admin-profile-section {
-  margin-top: 1rem;
+.system-configuration-management__admin-profile-section {
+  margin-top: 0.8rem;
 }
 
-.system-config-management .admin-profile-info {
+.system-configuration-management__admin-profile-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 0.6rem;
+  padding: 0.6rem;
   border-radius: var(--admin-border-radius);
   background: rgba(255, 255, 255, 0.1);
   color: var(--admin-background);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   width: 100%;
   max-width: 100%;
@@ -229,74 +231,78 @@
   word-wrap: break-word;
 }
 
-.system-config-management .admin-sidebar.closed .admin-profile-info {
-  padding: 0.75rem 0;
+.system-configuration-management__sidebar.closed .system-configuration-management__admin-profile-info {
+  padding: 0.6rem 0;
   justify-content: center;
 }
 
-.system-config-management .admin-profile-info svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.system-configuration-management__admin-profile-info svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
-.system-config-management .admin-sidebar.closed .admin-profile-info span {
+.system-configuration-management__sidebar.closed .system-configuration-management__admin-profile-info span {
   display: none;
 }
 
-.system-config-management .admin-profile-info:hover .admin-profile-email {
+.system-configuration-management__admin-profile-info:hover .system-configuration-management__admin-profile-email {
   text-decoration: underline;
 }
 
-.system-config-management .logout-button {
+.system-configuration-management__logout-button {
   background: rgba(229, 62, 62, 0.1);
   color: var(--admin-logout);
   font-weight: 600;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border: 1px solid var(--admin-logout);
   border-radius: var(--admin-border-radius);
   transition: var(--admin-transition);
 }
 
-.system-config-management .admin-sidebar.closed .logout-button {
-  padding: 0.75rem 0;
+.system-configuration-management__sidebar.closed .system-configuration-management__logout-button {
+  padding: 0.6rem 0;
   justify-content: center;
 }
 
-.system-config-management .logout-button svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.system-configuration-management__logout-button svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
-.system-config-management .logout-button:hover,
-.system-config-management .logout-button:focus {
+.system-configuration-management__logout-button:hover,
+.system-configuration-management__logout-button:focus {
   background: var(--admin-logout);
   color: var(--admin-background);
   transform: translateY(-2px);
 }
 
-.system-config-management .logout-button svg path {
+.system-configuration-management__logout-button svg path {
   stroke: var(--admin-logout);
 }
 
-.system-config-management .logout-button:hover svg path,
-.system-config-management .logout-button:focus svg path {
+.system-configuration-management__logout-button:hover svg path,
+.system-configuration-management__logout-button:focus svg path {
   stroke: var(--admin-background);
 }
 
-.system-config-management .admin-content {
-  flex: 1;
-  margin-left: 280px;
+/* Content styles */
+.system-configuration-management__content {
+  margin-left: 240px;
   padding: 2rem;
   transition: margin-left var(--admin-transition);
+  width: calc(100% - 240px);
+  min-width: 0;
 }
 
-.system-config-management .admin-sidebar.closed + .admin-content {
-  margin-left: 60px;
+.system-configuration-management__content.closed {
+  margin-left: 56px;
+  width: calc(100% - 56px);
 }
 
-.system-config-management .admin-banner {
+/* Banner styles */
+.system-configuration-management__banner {
   background: linear-gradient(135deg, #f4f7fa, var(--admin-accent));
   padding: 3rem;
   display: flex;
@@ -306,32 +312,35 @@
   flex-wrap: wrap;
   border-radius: var(--admin-border-radius);
   box-shadow: var(--admin-shadow);
+  max-width: 100%;
 }
 
-.system-config-management .admin-banner-content {
+.system-configuration-management__banner-content {
   max-width: 600px;
   color: var(--admin-primary);
+  flex: 1;
+  min-width: 0;
 }
 
-.system-config-management .admin-banner-title {
+.system-configuration-management__banner-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
 }
 
-.system-config-management .admin-banner-subtitle {
+.system-configuration-management__banner-subtitle {
   font-size: 1.1rem;
   opacity: 0.9;
   margin-bottom: 1.5rem;
 }
 
-.system-config-management .admin-banner-buttons {
+.system-configuration-management__banner-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.system-config-management .admin-banner-button {
+.system-configuration-management__banner-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
@@ -340,53 +349,54 @@
   transition: var(--admin-transition);
 }
 
-.system-config-management .admin-banner-button.primary {
+.system-configuration-management__banner-button.primary {
   background: var(--admin-background);
   color: var(--admin-primary);
 }
 
-.system-config-management .admin-banner-button.primary:hover,
-.system-config-management .admin-banner-button.primary:focus {
+.system-configuration-management__banner-button.primary:hover,
+.system-configuration-management__banner-button.primary:focus {
   background: #e6f0f5;
   transform: translateY(-3px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.system-config-management .admin-banner-button.secondary {
+.system-configuration-management__banner-button.secondary {
   background: transparent;
   color: var(--admin-primary);
   border: 2px solid var(--admin-accent);
 }
 
-.system-config-management .admin-banner-button.secondary:hover,
-.system-config-management .admin-banner-button.secondary:focus {
+.system-configuration-management__banner-button.secondary:hover,
+.system-configuration-management__banner-button.secondary:focus {
   background: var(--admin-accent);
   color: var(--admin-primary);
   transform: translateY(-3px);
 }
 
-.system-config-management .admin-banner-image svg {
+.system-configuration-management__banner-image svg {
   width: 200px;
   height: 200px;
   max-width: 100%;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
 }
 
-.system-config-management .admin-features {
+/* Features section */
+.system-configuration-management__features {
   max-width: 1200px;
   margin: 3rem auto;
   padding: 2rem;
   text-align: center;
 }
 
-.system-config-management .admin-features-title {
+.system-configuration-management__features-title {
   font-size: 2rem;
   font-weight: 600;
   color: var(--admin-text);
   margin-bottom: 1rem;
 }
 
-.system-config-management .admin-features-description {
+.system-configuration-management__features-description {
   font-size: 1.1rem;
   color: #5f788a;
   margin-bottom: 2rem;
@@ -395,13 +405,13 @@
   margin-right: auto;
 }
 
-.system-config-management .admin-features-grid {
+.system-configuration-management__features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
-.system-config-management .admin-feature-card {
+.system-configuration-management__feature-card {
   background: var(--admin-background);
   padding: 1.5rem;
   border-radius: var(--admin-border-radius);
@@ -409,26 +419,26 @@
   transition: var(--admin-transition);
 }
 
-.system-config-management .admin-feature-card:hover,
-.system-config-management .admin-feature-card:focus-within {
+.system-configuration-management__feature-card:hover,
+.system-configuration-management__feature-card:focus-within {
   transform: translateY(-5px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.system-config-management .admin-feature-card h3 {
+.system-configuration-management__feature-card h3 {
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--admin-text);
   margin-bottom: 0.75rem;
 }
 
-.system-config-management .admin-feature-card p {
+.system-configuration-management__feature-card p {
   font-size: 0.95rem;
   color: #5f788a;
   margin-bottom: 1rem;
 }
 
-.system-config-management .admin-feature-link {
+.system-configuration-management__feature-link {
   display: inline-flex;
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
@@ -440,232 +450,111 @@
   transition: var(--admin-transition);
 }
 
-.system-config-management .admin-feature-link:hover,
-.system-config-management .admin-feature-link:focus {
+.system-configuration-management__feature-link:hover,
+.system-configuration-management__feature-link:focus {
   background: var(--admin-primary-dark);
   box-shadow: var(--admin-shadow);
 }
 
+/* Responsive adjustments */
 @media (max-width: 1024px) {
-  .system-config-management .admin-sidebar {
-    max-width: 240px;
+  .system-configuration-management__features {
+    grid-template-columns: 1fr;
   }
 
-  .system-config-management .admin-sidebar.open {
-    width: 240px;
-  }
-
-  .system-config-management .admin-content {
-    margin-left: 240px;
-  }
-
-  .system-config-management .admin-sidebar.closed + .admin-content {
-    margin-left: 60px;
-  }
-
-  .system-config-management .admin-banner {
+  .system-configuration-management__banner {
     padding: 2rem;
     flex-direction: column;
     text-align: center;
   }
 
-  .system-config-management .admin-banner-image svg {
-    width: 180px;
-    height: 180px;
+  .system-configuration-management__banner-content {
+    max-width: 100%;
   }
 
-  .system-config-management .logo span {
-    max-width: 160px;
+  .system-configuration-management__banner-title {
+    font-size: 2rem;
+  }
+
+  .system-configuration-management__banner-image svg {
+    width: 150px;
+    height: 150px;
   }
 }
 
 @media (max-width: 768px) {
-  .system-config-management .admin-sidebar {
-    max-width: 220px;
-  }
-
-  .system-config-management .admin-sidebar.open {
-    width: 220px;
-  }
-
-  .system-config-management .admin-content {
-    margin-left: 220px;
+  .system-configuration-management__content {
+    margin-left: 56px;
+    width: calc(100% - 56px);
     padding: 1.5rem;
   }
 
-  .system-config-management .admin-sidebar.closed + .admin-content {
-    margin-left: 60px;
+  .system-configuration-management__content.closed {
+    margin-left: 56px;
+    width: calc(100% - 56px);
   }
 
-  .system-config-management .admin-banner-title {
-    font-size: 2rem;
+  .system-configuration-management__sidebar {
+    width: 56px;
   }
 
-  .system-config-management .admin-banner-subtitle {
-    font-size: 1rem;
+  .system-configuration-management__features {
+    padding: 1.5rem;
+    margin: 1.5rem auto;
   }
 
-  .system-config-management .admin-banner-image svg {
-    width: 150px;
-    height: 150px;
+  .system-configuration-management__feature-card {
+    padding: 1rem;
   }
 
-  .system-config-management .admin-features-title {
+  .system-configuration-management__banner-title {
     font-size: 1.8rem;
   }
 
-  .system-config-management .admin-features-grid {
-    gap: 1rem;
-  }
-
-  .system-config-management .logo span {
-    font-size: 1.125rem;
-    max-width: 140px;
+  .system-configuration-management__banner-subtitle {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .system-config-management .admin-sidebar {
-    max-width: 200px;
-    padding: 0.75rem 0;
-  }
-
-  .system-config-management .admin-sidebar.open {
-    width: 200px;
-  }
-
-  .system-config-management .admin-content {
-    margin-left: 200px;
-    padding: 1rem;
-  }
-
-  .system-config-management .admin-sidebar.closed + .admin-content {
-    margin-left: 60px;
-  }
-
-  .system-config-management .sidebar-header {
-    padding: 0.75rem;
-    gap: 0.5rem;
-  }
-
-  .system-config-management .admin-sidebar.closed .sidebar-header {
-    padding: 0.75rem 0;
-    gap: 0.5rem;
-  }
-
-  .system-config-management .logo span {
-    font-size: 1rem;
-    max-width: 120px;
-  }
-
-  .system-config-management .logo-svg-container svg {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-  }
-
-  .system-config-management .admin-sidebar.closed .logo-svg-container svg {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-  }
-
-  .system-config-management .sidebar-toggle {
-    width: 32px;
-    height: 32px;
-    padding: 6px;
-  }
-
-  .system-config-management .sidebar-toggle svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-  }
-
-  .system-config-management .sidebar-nav a,
-  .system-config-management .sidebar-nav button {
-    font-size: 0.9rem;
-    padding: 0.6rem 0.5rem;
-  }
-
-  .system-config-management .admin-sidebar.closed .sidebar-nav a,
-  .system-config-management .admin-sidebar.closed .sidebar-nav button {
-    padding: 0.6rem 0;
-  }
-
-  .system-config-management .sidebar-nav a svg,
-  .system-config-management .sidebar-nav button svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-  }
-
-  .system-config-management .admin-profile-info {
-    padding: 0.6rem 0.5rem;
-  }
-
-  .system-config-management .admin-sidebar.closed .admin-profile-info {
-    padding: 0.6rem 0;
-  }
-
-  .system-config-management .admin-profile-info svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-  }
-
-  .system-config-management .admin-profile-email {
-    font-size: 0.95rem;
-  }
-
-  .system-config-management .admin-banner {
+  .system-configuration-management__banner {
     padding: 1.5rem;
   }
 
-  .system-config-management .admin-banner-title {
+  .system-configuration-management__banner-title {
     font-size: 1.5rem;
   }
 
-  .system-config-management .admin-banner-subtitle {
+  .system-configuration-management__banner-subtitle {
     font-size: 0.9rem;
   }
 
-  .system-config-management .admin-banner-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .system-config-management .admin-banner-image svg {
+  .system-configuration-management__banner-image svg {
     width: 120px;
     height: 120px;
   }
 
-  .system-config-management .admin-features {
-    padding: 1.5rem;
-  }
-
-  .system-config-management .admin-features-title {
+  .system-configuration-management__features-title {
     font-size: 1.5rem;
   }
 
-  .system-config-management .admin-features-description {
+  .system-configuration-management__features-description {
     font-size: 0.9rem;
   }
 
-  .system-config-management .admin-features-grid {
+  .system-configuration-management__features-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
 
-  .system-config-management .admin-feature-card {
+  .system-configuration-management__feature-card {
     padding: 1rem;
   }
 
-  .system-config-management .admin-feature-card h3 {
+  .system-configuration-management__feature-card h3 {
     font-size: 1.25rem;
   }
 
-  .system-config-management .admin-feature-link {
+  .system-configuration-management__feature-link {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }

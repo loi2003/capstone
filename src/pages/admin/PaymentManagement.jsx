@@ -5,13 +5,22 @@ import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/PaymentManagement.css";
 
 const PaymentManagement = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/signin", { replace: true });
         return;
@@ -34,7 +43,7 @@ const PaymentManagement = () => {
       }
     };
     fetchUser();
-  }, [navigate]);
+  }, [navigate, token]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -43,13 +52,13 @@ const PaymentManagement = () => {
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
     try {
-      if (user?.userId) await logout(user.userId);
+      if (user?.id) await logout(user.id);
     } catch (error) {
       console.error("Error logging out:", error.message);
     } finally {
       localStorage.removeItem("token");
       setUser(null);
-      setIsSidebarOpen(true);
+      setIsSidebarOpen(window.innerWidth > 768);
       navigate("/signin", { replace: true });
     }
   };
@@ -91,11 +100,11 @@ const PaymentManagement = () => {
 
   const sidebarVariants = {
     open: {
-      width: "280px",
+      width: "240px",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: "60px",
+      width: "56px",
       transition: { duration: 0.3, ease: "easeIn" },
     },
   };
@@ -112,26 +121,26 @@ const PaymentManagement = () => {
   return (
     <div className="payment-management">
       <motion.aside
-        className={`admin-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className="payment-management__sidebar"
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
-        initial="open"
+        initial={window.innerWidth > 768 ? "open" : "closed"}
       >
-        <div className="sidebar-header">
+        <div className="payment-management__sidebar-header">
           <Link
             to="/admin"
-            className="logo"
+            className="payment-management__logo"
             onClick={() => setIsSidebarOpen(true)}
           >
             <motion.div
               variants={logoVariants}
               animate="animate"
               whileHover="hover"
-              className="logo-svg-container"
+              className="payment-management__logo-svg-container"
             >
               <svg
-                width="40"
-                height="40"
+                width="36"
+                height="36"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -150,7 +159,7 @@ const PaymentManagement = () => {
             {isSidebarOpen && <span>Admin Panel</span>}
           </Link>
           <motion.button
-            className="sidebar-toggle"
+            className="payment-management__sidebar-toggle"
             onClick={toggleSidebar}
             aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
@@ -172,19 +181,22 @@ const PaymentManagement = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="sidebar-nav"
+          className="payment-management__sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin"
               onClick={() => setIsSidebarOpen(true)}
               title="Dashboard"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -196,13 +208,16 @@ const PaymentManagement = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/categories"
               onClick={() => setIsSidebarOpen(true)}
               title="Blog Categories"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -214,13 +229,16 @@ const PaymentManagement = () => {
               {isSidebarOpen && <span>Blog Categories</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/tutorial"
               onClick={() => setIsSidebarOpen(true)}
               title="Tutorial Management"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -232,13 +250,16 @@ const PaymentManagement = () => {
               {isSidebarOpen && <span>Tutorial Management</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/policy"
               onClick={() => setIsSidebarOpen(true)}
               title="Admin Policy"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -250,13 +271,16 @@ const PaymentManagement = () => {
               {isSidebarOpen && <span>Admin Policy</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/account-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Account Management"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -268,13 +292,16 @@ const PaymentManagement = () => {
               {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/system-configuration"
               onClick={() => setIsSidebarOpen(true)}
               title="System Configuration"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -286,13 +313,16 @@ const PaymentManagement = () => {
               {isSidebarOpen && <span>System Configuration</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="payment-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/payment-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Payment Management"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -308,16 +338,16 @@ const PaymentManagement = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item admin-profile-section"
+                className="payment-management__sidebar-nav-item payment-management__admin-profile-section"
               >
                 <Link
                   to="/profile"
-                  className="admin-profile-info"
+                  className="payment-management__admin-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
                   <svg
-                    width="24"
-                    height="24"
+                    width="22"
+                    height="22"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -329,21 +359,23 @@ const PaymentManagement = () => {
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="admin-profile-email">{user.email}</span>
+                    <span className="payment-management__admin-profile-email">
+                      {user.email}
+                    </span>
                   )}
                 </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="payment-management__sidebar-nav-item"
               >
                 <button
-                  className="logout-button"
+                  className="payment-management__logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
                   title="Sign Out"
                 >
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                     <path
                       stroke="var(--admin-logout)"
                       strokeWidth="2"
@@ -357,13 +389,16 @@ const PaymentManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="payment-management__sidebar-nav-item"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
                 title="Sign In"
               >
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                   <path
                     stroke="var(--admin-background)"
                     strokeWidth="2"
@@ -378,29 +413,29 @@ const PaymentManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-      <main className="admin-content">
-        <section className="admin-banner">
+      <main className={`payment-management__content ${isSidebarOpen ? "" : "closed"}`}>
+        <section className="payment-management__banner">
           <motion.div
-            className="admin-banner-content"
+            className="payment-management__banner-content"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="admin-banner-title">Payment Management</h1>
-            <p className="admin-banner-subtitle">
+            <h1 className="payment-management__banner-title">Payment Management</h1>
+            <p className="payment-management__banner-subtitle">
               Oversee payment gateways, manage transactions, and configure billing settings for seamless financial operations.
             </p>
-            <div className="admin-banner-buttons">
-              <Link to="/admin/payment-management/gateways" className="admin-banner-button primary">
+            <div className="payment-management__banner-buttons">
+              <Link to="/admin/payment-management/gateways" className="payment-management__banner-button primary">
                 Manage Gateways
               </Link>
-              <Link to="/admin/payment-management/transactions" className="admin-banner-button secondary">
+              <Link to="/admin/payment-management/transactions" className="payment-management__banner-button secondary">
                 View Transactions
               </Link>
             </div>
           </motion.div>
           <motion.div
-            className="admin-banner-image"
+            className="payment-management__banner-image"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -425,40 +460,49 @@ const PaymentManagement = () => {
           </motion.div>
         </section>
         <motion.section
-          className="admin-features"
+          className="payment-management__features"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
-          <h2 className="admin-features-title">Payment Tools</h2>
-          <p className="admin-features-description">
+          <h2 className="payment-management__features-title">Payment Tools</h2>
+          <p className="payment-management__features-description">
             Manage payment systems, track transactions, and ensure secure and efficient billing processes.
           </p>
-          <div className="admin-features-grid">
-            <motion.div variants={cardVariants} className="admin-feature-card">
+          <div className="payment-management__features-grid">
+            <motion.div
+              variants={cardVariants}
+              className="payment-management__feature-card"
+            >
               <h3>Payment Gateways</h3>
               <p>
                 Configure and manage payment gateways to support multiple payment methods.
               </p>
-              <Link to="/admin/payment-management/gateways" className="admin-feature-link">
+              <Link to="/admin/payment-management/gateways" className="payment-management__feature-link">
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="admin-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="payment-management__feature-card"
+            >
               <h3>Transaction History</h3>
               <p>
                 View and manage transaction records for auditing and reporting purposes.
               </p>
-              <Link to="/admin/payment-management/transactions" className="admin-feature-link">
+              <Link to="/admin/payment-management/transactions" className="payment-management__feature-link">
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="admin-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="payment-management__feature-card"
+            >
               <h3>Billing Settings</h3>
               <p>
                 Customize billing configurations, including subscription plans and invoicing.
               </p>
-              <Link to="/admin/payment-management/billing" className="admin-feature-link">
+              <Link to="/admin/payment-management/billing" className="payment-management__feature-link">
                 Explore
               </Link>
             </motion.div>

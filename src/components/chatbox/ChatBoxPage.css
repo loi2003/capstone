@@ -44,7 +44,7 @@
 .chatbox-info h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #e3e3e3;
+  color: #98a8f6;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -285,7 +285,8 @@
   font-size: 0.85rem;
   color: #666666;
   text-align: center;
-  margin-top: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .chatbox-link {

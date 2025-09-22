@@ -1,32 +1,330 @@
-/* Scoped to Admin Account Management page */
+/* AdminAccountManagement.css */
+
+/* Base styles */
 .admin-account-management {
-  --primary-color: #2c6e8f; /* Professional blue-teal */
-  --accent-color: #10b981; /* Friendly emerald green */
-  --error-color: #ef4444; /* Softer red */
-  --neutral-bg: #f8fafc; /* Light neutral background */
-  --neutral-text: #1e293b; /* Dark slate text */
-  --border-color: #e2e8f0; /* Subtle gray border */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background-color: var(--neutral-bg);
-  color: var(--neutral-text);
+  background-color: #f4f7fa;
+  color: #124966;
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Define custom properties for sidebar theming */
+.admin-account-management {
+  --admin-primary: #146f89;
+  --admin-primary-dark: #122f4b;
+  --admin-secondary: #1aa3ab;
+  --admin-accent: #20dacc;
+  --admin-text: #124966;
+  --admin-background: #ffffff;
+  --admin-logout: #e53e3e;
+  --admin-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  --admin-shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --admin-border-radius: 8px;
+  --admin-transition: all 0.3s ease;
+}
+
+/* Sidebar styles */
+.admin-account-management__sidebar {
+  background: linear-gradient(180deg, #146f89, #20dacc);
+  color: var(--admin-background);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  box-shadow: var(--admin-shadow);
+  z-index: 1000;
+  transition: width var(--admin-transition);
+  overflow: hidden;
+  width: 240px;
+}
+
+.admin-account-management__sidebar.closed {
+  width: 56px;
+  overflow: hidden;
+}
+
+.admin-account-management__sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-header {
+  flex-direction: column;
+  padding: 0.6rem 0.4rem;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.admin-account-management__logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.admin-account-management__logo span {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--admin-background);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__logo span {
+  display: none;
+}
+
+.admin-account-management__logo-svg-container {
+  display: inline-flex;
+}
+
+.admin-account-management__logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__logo-svg-container svg {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+}
+
+.admin-account-management__sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--admin-background);
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--admin-transition);
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-toggle {
+  margin: 0 auto;
+}
+
+.admin-account-management__sidebar-toggle:hover,
+.admin-account-management__sidebar-toggle:focus {
+  background: var(--admin-background);
+  border-color: var(--admin-primary);
+}
+
+.admin-account-management__sidebar-toggle svg path {
+  stroke: var(--admin-background);
+}
+
+.admin-account-management__sidebar-toggle:hover svg path,
+.admin-account-management__sidebar-toggle:focus svg path {
+  stroke: var(--admin-primary);
+}
+
+.admin-account-management__sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0 0.8rem;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-nav {
+  padding: 0;
+  gap: 0.8rem;
+}
+
+.admin-account-management__sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-nav-item {
+  justify-content: center;
+}
+
+.admin-account-management__sidebar-nav a,
+.admin-account-management__sidebar-nav button {
+  color: var(--admin-background);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.6rem;
+  border-radius: var(--admin-border-radius);
+  transition: var(--admin-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-nav a,
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-nav button {
+  padding: 0.6rem 0;
+  justify-content: center;
+}
+
+.admin-account-management__sidebar-nav a svg,
+.admin-account-management__sidebar-nav button svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-nav a span,
+.admin-account-management__sidebar.closed .admin-account-management__sidebar-nav button span {
+  display: none;
+}
+
+.admin-account-management__sidebar-nav a:hover,
+.admin-account-management__sidebar-nav button:hover {
+  background: var(--admin-primary-dark);
+  transform: translateY(-2px);
+}
+
+.admin-account-management__sidebar-nav a:hover svg path,
+.admin-account-management__sidebar-nav button:hover svg path {
+  stroke: var(--admin-background);
+}
+
+.admin-account-management__admin-profile-section {
+  margin-top: 0.8rem;
+}
+
+.admin-account-management__admin-profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  border-radius: var(--admin-border-radius);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--admin-background);
+  font-size: 0.95rem;
+  font-weight: 600;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__admin-profile-info {
+  padding: 0.6rem 0;
+  justify-content: center;
+}
+
+.admin-account-management__admin-profile-info svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__admin-profile-info span {
+  display: none;
+}
+
+.admin-account-management__admin-profile-info:hover .admin-account-management__admin-profile-email {
+  text-decoration: underline;
+}
+
+.admin-account-management__logout-button {
+  background: rgba(229, 62, 62, 0.1);
+  color: var(--admin-logout);
+  font-weight: 600;
+  padding: 0.6rem;
+  border: 1px solid var(--admin-logout);
+  border-radius: var(--admin-border-radius);
+  transition: var(--admin-transition);
+}
+
+.admin-account-management__sidebar.closed .admin-account-management__logout-button {
+  padding: 0.6rem 0;
+  justify-content: center;
+}
+
+.admin-account-management__logout-button svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+}
+
+.admin-account-management__logout-button:hover,
+.admin-account-management__logout-button:focus {
+  background: var(--admin-logout);
+  color: var(--admin-background);
+  transform: translateY(-2px);
+}
+
+.admin-account-management__logout-button svg path {
+  stroke: var(--admin-logout);
+}
+
+.admin-account-management__logout-button:hover svg path,
+.admin-account-management__logout-button:focus svg path {
+  stroke: var(--admin-background);
+}
+
+/* Content styles */
+.admin-account-management__content {
+  margin-left: 240px;
   padding: 2rem;
+  transition: margin-left var(--admin-transition);
+  width: calc(100% - 240px);
+  min-width: 0;
+}
+
+.admin-account-management__content.closed {
+  margin-left: 56px;
+  width: calc(100% - 56px);
+}
+
+.admin-account-management__inner {
   max-width: 1280px;
   margin: 0 auto;
-  min-height: 100vh;
-  box-sizing: border-box;
-  position: relative;
+}
+
+/* Define custom properties for content theming */
+.admin-account-management__inner {
+  --primary-color: #2c6e8f;
+  --accent-color: #10b981;
+  --error-color: #ef4444;
+  --neutral-bg: #f8fafc;
+  --neutral-text: #1e293b;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Back Button */
-.back-button-container {
+.admin-account-management__inner .back-button-container {
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
 }
 
-.back-button {
+.admin-account-management__inner .back-button {
   width: 2.5rem;
   height: 2.5rem;
   display: flex;
@@ -43,22 +341,22 @@
   position: relative;
 }
 
-.back-button:hover:not(:disabled) {
+.admin-account-management__inner .back-button:hover:not(:disabled) {
   background: #255d7a;
   transform: scale(1.1);
   box-shadow: 0 0 8px rgba(44, 110, 143, 0.3);
 }
 
-.back-button:active {
+.admin-account-management__inner .back-button:active {
   transform: scale(1);
   box-shadow: var(--shadow-sm);
 }
 
-.back-button i {
+.admin-account-management__inner .back-button i {
   font-size: 1.25rem;
 }
 
-.back-button::after {
+.admin-account-management__inner .back-button::after {
   content: 'Back to Admin Home';
   position: absolute;
   top: -2.5rem;
@@ -76,12 +374,12 @@
   box-shadow: var(--shadow-sm);
 }
 
-.back-button:hover:not(:disabled)::after {
+.admin-account-management__inner .back-button:hover:not(:disabled)::after {
   opacity: 1;
 }
 
 /* Title */
-.admin-account-title {
+.admin-account-management__inner .admin-account-title {
   font-size: 2.25rem;
   font-weight: 700;
   color: var(--neutral-text);
@@ -90,7 +388,7 @@
 }
 
 /* Description */
-.admin-account-description {
+.admin-account-management__inner .admin-account-description {
   font-size: 1.125rem;
   color: #64748b;
   margin-bottom: 2rem;
@@ -101,14 +399,14 @@
 }
 
 /* Tabs */
-.tabs {
+.admin-account-management__inner .tabs {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.tab-button {
+.admin-account-management__inner .tab-button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -123,24 +421,61 @@
   transition: all 0.3s ease;
 }
 
-.tab-button.active {
+.admin-account-management__inner .tab-button.active {
   background: var(--primary-color);
   color: #ffffff;
   border-color: var(--primary-color);
 }
 
-.tab-button:hover:not(:disabled) {
+.admin-account-management__inner .tab-button:hover:not(:disabled) {
   background: #f1f5f9;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.tab-button.active:hover {
+.admin-account-management__inner .tab-button.active:hover {
   background: #255d7a;
 }
 
+/* Search Container */
+.admin-account-management__inner .search-container {
+  position: relative;
+  max-width: 400px;
+  margin: 0 auto 1.5rem;
+}
+
+.admin-account-management__inner .search-input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: var(--neutral-text);
+  transition: all 0.3s ease;
+}
+
+.admin-account-management__inner .search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.15);
+}
+
+.admin-account-management__inner .search-input::placeholder {
+  color: #94a3b8;
+}
+
+.admin-account-management__inner .search-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #64748b;
+  font-size: 1rem;
+}
+
 /* Form Container */
-.account-form-container {
+.admin-account-management__inner .account-form-container {
   background: #ffffff;
   padding: 2rem;
   border-radius: 12px;
@@ -149,26 +484,26 @@
   margin: 0 auto;
 }
 
-.account-form {
+.admin-account-management__inner .account-form {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 }
 
-.form-group {
+.admin-account-management__inner .form-group {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.form-group label {
+.admin-account-management__inner .form-group label {
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--neutral-text);
 }
 
-.form-group input,
-.form-group select {
+.admin-account-management__inner .form-group input,
+.admin-account-management__inner .form-group select {
   padding: 0.75rem;
   font-size: 1rem;
   border: 1px solid var(--border-color);
@@ -178,32 +513,32 @@
   transition: all 0.3s ease;
 }
 
-.form-group input:focus,
-.form-group select:focus {
+.admin-account-management__inner .form-group input:focus,
+.admin-account-management__inner .form-group select:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.15);
 }
 
-.form-group input::placeholder {
+.admin-account-management__inner .form-group input::placeholder {
   color: #94a3b8;
 }
 
-.error-message {
+.admin-account-management__inner .error-message {
   color: var(--error-color);
   font-size: 0.875rem;
   text-align: center;
   margin-top: 0.5rem;
 }
 
-.success-message {
+.admin-account-management__inner .success-message {
   color: var(--accent-color);
   font-size: 0.875rem;
   text-align: center;
   margin-top: 0.5rem;
 }
 
-.submit-button {
+.admin-account-management__inner .submit-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -219,20 +554,20 @@
   transition: all 0.3s ease;
 }
 
-.submit-button:hover:not(:disabled) {
+.admin-account-management__inner .submit-button:hover:not(:disabled) {
   background: #255d7a;
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.submit-button:disabled {
+.admin-account-management__inner .submit-button:disabled {
   background: #d1d5db;
   color: #6b7280;
   cursor: not-allowed;
 }
 
 /* View Container */
-.account-view-container {
+.admin-account-management__inner .account-view-container {
   background: #ffffff;
   padding: 2rem;
   border-radius: 12px;
@@ -240,7 +575,7 @@
 }
 
 /* Table Title */
-.account-view-title {
+.admin-account-management__inner .account-view-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--neutral-text);
@@ -248,442 +583,226 @@
 }
 
 /* Table */
-.account-table {
+.admin-account-management__inner .account-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   margin-bottom: 2rem;
-  background: #ffffff;
-  border-radius: 8px;
-  box-shadow: var(--shadow-sm);
-  overflow-x: auto;
 }
 
-.account-table th,
-.account-table td {
-  padding: 1rem;
+.admin-account-management__inner .account-table th,
+.admin-account-management__inner .account-table td {
+  padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid var(--border-color);
 }
 
-.account-table th {
+.admin-account-management__inner .account-table th {
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--neutral-text);
   background: #f1f5f9;
 }
 
-.account-table td {
+.admin-account-management__inner .account-table td {
   font-size: 0.875rem;
-  color: #475569;
+  color: var(--neutral-text);
 }
 
-.account-table tr:last-child td {
-  border-bottom: none;
-}
-
-.account-table tr:hover {
+.admin-account-management__inner .account-table tr:hover {
   background: #f8fafc;
 }
 
-/* Action Buttons Container */
-.action-buttons {
+/* Action Buttons */
+.admin-account-management__inner .action-buttons {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  flex-wrap: nowrap;
-  white-space: nowrap;
 }
 
-/* Action Buttons and Dropdown */
-.action-button {
-  position: relative;
+.admin-account-management__inner .action-buttons select {
   padding: 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: #ffffff;
+  color: var(--neutral-text);
+  cursor: pointer;
+}
+
+.admin-account-management__inner .action-buttons select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.admin-account-management__inner .action-button {
+  padding: 0.5rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
   border: none;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.admin-account-management__inner .action-button.ban {
+  background: #f97316;
+  color: #ffffff;
+}
+
+.admin-account-management__inner .action-button.ban:hover:not(:disabled) {
+  background: #ea580c;
+  transform: translateY(-1px);
+}
+
+.admin-account-management__inner .action-button.unban {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.admin-account-management__inner .action-button.unban:hover:not(:disabled) {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.admin-account-management__inner .action-button.delete {
+  background: var(--error-color);
+  color: #ffffff;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  min-width: 80px;
-  height: 32px;
-  box-shadow: var(--shadow-sm);
+  position: relative;
 }
 
-.action-button:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
-}
-
-.action-button.banes {
-  background: #fef2f2;
-  color: var(--error-color);
-  border: 1px solid var(--error-color);
-}
-
-.action-button.banes::before {
-  content: '\f05e';
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900;
-  font-size: 0.9rem;
-}
-
-.action-button.banes:hover:not(:disabled) {
-  background: var(--error-color);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.banes::after {
-  content: 'Ban Account';
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--neutral-text);
-  color: #ffffff;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  box-shadow: var(--shadow-sm);
-}
-
-.action-button.banes:hover:not(:disabled)::after {
-  opacity: 1;
-}
-
-.action-button.unbaned {
-  background: #ecfdf5;
-  color: var(--accent-color);
-  border: 1px solid var(--accent-color);
-}
-
-.action-button.unbaned::before {
-  content: '\f13e';
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900;
-  font-size: 0.9rem;
-}
-
-.action-button.unbaned:hover:not(:disabled) {
-  background: var(--accent-color);
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.unbaned::after {
-  content: 'Unban Account';
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--neutral-text);
-  color: #ffffff;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  box-shadow: var(--shadow-sm);
-}
-
-.action-button.unbaned:hover:not(:disabled)::after {
-  opacity: 1;
-}
-
-.action-button.delete {
-  background: #e5e7eb;
-  color: #4b5563;
-  min-width: 32px;
-  height: 32px;
-}
-
-.action-button.delete::before {
+.admin-account-management__inner .action-button.delete::before {
   content: '\f2ed';
   font-family: 'Font Awesome 5 Free';
   font-weight: 900;
-  font-size: 0.9rem;
-}
-
-.action-button.delete:hover:not(:disabled) {
-  background: #d1d5db;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-}
-
-.action-button.delete::after {
-  content: 'Delete Account';
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--neutral-text);
-  color: #ffffff;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  box-shadow: var(--shadow-sm);
-}
-
-.action-button.delete:hover:not(:disabled)::after {
-  opacity: 1;
-}
-
-.action-button:disabled {
-  background: #e5e7eb;
-  color: #9ca3af;
-  border-color: #e5e7eb;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.account-table select {
-  padding: 0.5rem;
   font-size: 0.875rem;
+}
+
+.admin-account-management__inner .action-button.delete:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.admin-account-management__inner .action-button:disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+/* Pagination */
+.admin-account-management__inner .pagination {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.admin-account-management__inner .pagination-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--neutral-text);
+  background: #ffffff;
   border: 1px solid var(--border-color);
   border-radius: 6px;
-  background: #f8fafc;
-  color: var(--neutral-text);
-  min-width: 100px;
-  height: 32px;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.account-table select:focus {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 2px;
+.admin-account-management__inner .pagination-button:hover:not(.active) {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+}
+
+.admin-account-management__inner .pagination-button.active {
+  background: var(--primary-color);
+  color: #ffffff;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(44, 110, 143, 0.15);
+}
+
+.admin-account-management__inner .pagination-button.active:hover {
+  background: #255d7a;
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
-  .admin-account-management {
-    padding: 1.5rem;
-  }
-
-  .back-button-container {
-    top: 1rem;
-    left: 1rem;
-  }
-
-  .admin-account-title {
-    font-size: 2rem;
-  }
-
-  .tabs {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
-
-  .tab-button {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
-  }
-
-  .account-form-container,
-  .account-view-container {
-    padding: 1.5rem;
-  }
-
-  .account-table {
-    display: block;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--primary-color) #e5e7eb;
-  }
-
-  .account-table::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  .account-table::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
-  }
-
-  .account-table::-webkit-scrollbar-track {
-    background: #e5e7eb;
-  }
-
-  .account-table th,
-  .account-table td {
-    padding: 0.75rem;
-  }
-
-  .action-buttons {
-    gap: 0.4rem;
-  }
-
-  .action-button {
-    min-width: 70px;
-    height: 30px;
-    font-size: 0.8rem;
-  }
-
-  .action-button.delete {
-    min-width: 30px;
-    height: 30px;
-  }
-
-  .account-table select {
-    min-width: 90px;
-    height: 30px;
-  }
-}
-
 @media (max-width: 768px) {
-  .tabs {
-    flex-direction: column;
-    gap: 0.5rem;
+  .admin-account-management__sidebar {
+    width: 56px;
   }
 
-  .admin-account-title {
+  .admin-account-management__content {
+    margin-left: 56px;
+    width: calc(100% - 56px);
+    padding: 1rem;
+  }
+
+  .admin-account-management__inner .admin-account-title {
     font-size: 1.75rem;
   }
 
-  .admin-account-description {
+  .admin-account-management__inner .admin-account-description {
     font-size: 1rem;
   }
 
-  .form-group input,
-  .form-group select {
-    font-size: 0.95rem;
-    padding: 0.6rem;
+  .admin-account-management__inner .tabs {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .submit-button {
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
+  .admin-account-management__inner .account-form-container {
+    padding: 1.5rem;
   }
 
-  .account-view-title {
-    font-size: 1.5rem;
+  .admin-account-management__inner .account-table {
+    font-size: 0.8rem;
   }
 
-  .action-button {
-    min-width: 60px;
-    height: 28px;
-    font-size: 0.75rem;
+  .admin-account-management__inner .account-table th,
+  .admin-account-management__inner .account-table td {
+    padding: 0.5rem;
   }
 
-  .action-button.delete {
-    min-width: 28px;
-    height: 28px;
+  .admin-account-management__inner .action-buttons {
+    flex-wrap: wrap;
   }
 
-  .action-button::before {
-    font-size: 0.85rem;
-  }
-
-  .action-button::after {
-    font-size: 0.7rem;
-    top: -2.25rem;
-  }
-
-  .account-table select {
-    min-width: 80px;
-    height: 28px;
+  .admin-account-management__inner .action-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
   }
 }
 
 @media (max-width: 480px) {
-  .admin-account-management {
-    padding: 1rem;
+  .admin-account-management__inner .admin-account-title {
+    font-size: 1.5rem;
   }
 
-  .back-button-container {
-    top: 0.75rem;
-    left: 0.75rem;
+  .admin-account-management__inner .account-form {
+    gap: 1rem;
   }
 
-  .back-button {
-    width: 2rem;
-    height: 2rem;
-    font-size: 1rem;
+  .admin-account-management__inner .form-group input,
+  .admin-account-management__inner .form-group select {
+    font-size: 0.875rem;
   }
 
-  .back-button i {
-    font-size: 1rem;
+  .admin-account-management__inner .submit-button {
+    font-size: 0.875rem;
+    padding: 0.6rem 1.2rem;
   }
 
-  .back-button::after {
-    font-size: 0.65rem;
-    top: -2rem;
-    padding: 0.3rem 0.5rem;
+  .admin-account-management__inner .account-table {
+    display: block;
+    overflow-x: auto;
   }
 
-  .account-form-container,
-  .account-view-container {
-    padding: 1rem;
-  }
-
-  .form-group label {
-    font-size: 0.85rem;
-  }
-
-  .form-group input,
-  .form-group select {
-    font-size: 0.9rem;
-    padding: 0.5rem;
-  }
-
-  .submit-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .account-table th,
-  .account-table td {
+  .admin-account-management__inner .pagination-button {
+    padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
-    padding: 0.5rem;
-  }
-
-  .action-buttons {
-    gap: 0.3rem;
-  }
-
-  .action-button {
-    min-width: 50px;
-    height: 26px;
-    font-size: 0.7rem;
-  }
-
-  .action-button.delete {
-    min-width: 26px;
-    height: 26px;
-  }
-
-  .action-button::before {
-    font-size: 0.8rem;
-  }
-
-  .action-button::after {
-    font-size: 0.65rem;
-    top: -2rem;
-    padding: 0.3rem 0.5rem;
-  }
-
-  .account-table select {
-    min-width: 70px;
-    height: 26px;
-    font-size: 0.75rem;
   }
 }
