@@ -66,6 +66,8 @@ import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
 import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
 import ConsultationChat from "../components/consultationchat/ConsultationChat";
 import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
+import SystemConfigurationManagement from "../pages/admin/SystemConfigurationManagement";
+import PaymentManagement from "../pages/admin/PaymentManagement";
 import ConsultationManagement from "../components/consultationchat/ConsultationManagement";
 
 
@@ -93,6 +95,8 @@ const AppRoutes = () => {
         <Route path="/admin" element={<AdminHomePage />} />
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
+        <Route path="/admin/system-configuration" element={<SystemConfigurationManagement />} />
+        <Route path="/admin/payment-management" element={<PaymentManagement />} />
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />

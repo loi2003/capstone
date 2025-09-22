@@ -224,7 +224,7 @@ const ConsultantHomePage = () => {
               title="Consultation Chat"
             >
               <FaUsers size={20} />
-              {isSidebarOpen && <span>Consultation Chat</span>}
+              {isSidebarOpen && <span>Patient Consultation</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">

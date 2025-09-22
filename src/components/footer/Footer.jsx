@@ -63,9 +63,9 @@ const Footer = () => {
           <div className="footer-section">
             <h3>Quick Links</h3>
             <div className="footer-links">
-              <Link to="/duedate-calculator">Pregnancy Tracker</Link>
+             <Link to="/pregnancy-tracking">Pregnancy Tracking</Link>
               <Link to="/clinic/list">Find Clinics</Link>
-              <Link to="/blog">Health Tips & Guides</Link>
+              <Link to="/advice">Health Tips & Guides</Link>
               <Link to="/nutritional-guidance">Nutrition Planning</Link>
               <Link to="/blog">Community Forum</Link>
               <Link to="/clinic/list">Book Appointment</Link>
@@ -157,9 +157,9 @@ const Footer = () => {
             </p>
           </div>
           <div className="footer-legal-links">
-            <Link to="/">Privacy Policy</Link>
-            <Link to="/">Terms of Service</Link>
-            <Link to="/">Accessibility</Link>
+
+            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms of Service</Link>
             <Link to="/contact">Contact Us</Link>
           </div>
         </div>

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/AdminHomePage.css";
+import "../../styles/SystemConfigurationManagement.css";
 
-const AdminHomePage = () => {
+const SystemConfigurationManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ const AdminHomePage = () => {
   };
 
   return (
-    <div className="admin-homepage">
+    <div className="system-config-management">
       <motion.aside
         className={`admin-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
@@ -386,21 +386,16 @@ const AdminHomePage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="admin-banner-title">Admin Dashboard</h1>
+            <h1 className="admin-banner-title">System Configuration Management</h1>
             <p className="admin-banner-subtitle">
-              Oversee platform operations, manage user accounts, configure
-              system settings, and ensure smooth functionality with powerful
-              administrative tools.
+              Customize platform settings, manage permissions, and configure system-wide policies to ensure optimal performance and compliance.
             </p>
             <div className="admin-banner-buttons">
-              <Link to="/admin/users" className="admin-banner-button primary">
-                Manage Users
+              <Link to="/admin/system-configuration/permissions" className="admin-banner-button primary">
+                Manage Permissions
               </Link>
-              <Link
-                to="/admin/account-management"
-                className="admin-banner-button secondary"
-              >
-                Account Management
+              <Link to="/admin/system-configuration/settings" className="admin-banner-button secondary">
+                System Settings
               </Link>
             </div>
           </motion.div>
@@ -416,10 +411,10 @@ const AdminHomePage = () => {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              aria-label="Admin dashboard icon"
+              aria-label="System configuration icon"
             >
               <path
-                d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
+                d="M12 8a4 4 0 100 8 4 4 0 000-8zm0 0v-6m0 18v-6m6 0h6m-18 0H3"
                 fill="var(--admin-accent)"
                 stroke="var(--admin-primary)"
                 strokeWidth="1.5"
@@ -435,43 +430,35 @@ const AdminHomePage = () => {
           initial="initial"
           animate="animate"
         >
-          <h2 className="admin-features-title">Core Administrative Tools</h2>
+          <h2 className="admin-features-title">Configuration Tools</h2>
           <p className="admin-features-description">
-            Leverage a suite of tools designed to streamline user management,
-            account creation, and system configuration for optimal platform
-            performance.
+            Utilize advanced tools to manage system settings, permissions, and integrations for a seamless platform experience.
           </p>
           <div className="admin-features-grid">
             <motion.div variants={cardVariants} className="admin-feature-card">
-              <h3>User Management</h3>
+              <h3>Permission Management</h3>
               <p>
-                View, edit, and assign roles to user accounts, ensuring secure
-                and efficient access control across the platform.
+                Define and assign user roles and permissions to control access across the platform.
               </p>
-              <Link to="/admin/users" className="admin-feature-link">
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div variants={cardVariants} className="admin-feature-card">
-              <h3>Account Management</h3>
-              <p>
-                Create and manage accounts for Health Experts, Nutrient
-                Specialists, and Clinics to support platform operations.
-              </p>
-              <Link
-                to="/admin/account-management"
-                className="admin-feature-link"
-              >
+              <Link to="/admin/system-configuration/permissions" className="admin-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="admin-feature-card">
               <h3>System Settings</h3>
               <p>
-                Customize platform configurations, including policies and
-                permissions, to align with organizational needs.
+                Adjust platform configurations, including feature toggles and system policies.
               </p>
-              <Link to="/admin/settings" className="admin-feature-link">
+              <Link to="/admin/system-configuration/settings" className="admin-feature-link">
+                Explore
+              </Link>
+            </motion.div>
+            <motion.div variants={cardVariants} className="admin-feature-card">
+              <h3>Integration Management</h3>
+              <p>
+                Manage third-party integrations and API settings to enhance platform functionality.
+              </p>
+              <Link to="/admin/system-configuration/integrations" className="admin-feature-link">
                 Explore
               </Link>
             </motion.div>
@@ -482,4 +469,4 @@ const AdminHomePage = () => {
   );
 };
 
-export default AdminHomePage;
+export default SystemConfigurationManagement;

@@ -69,8 +69,8 @@ body.menu-open {
   width: 100%;
   z-index: 1000;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  max-height: 80px;
-  height: 80px;
+  max-height: 100px;
+  /* height: 100px; */
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -95,8 +95,8 @@ body.menu-open {
   width: 100%;
   margin: 0 auto;
   padding: 0 20px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: auto 1fr auto; /* Logo | Profile Section | Nav Links & Menu Toggle */
   align-items: center;
   box-sizing: border-box;
   height: 100%;
@@ -104,9 +104,37 @@ body.menu-open {
   z-index: 2;
 }
 
-.header .logo {
+/* Center Profile Section */
+.header .profile-section {
+  grid-column: 2; /* Place in the middle column */
   display: flex;
   justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 1003;
+  min-width: 80px;
+}
+
+/* Adjust Nav Links and Menu Toggle */
+.header .nav-links,
+.header .menu-toggle {
+  grid-column: 3; /* Place in the right column */
+}
+
+/* Ensure Nav Links and Menu Toggle are aligned properly */
+.header .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1002;
+  transition: var(--transition);
+  justify-content: flex-end; /* Align nav links to the right */
+}
+
+.header .logo {
+  grid-column: 1; /* Place in the left column */
+  display: flex;
+  justify-content: flex-start;
   align-items: center;
   gap: 12px;
   font-size: 2rem;
@@ -135,15 +163,6 @@ body.menu-open {
 
 .header .logo:hover .web-logo {
   transform: scale(1.05);
-}
-
-/* Enhanced Navigation Links */
-.header .nav-links {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 1002;
-  transition: var(--transition);
 }
 
 .header .nav-links a {
@@ -240,11 +259,14 @@ body.menu-open {
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.9);
   margin: 0;
-  white-space: nowrap;
-  max-width: 35%;
-  line-height: 1.2;
+  white-space: normal;
+  max-width: 100%;
+  line-height: 1.4;
   text-align: center;
   font-weight: 500;
+  padding: 8px 0;
+  display: block;
+  transition: var(--transition);
 }
 
 .header .auth-message a {
@@ -254,7 +276,7 @@ body.menu-open {
   padding: 4px 8px;
   border-radius: var(--border-radius-small);
   transition: var(--transition);
-  white-space: nowrap;
+  display: inline-block;
 }
 
 .header .auth-message a:hover {
@@ -263,15 +285,7 @@ body.menu-open {
   transform: scale(1.05);
 }
 
-/* Enhanced Profile Section */
-.header .profile-section {
-  position: relative;
-  z-index: 1003;
-  display: flex;
-  align-items: center;
-  min-width: 80px;
-}
-
+/* Enhanced Profile Icons */
 .header .profile-icons {
   display: flex;
   align-items: center;
@@ -334,8 +348,9 @@ body.menu-open {
 /* ENHANCED PROFILE DROPDOWN */
 .header .profile-dropdown {
   position: absolute;
-  top: calc(100% + 15px);
-  right: 0;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px); /* Center horizontally, adjust for closed state */
   background: var(--gradient-card);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(4, 102, 141, 0.1);
@@ -343,18 +358,20 @@ body.menu-open {
   box-shadow: var(--shadow-hover);
   min-width: 260px;
   max-width: 320px;
+  width: 90%;
   z-index: 1010;
   overflow: hidden;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
 }
 
 .header .profile-section.open .profile-dropdown {
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 /* Enhanced Profile Dropdown Header */
@@ -474,14 +491,6 @@ body.menu-open {
   transition: left 0.4s ease;
 }
 
-/* .header .profile-dropdown .dropdown-item:hover::before {
-  width: 4px;
-}
-
-.header .profile-dropdown .dropdown-item:hover::after {
-  left: 100%;
-} */
-
 .header .profile-dropdown .dropdown-item:hover {
   background: rgba(4, 102, 141, 0.08);
   color: var(--primary-dark);
@@ -559,35 +568,16 @@ body.menu-open {
   font-weight: 700;
   font-size: 1rem;
   width: calc(100% - 24px);
-  /* border: 2px solid transparent; */
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(4, 102, 141, 0.2);
 }
-
-/* .header .profile-dropdown .logout-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: var(--logout-hover);
-  transition: left 0.3s ease;
-  z-index: -1;
-}
-
-.header .profile-dropdown .logout-btn:hover::before {
-  left: 0;
-} */
 
 .header .profile-dropdown .logout-btn:hover {
   background-color: #e26457;
   color: white;
   transform: translateY(-3px);
   border: 2px solid #e26457;
-  /* box-shadow: 0 8px 25px rgba(211, 47, 47, 0.4); */
-  /* border-color: rgba(255, 255, 255, 0.3); */
 }
 
 .header .profile-dropdown .logout-btn .dropdown-item-icon {
@@ -608,28 +598,31 @@ body.menu-open {
 /* ENHANCED NOTIFICATION DROPDOWN */
 .header .notification-dropdown {
   position: absolute;
-  top: calc(100% + 15px);
-  right: 0;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px); /* Center horizontally, adjust for closed state */
   background: var(--gradient-card);
   backdrop-filter: blur(20px);
   border-radius: var(--border-radius-large);
   box-shadow: var(--shadow-hover);
   min-width: 320px;
   max-width: 380px;
+  width: 90%;
   z-index: 1010;
   opacity: 0;
   visibility: hidden;
-  transform: translateY(-10px);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
   border: 1px solid rgba(4, 102, 141, 0.1);
   overflow: hidden;
+  pointer-events: none;
 }
 
 .header .profile-section.open .notification-dropdown {
   display: block;
   opacity: 1;
   visibility: visible;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
 }
 
 /* Enhanced Notification Header */
@@ -1014,6 +1007,17 @@ body.menu-open {
     padding: 0 16px;
     height: 100%;
     align-items: center;
+    display: flex; /* Switch to flex for mobile to maintain centering */
+    justify-content: space-between;
+  }
+
+  .header .profile-section {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .header .menu-toggle {
@@ -1044,6 +1048,7 @@ body.menu-open {
     z-index: 1002;
     transform: translateY(-100%);
     opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -1069,34 +1074,61 @@ body.menu-open {
   .header .auth-section {
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     max-width: 100%;
     padding: 20px 0;
-  }
-
-  .header .nav-links .sign-in-btn {
-    min-width: 200px;
-    padding: 15px 30px;
-    font-size: 1.1rem;
-  }
-
-  .header .profile-section {
     width: 100%;
+  }
+
+  .header .auth-message {
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-small);
+    max-width: 90%;
     text-align: center;
-    position: relative;
+    line-height: 1.5;
+    box-shadow: var(--shadow-subtle);
+  }
+
+  .header .auth-message a {
+    font-size: 0.9rem;
+    padding: 4px 10px;
+  }
+
+  .header .nav-links.open .auth-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .header .profile-section.open + .auth-message {
+    margin-top: 10px;
   }
 
   .header .profile-dropdown {
-    top: calc(100% + 10px);
-    right: 16px;
+    top: 80px; /* Adjusted to align below header */
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
     min-width: 200px;
     max-width: 240px;
+    width: calc(100% - 32px);
   }
 
   .header .notification-dropdown {
-    right: 16px;
+    top: 80px; /* Adjusted to align below header */
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
     min-width: 220px;
     max-width: 260px;
+    width: calc(100% - 32px);
+  }
+
+  .header .profile-section.open .profile-dropdown,
+  .header .profile-section.open .notification-dropdown {
+    transform: translateX(-50%) translateY(0);
   }
 }
 
@@ -1119,6 +1151,16 @@ body.menu-open {
   .header .notification-dropdown {
     min-width: 200px;
     max-width: 240px;
+  }
+
+  .header .auth-message {
+    font-size: 0.85rem;
+    padding: 8px 16px;
+    max-width: 95%;
+  }
+
+  .header .auth-message a {
+    font-size: 0.85rem;
   }
 }
 
@@ -1165,13 +1207,9 @@ body.menu-open {
     padding: 10px;
   }
 
-  /* Enhanced Mobile Responsiveness for Dropdowns */
   .header .profile-dropdown,
   .header .notification-dropdown {
-    left: 16px;
-    right: 16px;
-    min-width: auto;
-    max-width: none;
+    top: 70px;
     width: calc(100vw - 32px);
   }
 
@@ -1198,6 +1236,17 @@ body.menu-open {
   .header .notification-actions {
     flex-direction: column;
     gap: 8px;
+  }
+
+  .header .auth-message {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+    max-width: 100%;
+  }
+
+  .header .auth-message a {
+    font-size: 0.8rem;
+    padding: 3px 8px;
   }
 }
 
@@ -1247,11 +1296,23 @@ body.menu-open {
   .header .profile-dropdown {
     min-width: 140px;
     max-width: 180px;
+    top: 60px;
   }
 
   .header .notification-dropdown {
     min-width: 160px;
     max-width: 200px;
+    top: 60px;
+  }
+
+  .header .auth-message {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+  }
+
+  .header .auth-message a {
+    font-size: 0.75rem;
+    padding: 3px 6px;
   }
 }
 
@@ -1259,11 +1320,11 @@ body.menu-open {
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateX(-50%) translateY(-20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(0);
   }
 }
 
@@ -1282,7 +1343,6 @@ body.menu-open {
 .header .profile-toggle:focus,
 .header .notification-toggle:focus,
 .header .dropdown-item:focus,
-/* .header .logout-btn:focus, */
 .header .notification-btn:focus {
   outline: 3px solid var(--accent-light);
   outline-offset: 2px;
