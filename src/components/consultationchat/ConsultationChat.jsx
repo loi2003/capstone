@@ -403,10 +403,10 @@ const ConsultationChat = () => {
       }
 
       if (selectedFile) {
-        formData.append("Attachment", selectedFile);
         formData.append("AttachmentFileName", selectedFile.name);
         formData.append("AttachmentFileType", selectedFile.type);
         formData.append("AttachmentFileSize", selectedFile.size.toString());
+        formData.append("Attachments", selectedFile);
       }
 
       const response = await sendMessage(formData, token);
