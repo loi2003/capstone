@@ -1,0 +1,1440 @@
+/* Main container - Fixed to prevent console interference */
+.consultation-chat {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+.consultation-chat-title {
+  color: #167995;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 2.2rem;
+  margin: 0;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(13, 122, 165, 0.1);
+  animation: titleFadeIn 0.6s ease-out;
+}
+
+@keyframes titleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced content area with improved height calculations */
+.consultation-chat-content {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 24px;
+  margin-top: 2rem;
+  height: 75vh;
+  min-height: 700px;
+  max-height: 85vh;
+  width: 100%;
+  position: relative;
+}
+
+/* LEFT SIDEBAR - Enhanced styling with animations */
+.consultation-chat-sidebar {
+  background: var(--gradient-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideInLeft 0.5s ease-out;
+  min-height: 500px;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.consultation-chat-sidebar-header {
+  background: linear-gradient(135deg, #167995 0%, #1c7d98 100%);
+  padding: 20px;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.consultation-chat-sidebar-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.consultation-chat-sidebar-header h3 {
+  color: white;
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-search-section {
+  padding: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.consultation-chat-search-bar {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.consultation-chat-search-bar svg {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text);
+  z-index: 2;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.consultation-chat-search-bar input {
+  width: 100%;
+  padding: 12px 20px 12px 45px;
+  border: 2px solid rgba(13, 122, 165, 0.1);
+  border-radius: 25px;
+  font-size: 14px;
+  box-sizing: border-box;
+  background: white;
+  transition: var(--transition);
+}
+
+.consultation-chat-search-bar input:focus {
+  outline: none;
+  border-color: var(--color-main);
+  box-shadow: 0 0 0 3px rgba(13, 122, 165, 0.1);
+  transform: translateY(-1px);
+}
+
+.consultation-chat-search-bar input:focus + svg {
+  color: var(--color-main);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.consultation-chat-filter select {
+  width: 100%;
+  padding: 12px 20px;
+  border: 2px solid rgba(13, 122, 165, 0.1);
+  border-radius: 25px;
+  font-size: 13px;
+  background: white;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.consultation-chat-filter select:focus {
+  outline: none;
+  border-color: var(--color-main);
+  transform: translateY(-1px);
+}
+
+.consultation-chat-consultants-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-main) transparent;
+  position: relative;
+  min-height: 200px;
+}
+
+.consultation-chat-consultants-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.consultation-chat-consultants-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consultation-chat-consultants-list::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-main) 0%, var(--co-2) 100%);
+  border-radius: 6px;
+}
+
+.consultation-chat-consultant-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.consultation-chat-consultant-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--gradient-primary);
+  transition: width 0.3s ease;
+  z-index: 0;
+}
+
+.consultation-chat-consultant-item:hover {
+  background: rgba(13, 122, 165, 0.05);
+  transform: translateX(4px);
+}
+
+/* .consultation-chat-consultant-item:hover::before {
+  width: 4px;
+} */
+
+.consultation-chat-consultant-item.active {
+  background: linear-gradient(
+    135deg,
+    rgba(13, 122, 165, 0.1) 0%,
+    rgba(3, 195, 154, 0.1) 100%
+  );
+  border-left: 4px solid var(--color-main);
+  transform: translateX(0);
+}
+
+/* .consultation-chat-consultant-item.active::before {
+  width: 4px;
+} */
+
+.consultation-chat-consultant-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 15px;
+  flex-shrink: 0;
+  border: 3px solid rgba(13, 122, 165, 0.1);
+  transition: var(--transition);
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-consultant-item:hover .consultation-chat-consultant-avatar {
+  border-color: var(--color-main);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-light);
+}
+
+.consultation-chat-consultant-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.consultation-chat-consultant-info {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-consultant-info h4 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--dark-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.consultation-chat-consultant-item:hover .consultation-chat-consultant-info h4 {
+  color: var(--color-main);
+}
+
+.consultation-chat-consultant-clinic {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #1c7d98;
+  font-weight: 500;
+}
+
+.consultation-chat-consultant-clinic svg {
+  font-size: 11px;
+}
+
+/* Enhanced Chat status indicator with animation */
+.consultation-chat-status-indicator {
+  position: absolute;
+  top: 12px;
+  right: 15px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  border: 2px solid white;
+  animation: pulse 2s infinite;
+  z-index: 2;
+}
+
+.consultation-chat-status-indicator.active {
+  background: #00c851;
+  animation: pulseGreen 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(254, 107, 106, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(254, 107, 106, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(254, 107, 106, 0);
+  }
+}
+
+@keyframes pulseGreen {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 200, 81, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 200, 81, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 200, 81, 0);
+  }
+}
+
+/* Enhanced Empty Thread List Styling */
+.consultation-chat-empty-thread-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 300px;
+  color: var(--color-text);
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 249, 250, 0.3) 0%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* .consultation-chat-empty-thread-list::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(13, 122, 165, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(3, 195, 154, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+} */
+
+.consultation-chat-empty-thread-list svg {
+  font-size: 4.5rem;
+  margin-bottom: 25px;
+  opacity: 0.25;
+  color: var(--color-main);
+  animation: float 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(13, 122, 165, 0.1));
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-empty-thread-list h3 {
+  margin: 0 0 15px 0;
+  color: var(--dark-text);
+  font-size: 1.4rem;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.consultation-chat-empty-thread-list p {
+  margin: 0;
+  font-size: 15px;
+  opacity: 0.8;
+  max-width: 320px;
+  line-height: 1.6;
+  position: relative;
+  z-index: 1;
+  color: var(--color-text);
+  font-weight: 400;
+}
+
+/* Animation for floating icon */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-8px) rotate(2deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-8px) rotate(-2deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.consultation-chat-main {
+  background: var(--gradient-card);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-medium);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideInRight 0.5s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.consultation-chat-consultant-header {
+  background: linear-gradient(135deg, #1c7d98 0%, #0d7aa5 100%);
+  color: white;
+  padding: 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.consultation-chat-consultant-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.consultation-chat-consultant-details {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-consultant-avatar-large {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  transition: var(--transition);
+}
+
+.consultation-chat-consultant-avatar-large:hover {
+  transform: scale(1.05);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.consultation-chat-consultant-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.consultation-chat-consultant-meta h2 {
+  color: #ffffff;
+  text-align: left;
+  margin: 0 0 8px 0;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.consultation-chat-clinic-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.consultation-chat-clinic-info svg {
+  flex-shrink: 0;
+}
+
+.consultation-chat-consultant-meta p {
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  opacity: 0.8;
+  line-height: 1.4;
+}
+
+.consultation-chat-actions {
+  display: flex;
+  gap: 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.consultation-chat-start-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.consultation-chat-start-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.consultation-chat-start-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.consultation-chat-call-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.consultation-chat-call-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.consultation-chat-call-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.consultation-chat-messages {
+  flex: 1;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  height: 100%;
+  overflow-y: auto; /* always scrollable */
+  overflow-x: hidden;
+}
+
+.consultation-chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.consultation-chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.consultation-chat-messages::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-main) 0%, var(--co-2) 100%);
+  border-radius: 6px;
+}
+
+.consultation-chat-empty-messages {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text);
+  text-align: center;
+  padding: 40px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.consultation-chat-empty-messages svg {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  opacity: 0.3;
+  color: var(--color-main);
+  animation: float 3s ease-in-out infinite;
+}
+
+.consultation-chat-empty-messages h3 {
+  margin: 0 0 10px 0;
+  color: var(--dark-text);
+  font-size: 1.2rem;
+}
+
+.consultation-chat-empty-messages p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+/* Enhanced message styling with improved animations */
+.consultation-chat-message {
+  display: flex;
+  margin-bottom: 20px;
+  width: 100%;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.consultation-chat-message.sent {
+  justify-content: flex-end;
+  align-self: flex-end;
+}
+
+.consultation-chat-message.received {
+  justify-content: flex-start;
+  align-self: flex-start;
+}
+
+.consultation-chat-message-content {
+  max-width: 75%;
+  min-width: 60px;
+  padding: 16px 20px;
+  border-radius: 20px;
+  position: relative;
+  word-wrap: break-word;
+  word-break: break-word;
+  box-shadow: var(--shadow-message);
+  transition: var(--transition);
+}
+
+.consultation-chat-message-content:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.consultation-chat-message.sent .consultation-chat-message-content {
+  background: #1c80a2;
+  color: white;
+  border-bottom-right-radius: 6px;
+}
+
+.consultation-chat-message.received .consultation-chat-message-content {
+  background: var(--gradient-message-received);
+  color: var(--dark-text);
+  border-bottom-left-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.consultation-chat-message-content p {
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.consultation-chat-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.consultation-chat-message-time {
+  font-size: 11px;
+  opacity: 0.7;
+  font-weight: 500;
+  margin-top: 4px;
+  display: block;
+}
+
+.consultation-chat-input-area {
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 20px 25px;
+  /* flex-shrink: 0; */
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.consultation-chat-input-container {
+  display: flex;
+  flex-direction: column;
+  background: #fdfdfd;
+  border-radius: 25px;
+  box-shadow: var(--shadow-light);
+  border: 2px solid rgba(13, 122, 165, 0.1);
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.consultation-chat-input-container:focus-within {
+  border-color: var(--color-main);
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-1px);
+}
+
+.consultation-chat-input-container textarea {
+  flex: 1;
+  border: none;
+  border-radius: 20px;
+  padding: 12px 16px;
+  resize: none;
+  font-family: inherit;
+  font-size: 14px;
+  max-height: 120px;
+  min-height: 44px;
+  background: #fdfdfd;
+  line-height: 1.4;
+  transition: var(--transition);
+}
+
+.consultation-chat-input-container textarea:focus {
+  outline: none;
+}
+
+.consultation-chat-input-container textarea::placeholder {
+  color: var(--color-text);
+  opacity: 0.7;
+}
+
+.consultation-chat-send-btn {
+  font-size: 2rem;
+  background: #117ba2;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+  box-shadow: var(--shadow-light);
+}
+
+.consultation-chat-send-btn:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-medium);
+}
+
+.consultation-chat-send-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.consultation-chat-send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Enhanced Empty States with better visual hierarchy */
+.consultation-chat-no-selection,
+.consultation-chat-no-thread {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text);
+  text-align: center;
+  padding: 60px;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 249, 250, 0.5) 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+  animation: fadeIn 0.5s ease-out;
+}
+
+.consultation-chat-no-selection svg,
+.consultation-chat-no-thread svg {
+  font-size: 5rem;
+  margin-bottom: 25px;
+  opacity: 0.3;
+  color: var(--color-main);
+  animation: float 3s ease-in-out infinite;
+}
+
+.consultation-chat-no-selection h3,
+.consultation-chat-no-thread h3 {
+  margin: 0 0 15px 0;
+  color: var(--dark-text);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.consultation-chat-no-selection p,
+.consultation-chat-no-thread p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.7;
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* Enhanced Loading with smooth animation */
+.consultation-chat-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 70vh;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 249, 250, 0.5) 0%,
+    rgba(255, 255, 255, 0.3) 100%
+  );
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(13, 122, 165, 0.1);
+  border-top: 4px solid var(--color-main);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 25px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.consultation-chat-loading p {
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* File attachment styles */
+.consultation-chat-attachment-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-main);
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 8px;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  position: relative;
+  margin-right: 4px;
+}
+
+.consultation-chat-attachment-btn:hover {
+  background: rgba(13, 122, 165, 0.1);
+  transform: scale(1.05);
+  color: var(--co-2);
+}
+
+.consultation-chat-attachment-btn:active {
+  transform: scale(0.95);
+}
+
+/* File preview integrated inside input container */
+.consultation-chat-file-preview {
+  padding: 8px 12px;
+  background: rgba(248, 249, 250, 0.5);
+  border-bottom: 1px solid rgba(13, 122, 165, 0.1);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.consultation-chat-file-preview-content {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.consultation-chat-file-preview-image {
+  max-width: 80px;
+  max-height: 60px;
+  border-radius: var(--border-radius-small);
+  object-fit: cover;
+  border: 2px solid rgba(13, 122, 165, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.consultation-chat-file-preview-document {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: var(--border-radius-small);
+  border: 1px solid rgba(13, 122, 165, 0.2);
+  color: var(--dark-text);
+  font-size: 13px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  max-width: 250px;
+}
+
+.consultation-chat-file-preview-document svg {
+  color: var(--color-main);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.consultation-chat-file-preview-document span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.consultation-chat-file-preview-remove {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  transition: var(--transition);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.consultation-chat-file-preview-remove:hover {
+  background: #dc3545;
+  transform: scale(1.1);
+}
+
+/* Input row with controls */
+.consultation-chat-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 8px 6px 6px;
+}
+
+/* Message attachment styles */
+.consultation-chat-attachment {
+  margin-top: 8px;
+}
+
+.consultation-chat-attachment-image {
+  max-width: 250px;
+  max-height: 200px;
+  border-radius: var(--border-radius-small);
+  object-fit: cover;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.consultation-chat-message.sent .consultation-chat-attachment-image {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.consultation-chat-message.received .consultation-chat-attachment-image {
+  border-color: rgba(13, 122, 165, 0.2);
+}
+
+.consultation-chat-attachment-image:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-medium);
+}
+
+.consultation-chat-attachment-document {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius-small);
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.consultation-chat-message.received .consultation-chat-attachment-document {
+  background: rgba(13, 122, 165, 0.1);
+}
+
+.consultation-chat-attachment-icon {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.consultation-chat-attachment-name {
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+/* Attachment card */
+.consultation-chat-attachment-document {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bubble-bg, #1c80a2);
+  color: var(--bubble-fg, #e8ecf1);
+  border: solid 1px #ffffff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  max-width: 260px;
+  user-select: none;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.consultation-chat-attachment-document .document-file-icon {
+  font-size: 1rem;
+}
+
+.chat-attachment-name {
+  font-size: 1rem;
+}
+.consultation-chat-attachment-document:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.consultation-chat-attachment-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  position: relative;
+  flex: 0 0 36px;
+}
+/* Simple icon variants by type */
+.icon-pdf .consultation-chat-attachment-icon {
+  background: #b71c1c33;
+}
+.icon-doc .consultation-chat-attachment-icon {
+  background: #1a73e833;
+}
+.icon-xls .consultation-chat-attachment-icon {
+  background: #0f9d5833;
+}
+.icon-txt .consultation-chat-attachment-icon {
+  background: #9aa0a633;
+}
+.icon-file .consultation-chat-attachment-icon {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.consultation-chat-attachment-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.consultation-chat-attachment-name {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.consultation-chat-attachment-size {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.consultation-chat-attachment-image {
+  max-width: 260px;
+  border-radius: 12px;
+  margin-top: 6px;
+  cursor: pointer;
+}
+
+/* Make cards align like bubbles */
+.consultation-chat-message.sent .consultation-chat-attachment-document,
+.consultation-chat-message.sent .consultation-chat-attachment-image {
+  margin-left: auto;
+}
+.consultation-chat-message.received .consultation-chat-attachment-document,
+.consultation-chat-message.received .consultation-chat-attachment-image {
+  margin-right: auto;
+}
+
+/* Responsive adjustments for file preview */
+@media (max-width: 768px) {
+  .consultation-chat-file-preview-image {
+    max-width: 100px;
+    max-height: 70px;
+  }
+
+  .consultation-chat-file-preview-document {
+    max-width: 200px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .consultation-chat-file-preview-image {
+    max-width: 90px;
+    max-height: 60px;
+  }
+
+  .consultation-chat-file-preview-document {
+    max-width: 180px;
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+}
+
+/* Responsive adjustments for attachments */
+@media (max-width: 768px) {
+  .consultation-chat-attachment-image {
+    max-width: 200px;
+    max-height: 150px;
+  }
+
+  .consultation-chat-file-preview-image {
+    max-width: 120px;
+    max-height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .consultation-chat-attachment-image {
+    max-width: 180px;
+    max-height: 120px;
+  }
+}
+
+/* Responsive Design with improved mobile experience */
+@media (max-width: 1200px) {
+  .consultation-chat-content {
+    grid-template-columns: 320px 1fr;
+    height: 70vh;
+    min-height: 500px;
+  }
+
+  .consultation-chat-messages {
+    max-height: calc(70vh - 280px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .consultation-chat-content {
+    grid-template-columns: 300px 1fr;
+    height: 65vh;
+  }
+
+  .consultation-chat-messages {
+    max-height: calc(65vh - 280px);
+  }
+
+  .consultation-chat-consultant-header {
+    padding: 20px;
+  }
+
+  .consultation-chat-consultant-meta h2 {
+    font-size: 1.4rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .consultation-chat {
+    padding: 15px;
+  }
+
+  .consultation-chat-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: 300px 1fr;
+    height: 85vh;
+    gap: 15px;
+  }
+
+  .consultation-chat-messages {
+    max-height: calc(55vh - 200px);
+    min-height: 250px;
+    padding: 20px;
+  }
+
+  .consultation-chat-sidebar {
+    order: 1;
+  }
+
+  .consultation-chat-main {
+    order: 2;
+  }
+
+  .consultation-chat-consultant-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .consultation-chat-consultant-details {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .consultation-chat-message-content {
+    max-width: 85%;
+  }
+
+  .consultation-chat-title {
+    font-size: 1.8rem;
+  }
+
+  .consultation-chat-empty-thread-list {
+    min-height: 250px;
+    padding: 30px 15px;
+  }
+
+  .consultation-chat-empty-thread-list svg {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+  }
+
+  .consultation-chat-empty-thread-list h3 {
+    font-size: 1.2rem;
+    margin-bottom: 12px;
+  }
+
+  .consultation-chat-empty-thread-list p {
+    font-size: 14px;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+  .consultation-chat {
+    padding: 10px;
+  }
+
+  .consultation-chat-content {
+    grid-template-rows: 280px 1fr;
+    height: 90vh;
+    gap: 10px;
+  }
+
+  .consultation-chat-messages {
+    max-height: calc(50vh - 180px);
+    padding: 15px;
+  }
+
+  .consultation-chat-consultant-header {
+    padding: 15px;
+  }
+
+  .consultation-chat-consultant-avatar-large {
+    width: 55px;
+    height: 55px;
+  }
+
+  .consultation-chat-consultant-meta h2 {
+    font-size: 1.2rem;
+  }
+
+  .consultation-chat-message-content {
+    max-width: 90%;
+    padding: 14px 16px;
+  }
+
+  .consultation-chat-input-area {
+    padding: 15px;
+  }
+
+  .consultation-chat-title {
+    font-size: 1.6rem;
+  }
+
+  .consultation-chat-empty-thread-list {
+    min-height: 200px;
+    padding: 25px 12px;
+  }
+
+  .consultation-chat-empty-thread-list svg {
+    font-size: 3rem;
+    margin-bottom: 18px;
+  }
+
+  .consultation-chat-empty-thread-list h3 {
+    font-size: 1.1rem;
+  }
+
+  .consultation-chat-empty-thread-list p {
+    font-size: 13px;
+    max-width: 250px;
+    line-height: 1.5;
+  }
+}
+
+/* Focus states for accessibility */
+.consultation-chat-consultant-item:focus,
+.consultation-chat-start-btn:focus,
+.consultation-chat-call-btn:focus {
+  outline: 2px solid var(--color-main);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .consultation-chat-consultant-item {
+    border: 1px solid var(--color-text);
+  }
+
+  .consultation-chat-message-content {
+    border: 2px solid var(--dark-text);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .consultation-chat-status-indicator {
+    animation: none;
+  }
+}
+
+/* Print styles */
+@media print {
+  .consultation-chat-sidebar,
+  .consultation-chat-input-area,
+  .consultation-chat-call-actions {
+    display: none;
+  }
+
+  .consultation-chat-content {
+    grid-template-columns: 1fr;
+  }
+
+  .consultation-chat-messages {
+    max-height: none;
+    overflow: visible;
+  }
+}

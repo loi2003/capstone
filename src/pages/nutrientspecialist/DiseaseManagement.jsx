@@ -72,6 +72,8 @@ const DiseaseManagement = () => {
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const diseasesPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -121,6 +123,7 @@ const DiseaseManagement = () => {
       }
       const diseasesData = apiResponse.data || [];
       setDiseases(Array.isArray(diseasesData) ? diseasesData : []);
+      setCurrentPage(1);
     } catch (err) {
       console.error("Fetch error details:", {
         message: err.message,
@@ -444,6 +447,24 @@ const DiseaseManagement = () => {
       (disease.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (disease.description || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Pagination logic
+  const indexOfLastDisease = currentPage * diseasesPerPage;
+  const indexOfFirstDisease = indexOfLastDisease - diseasesPerPage;
+  const currentDiseases = filteredDiseases.slice(indexOfFirstDisease, indexOfLastDisease);
+  const totalPages = Math.ceil(filteredDiseases.length / diseasesPerPage);
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
   const containerVariants = {
     initial: { opacity: 0 },
@@ -1296,7 +1317,6 @@ const DiseaseManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1602,8 +1622,8 @@ const DiseaseManagement = () => {
             <div className="section-header">
               <h2>Disease List</h2>
               <div className="nutrient-count">
-                {diseases.length}{" "}
-                {diseases.length === 1 ? "disease" : "diseases"} found
+                {filteredDiseases.length}{" "}
+                {filteredDiseases.length === 1 ? "disease" : "diseases"} found
               </div>
             </div>
             {loading ? (
@@ -1631,69 +1651,96 @@ const DiseaseManagement = () => {
                 <p>Create your first disease to get started</p>
               </div>
             ) : (
-              <div className="nutrient-grid">
-                {filteredDiseases.map((disease) => (
-                  <motion.div
-                    key={disease.id}
-                    className="nutrient-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                    whileHover={{ y: -5 }}
-                  >
-                    <div className="card-header">
-                      <h3>{disease.name || `Disease #${disease.id}`}</h3>
-                    </div>
-                    <div className="disease-description">
-                      <h4>Description:</h4>
-                      <p>{disease.description || "No description available"}</p>
-                    </div>
-                    <div className="disease-description">
-                      <h4>Symptoms:</h4>
-                      <p>{disease.symptoms || "No symptoms available"}</p>
-                    </div>
-                    <div className="disease-description">
-                      <h4>Treatment Options:</h4>
-                      <p>
-                        {disease.treatmentOptions ||
-                          "No treatment options available"}
-                      </p>
-                    </div>
-                    <div className="disease-description">
-                      <h4>Pregnancy Related:</h4>
-                      <p>{disease.pregnancyRelated ? "Yes" : "No"}</p>
-                    </div>
-                    <div className="disease-description">
-                      <h4>Risk Level:</h4>
-                      <p>{disease.riskLevel || "Not specified"}</p>
-                    </div>
-                    <div className="disease-description">
-                      <h4>Type of Disease:</h4>
-                      <p>{disease.typeOfDesease || "Not specified"}</p>
-                    </div>
-                    <div className="card-actions">
-                      <motion.button
-                        onClick={() => fetchDiseaseById(disease.id)}
-                        className="edit-button nutrient-specialist-button primary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        disabled={loading}
-                      >
-                        <span>Edit</span>
-                      </motion.button>
-                      <motion.button
-                        onClick={() => deleteDiseaseHandler(disease.id)}
-                        className="delete-button nutrient-specialist-button secondary"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        disabled={loading}
-                      >
-                        <span>Delete</span>
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+              <>
+                <div className="nutrient-grid">
+                  {currentDiseases.map((disease) => (
+                    <motion.div
+                      key={disease.id}
+                      className="nutrient-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                      whileHover={{ y: -5 }}
+                    >
+                      <div className="card-header">
+                        <h3>{disease.name || `Disease #${disease.id}`}</h3>
+                      </div>
+                      <div className="disease-description">
+                        <h4>Description:</h4>
+                        <p>{disease.description || "No description available"}</p>
+                      </div>
+                      <div className="disease-description">
+                        <h4>Symptoms:</h4>
+                        <p>{disease.symptoms || "No symptoms available"}</p>
+                      </div>
+                      <div className="disease-description">
+                        <h4>Treatment Options:</h4>
+                        <p>
+                          {disease.treatmentOptions ||
+                            "No treatment options available"}
+                        </p>
+                      </div>
+                      <div className="disease-description">
+                        <h4>Pregnancy Related:</h4>
+                        <p>{disease.pregnancyRelated ? "Yes" : "No"}</p>
+                      </div>
+                      <div className="disease-description">
+                        <h4>Risk Level:</h4>
+                        <p>{disease.riskLevel || "Not specified"}</p>
+                      </div>
+                      <div className="disease-description">
+                        <h4>Type of Disease:</h4>
+                        <p>{disease.typeOfDesease || "Not specified"}</p>
+                      </div>
+                      <div className="card-actions">
+                        <motion.button
+                          onClick={() => fetchDiseaseById(disease.id)}
+                          className="edit-button nutrient-specialist-button primary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          disabled={loading}
+                        >
+                          <span>Edit</span>
+                        </motion.button>
+                        <motion.button
+                          onClick={() => deleteDiseaseHandler(disease.id)}
+                          className="delete-button nutrient-specialist-button secondary"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          disabled={loading}
+                        >
+                          <span>Delete</span>
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                {totalPages > 1 && (
+                  <div className="pagination">
+                    <motion.button
+                      onClick={handlePreviousPage}
+                      className="pagination-button"
+                      disabled={currentPage === 1}
+                      whileHover={{ scale: currentPage === 1 ? 1 : 1.1 }}
+                      whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
+                    >
+                      Previous
+                    </motion.button>
+                    <span className="pagination-info">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <motion.button
+                      onClick={handleNextPage}
+                      className="pagination-button"
+                      disabled={currentPage === totalPages}
+                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.1 }}
+                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                    >
+                      Next
+                    </motion.button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

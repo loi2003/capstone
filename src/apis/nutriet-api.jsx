@@ -1035,7 +1035,40 @@ export const deleteFoodInDish = async (dishId, foodId) => {
     throw error;
   }
 };
+export const updateDishImage = async (dishId, image) => {
+  try {
+    if (!dishId || dishId === "") {
+      throw new Error("Dish ID is null or empty");
+    }
 
+
+    const formData = new FormData();
+    formData.append("dishId", dishId);
+    formData.append("Image", image);
+
+    console.log(
+      "Sending update dish image request with FormData:",
+      Array.from(formData.entries())
+    );
+
+    const response = await apiClient.put(`/api/Dish/update-dish-image`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        Accept: "application/json",
+      },
+    });
+
+    console.log("Update dish image response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating dish image:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
 
 export const getAllAllergyCategories = async (token) => {
   try {
@@ -1498,22 +1531,23 @@ export const createMeal = async (mealData) => {
     throw error;
   }
 };
-
 export const updateMeal = async (mealId, mealData) => {
   try {
-    if (!mealId || mealId === "") {
+    // Validate inputs
+    if (!mealId || mealId.trim() === "") {
       throw new Error("Meal ID is null or empty");
     }
     if (!mealData.mealType || mealData.mealType.trim() === "") {
       throw new Error("Meal type is required");
     }
-    if (!mealData.dishMeals || mealData.dishMeals.length === 0) {
+    if (!mealData.dishMeals || !Array.isArray(mealData.dishMeals) || mealData.dishMeals.length === 0) {
       throw new Error("At least one dish is required");
     }
-    if (mealData.dishMeals.some((dish) => !dish.dishId || dish.dishId === "")) {
+    if (mealData.dishMeals.some((dish) => !dish.dishId || dish.dishId.trim() === "")) {
       throw new Error("All dishes must have a valid dishId");
     }
 
+    // Construct payload
     const payload = {
       mealType: mealData.mealType,
       dishMeals: mealData.dishMeals.map((dish) => ({
@@ -1521,16 +1555,29 @@ export const updateMeal = async (mealId, mealData) => {
       })),
     };
 
-    console.log("Sending update meal request with payload:", payload);
+    console.log("Sending update meal request for mealId:", mealId, "with payload:", payload);
+
+    // Ensure token is included if required
+    const token = localStorage.getItem("token");
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
     const response = await apiClient.put(`/api/meal/update-meal/${mealId}`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+      headers,
     });
 
     console.log("Update meal response:", response.data);
+
+    // Validate response structure
+    if (response.data.error !== 0) {
+      throw new Error(response.data.message || "Failed to update meal");
+    }
+
     return response.data;
   } catch (error) {
     console.error("Error updating meal:", {
@@ -1570,19 +1617,23 @@ export const deleteMeal = async (mealId) => {
 
 export const getMealById = async (mealId) => {
   try {
-    if (!mealId || mealId === "") {
+    if (!mealId || mealId.trim() === "") {
       throw new Error("Meal ID is null or empty");
     }
 
     console.log("Fetching meal with ID:", mealId);
 
+    const token = localStorage.getItem("token");
+    const headers = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
     const response = await apiClient.get(`/api/meal/view-meal-by-id`, {
-      params: {
-        mealId: mealId,
-      },
-      headers: {
-        Accept: "application/json",
-      },
+      params: { mealId },
+      headers,
     });
 
     console.log("Get meal by ID response:", response.data);
@@ -1616,7 +1667,6 @@ export const getAllMeals = async () => {
     throw error;
   }
 };
-// Warning Food Management APIs
 // Warning Food Management APIs
 export const createWarningFoodForDisease = async (warningData) => {
   try {
@@ -1728,11 +1778,15 @@ export const createWarningFoodForAllergy = async (warningData) => {
     if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
       throw new Error("All warning foods must have a valid foodId");
     }
+    // Validate non-empty descriptions
+    if (warningData.warningFoodDtos.some((food) => !food.description || food.description.trim() === "")) {
+      throw new Error("Description is required for each warning food");
+    }
     const payload = {
       allergyId: warningData.allergyId,
       warningFoodDtos: warningData.warningFoodDtos.map((food) => ({
         foodId: food.foodId,
-        description: food.description || "",
+        description: food.description,
       })),
     };
     console.log("Sending create warning food for allergy request with payload:", payload);
@@ -2149,6 +2203,12 @@ export const deleteNutrientSuggestion = async (id, token) => {
       throw new Error("Nutrient Suggestion ID is null or empty");
     }
 
+    // Validate GUID format
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(id)) {
+      throw new Error("Invalid Nutrient Suggestion ID format");
+    }
+
     console.log("Sending delete nutrient suggestion request for ID:", id);
 
     const headers = {
@@ -2175,6 +2235,10 @@ export const deleteNutrientSuggestion = async (id, token) => {
       response: error.response?.data,
       status: error.response?.status,
     });
+    // Provide a more specific error message based on status code
+    if (error.response?.status === 400 && error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
     throw error;
   }
 };

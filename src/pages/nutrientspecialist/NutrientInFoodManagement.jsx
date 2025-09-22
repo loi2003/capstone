@@ -59,8 +59,8 @@ const NutrientInFoodManagement = () => {
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
   const [user, setUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1); // New state for current page
-  const itemsPerPage = 10; // Number of items per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -132,7 +132,7 @@ const NutrientInFoodManagement = () => {
       setFoods(foodsData);
       setFoodNutrients(foodNutrientData);
       setFilteredFoodNutrients(foodNutrientData);
-      setCurrentPage(1); // Reset to first page on data fetch
+      setCurrentPage(1);
     } catch (err) {
       console.error("Fetch data error:", err.response?.data || err.message);
       showNotification(`Failed to fetch data: ${err.message}`, "error");
@@ -150,7 +150,7 @@ const NutrientInFoodManagement = () => {
         item.foodName.toLowerCase().includes(query)
     );
     setFilteredFoodNutrients(filtered);
-    setCurrentPage(1); // Reset to first page on search
+    setCurrentPage(1);
   };
 
   const addFoodNutrientHandler = async () => {
@@ -176,6 +176,20 @@ const NutrientInFoodManagement = () => {
     if (Object.values(numericFields).some((val) => isNaN(val) || val <= 0)) {
       showNotification(
         "Nutrient Equivalent, Amount per Unit, and Total Weight must be greater than 0",
+        "error"
+      );
+      return;
+    }
+
+    // Check for duplicate nutrient-food association
+    const existingAssociation = foodNutrients.find(
+      (item) => item.foodId === foodId && item.nutrientId === nutrientId
+    );
+    if (existingAssociation) {
+      const foodName = foods.find((food) => food.id === foodId)?.name || "this food";
+      const nutrientName = nutrients.find((nutrient) => nutrient.id === nutrientId)?.name || "this nutrient";
+      showNotification(
+        `The nutrient "${nutrientName}" is already associated with "${foodName}". Please edit the existing association or select a different nutrient/food combination.`,
         "error"
       );
       return;
@@ -403,7 +417,6 @@ const NutrientInFoodManagement = () => {
     fetchData();
   }, []);
 
-  // Pagination logic
   const totalPages = Math.ceil(filteredFoodNutrients.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -1281,7 +1294,6 @@ const NutrientInFoodManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}

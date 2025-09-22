@@ -1,26 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { forgotPassword, resetPassword } from '../apis/authentication-api';
-import '../styles/ForgotPassword.css';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { forgotPassword, resetPassword } from "../apis/authentication-api";
+import "../styles/ForgotPassword.css";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState(1);
-  const [errors, setErrors] = useState({ email: '', otp: '', newPassword: '', confirmPassword: '', server: '' });
-  const [successMessage, setSuccessMessage] = useState('');
+  const [errors, setErrors] = useState({
+    email: "",
+    otp: "",
+    newPassword: "",
+    confirmPassword: "",
+    server: "",
+  });
+  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
 
   // Handle notification clearing
   useEffect(() => {
-    if (errors.server || (successMessage && !successMessage.includes('Password reset successful'))) {
+    if (
+      errors.server ||
+      (successMessage && !successMessage.includes("Password reset successful"))
+    ) {
       const timer = setTimeout(() => {
-        setErrors((prev) => ({ ...prev, server: '' }));
-        setSuccessMessage('');
+        setErrors((prev) => ({ ...prev, server: "" }));
+        setSuccessMessage("");
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -28,13 +37,13 @@ const ForgotPassword = () => {
 
   const validateEmail = () => {
     let isValid = true;
-    const newErrors = { email: '', server: '' };
+    const newErrors = { email: "", server: "" };
 
     if (!email) {
-      newErrors.email = 'Please enter your email';
+      newErrors.email = "Please enter your email";
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = "Invalid email format";
       isValid = false;
     }
 
@@ -44,36 +53,43 @@ const ForgotPassword = () => {
 
   const validateResetForm = () => {
     let isValid = true;
-    const newErrors = { otp: '', newPassword: '', confirmPassword: '', server: '' };
+    const newErrors = {
+      otp: "",
+      newPassword: "",
+      confirmPassword: "",
+      server: "",
+    };
 
     if (!otp) {
-      newErrors.otp = 'Please enter the OTP code';
+      newErrors.otp = "Please enter the OTP code";
       isValid = false;
     }
 
     if (!newPassword) {
-      newErrors.newPassword = 'Please enter a new password';
+      newErrors.newPassword = "Please enter a new password";
       isValid = false;
     } else {
-      if (newPassword.length < 8) {
-        newErrors.newPassword = 'Password must be at least 8 characters';
+      if (newPassword.length < 7) {
+        newErrors.newPassword = "Password must be at least 7 characters";
         isValid = false;
       }
       if (!/[A-Z]/.test(newPassword)) {
-        newErrors.newPassword = 'Password must contain at least one uppercase letter';
+        newErrors.newPassword =
+          "Password must contain at least one uppercase letter";
         isValid = false;
       }
       if (!/[@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(newPassword)) {
-        newErrors.newPassword = 'Password must contain at least one special character';
+        newErrors.newPassword =
+          "Password must contain at least one special character";
         isValid = false;
       }
     }
 
     if (!confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = "Please confirm your password";
       isValid = false;
     } else if (newPassword !== confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
       isValid = false;
     }
 
@@ -83,18 +99,22 @@ const ForgotPassword = () => {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    setErrors({ ...errors, server: '' });
-    setSuccessMessage('');
+    setErrors({ ...errors, server: "" });
+    setSuccessMessage("");
 
     if (!validateEmail()) return;
 
     try {
       await forgotPassword(email);
-      setSuccessMessage('OTP code has been sent to your email!');
+      setSuccessMessage("OTP code has been sent to your email!");
       setStep(2);
     } catch (error) {
-      console.error('Lỗi khi gửi OTP:', error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || error.message || 'Không thể gửi OTP. Vui lòng thử lại.';
+      console.error("Lỗi khi gửi OTP:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        error.message ||
+        "Không thể gửi OTP. Vui lòng thử lại.";
       setErrors({
         ...errors,
         server: errorMessage,
@@ -104,21 +124,28 @@ const ForgotPassword = () => {
 
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    setErrors({ ...errors, server: '' });
-    setSuccessMessage('');
+    setErrors({ ...errors, server: "" });
+    setSuccessMessage("");
 
     if (!validateResetForm()) return;
 
     try {
-      console.log('Sending reset password request:', { token: otp, newPassword });
+      console.log("Sending reset password request:", {
+        token: otp,
+        newPassword,
+      });
       await resetPassword({ token: otp, newPassword });
-      setSuccessMessage('Password reset successful! Redirecting to sign-in...');
+      setSuccessMessage("Password reset successful! Redirecting to sign-in...");
       setTimeout(() => {
-        navigate('/signin', { replace: true });
+        navigate("/signin", { replace: true });
       }, 6000);
     } catch (error) {
-      console.error('Lỗi khi đặt lại mật khẩu:', error);
-      const errorMessage = error.response?.data?.error || error.response?.data?.message || JSON.stringify(error.response?.data) || 'Đặt lại mật khẩu thất bại. Vui lòng kiểm tra OTP hoặc thử lại.';
+      console.error("Lỗi khi đặt lại mật khẩu:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        error.response?.data?.message ||
+        JSON.stringify(error.response?.data) ||
+        "Đặt lại mật khẩu thất bại. Vui lòng kiểm tra OTP hoặc thử lại.";
       setErrors({
         ...errors,
         server: errorMessage,
@@ -135,26 +162,35 @@ const ForgotPassword = () => {
       scale: [1, 1.08, 1],
       transition: {
         duration: 1.8,
-        ease: 'easeInOut',
+        ease: "easeInOut",
         repeat: Infinity,
-        repeatType: 'loop',
+        repeatType: "loop",
       },
     },
     hover: {
       scale: 1.15,
-      filter: 'brightness(1.15)',
+      filter: "brightness(1.15)",
       transition: { duration: 0.3 },
     },
   };
 
   const formVariants = {
     initial: { opacity: 0, scale: 0.95, y: 20 },
-    animate: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.8, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
   };
 
   const popupVariants = {
     initial: { opacity: 0, y: -50 },
-    animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    animate: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: "easeOut" },
+    },
     exit: { opacity: 0, y: -50, transition: { duration: 0.3 } },
   };
 
@@ -164,50 +200,26 @@ const ForgotPassword = () => {
         <motion.div
           initial={{ opacity: 0, x: -30 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
           className="forgot-password-branding"
         >
-          <Link to="/" className="forgot-password-logo">
-          <svg
-    width="120"
-    height="120"
-    viewBox="0 0 64 64"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    {/* Soft glowing circle (optional) */}
-    <circle cx="32" cy="32" r="30" fill="rgba(255, 255, 255, 0.1)" />
-    
-    {/* Baby's face */}
-    <circle cx="32" cy="32" r="20" fill="#FFD6E7" stroke="white" strokeWidth="1.5" />
-    
-    {/* Eyes */}
-    <circle cx="26" cy="28" r="3" fill="#333" />
-    <circle cx="38" cy="28" r="3" fill="#333" />
-    
-    {/* Blush marks */}
-    <circle cx="22" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
-    <circle cx="42" cy="32" r="2.5" fill="#FFB6C1" opacity="0.8" />
-    
-    {/* Smile */}
-    <path d="M26 38 Q32 42 38 38" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
-    
-    {/* Cute baby hair swirl */}
-    <path d="M32 12 Q34 8 36 12" stroke="#333" strokeWidth="1.5" fill="none" />
-    
-    {/* Optional: Pacifier or baby bottle (uncomment to use) */}
-    
-    <circle cx="20" cy="45" r="4" fill="white" stroke="#333" strokeWidth="1" />
-    <circle cx="20" cy="45" r="2" fill="#FF6B8B" />
-   
-  </svg>
+          <Link to="/" className="signin-logo">
+            <img
+              src="/images/IMG_4602.PNG"
+              alt="Logo"
+              className="signin-web-logo"
+            />
+            NestlyCare
           </Link>
           <div className="forgot-password-branding-text">
             <h1 className="forgot-password-title">Reset Your Password</h1>
             <p className="forgot-password-description">
-              Enter your email to receive an OTP code, then securely reset your password.
+              Enter your email to receive an OTP code, then securely reset your
+              password.
             </p>
-            <p className="forgot-password-quote">"We help you regain access quickly and easily!"</p>
+            <p className="forgot-password-quote">
+              "We help you regain access quickly and easily!"
+            </p>
           </div>
         </motion.div>
 
@@ -218,53 +230,78 @@ const ForgotPassword = () => {
           className="forgot-password-form-container"
         >
           <h2 className="forgot-password-form-title">
-            {step === 1 ? 'Send OTP Code' : 'Reset Password'}
+            {step === 1 ? "Send OTP Code" : "Reset Password"}
           </h2>
           <div className="forgot-password-form">
             {step === 1 ? (
               <>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="email" className="forgot-password-label">Email</label>
+                  <label htmlFor="email" className="forgot-password-label">
+                    Email
+                  </label>
                   <input
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={`forgot-password-input ${errors.email ? 'forgot-password-input-error' : ''}`}
+                    className={`forgot-password-input ${
+                      errors.email ? "forgot-password-input-error" : ""
+                    }`}
                   />
-                  {errors.email && <p className="forgot-password-error">{errors.email}</p>}
+                  {errors.email && (
+                    <p className="forgot-password-error">{errors.email}</p>
+                  )}
                 </div>
-                <button onClick={handleSendOtp} className="forgot-password-button">
+                <button
+                  onClick={handleSendOtp}
+                  className="forgot-password-button"
+                >
                   Send OTP Code
                 </button>
               </>
             ) : (
               <>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="otp" className="forgot-password-label">OTP Code</label>
+                  <label htmlFor="otp" className="forgot-password-label">
+                    OTP Code
+                  </label>
                   <input
                     id="otp"
                     type="text"
                     placeholder="Enter OTP code"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className={`forgot-password-input ${errors.otp ? 'forgot-password-input-error' : ''}`}
+                    className={`forgot-password-input ${
+                      errors.otp ? "forgot-password-input-error" : ""
+                    }`}
                   />
-                  {errors.otp && <p className="forgot-password-error">{errors.otp}</p>}
+                  {errors.otp && (
+                    <p className="forgot-password-error">{errors.otp}</p>
+                  )}
                 </div>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="newPassword" className="forgot-password-label">New Password</label>
+                  <label
+                    htmlFor="newPassword"
+                    className="forgot-password-label"
+                  >
+                    New Password
+                  </label>
                   <div className="password-wrapper">
                     <input
                       id="newPassword"
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       placeholder="Enter new password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      className={`forgot-password-input ${errors.newPassword ? 'forgot-password-input-error' : ''}`}
+                      className={`forgot-password-input ${
+                        errors.newPassword ? "forgot-password-input-error" : ""
+                      }`}
                     />
-                    <span onClick={toggleShowPassword} className="password-toggle-icon">
+                    <span
+                      onClick={toggleShowPassword}
+                      className="password-toggle-icon"
+                    >
                       <svg
                         width="24"
                         height="24"
@@ -286,21 +323,41 @@ const ForgotPassword = () => {
                       </svg>
                     </span>
                   </div>
-                  {errors.newPassword && <p className="forgot-password-error">{errors.newPassword}</p>}
+                  {errors.newPassword && (
+                    <p className="forgot-password-error">
+                      {errors.newPassword}
+                    </p>
+                  )}
                 </div>
                 <div className="forgot-password-input-group">
-                  <label htmlFor="confirmPassword" className="forgot-password-label">Confirm Password</label>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="forgot-password-label"
+                  >
+                    Confirm Password
+                  </label>
                   <input
                     id="confirmPassword"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     placeholder="Confirm new password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className={`forgot-password-input ${errors.confirmPassword ? 'forgot-password-input-error' : ''}`}
+                    className={`forgot-password-input ${
+                      errors.confirmPassword
+                        ? "forgot-password-input-error"
+                        : ""
+                    }`}
                   />
-                  {errors.confirmPassword && <p className="forgot-password-error">{errors.confirmPassword}</p>}
+                  {errors.confirmPassword && (
+                    <p className="forgot-password-error">
+                      {errors.confirmPassword}
+                    </p>
+                  )}
                 </div>
-                <button onClick={handleResetPassword} className="forgot-password-button">
+                <button
+                  onClick={handleResetPassword}
+                  className="forgot-password-button"
+                >
                   Reset Password
                 </button>
               </>
@@ -312,25 +369,49 @@ const ForgotPassword = () => {
               initial="initial"
               animate="animate"
               exit="exit"
-              className={`notification-popup ${errors.server ? 'notification-error' : 'notification-success'}`}
+              className={`forgot-password-notification-popup ${
+                errors.server
+                  ? "forgot-password-notification-error"
+                  : "forgot-password_notification-success"
+              }`}
             >
-              <span className="notification-icon">
+              <span className="forgot-password-notification-icon">
                 {errors.server ? (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" fill="#EF4444"/>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"
+                      fill="#EF4444"
+                    />
                   </svg>
                 ) : (
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="#34C759"/>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                      fill="#34C759"
+                    />
                   </svg>
                 )}
               </span>
-              <p className="notification-message">{errors.server || successMessage}</p>
+              <p className="forgot-password-notification-message">
+                {errors.server || successMessage}
+              </p>
             </motion.div>
           )}
           <div className="forgot-password-links">
             <p>
-              Remember your password?{' '}
+              Remember your password?{" "}
               <Link to="/signin" className="forgot-password-link">
                 Sign in
               </Link>

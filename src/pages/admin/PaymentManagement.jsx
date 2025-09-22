@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/AdminHomePage.css";
+import "../../styles/PaymentManagement.css";
 
-const AdminHomePage = () => {
+const PaymentManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -119,24 +119,24 @@ const AdminHomePage = () => {
   };
 
   return (
-    <div className="blog-category-management">
+    <div className="payment-management">
       <motion.aside
-        className="blog-category-management__sidebar"
+        className="payment-management__sidebar"
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
       >
-        <div className="blog-category-management__sidebar-header">
+        <div className="payment-management__sidebar-header">
           <Link
             to="/admin"
-            className="blog-category-management__logo"
+            className="payment-management__logo"
             onClick={() => setIsSidebarOpen(true)}
           >
             <motion.div
               variants={logoVariants}
               animate="animate"
               whileHover="hover"
-              className="blog-category-management__logo-svg-container"
+              className="payment-management__logo-svg-container"
             >
               <svg
                 width="36"
@@ -159,7 +159,7 @@ const AdminHomePage = () => {
             {isSidebarOpen && <span>Admin Panel</span>}
           </Link>
           <motion.button
-            className="blog-category-management__sidebar-toggle"
+            className="payment-management__sidebar-toggle"
             onClick={toggleSidebar}
             aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
@@ -181,7 +181,7 @@ const AdminHomePage = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="blog-category-management__sidebar-nav"
+          className="payment-management__sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
@@ -189,7 +189,7 @@ const AdminHomePage = () => {
         >
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin"
@@ -210,7 +210,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin/categories"
@@ -231,7 +231,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin/tutorial"
@@ -252,7 +252,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin/policy"
@@ -273,7 +273,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin/account-management"
@@ -294,7 +294,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin/system-configuration"
@@ -315,7 +315,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="payment-management__sidebar-nav-item"
           >
             <Link
               to="/admin/payment-management"
@@ -338,11 +338,11 @@ const AdminHomePage = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="blog-category-management__sidebar-nav-item blog-category-management__admin-profile-section"
+                className="payment-management__sidebar-nav-item payment-management__admin-profile-section"
               >
                 <Link
                   to="/profile"
-                  className="blog-category-management__admin-profile-info"
+                  className="payment-management__admin-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
                   <svg
@@ -359,7 +359,7 @@ const AdminHomePage = () => {
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="blog-category-management__admin-profile-email">
+                    <span className="payment-management__admin-profile-email">
                       {user.email}
                     </span>
                   )}
@@ -367,10 +367,10 @@ const AdminHomePage = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="blog-category-management__sidebar-nav-item"
+                className="payment-management__sidebar-nav-item"
               >
                 <button
-                  className="blog-category-management__logout-button"
+                  className="payment-management__logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
                   title="Sign Out"
@@ -391,7 +391,7 @@ const AdminHomePage = () => {
           ) : (
             <motion.div
               variants={navItemVariants}
-              className="blog-category-management__sidebar-nav-item"
+              className="payment-management__sidebar-nav-item"
             >
               <Link
                 to="/signin"
@@ -413,37 +413,29 @@ const AdminHomePage = () => {
           )}
         </motion.nav>
       </motion.aside>
-      <main className={`blog-category-management__content ${isSidebarOpen ? "" : "closed"}`}>
-        <section className="blog-category-management__banner">
+      <main className={`payment-management__content ${isSidebarOpen ? "" : "closed"}`}>
+        <section className="payment-management__banner">
           <motion.div
-            className="blog-category-management__banner-content"
+            className="payment-management__banner-content"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="blog-category-management__banner-title">Admin Dashboard</h1>
-            <p className="blog-category-management__banner-subtitle">
-              Oversee platform operations, manage user accounts, configure
-              system settings, and ensure smooth functionality with powerful
-              administrative tools.
+            <h1 className="payment-management__banner-title">Payment Management</h1>
+            <p className="payment-management__banner-subtitle">
+              Oversee payment gateways, manage transactions, and configure billing settings for seamless financial operations.
             </p>
-            <div className="blog-category-management__banner-buttons">
-              <Link
-                to="/admin/users"
-                className="blog-category-management__banner-button primary"
-              >
-                Manage Users
+            <div className="payment-management__banner-buttons">
+              <Link to="/admin/payment-management/gateways" className="payment-management__banner-button primary">
+                Manage Gateways
               </Link>
-              <Link
-                to="/admin/account-management"
-                className="blog-category-management__banner-button secondary"
-              >
-                Account Management
+              <Link to="/admin/payment-management/transactions" className="payment-management__banner-button secondary">
+                View Transactions
               </Link>
             </div>
           </motion.div>
           <motion.div
-            className="blog-category-management__banner-image"
+            className="payment-management__banner-image"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -454,10 +446,10 @@ const AdminHomePage = () => {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              aria-label="Admin dashboard icon"
+              aria-label="Payment management icon"
             >
               <path
-                d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
+                d="M3 6h18v12H3zm4 4h10m-10 4h10"
                 fill="var(--admin-accent)"
                 stroke="var(--admin-primary)"
                 strokeWidth="1.5"
@@ -468,63 +460,49 @@ const AdminHomePage = () => {
           </motion.div>
         </section>
         <motion.section
-          className="blog-category-management__features"
+          className="payment-management__features"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
-          <h2 className="blog-category-management__features-title">Core Administrative Tools</h2>
-          <p className="blog-category-management__features-description">
-            Leverage a suite of tools designed to streamline user management,
-            account creation, and system configuration for optimal platform
-            performance.
+          <h2 className="payment-management__features-title">Payment Tools</h2>
+          <p className="payment-management__features-description">
+            Manage payment systems, track transactions, and ensure secure and efficient billing processes.
           </p>
-          <div className="blog-category-management__features-grid">
+          <div className="payment-management__features-grid">
             <motion.div
               variants={cardVariants}
-              className="blog-category-management__feature-card"
+              className="payment-management__feature-card"
             >
-              <h3>User Management</h3>
+              <h3>Payment Gateways</h3>
               <p>
-                View, edit, and assign roles to user accounts, ensuring secure
-                and efficient access control across the platform.
+                Configure and manage payment gateways to support multiple payment methods.
               </p>
-              <Link
-                to="/admin/users"
-                className="blog-category-management__feature-link"
-              >
+              <Link to="/admin/payment-management/gateways" className="payment-management__feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div
               variants={cardVariants}
-              className="blog-category-management__feature-card"
+              className="payment-management__feature-card"
             >
-              <h3>Account Management</h3>
+              <h3>Transaction History</h3>
               <p>
-                Create and manage accounts for Health Experts, Nutrient
-                Specialists, and Clinics to support platform operations.
+                View and manage transaction records for auditing and reporting purposes.
               </p>
-              <Link
-                to="/admin/account-management"
-                className="blog-category-management__feature-link"
-              >
+              <Link to="/admin/payment-management/transactions" className="payment-management__feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div
               variants={cardVariants}
-              className="blog-category-management__feature-card"
+              className="payment-management__feature-card"
             >
-              <h3>System Settings</h3>
+              <h3>Billing Settings</h3>
               <p>
-                Customize platform configurations, including policies and
-                permissions, to align with organizational needs.
+                Customize billing configurations, including subscription plans and invoicing.
               </p>
-              <Link
-                to="/admin/settings"
-                className="blog-category-management__feature-link"
-              >
+              <Link to="/admin/payment-management/billing" className="payment-management__feature-link">
                 Explore
               </Link>
             </motion.div>
@@ -535,4 +513,4 @@ const AdminHomePage = () => {
   );
 };
 
-export default AdminHomePage;
+export default PaymentManagement;

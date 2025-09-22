@@ -63,17 +63,17 @@ const Footer = () => {
           <div className="footer-section">
             <h3>Quick Links</h3>
             <div className="footer-links">
-              <Link to="/pregnancy-tracker">Pregnancy Tracker</Link>
-              <Link to="/clinic-finder">Find Clinics</Link>
-              <Link to="/health-tips">Health Tips & Guides</Link>
-              <Link to="/nutrition">Nutrition Planning</Link>
-              <Link to="/community">Community Forum</Link>
-              <Link to="/appointments">Book Appointment</Link>
+             <Link to="/pregnancy-tracking">Pregnancy Tracking</Link>
+              <Link to="/clinic/list">Find Clinics</Link>
+              <Link to="/advice">Health Tips & Guides</Link>
+              <Link to="/nutritional-guidance">Nutrition Planning</Link>
+              <Link to="/blog">Community Forum</Link>
+              <Link to="/clinic/list">Book Appointment</Link>
             </div>
           </div>
 
           {/* Healthcare Services */}
-          <div className="footer-section">
+          {/* <div className="footer-section">
             <h3>Healthcare Services</h3>
             <div className="footer-links">
               <Link to="/prenatal-care">Prenatal Care</Link>
@@ -83,7 +83,7 @@ const Footer = () => {
               <Link to="/emergency">Emergency Care</Link>
               <Link to="/postpartum">Postpartum Support</Link>
             </div>
-          </div>
+          </div> */}
 
           {/* Newsletter & Social */}
           <div className="footer-section center">
@@ -106,7 +106,7 @@ const Footer = () => {
 
             <div className="social-links">
               <a
-                href="https://facebook.com/momcareplus"
+                href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Facebook"
@@ -116,7 +116,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://instagram.com/momcareplus"
+                href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Instagram"
@@ -126,7 +126,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://twitter.com/momcareplus"
+                href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on Twitter"
@@ -136,7 +136,7 @@ const Footer = () => {
                 </svg>
               </a>
               <a
-                href="https://youtube.com/momcareplus"
+                href="https://youtube.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow us on YouTube"
@@ -157,9 +157,9 @@ const Footer = () => {
             </p>
           </div>
           <div className="footer-legal-links">
-            <Link to="/privacy-policy">Privacy Policy</Link>
-            <Link to="/terms-of-service">Terms of Service</Link>
-            <Link to="/accessibility">Accessibility</Link>
+
+            <Link to="/privacy">Privacy Policy</Link>
+            <Link to="/terms">Terms of Service</Link>
             <Link to="/contact">Contact Us</Link>
           </div>
         </div>

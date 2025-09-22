@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
-import "../../styles/AdminHomePage.css";
+import "../../styles/SystemConfigurationManagement.css";
 
-const AdminHomePage = () => {
+const SystemConfigurationManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -119,24 +119,24 @@ const AdminHomePage = () => {
   };
 
   return (
-    <div className="blog-category-management">
+    <div className="system-configuration-management">
       <motion.aside
-        className="blog-category-management__sidebar"
+        className="system-configuration-management__sidebar"
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
         initial={window.innerWidth > 768 ? "open" : "closed"}
       >
-        <div className="blog-category-management__sidebar-header">
+        <div className="system-configuration-management__sidebar-header">
           <Link
             to="/admin"
-            className="blog-category-management__logo"
+            className="system-configuration-management__logo"
             onClick={() => setIsSidebarOpen(true)}
           >
             <motion.div
               variants={logoVariants}
               animate="animate"
               whileHover="hover"
-              className="blog-category-management__logo-svg-container"
+              className="system-configuration-management__logo-svg-container"
             >
               <svg
                 width="36"
@@ -159,7 +159,7 @@ const AdminHomePage = () => {
             {isSidebarOpen && <span>Admin Panel</span>}
           </Link>
           <motion.button
-            className="blog-category-management__sidebar-toggle"
+            className="system-configuration-management__sidebar-toggle"
             onClick={toggleSidebar}
             aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
@@ -181,7 +181,7 @@ const AdminHomePage = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="blog-category-management__sidebar-nav"
+          className="system-configuration-management__sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
@@ -189,7 +189,7 @@ const AdminHomePage = () => {
         >
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin"
@@ -210,7 +210,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin/categories"
@@ -231,7 +231,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin/tutorial"
@@ -252,7 +252,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin/policy"
@@ -273,7 +273,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin/account-management"
@@ -294,7 +294,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin/system-configuration"
@@ -315,7 +315,7 @@ const AdminHomePage = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="blog-category-management__sidebar-nav-item"
+            className="system-configuration-management__sidebar-nav-item"
           >
             <Link
               to="/admin/payment-management"
@@ -338,11 +338,11 @@ const AdminHomePage = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="blog-category-management__sidebar-nav-item blog-category-management__admin-profile-section"
+                className="system-configuration-management__sidebar-nav-item system-configuration-management__admin-profile-section"
               >
                 <Link
                   to="/profile"
-                  className="blog-category-management__admin-profile-info"
+                  className="system-configuration-management__admin-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
                   <svg
@@ -359,7 +359,7 @@ const AdminHomePage = () => {
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="blog-category-management__admin-profile-email">
+                    <span className="system-configuration-management__admin-profile-email">
                       {user.email}
                     </span>
                   )}
@@ -367,10 +367,10 @@ const AdminHomePage = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="blog-category-management__sidebar-nav-item"
+                className="system-configuration-management__sidebar-nav-item"
               >
                 <button
-                  className="blog-category-management__logout-button"
+                  className="system-configuration-management__logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
                   title="Sign Out"
@@ -391,7 +391,7 @@ const AdminHomePage = () => {
           ) : (
             <motion.div
               variants={navItemVariants}
-              className="blog-category-management__sidebar-nav-item"
+              className="system-configuration-management__sidebar-nav-item"
             >
               <Link
                 to="/signin"
@@ -413,37 +413,29 @@ const AdminHomePage = () => {
           )}
         </motion.nav>
       </motion.aside>
-      <main className={`blog-category-management__content ${isSidebarOpen ? "" : "closed"}`}>
-        <section className="blog-category-management__banner">
+      <main className={`system-configuration-management__content ${isSidebarOpen ? "" : "closed"}`}>
+        <section className="system-configuration-management__banner">
           <motion.div
-            className="blog-category-management__banner-content"
+            className="system-configuration-management__banner-content"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="blog-category-management__banner-title">Admin Dashboard</h1>
-            <p className="blog-category-management__banner-subtitle">
-              Oversee platform operations, manage user accounts, configure
-              system settings, and ensure smooth functionality with powerful
-              administrative tools.
+            <h1 className="system-configuration-management__banner-title">System Configuration Management</h1>
+            <p className="system-configuration-management__banner-subtitle">
+              Customize platform settings, manage permissions, and configure system-wide policies to ensure optimal performance and compliance.
             </p>
-            <div className="blog-category-management__banner-buttons">
-              <Link
-                to="/admin/users"
-                className="blog-category-management__banner-button primary"
-              >
-                Manage Users
+            <div className="system-configuration-management__banner-buttons">
+              <Link to="/admin/system-configuration/permissions" className="system-configuration-management__banner-button primary">
+                Manage Permissions
               </Link>
-              <Link
-                to="/admin/account-management"
-                className="blog-category-management__banner-button secondary"
-              >
-                Account Management
+              <Link to="/admin/system-configuration/settings" className="system-configuration-management__banner-button secondary">
+                System Settings
               </Link>
             </div>
           </motion.div>
           <motion.div
-            className="blog-category-management__banner-image"
+            className="system-configuration-management__banner-image"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -454,10 +446,10 @@ const AdminHomePage = () => {
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              aria-label="Admin dashboard icon"
+              aria-label="System configuration icon"
             >
               <path
-                d="M3 9h18M9 3v18M3 15h18M6 12h12M12 3v18"
+                d="M12 8a4 4 0 100 8 4 4 0 000-8zm0 0v-6m0 18v-6m6 0h6m-18 0H3"
                 fill="var(--admin-accent)"
                 stroke="var(--admin-primary)"
                 strokeWidth="1.5"
@@ -468,63 +460,49 @@ const AdminHomePage = () => {
           </motion.div>
         </section>
         <motion.section
-          className="blog-category-management__features"
+          className="system-configuration-management__features"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
-          <h2 className="blog-category-management__features-title">Core Administrative Tools</h2>
-          <p className="blog-category-management__features-description">
-            Leverage a suite of tools designed to streamline user management,
-            account creation, and system configuration for optimal platform
-            performance.
+          <h2 className="system-configuration-management__features-title">Configuration Tools</h2>
+          <p className="system-configuration-management__features-description">
+            Utilize advanced tools to manage system settings, permissions, and integrations for a seamless platform experience.
           </p>
-          <div className="blog-category-management__features-grid">
+          <div className="system-configuration-management__features-grid">
             <motion.div
               variants={cardVariants}
-              className="blog-category-management__feature-card"
+              className="system-configuration-management__feature-card"
             >
-              <h3>User Management</h3>
+              <h3>Permission Management</h3>
               <p>
-                View, edit, and assign roles to user accounts, ensuring secure
-                and efficient access control across the platform.
+                Define and assign user roles and permissions to control access across the platform.
               </p>
-              <Link
-                to="/admin/users"
-                className="blog-category-management__feature-link"
-              >
+              <Link to="/admin/system-configuration/permissions" className="system-configuration-management__feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div
               variants={cardVariants}
-              className="blog-category-management__feature-card"
-            >
-              <h3>Account Management</h3>
-              <p>
-                Create and manage accounts for Health Experts, Nutrient
-                Specialists, and Clinics to support platform operations.
-              </p>
-              <Link
-                to="/admin/account-management"
-                className="blog-category-management__feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="blog-category-management__feature-card"
+              className="system-configuration-management__feature-card"
             >
               <h3>System Settings</h3>
               <p>
-                Customize platform configurations, including policies and
-                permissions, to align with organizational needs.
+                Adjust platform configurations, including feature toggles and system policies.
               </p>
-              <Link
-                to="/admin/settings"
-                className="blog-category-management__feature-link"
-              >
+              <Link to="/admin/system-configuration/settings" className="system-configuration-management__feature-link">
+                Explore
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={cardVariants}
+              className="system-configuration-management__feature-card"
+            >
+              <h3>Integration Management</h3>
+              <p>
+                Manage third-party integrations and API settings to enhance platform functionality.
+              </p>
+              <Link to="/admin/system-configuration/integrations" className="system-configuration-management__feature-link">
                 Explore
               </Link>
             </motion.div>
@@ -535,4 +513,4 @@ const AdminHomePage = () => {
   );
 };
 
-export default AdminHomePage;
+export default SystemConfigurationManagement;

@@ -63,6 +63,12 @@ import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
 import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
 import ClinicManagement from "../pages/clinic/ClinicManagement";
+import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
+import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
+import ConsultationChat from "../components/consultationchat/ConsultationChat";
+import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
+import SystemConfigurationManagement from "../pages/admin/SystemConfigurationManagement";
+import PaymentManagement from "../pages/admin/PaymentManagement";
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -88,6 +94,8 @@ const AppRoutes = () => {
         <Route path="/admin" element={<AdminHomePage />} />
         <Route path="/admin/tutorial" element={<AdminTutorialPage />} />
         <Route path="/admin/policy" element={<AdminPolicyPage />} />
+        <Route path="/admin/system-configuration" element={<SystemConfigurationManagement />} />
+        <Route path="/admin/payment-management" element={<PaymentManagement />} />
         <Route path="/health-expert" element={<HealthExpertHomePage />} />
         <Route path="/health-expert/tutorial" element={<HealthExpertTutorial />} />
         <Route path="/health-expert/policy" element={<HealthExpertPolicy />} />
@@ -106,7 +114,8 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/nutrient-in-food-management" element={<NutrientInFoodManagement />} />
         <Route path="/nutrient-specialist/warning-management" element={<WarningManagement />} />
         <Route path="/nutrient-specialist/energy-suggestion" element={<EnergySuggestion />} />
-        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> {/* Added route */}
+        <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> 
+        <Route path="/nutrient-specialist/messenger-management" element={<MessengerManagement />} /> 
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
@@ -129,6 +138,9 @@ const AppRoutes = () => {
         <Route path="/pregnancy-tracking/system-meal-planner" element={<SystemMealPlanner />} />
         <Route path="/pregnancy-tracking/recommended-nutritional-needs" element={<RecommendedNutritionalNeeds />} />
         <Route path="/pregnancy-tracking/nutritional-guidance-foodwarning" element={<FoodWarning />} />
+        <Route path="/subscriptionplan" element={<SubscriptionPlan />} />
+        <Route path="/checkout/:planId" element={<SubscriptionCheckout />} />
+
         <Route path="/blog-management" element={<BlogManagement />} />
         <Route path="/blog-management/add" element={<AddingBlog />} />
         <Route path="/consultant" element={<ConsultantHomePage />} />
@@ -161,6 +173,7 @@ const AppRoutes = () => {
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
         <Route path="/clinic/clinic-management" element={<ClinicManagement />} />
+        <Route path="/consultation-chat" element={<ConsultationChat />} />
       </Routes>
     </ThemeProvider>
   );

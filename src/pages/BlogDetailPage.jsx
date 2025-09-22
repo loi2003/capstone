@@ -310,12 +310,12 @@ const BlogDetailPage = () => {
                   <FaHeart className="meta-icon" />
                   <span>{blog.likeCount || 0} likes</span>
                 </div>
-                <div className="blog-detail-meta-item">
+                {/* <div className="blog-detail-meta-item">
                   <FaEye className="meta-icon" />
                   <span>
                     {blog.viewCount || Math.floor(Math.random() * 1000)} views
                   </span>
-                </div>
+                </div> */}
               </div>
             </header>
 

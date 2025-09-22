@@ -1,11 +1,11 @@
 /* Reset and base styles */
-.blog-category-management * {
+.system-configuration-management * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-.blog-category-management {
+.system-configuration-management {
   font-family: 'Roboto', sans-serif;
   background-color: #f4f7fa;
   color: #124966;
@@ -15,7 +15,7 @@
 }
 
 /* Define custom properties for consistent theming */
-.blog-category-management {
+.system-configuration-management {
   --admin-primary: #146f89;
   --admin-primary-dark: #122f4b;
   --admin-secondary: #1aa3ab;
@@ -30,7 +30,7 @@
 }
 
 /* Sidebar styles */
-.blog-category-management__sidebar {
+.system-configuration-management__sidebar {
   background: linear-gradient(180deg, #146f89, #20dacc);
   color: var(--admin-background);
   position: fixed;
@@ -44,12 +44,12 @@
   width: 240px;
 }
 
-.blog-category-management__sidebar.closed {
+.system-configuration-management__sidebar.closed {
   width: 56px;
   overflow: hidden;
 }
 
-.blog-category-management__sidebar-header {
+.system-configuration-management__sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -59,14 +59,14 @@
   flex-wrap: wrap;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-header {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-header {
   flex-direction: column;
   padding: 0.6rem 0.4rem;
   gap: 0.6rem;
   align-items: center;
 }
 
-.blog-category-management__logo {
+.system-configuration-management__logo {
   display: flex;
   align-items: center;
   text-decoration: none;
@@ -74,7 +74,7 @@
   max-width: 100%;
 }
 
-.blog-category-management__logo span {
+.system-configuration-management__logo span {
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--admin-background);
@@ -85,27 +85,27 @@
   max-width: 160px;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__logo span {
+.system-configuration-management__sidebar.closed .system-configuration-management__logo span {
   display: none;
 }
 
-.blog-category-management__logo-svg-container {
+.system-configuration-management__logo-svg-container {
   display: inline-flex;
 }
 
-.blog-category-management__logo-svg-container svg {
+.system-configuration-management__logo-svg-container svg {
   width: 36px;
   height: 36px;
   min-width: 36px;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__logo-svg-container svg {
+.system-configuration-management__sidebar.closed .system-configuration-management__logo-svg-container svg {
   width: 30px;
   height: 30px;
   min-width: 30px;
 }
 
-.blog-category-management__sidebar-toggle {
+.system-configuration-management__sidebar-toggle {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--admin-background);
   cursor: pointer;
@@ -119,49 +119,49 @@
   transition: var(--admin-transition);
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-toggle {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-toggle {
   margin: 0 auto;
 }
 
-.blog-category-management__sidebar-toggle:hover,
-.blog-category-management__sidebar-toggle:focus {
+.system-configuration-management__sidebar-toggle:hover,
+.system-configuration-management__sidebar-toggle:focus {
   background: var(--admin-background);
   border-color: var(--admin-primary);
 }
 
-.blog-category-management__sidebar-toggle svg path {
+.system-configuration-management__sidebar-toggle svg path {
   stroke: var(--admin-background);
 }
 
-.blog-category-management__sidebar-toggle:hover svg path,
-.blog-category-management__sidebar-toggle:focus svg path {
+.system-configuration-management__sidebar-toggle:hover svg path,
+.system-configuration-management__sidebar-toggle:focus svg path {
   stroke: var(--admin-primary);
 }
 
-.blog-category-management__sidebar-nav {
+.system-configuration-management__sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
   padding: 0 0.8rem;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-nav {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav {
   padding: 0;
   gap: 0.8rem;
 }
 
-.blog-category-management__sidebar-nav-item {
+.system-configuration-management__sidebar-nav-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-nav-item {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav-item {
   justify-content: center;
 }
 
-.blog-category-management__sidebar-nav a,
-.blog-category-management__sidebar-nav button {
+.system-configuration-management__sidebar-nav a,
+.system-configuration-management__sidebar-nav button {
   color: var(--admin-background);
   text-decoration: none;
   font-size: 0.9rem;
@@ -182,40 +182,40 @@
   word-wrap: break-word;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-nav a,
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-nav button {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav a,
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav button {
   padding: 0.6rem 0;
   justify-content: center;
 }
 
-.blog-category-management__sidebar-nav a svg,
-.blog-category-management__sidebar-nav button svg {
+.system-configuration-management__sidebar-nav a svg,
+.system-configuration-management__sidebar-nav button svg {
   width: 22px;
   height: 22px;
   min-width: 22px;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-nav a span,
-.blog-category-management__sidebar.closed .blog-category-management__sidebar-nav button span {
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav a span,
+.system-configuration-management__sidebar.closed .system-configuration-management__sidebar-nav button span {
   display: none;
 }
 
-.blog-category-management__sidebar-nav a:hover,
-.blog-category-management__sidebar-nav button:hover {
+.system-configuration-management__sidebar-nav a:hover,
+.system-configuration-management__sidebar-nav button:hover {
   background: var(--admin-primary-dark);
   transform: translateY(-2px);
 }
 
-.blog-category-management__sidebar-nav a:hover svg path,
-.blog-category-management__sidebar-nav button:hover svg path {
+.system-configuration-management__sidebar-nav a:hover svg path,
+.system-configuration-management__sidebar-nav button:hover svg path {
   stroke: var(--admin-background);
 }
 
-.blog-category-management__admin-profile-section {
+.system-configuration-management__admin-profile-section {
   margin-top: 0.8rem;
 }
 
-.blog-category-management__admin-profile-info {
+.system-configuration-management__admin-profile-info {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -231,26 +231,26 @@
   word-wrap: break-word;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__admin-profile-info {
+.system-configuration-management__sidebar.closed .system-configuration-management__admin-profile-info {
   padding: 0.6rem 0;
   justify-content: center;
 }
 
-.blog-category-management__admin-profile-info svg {
+.system-configuration-management__admin-profile-info svg {
   width: 22px;
   height: 22px;
   min-width: 22px;
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__admin-profile-info span {
+.system-configuration-management__sidebar.closed .system-configuration-management__admin-profile-info span {
   display: none;
 }
 
-.blog-category-management__admin-profile-info:hover .blog-category-management__admin-profile-email {
+.system-configuration-management__admin-profile-info:hover .system-configuration-management__admin-profile-email {
   text-decoration: underline;
 }
 
-.blog-category-management__logout-button {
+.system-configuration-management__logout-button {
   background: rgba(229, 62, 62, 0.1);
   color: var(--admin-logout);
   font-weight: 600;
@@ -260,35 +260,35 @@
   transition: var(--admin-transition);
 }
 
-.blog-category-management__sidebar.closed .blog-category-management__logout-button {
+.system-configuration-management__sidebar.closed .system-configuration-management__logout-button {
   padding: 0.6rem 0;
   justify-content: center;
 }
 
-.blog-category-management__logout-button svg {
+.system-configuration-management__logout-button svg {
   width: 22px;
   height: 22px;
   min-width: 22px;
 }
 
-.blog-category-management__logout-button:hover,
-.blog-category-management__logout-button:focus {
+.system-configuration-management__logout-button:hover,
+.system-configuration-management__logout-button:focus {
   background: var(--admin-logout);
   color: var(--admin-background);
   transform: translateY(-2px);
 }
 
-.blog-category-management__logout-button svg path {
+.system-configuration-management__logout-button svg path {
   stroke: var(--admin-logout);
 }
 
-.blog-category-management__logout-button:hover svg path,
-.blog-category-management__logout-button:focus svg path {
+.system-configuration-management__logout-button:hover svg path,
+.system-configuration-management__logout-button:focus svg path {
   stroke: var(--admin-background);
 }
 
 /* Content styles */
-.blog-category-management__content {
+.system-configuration-management__content {
   margin-left: 240px;
   padding: 2rem;
   transition: margin-left var(--admin-transition);
@@ -296,13 +296,13 @@
   min-width: 0;
 }
 
-.blog-category-management__content.closed {
+.system-configuration-management__content.closed {
   margin-left: 56px;
   width: calc(100% - 56px);
 }
 
 /* Banner styles */
-.blog-category-management__banner {
+.system-configuration-management__banner {
   background: linear-gradient(135deg, #f4f7fa, var(--admin-accent));
   padding: 3rem;
   display: flex;
@@ -315,32 +315,32 @@
   max-width: 100%;
 }
 
-.blog-category-management__banner-content {
+.system-configuration-management__banner-content {
   max-width: 600px;
   color: var(--admin-primary);
   flex: 1;
   min-width: 0;
 }
 
-.blog-category-management__banner-title {
+.system-configuration-management__banner-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
 }
 
-.blog-category-management__banner-subtitle {
+.system-configuration-management__banner-subtitle {
   font-size: 1.1rem;
   opacity: 0.9;
   margin-bottom: 1.5rem;
 }
 
-.blog-category-management__banner-buttons {
+.system-configuration-management__banner-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.blog-category-management__banner-button {
+.system-configuration-management__banner-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
@@ -349,32 +349,32 @@
   transition: var(--admin-transition);
 }
 
-.blog-category-management__banner-button.primary {
+.system-configuration-management__banner-button.primary {
   background: var(--admin-background);
   color: var(--admin-primary);
 }
 
-.blog-category-management__banner-button.primary:hover,
-.blog-category-management__banner-button.primary:focus {
+.system-configuration-management__banner-button.primary:hover,
+.system-configuration-management__banner-button.primary:focus {
   background: #e6f0f5;
   transform: translateY(-3px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.blog-category-management__banner-button.secondary {
+.system-configuration-management__banner-button.secondary {
   background: transparent;
   color: var(--admin-primary);
   border: 2px solid var(--admin-accent);
 }
 
-.blog-category-management__banner-button.secondary:hover,
-.blog-category-management__banner-button.secondary:focus {
+.system-configuration-management__banner-button.secondary:hover,
+.system-configuration-management__banner-button.secondary:focus {
   background: var(--admin-accent);
   color: var(--admin-primary);
   transform: translateY(-3px);
 }
 
-.blog-category-management__banner-image svg {
+.system-configuration-management__banner-image svg {
   width: 200px;
   height: 200px;
   max-width: 100%;
@@ -382,21 +382,21 @@
 }
 
 /* Features section */
-.blog-category-management__features {
+.system-configuration-management__features {
   max-width: 1200px;
   margin: 3rem auto;
   padding: 2rem;
   text-align: center;
 }
 
-.blog-category-management__features-title {
+.system-configuration-management__features-title {
   font-size: 2rem;
   font-weight: 600;
   color: var(--admin-text);
   margin-bottom: 1rem;
 }
 
-.blog-category-management__features-description {
+.system-configuration-management__features-description {
   font-size: 1.1rem;
   color: #5f788a;
   margin-bottom: 2rem;
@@ -405,13 +405,13 @@
   margin-right: auto;
 }
 
-.blog-category-management__features-grid {
+.system-configuration-management__features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
-.blog-category-management__feature-card {
+.system-configuration-management__feature-card {
   background: var(--admin-background);
   padding: 1.5rem;
   border-radius: var(--admin-border-radius);
@@ -419,26 +419,26 @@
   transition: var(--admin-transition);
 }
 
-.blog-category-management__feature-card:hover,
-.blog-category-management__feature-card:focus-within {
+.system-configuration-management__feature-card:hover,
+.system-configuration-management__feature-card:focus-within {
   transform: translateY(-5px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.blog-category-management__feature-card h3 {
+.system-configuration-management__feature-card h3 {
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--admin-text);
   margin-bottom: 0.75rem;
 }
 
-.blog-category-management__feature-card p {
+.system-configuration-management__feature-card p {
   font-size: 0.95rem;
   color: #5f788a;
   margin-bottom: 1rem;
 }
 
-.blog-category-management__feature-link {
+.system-configuration-management__feature-link {
   display: inline-flex;
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
@@ -450,111 +450,111 @@
   transition: var(--admin-transition);
 }
 
-.blog-category-management__feature-link:hover,
-.blog-category-management__feature-link:focus {
+.system-configuration-management__feature-link:hover,
+.system-configuration-management__feature-link:focus {
   background: var(--admin-primary-dark);
   box-shadow: var(--admin-shadow);
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-  .blog-category-management__features {
+  .system-configuration-management__features {
     grid-template-columns: 1fr;
   }
 
-  .blog-category-management__banner {
+  .system-configuration-management__banner {
     padding: 2rem;
     flex-direction: column;
     text-align: center;
   }
 
-  .blog-category-management__banner-content {
+  .system-configuration-management__banner-content {
     max-width: 100%;
   }
 
-  .blog-category-management__banner-title {
+  .system-configuration-management__banner-title {
     font-size: 2rem;
   }
 
-  .blog-category-management__banner-image svg {
+  .system-configuration-management__banner-image svg {
     width: 150px;
     height: 150px;
   }
 }
 
 @media (max-width: 768px) {
-  .blog-category-management__content {
+  .system-configuration-management__content {
     margin-left: 56px;
     width: calc(100% - 56px);
     padding: 1.5rem;
   }
 
-  .blog-category-management__content.closed {
+  .system-configuration-management__content.closed {
     margin-left: 56px;
     width: calc(100% - 56px);
   }
 
-  .blog-category-management__sidebar {
+  .system-configuration-management__sidebar {
     width: 56px;
   }
 
-  .blog-category-management__features {
+  .system-configuration-management__features {
     padding: 1.5rem;
     margin: 1.5rem auto;
   }
 
-  .blog-category-management__feature-card {
+  .system-configuration-management__feature-card {
     padding: 1rem;
   }
 
-  .blog-category-management__banner-title {
+  .system-configuration-management__banner-title {
     font-size: 1.8rem;
   }
 
-  .blog-category-management__banner-subtitle {
+  .system-configuration-management__banner-subtitle {
     font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .blog-category-management__banner {
+  .system-configuration-management__banner {
     padding: 1.5rem;
   }
 
-  .blog-category-management__banner-title {
+  .system-configuration-management__banner-title {
     font-size: 1.5rem;
   }
 
-  .blog-category-management__banner-subtitle {
+  .system-configuration-management__banner-subtitle {
     font-size: 0.9rem;
   }
 
-  .blog-category-management__banner-image svg {
+  .system-configuration-management__banner-image svg {
     width: 120px;
     height: 120px;
   }
 
-  .blog-category-management__features-title {
+  .system-configuration-management__features-title {
     font-size: 1.5rem;
   }
 
-  .blog-category-management__features-description {
+  .system-configuration-management__features-description {
     font-size: 0.9rem;
   }
 
-  .blog-category-management__features-grid {
+  .system-configuration-management__features-grid {
     grid-template-columns: 1fr;
   }
 
-  .blog-category-management__feature-card {
+  .system-configuration-management__feature-card {
     padding: 1rem;
   }
 
-  .blog-category-management__feature-card h3 {
+  .system-configuration-management__feature-card h3 {
     font-size: 1.25rem;
   }
 
-  .blog-category-management__feature-link {
+  .system-configuration-management__feature-link {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }

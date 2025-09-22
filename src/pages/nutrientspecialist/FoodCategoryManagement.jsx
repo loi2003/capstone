@@ -120,50 +120,93 @@ const FoodCategoryManagement = () => {
       navigate("/signin", { replace: true });
       return;
     }
+
     setLoading(true);
+
     try {
+      // Thiết lập timeout và cancel token
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 giây timeout
+
+      // Gọi API song song với timeout và error handling riêng
       const [userResponse, categoriesData, foodsDataResponse] =
-        await Promise.all([
-          getCurrentUser(token),
-          getAllFoodCategories(),
-          getAllFoods(),
+        await Promise.allSettled([
+          getCurrentUser(token, { signal: controller.signal }),
+          getAllFoodCategories({ signal: controller.signal }),
+          getAllFoods({ signal: controller.signal }),
         ]);
-      const userData = userResponse.data?.data || userResponse.data;
-      if (userData && Number(userData.roleId) === 4) {
-        setUser(userData);
-        // Normalize categories data
-        const normalizedCategories = categoriesData.map((category) => ({
-          id: category.id || category.Id,
-          name: category.name,
-          description: category.description,
-        }));
-        setFoodCategories(normalizedCategories);
-        setFilteredCategories(normalizedCategories);
-        setCurrentPage(1);
-        // Normalize foods data
-        const foodsData = foodsDataResponse.data || foodsDataResponse;
-        console.log("Foods data:", foodsData);
-        // Calculate food counts per category
-        const counts = normalizedCategories.map((category) => {
-          const count = foodsData.filter((food) => {
-            const matches = food.foodCategoryId === category.id;
-            console.log(
-              `Category: ${category.name}, Food ID: ${food.id}, Matches: ${matches}`
-            );
-            return matches;
-          }).length;
-          return { categoryId: category.id, count };
-        });
-        console.log("Food counts:", counts);
-        setFoodCounts(counts);
-      } else {
+
+      clearTimeout(timeoutId);
+
+      // Xử lý kết quả của từng request
+      if (userResponse.status === "rejected") {
+        throw new Error(`Failed to fetch user: ${userResponse.reason.message}`);
+      }
+
+      const userData = userResponse.value.data?.data || userResponse.value.data;
+      if (!userData || Number(userData.roleId) !== 4) {
         localStorage.removeItem("token");
         setUser(null);
         navigate("/signin", { replace: true });
+        return;
+      }
+
+      setUser(userData);
+
+      if (categoriesData.status === "rejected") {
+        throw new Error(
+          `Failed to fetch categories: ${categoriesData.reason.message}`
+        );
+      }
+
+      // Normalize categories data
+      const normalizedCategories = categoriesData.value.map((category) => ({
+        id: category.id || category.Id,
+        name: category.name,
+        description: category.description,
+      }));
+
+      setFoodCategories(normalizedCategories);
+      setFilteredCategories(normalizedCategories);
+      setCurrentPage(1);
+
+      if (foodsDataResponse.status === "rejected") {
+        // Nếu không lấy được foods, vẫn hiển thị categories nhưng không có counts
+        setFoodCounts([]);
+        showNotification(
+          "Loaded categories but failed to load food counts",
+          "warning"
+        );
+      } else {
+        // Normalize foods data và tính counts (đã được tối ưu)
+        const foodsData =
+          foodsDataResponse.value.data || foodsDataResponse.value;
+
+        // Calculate food counts per category - Optimized version
+        const foodCountMap = foodsData.reduce((acc, food) => {
+          const categoryId = food.foodCategoryId;
+          if (categoryId) {
+            acc[categoryId] = (acc[categoryId] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        const counts = normalizedCategories.map((category) => ({
+          categoryId: category.id,
+          count: foodCountMap[category.id] || 0,
+        }));
+
+        setFoodCounts(counts);
       }
     } catch (err) {
       console.error("Error in fetchData:", err);
-      showNotification(`Failed to fetch data: ${err.message}`, "error");
+
+      if (err.name === "AbortError") {
+        showNotification("Request timeout. Please try again.", "error");
+      } else {
+        showNotification(`Failed to fetch data: ${err.message}`, "error");
+      }
+
       localStorage.removeItem("token");
       setUser(null);
       navigate("/signin", { replace: true });
@@ -289,7 +332,33 @@ const FoodCategoryManagement = () => {
   };
 
   const deleteCategoryHandler = async (id) => {
-    if (window.confirm("Are you sure you want to delete this category?")) {
+    const category = foodCategories.find((cat) => cat.id === id);
+    if (!category) {
+      showNotification("Category not found", "error");
+      return;
+    }
+
+    const foodCount = foodCounts.find((count) => count.categoryId === id)?.count || 0;
+    if (foodCount > 0) {
+      try {
+        const foodsData = await getAllFoods();
+        const foodsInCategory = foodsData.filter((food) => food.foodCategoryId === id);
+        const foodNames = foodsInCategory.map((food) => food.name).join(", ");
+        showNotification(
+          `Cannot delete category "${category.name}" because it contains the following foods: ${foodNames}. Please reassign or delete these foods first.`,
+          "error"
+        );
+        return;
+      } catch (err) {
+        showNotification(
+          `Failed to fetch foods for category "${category.name}". Please try again.`,
+          "error"
+        );
+        return;
+      }
+    }
+
+    if (window.confirm(`Are you sure you want to delete the category "${category.name}"?`)) {
       setLoading(true);
       try {
         await deleteFoodCategory(id);

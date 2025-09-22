@@ -12,6 +12,8 @@ export const getChatThreadByUserId = async (userId, token) => {
         },
       }
     );
+
+    // Return the full response with all threads
     return response.data;
   } catch (error) {
     console.error('Error fetching chat thread:', error.message);
@@ -19,11 +21,13 @@ export const getChatThreadByUserId = async (userId, token) => {
   }
 };
 
+
+
 // Fetch chat thread by thread ID from the API
-export const getChatThreadById = async (threadId, token) => {
+export const getChatThreadById = async (chatThreadId, token) => {
   try {
     const response = await apiClient.get(
-      `/api/message/get-chat-thread-by-id/${threadId}`,
+      `/api/message/get-chat-thread-by-id/${chatThreadId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -39,11 +43,11 @@ export const getChatThreadById = async (threadId, token) => {
 };
 
 // Send a message to the API
-export const sendMessage = async (messageData, token) => {
+export const sendMessage = async (formData, token) => {
   try {
     const response = await apiClient.post(
       '/api/message/send-message',
-      messageData,
+      formData,
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -53,10 +57,11 @@ export const sendMessage = async (messageData, token) => {
     );
     return response.data;
   } catch (error) {
-    console.error('Error sending message:', error.message);
+    console.error('Error sending message:', error.response?.data || error.message);
     throw error;
   }
 };
+
 
 // Start a new chat thread
 export const startChatThread = async (threadData, token) => {

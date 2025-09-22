@@ -204,7 +204,7 @@ const HomePage = () => {
             >
               <h1 className="hero-title">{homepageData.hero.title}</h1>
               <p className="hero-tagline">{homepageData.hero.tagline}</p>
-              <p className="hero-subtitle">{homepageData.hero.subtitle}</p>
+              {/* <p className="hero-subtitle">{homepageData.hero.subtitle}</p> */}
               <p className="hero-quote">{homepageData.hero.quote}</p>
               <div className="hero-buttons">
                 <Link to={homepageData.hero.ctaLink} className="hero-button primary">

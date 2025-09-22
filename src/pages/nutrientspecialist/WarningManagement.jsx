@@ -72,10 +72,20 @@ const WarningModal = ({ warning, onClose, foods }) => {
         onClick={(e) => e.stopPropagation()}
       >
         <h2>Warning Food Details</h2>
-        <h3>Food: {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}</h3>
-        <p><strong>Type:</strong> {warning.type}</p>
-        <p><strong>Related ID:</strong> {warning.relatedId}</p>
-        <p><strong>Description:</strong> {warning.description || "No description provided"}</p>
+        <h3>
+          Food:{" "}
+          {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}
+        </h3>
+        <p>
+          <strong>Type:</strong> {warning.type}
+        </p>
+        <p>
+          <strong>Related ID:</strong> {warning.relatedId}
+        </p>
+        <p>
+          <strong>Description:</strong>{" "}
+          {warning.description || "No description provided"}
+        </p>
         <motion.button
           onClick={onClose}
           className="nutrient-specialist-button primary"
@@ -155,76 +165,69 @@ const WarningManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-const fetchData = async () => {
-  setLoading(true);
-  try {
-    const [diseasesResponse, allergiesResponse, foodsResponse] = await Promise.all([
-      getAllDiseases(token),
-      getAllAllergies(token),
-      getAllFoods(),
-    ]);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [diseasesResponse, allergiesResponse, foodsResponse] =
+        await Promise.all([
+          getAllDiseases(token),
+          getAllAllergies(token),
+          getAllFoods(),
+        ]);
 
-    // Handle diseases response
-    const diseasesData = Array.isArray(diseasesResponse?.data?.data)
-      ? diseasesResponse.data.data
-      : Array.isArray(diseasesResponse?.data)
-      ? diseasesResponse.data
-      : [];
-
-    // Handle allergies response
-    const allergiesData = Array.isArray(allergiesResponse?.data?.data)
-      ? allergiesResponse.data.data
-      : Array.isArray(allergiesResponse?.data)
-      ? allergiesResponse.data
-      : [];
-
-    // Handle foods response (direct array from API)
-    const foodsData = Array.isArray(foodsResponse)
-      ? foodsResponse
-      : [];
-
-    // Log for debugging
-    console.log("Foods response:", foodsResponse);
-    console.log("Foods data:", foodsData);
-
-    setDiseases(diseasesData);
-    setAllergies(allergiesData);
-    setFoods(foodsData);
-
-    // Fetch warnings only if there are diseases or allergies
-    if (diseasesData.length > 0 || allergiesData.length > 0) {
-      const diseaseIds = diseasesData.map((disease) => disease.id);
-      const allergyIds = allergiesData.map((allergy) => allergy.id);
-      const warningsResponse = await viewWarningFoods({
-        allergyIds,
-        diseaseIds,
-      });
-
-      // Handle warnings response
-      const warningsData = Array.isArray(warningsResponse?.data?.data)
-        ? warningsResponse.data.data
-        : Array.isArray(warningsResponse?.data)
-        ? warningsResponse.data
+      const diseasesData = Array.isArray(diseasesResponse?.data?.data)
+        ? diseasesResponse.data.data
+        : Array.isArray(diseasesResponse?.data)
+        ? diseasesResponse.data
         : [];
-      setWarnings(warningsData);
-    } else {
+
+      const allergiesData = Array.isArray(allergiesResponse?.data?.data)
+        ? allergiesResponse.data.data
+        : Array.isArray(allergiesResponse?.data)
+        ? allergiesResponse.data
+        : [];
+
+      const foodsData = Array.isArray(foodsResponse) ? foodsResponse : [];
+
+      console.log("Foods response:", foodsResponse);
+      console.log("Foods data:", foodsData);
+
+      setDiseases(diseasesData);
+      setAllergies(allergiesData);
+      setFoods(foodsData);
+
+      if (diseasesData.length > 0 || allergiesData.length > 0) {
+        const diseaseIds = diseasesData.map((disease) => disease.id);
+        const allergyIds = allergiesData.map((allergy) => allergy.id);
+        const warningsResponse = await viewWarningFoods({
+          allergyIds,
+          diseaseIds,
+        });
+
+        const warningsData = Array.isArray(warningsResponse?.data?.data)
+          ? warningsResponse.data.data
+          : Array.isArray(warningsResponse?.data)
+          ? warningsResponse.data
+          : [];
+        setWarnings(warningsData);
+      } else {
+        setWarnings([]);
+      }
+    } catch (err) {
+      console.error("Fetch error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(`Failed to fetch data: ${err.message}`, "error");
+      setDiseases([]);
+      setAllergies([]);
+      setFoods([]);
       setWarnings([]);
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error("Fetch error details:", {
-      message: err.message,
-      response: err.response?.data,
-      status: err.response?.status,
-    });
-    showNotification(`Failed to fetch data: ${err.message}`, "error");
-    setDiseases([]);
-    setAllergies([]);
-    setFoods([]);
-    setWarnings([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const createWarningHandler = async () => {
     if (!newWarning.type || newWarning.type.trim() === "") {
@@ -237,6 +240,16 @@ const fetchData = async () => {
     }
     if (newWarning.warningFoodDtos.length === 0) {
       showNotification("Please select at least one food", "error");
+      return;
+    }
+    const invalidFoods = newWarning.warningFoodDtos.filter(
+      (food) => !food.description || food.description.trim() === ""
+    );
+    if (invalidFoods.length > 0) {
+      showNotification(
+        "Please provide a description for each selected food",
+        "error"
+      );
       return;
     }
     setLoading(true);
@@ -263,7 +276,9 @@ const fetchData = async () => {
     } catch (err) {
       console.error("Create warning error:", err);
       showNotification(
-        `Failed to create warning: ${err.response?.data?.message || err.message}`,
+        `Failed to create warning: ${
+          err.response?.data?.message || err.message
+        }`,
         "error"
       );
     } finally {
@@ -272,7 +287,8 @@ const fetchData = async () => {
   };
 
   const deleteWarningHandler = async (warning) => {
-    if (!window.confirm("Are you sure you want to delete this warning?")) return;
+    if (!window.confirm("Are you sure you want to delete this warning?"))
+      return;
     setLoading(true);
     try {
       if (warning.type === "Disease") {
@@ -377,12 +393,18 @@ const fetchData = async () => {
   const filteredWarnings = warnings.filter(
     (warning) =>
       (warning.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      foods.find((f) => f.id === warning.foodId)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      foods
+        .find((f) => f.id === warning.foodId)
+        ?.name.toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastWarning = currentPage * itemsPerPage;
   const indexOfFirstWarning = indexOfLastWarning - itemsPerPage;
-  const currentWarnings = filteredWarnings.slice(indexOfFirstWarning, indexOfLastWarning);
+  const currentWarnings = filteredWarnings.slice(
+    indexOfFirstWarning,
+    indexOfLastWarning
+  );
   const totalPages = Math.ceil(filteredWarnings.length / itemsPerPage);
 
   const handlePreviousPage = () => {
@@ -664,7 +686,9 @@ const fetchData = async () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
+                animate={
+                  isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -1052,7 +1076,7 @@ const fetchData = async () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 16px 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Warning icon for warning management"
@@ -1254,7 +1278,6 @@ const fetchData = async () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-            whileHover="hover"
           >
             <button
               onClick={() => setCurrentSidebarPage(1)}
@@ -1412,7 +1435,9 @@ const fetchData = async () => {
               </div>
               <div className="form-group">
                 <label htmlFor="related-id">
-                  {newWarning.type === "Disease" ? "Select Disease" : "Select Allergy"}
+                  {newWarning.type === "Disease"
+                    ? "Select Disease"
+                    : "Select Allergy"}
                 </label>
                 <select
                   id="related-id"
@@ -1426,24 +1451,31 @@ const fetchData = async () => {
                   className="input-field"
                 >
                   <option value="">Select {newWarning.type}</option>
-                  {(newWarning.type === "Disease" ? diseases : allergies).map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.name}
-                    </option>
-                  ))}
+                  {(newWarning.type === "Disease" ? diseases : allergies).map(
+                    (item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
               <div className="form-group">
                 <label htmlFor="food-selection">Select Foods</label>
                 <div className="food-selection-container">
                   {foods.length === 0 ? (
-                    <p>No foods available to select. Please ensure foods are added in the database.</p>
+                    <p>
+                      No foods available to select. Please ensure foods are
+                      added in the database.
+                    </p>
                   ) : (
                     foods.map((food) => (
                       <motion.div
                         key={food.id}
                         className={`food-item ${
-                          newWarning.warningFoodDtos.some((f) => f.foodId === food.id)
+                          newWarning.warningFoodDtos.some(
+                            (f) => f.foodId === food.id
+                          )
                             ? "selected"
                             : ""
                         }`}
@@ -1452,9 +1484,9 @@ const fetchData = async () => {
                         whileTap={{ scale: 0.98 }}
                       >
                         <span className="food-name">{food.name}</span>
-                        {newWarning.warningFoodDtos.some((f) => f.foodId === food.id) && (
-                          <span className="checkmark">✓</span>
-                        )}
+                        {newWarning.warningFoodDtos.some(
+                          (f) => f.foodId === food.id
+                        ) && <span className="checkmark">✓</span>}
                       </motion.div>
                     ))
                   )}
@@ -1467,15 +1499,34 @@ const fetchData = async () => {
                 ) : (
                   newWarning.warningFoodDtos.map((food) => (
                     <div key={food.foodId} className="food-detail-item">
-                      <span>{foods.find((f) => f.id === food.foodId)?.name || "Unknown Food"}</span>
+                      <span>
+                        {foods.find((f) => f.id === food.foodId)?.name ||
+                          "Unknown Food"}
+                      </span>
                       <div className="food-detail-inputs">
-                        <input
-                          type="text"
-                          value={food.description}
-                          onChange={(e) => handleFoodDescriptionChange(food.foodId, e.target.value)}
-                          placeholder="Description"
-                          className="input-field"
-                        />
+                        <div className="input-wrapper">
+                          <input
+                            type="text"
+                            value={food.description}
+                            onChange={(e) =>
+                              handleFoodDescriptionChange(
+                                food.foodId,
+                                e.target.value
+                              )
+                            }
+                            placeholder="Enter description (required)"
+                            className={`input-field ${
+                              !food.description || food.description.trim() === ""
+                                ? "input-error"
+                                : ""
+                            }`}
+                          />
+                          {!food.description || food.description.trim() === "" ? (
+                            <span className="error-message">
+                              Description is required
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                     </div>
                   ))
@@ -1571,12 +1622,27 @@ const fetchData = async () => {
                       whileHover={{ y: -5 }}
                     >
                       <div className="card-header">
-                        <h3>{foods.find((f) => f.id === warning.foodId)?.name || `Warning #${index + 1}`}</h3>
+                        <h3>
+                          {foods.find((f) => f.id === warning.foodId)?.name ||
+                            `Warning #${index + 1}`}
+                        </h3>
                       </div>
                       <div className="warning-details">
-                        <p><strong>Type:</strong> {warning.type}</p>
-                        <p><strong>Related:</strong> {(warning.type === "Disease" ? diseases : allergies).find((item) => item.id === warning.relatedId)?.name || "Unknown"}</p>
-                        <p><strong>Description:</strong> {warning.description || "No description"}</p>
+                        <p>
+                          <strong>Type:</strong> {warning.type}
+                        </p>
+                        <p>
+                          <strong>Related:</strong>{" "}
+                          {(warning.type === "Disease"
+                            ? diseases
+                            : allergies
+                          ).find((item) => item.id === warning.relatedId)
+                            ?.name || "Unknown"}
+                        </p>
+                        <p>
+                          <strong>Description:</strong>{" "}
+                          {warning.description || "No description"}
+                        </p>
                       </div>
                       <div className="card-actions">
                         <motion.button
@@ -1617,8 +1683,12 @@ const fetchData = async () => {
                       onClick={handleNextPage}
                       disabled={currentPage === totalPages}
                       className="nutrient-specialist-button secondary"
-                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
-                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
+                      whileHover={{
+                        scale: currentPage === totalPages ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: currentPage === totalPages ? 1 : 0.95,
+                      }}
                     >
                       Next
                     </motion.button>
