@@ -50,20 +50,11 @@ const BlogPage = () => {
   const navigate = useNavigate();
 
   // Enhanced placeholder images
-  // const placeholderImages = [
-  //   "src/assets/parenting-in-pictures.svg",
-  //   "src/assets/due-date-calculator.svg",
-  //   "src/assets/find-a-health-service.svg",
-  //   "src/assets/pregnancy-tracker.svg",
-    
-  // ];
-
-    const placeholderImages = [
-    "/images/parenting-in-pictures.svg",
-    "/images/due-date-calculator.svg",
-    "/images/find-a-health-service.svg",
-    "/images/pregnancy-tracker.svg",
-    
+  const placeholderImages = [
+    "src/assets/parenting-in-pictures.svg",
+    "src/assets/due-date-calculator.svg",
+    "src/assets/find-a-health-service.svg",
+    "src/assets/pregnancy-tracker.svg",
   ];
 
   // ViewBookmarkedBlog function

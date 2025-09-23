@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getAllBlogs, deleteLike, deleteBookmark } from "../apis/blog-api";
 import apiClient from "../apis/url-api";
 import "../styles/BlogDetailPage.css";
-import parentingInPictures from "../assets/parenting-in-pictures.svg";
-
+// import parentingInPictures from "../assets/parenting-in-pictures.svg";
+// import parentingInPictures from "/images/parenting-in-pictures.svg";
 // React Icons imports
 import {
   FaArrowLeft,
@@ -39,8 +39,15 @@ const BlogDetailPage = () => {
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
+  // const placeholderImages = [
+  //   parentingInPictures,
+  // ];
+
   const placeholderImages = [
-    parentingInPictures,
+    "/images/parenting-in-pictures.svg",
+    "/images/due-date-calculator.svg",
+    "/images/find-a-health-service.svg",
+    "/images/pregnancy-tracker.svg",
   ];
   
   const getRandomPlaceholder = () => {
