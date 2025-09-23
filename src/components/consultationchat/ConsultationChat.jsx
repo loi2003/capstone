@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import * as signalR from "@microsoft/signalr";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   startChatThread,
@@ -22,15 +23,16 @@ import {
   FaPaperclip,
   FaTimes,
 } from "react-icons/fa";
-import { FaFileAlt } from 'react-icons/fa';
+import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
 import LoadingOverlay from "../popup/LoadingOverlay";
+import { useMessages } from "../../utils/useMessages";
 
 const ConsultationChat = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const messagesEndRef = useRef(null);
-
+  const { connection, messages, addMessage } = useMessages();
   const {
     selectedConsultant: preSelectedConsultant,
     currentUserId: passedUserId,
@@ -38,6 +40,8 @@ const ConsultationChat = () => {
 
   const [currentUserId, setCurrentUserId] = useState(passedUserId || "");
   const [loading, setLoading] = useState(true);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [consultants, setConsultants] = useState([]);
   const [chatThreads, setChatThreads] = useState({});
@@ -53,6 +57,19 @@ const ConsultationChat = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const fileInputRef = useRef(null);
+
+  const scrollToBottom = () => {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      }
+    });
+  };
 
   // Size formatter
   const formatBytes = (bytes) => {
@@ -180,29 +197,49 @@ const ConsultationChat = () => {
             const consultantData = consultantRes?.data || null;
 
             // Process messages to include attachment data
-            const processedMessages = (thread.messages || []).map((msg) => {
-              // Check if message has attachment data from backend
-              if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
-                return {
-                  ...msg,
-                  attachment: {
-                    fileName:
-                      msg.attachmentFileName || msg.fileName || "Attachment",
-                    fileSize: msg.attachmentFileSize || msg.fileSize,
-                    fileType: msg.attachmentFileType || msg.fileType,
-                    isImage: isImageFile(
-                      msg.attachmentFileName || msg.fileName || ""
-                    ),
-                    // Use the URL from backend, not local filePreview
-                    url:
-                      msg.attachmentUrl ||
-                      msg.attachmentPath ||
-                      msg.attachment?.url,
-                  },
-                };
-              }
-              return msg;
-            });
+            const processedMessages =
+              thread.messages?.map((msg) => {
+                // Handle existing attachment data
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  return {
+                    ...msg,
+                    attachment: {
+                      fileName:
+                        msg.attachmentFileName || msg.fileName || "Attachment",
+                      fileSize: msg.attachmentFileSize || msg.fileSize,
+                      fileType: msg.attachmentFileType || msg.fileType,
+                      isImage: isImageFile(
+                        msg.attachmentFileName || msg.fileName
+                      ),
+                      url:
+                        msg.attachmentUrl ||
+                        msg.attachmentPath ||
+                        msg.attachment?.url,
+                    },
+                  };
+                }
+
+                // Handle media array - ADD THIS PART
+                if (
+                  msg.media &&
+                  Array.isArray(msg.media) &&
+                  msg.media.length > 0
+                ) {
+                  const firstMedia = msg.media[0];
+                  return {
+                    ...msg,
+                    attachment: {
+                      fileName: firstMedia.fileName || "Attachment",
+                      fileSize: firstMedia.fileSize,
+                      fileType: firstMedia.fileType,
+                      isImage: isImageFile(firstMedia.fileName || ""),
+                      url: firstMedia.fileUrl || firstMedia.url,
+                    },
+                  };
+                }
+
+                return msg;
+              }) || [];
 
             threadsMap[consultantId] = {
               thread,
@@ -377,6 +414,14 @@ const ConsultationChat = () => {
 
   // Enhanced send message function with file support
   const handleSendMessage = async () => {
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
+      console.error("SignalR connection not established");
+      alert("Connection lost. Please refresh the page.");
+      return;
+    }
     const consultantId = selectedConsultant?.user?.id;
     const activeThread =
       consultantId && chatThreads[consultantId]
@@ -389,10 +434,10 @@ const ConsultationChat = () => {
       sendingMessage
     )
       return;
-    if (!selectedFile) {
-      alert("Please attach a file to send");
-      return;
-    }
+    // if (!selectedFile) {
+    //   alert("Please attach a file to send");
+    //   return;
+    // }
 
     try {
       setSendingMessage(true);
@@ -407,7 +452,7 @@ const ConsultationChat = () => {
       }
 
       if (selectedFile) {
-        formData.append("Attachment", selectedFile);
+        formData.append("Attachments", selectedFile);
         // Also append metadata to help backend process
         formData.append("AttachmentFileName", selectedFile.name);
         formData.append("AttachmentFileType", selectedFile.type);
@@ -506,6 +551,7 @@ const ConsultationChat = () => {
                   messages: processedMessages,
                 },
               }));
+              scrollToBottom();
             }
           } catch (error) {
             console.error("Error refreshing thread:", error);
@@ -527,6 +573,9 @@ const ConsultationChat = () => {
     const media = Array.isArray(msg.media) ? msg.media : [];
     const hasAttachment = msg.attachment;
 
+    // Prioritize attachment object over media array to prevent duplicates
+    const shouldRenderMedia = !hasAttachment && media.length > 0;
+
     return (
       <div key={idx} className={`consultation-chat-message ${messageClass}`}>
         <div className="consultation-chat-message-content">
@@ -534,78 +583,82 @@ const ConsultationChat = () => {
             <p>{msg.messageText || msg.message}</p>
           )}
 
-          {/* Handle attachments (images + files) */}
-          {hasAttachment && (
-            <>
-              {msg.attachment.isImage ? (
-                <img
-                  src={msg.attachment.url}
-                  alt={msg.attachment.fileName}
-                  className="consultation-chat-attachment-image"
-                  onClick={() => window.open(msg.attachment.url, "_blank")}
-                />
-              ) : (
-                <div className="consultation-chat-attachment">
-                  <AttachmentCard att={msg.attachment} />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Legacy media array handling */}
-          {media.map((m, i) => {
-            const isImg = (m.fileType || "").startsWith("image/");
-            const url = m.fileUrl || m.url;
-            if (!url) return null;
-
-            return isImg ? (
+          {/* Handle attachment object (priority) */}
+          {hasAttachment &&
+            (msg.attachment.isImage ? (
               <img
-                key={i}
-                src={url}
-                alt={`attachment-${i}`}
+                src={msg.attachment.url}
+                alt={msg.attachment.fileName}
                 className="consultation-chat-attachment-image"
-                onClick={() => window.open(url, "_blank")}
+                onClick={() => window.open(msg.attachment.url, "_blank")}
               />
             ) : (
-              <a
-                key={i}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="consultation-chat-attachment-document"
-              >
-                <FaFileAlt className="document-file-icon"/>
-                <span className="chat-attachment-name">
-                  {m.fileName || "Download file"}
-                </span>
-                
-              </a>
-            );
-          })}
+              <div className="consultation-chat-attachment-document">
+                <a
+                  href={msg.attachment.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="consultation-chat-attachment-link"
+                >
+                  <div className="consultation-chat-attachment-info">
+                    <FaFileAlt className="consultation-chat-document-file-icon" />
+                    <div className="consultation-chat-attachment-details">
+                      <span className="consultation-chat-attachment-name">
+                        {msg.attachment.fileName}
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            ))}
 
-          <span className="consultation-chat-message-time">
-            {formatMessageTime(msg.createdAt)}
+          {/* Handle media array only if no attachment object exists */}
+          {shouldRenderMedia &&
+            media.map((m, i) => {
+              const isImg = m.fileType?.startsWith("image");
+              const url = m.fileUrl || m.url;
+              if (!url) return null;
+
+              return isImg ? (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`attachment-${i}`}
+                  className="consultation-chat-attachment-image"
+                  onClick={() => window.open(url, "_blank")}
+                />
+              ) : (
+                <a
+                  key={i}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="consultation-chat-attachment-document"
+                >
+                  <FaFileAlt className="consultation-chat-document-file-icon" />
+                  <span className="consultation-chat-attachment-name">
+                    {m.fileName} - Download file
+                  </span>
+                </a>
+              );
+            })}
+
+          <span
+            className="consultation-chat-message-time"
+            style={{
+              fontSize: "11px",
+              opacity: 0.7,
+              fontWeight: 500,
+              marginTop: "8px",
+              display: "block",
+              textAlign: isSent ? "right" : "left",
+              color: isSent ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.7)",
+            }}
+          >
+            {formatMessageTime(
+              msg.createdAt || msg.sentAt || msg.timestamp || msg.creationDate
+            )}
           </span>
-        </div>
-      </div>
-    );
-  };
-
-  const AttachmentCard = ({ att }) => {
-    if (!att?.url) return null;
-    const iconKey = getFileIcon(att.fileName, att.fileType);
-    const onClick = () => window.open(att.url, "_blank");
-    return (
-      <div
-        className={`msg-attach-card icon-${iconKey}`}
-        onClick={onClick}
-        role="button"
-        tabIndex={0}
-      >
-        <div className="msg-attach-icon" aria-hidden />
-        <div className="msg-attach-meta">
-          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
-          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
         </div>
       </div>
     );
@@ -619,41 +672,55 @@ const ConsultationChat = () => {
   };
 
   const formatMessageTime = (timestamp) => {
+    // console.log("timestamp", timestamp);
     if (!timestamp) return "";
 
     try {
-      let date;
+      let utcDate;
 
       // Handle different timestamp formats
       if (typeof timestamp === "string") {
-        date = new Date(timestamp);
+        // If string doesn't end with 'Z', assume it's UTC and add 'Z'
+        // if (
+        //   !timestamp.endsWith("Z") &&
+        //   !timestamp.includes("+") &&
+        //   !timestamp.includes("-")
+        // ) {
+        if (!timestamp.endsWith("Z")) {
+          utcDate = new Date(timestamp + "Z"); // Force UTC parsing
+        } else {
+          utcDate = new Date(timestamp);
+        }
       } else if (typeof timestamp === "number") {
         // Handle Unix timestamp (seconds or milliseconds)
-        date =
+        utcDate =
           timestamp > 1000000000000
             ? new Date(timestamp)
             : new Date(timestamp * 1000);
       } else if (timestamp instanceof Date) {
-        date = timestamp;
+        utcDate = timestamp;
       } else {
         return "";
       }
 
       // Check if date is valid
-      if (isNaN(date.getTime())) {
+      if (isNaN(utcDate.getTime())) {
+        console.warn("Invalid timestamp:", timestamp);
         return "";
       }
+      // console.log("log utcDate", utcDate);
 
-      // Format with fallback
+      // Convert to local timezone and format
       try {
-        return date.toLocaleTimeString([], {
+        return utcDate.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         });
       } catch (e) {
-        // Manual fallback formatting
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
+        // Manual fallback formatting (already in local time)
+        const hours = utcDate.getHours().toString().padStart(2, "0");
+        const minutes = utcDate.getMinutes().toString().padStart(2, "0");
         return `${hours}:${minutes}`;
       }
     } catch (error) {
@@ -700,6 +767,96 @@ const ConsultationChat = () => {
     selectedConsultant && chatThreads[selectedConsultant.user.id]
       ? chatThreads[selectedConsultant.user.id].consultant
       : null;
+
+  useEffect(() => {
+    if (connection && activeThread?.id) {
+      connection
+        .invoke("JoinThread", activeThread.id)
+        .catch((err) => console.error("JoinThread failed:", err));
+    }
+  }, [connection, activeThread]);
+
+  //handle message in realtime
+  // Add a ref to track processed message IDs for ConsultationChat
+  const processedMessageIds = useRef(new Set());
+
+  // Updated useEffect for handling incoming messages
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const latest = messages[messages.length - 1];
+    console.log("Processing incoming message in ConsultationChat:", latest);
+
+    // *** ADD EARLY DUPLICATE CHECK ***
+    if (!latest.id || processedMessageIds.current.has(latest.id)) {
+      console.log("Message already processed, skipping:", latest.id);
+      return;
+    }
+
+    // Mark message as processed immediately
+    processedMessageIds.current.add(latest.id);
+
+    if (selectedConsultant?.user?.id) {
+      const consultantId = selectedConsultant.user.id;
+
+      setChatThreads((prev) => {
+        const existingMessages = prev[consultantId]?.messages || [];
+
+        // Secondary check at state level
+        const messageExists = existingMessages.some((m) => m.id === latest.id);
+        if (messageExists) {
+          console.log("Message already exists in thread, skipping:", latest.id);
+          return prev;
+        }
+
+        console.log(
+          "Adding new message to thread for consultant:",
+          consultantId
+        );
+
+        // Process the message for attachments
+        // In the useEffect that handles incoming messages, update the message processing:
+        const processedMessage = { ...latest };
+        if (
+          latest.media &&
+          Array.isArray(latest.media) &&
+          latest.media.length > 0
+        ) {
+          const firstMedia = latest.media[0];
+          processedMessage.attachment = {
+            fileName: firstMedia.fileName || "Attachment",
+            fileSize: firstMedia.fileSize,
+            fileType: firstMedia.fileType,
+            isImage: isImageFile(firstMedia.fileName || ""),
+            url: firstMedia.fileUrl || firstMedia.url,
+          };
+        }
+
+        return {
+          ...prev,
+          [consultantId]: {
+            ...prev[consultantId],
+            messages: [...existingMessages, processedMessage],
+          },
+        };
+      });
+
+      // Auto scroll
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [messages, selectedConsultant?.user?.id, currentUserId]);
+
+  // Add cleanup for processed message IDs
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      if (processedMessageIds.current.size > 1000) {
+        console.log("Cleaning up processed message IDs");
+        processedMessageIds.current.clear();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(cleanup);
+  }, []);
 
   if (loading) {
     return (

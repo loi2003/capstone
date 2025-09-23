@@ -5,7 +5,7 @@ const apiClient = axios.create({
   baseURL: 'https://localhost:7045',
   // baseURL: "https://api.nestlycare.live",
   // timeout: 10000,
-  timeout: 20000,
+  timeout: 300000,
 });
 
 export default apiClient;

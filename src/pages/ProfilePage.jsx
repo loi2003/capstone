@@ -296,6 +296,10 @@ const ProfilePage = () => {
                     <span className="detail-value">{formatDate(currentUser?.dateOfBirth)}</span>
                   </div>
                   <div className="profile-detail">
+                    <span className="detail-label">Current Subscription Plan:</span>
+                    <span className="detail-value">{currentUser?.subscription || "N/A"}</span>
+                  </div>
+                  <div className="profile-detail">
                     <span className="detail-label">Status:</span>
                     <span className="detail-value">
                       {currentUser?.status || "Not set"}

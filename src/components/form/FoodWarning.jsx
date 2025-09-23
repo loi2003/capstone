@@ -11,6 +11,8 @@ const FoodWarning = () => {
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasSearched, setHasSearched] = useState(false);
+
 
   // Dropdown state
   const [allergyOptions, setAllergyOptions] = useState([]);
@@ -73,6 +75,8 @@ const FoodWarning = () => {
 
     setError("");
     setLoading(true);
+    setHasSearched(true);
+
 
     try {
       const response = await viewFoodWarnings(payload);
@@ -222,9 +226,12 @@ const FoodWarning = () => {
         </div>
       )}
 
-      {/* {!loading && Array.isArray(foods) && foods.length === 0 && (
-        <p>No foods found for your selected conditions.</p>
-      )} */}
+      {!loading &&
+        hasSearched &&
+        Array.isArray(foods) &&
+        foods.length === 0 && (
+          <p>No foods found for your selected conditions.</p>
+        )}
 
       {error && <p style={{ color: "red" }}>{error}</p>}
       {!loading && foods.length > 0 && (
@@ -260,7 +267,8 @@ const FoodWarning = () => {
                     <ul>
                       {food.foodAllergy.map((a) => (
                         <li key={a.id}>
-                          <strong>{a.allergyName} Allergy:</strong> {a.description}
+                          <strong>{a.allergyName} Allergy:</strong>{" "}
+                          {a.description}
                         </li>
                       ))}
                     </ul>

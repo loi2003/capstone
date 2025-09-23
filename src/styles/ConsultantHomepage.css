@@ -16,23 +16,23 @@
 
 /* Color variables */
 :root {
-  --consultant-primary: #002212;
-  --consultant-primary-dark: #033c1c;
-  --consultant-secondary: #2a5f23;
-  --consultant-accent: #5d8925;
-  --consultant-light-accent: #a4b921;
-  --consultant-text: #002212;
+  --consultant-primary: #05668D;
+  --consultant-primary-dark: #034B6B;
+  --consultant-secondary: #1E7699;
+  --consultant-accent: #2E8BC0;
+  --consultant-light-accent: #52A3D4;
+  --consultant-text: #05668D;
   --consultant-background: #ffffff;
   --consultant-logout: #e53e3e;
-  --consultant-shadow: 0 4px 16px rgba(0, 34, 18, 0.1);
-  --consultant-shadow-hover: 0 8px 24px rgba(0, 34, 18, 0.15);
+  --consultant-shadow: 0 4px 16px rgba(5, 102, 141, 0.1);
+  --consultant-shadow-hover: 0 8px 24px rgba(5, 102, 141, 0.15);
   --consultant-border-radius: 8px;
   --consultant-transition: all 0.3s ease;
 }
 
 /* Sidebar styles */
 .consultant-homepage .consultant-sidebar {
-  background: linear-gradient(180deg, var(--consultant-primary), var(--consultant-accent));
+  background: #05668D;
   color: var(--consultant-background);
   position: fixed;
   top: 0;
@@ -52,7 +52,7 @@
 }
 
 .consultant-homepage .consultant-sidebar.closed {
-  width: 60px;
+  width: 100px;
 }
 
 /* Sidebar header */
@@ -97,7 +97,7 @@
 .consultant-homepage .logo-text {
   font-size: 1.25rem;
   font-weight: 700;
-  color: var(--consultant-background);
+  color: white;
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
@@ -146,7 +146,7 @@
 
 .consultant-homepage .sidebar-toggle:hover,
 .consultant-homepage .sidebar-toggle:focus {
-  background: var(--consultant-background);
+  background: #1E7699;
   border-color: var(--consultant-primary);
 }
 
@@ -216,13 +216,13 @@
   padding: 0.75rem 0;
   justify-content: center;
 }
-
+/* 
 .consultant-homepage .sidebar-nav a svg,
 .consultant-homepage .sidebar-nav button svg {
   width: 24px;
   height: 24px;
   min-width: 24px;
-}
+} */
 
 .consultant-homepage .consultant-sidebar.closed .sidebar-nav a span,
 .consultant-homepage .consultant-sidebar.closed .sidebar-nav button span {
@@ -231,7 +231,7 @@
 
 .consultant-homepage .sidebar-nav a:hover,
 .consultant-homepage .sidebar-nav button:hover {
-  background: var(--consultant-secondary);
+  background: #1E7699;
   transform: translateY(-2px);
 }
 
@@ -347,7 +347,7 @@
 }
 
 .consultant-homepage .consultant-sidebar.closed + .consultant-content {
-  margin-left: 60px;
+  margin-left: 100px;
 }
 
 /* Banner section */
@@ -427,6 +427,10 @@
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
 }
 
+.consultant-sidebar-icon span{
+  font-size: 1.5rem;
+}
+
 /* Features section */
 .consultant-homepage .consultant-features {
   max-width: 1200px;
@@ -501,6 +505,68 @@
   transform: translateY(-2px);
 }
 
+
+
+.sidebar-nav-item.active {
+  background: linear-gradient(135deg, rgba(5, 102, 141, 0.15) 0%, rgba(30, 118, 153, 0.1) 100%);
+  border-left: 4px solid var(--consultant-accent);
+  position: relative;
+}
+
+.sidebar-nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--consultant-accent);
+  z-index: 1;
+}
+
+/* Active navigation link styling */
+.sidebar-nav-item.active .active-nav-link,
+.sidebar-nav-item.active a {
+  color: white !important;
+  font-weight: 600;
+  background: rgba(5, 102, 141, 0.05);
+}
+
+.sidebar-nav-item.active svg {
+  color: white !important;
+}
+
+/* HOVER EFFECTS for Active Navigation Item */
+.sidebar-nav-item.active:hover {
+  background: var(--consultant-accent);
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(5, 102, 141, 0.2);
+}
+
+.sidebar-nav-item.active:hover .active-nav-link,
+.sidebar-nav-item.active:hover a {
+  background: rgba(5, 102, 141, 0.1);
+  color: white !important;
+  transform: translateX(2px);
+}
+
+/* Smooth transitions for all states */
+.sidebar-nav-item.active,
+.sidebar-nav-item.active a,
+.sidebar-nav-item.active svg,
+.sidebar-nav-item.active::before {
+  transition: all 0.3s ease;
+}
+
+/* When sidebar is closed - adjust active hover behavior */
+.consultant-sidebar.closed .sidebar-nav-item.active:hover {
+  transform: translateX(0);
+  background: linear-gradient(135deg, rgba(5, 102, 141, 0.2) 0%, rgba(30, 118, 153, 0.15) 100%);
+}
+
+.consultant-sidebar.closed .sidebar-nav-item.active:hover a {
+  transform: scale(1.1);
+}
 /* Responsive design */
 @media (max-width: 1024px) {
   .consultant-homepage .consultant-sidebar {
@@ -512,7 +578,7 @@
   }
 
   .consultant-homepage .consultant-sidebar.closed {
-    width: 60px;
+    width: 100px;
   }
 
   .consultant-homepage .consultant-content {

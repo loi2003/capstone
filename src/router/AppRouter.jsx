@@ -68,6 +68,10 @@ import ConsultationChat from "../components/consultationchat/ConsultationChat";
 import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement"; 
 import SystemConfigurationManagement from "../pages/admin/SystemConfigurationManagement";
 import PaymentManagement from "../pages/admin/PaymentManagement";
+import ConsultationManagement from "../components/consultationchat/ConsultationManagement";
+import PaymentCancel from "../components/subscription/PaymentCancel";
+import PaymentSuccess from "../components/subscription/PaymentSuccess";
+
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -171,7 +175,11 @@ const AppRoutes = () => {
         <Route path="/clinic/:id" element={<ClinicDetail />} />
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
+        <Route path="/consultation/consultation-management" element={<ConsultationManagement />} />
         <Route path="/consultation-chat" element={<ConsultationChat />} />
+
+        <Route path="/payment-cancel" element={<PaymentCancel />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
       </Routes>
     </ThemeProvider>
   );

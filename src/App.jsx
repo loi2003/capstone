@@ -5,13 +5,16 @@ import AppRouter from "./router/AppRouter";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import ToastContainer from "./components/popup/ToastContainer";
+import { MessageProvider } from "./contexts/MessageContext";
 
 function App() {
   return (
     <ThemeProvider>
       <NotificationProvider>
-        <AppRouter />
-        <ToastContainer />
+        <MessageProvider>
+          <AppRouter />
+          <ToastContainer />
+        </MessageProvider>
       </NotificationProvider>
     </ThemeProvider>
   );
