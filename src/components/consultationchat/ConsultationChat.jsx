@@ -65,11 +65,20 @@ const ConsultationChat = () => {
     // Use requestAnimationFrame to ensure DOM is updated
     requestAnimationFrame(() => {
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
-        });
+        const messagesContainer = messagesEndRef.current.closest(
+          ".consultation-chat-messages"
+        );
+        if (messagesContainer) {
+          // Scroll the messages container, not the element itself
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          // Fallback to original method
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
+        }
       }
     });
   };
