@@ -1,5 +1,4 @@
-/* AdminAccountManagement.css */
-
+```css
 /* Base styles */
 .admin-account-management {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -293,6 +292,7 @@
   transition: margin-left var(--admin-transition);
   width: calc(100% - 240px);
   min-width: 0;
+  box-sizing: border-box;
 }
 
 .admin-account-management__content.closed {
@@ -303,6 +303,7 @@
 .admin-account-management__inner {
   max-width: 1280px;
   margin: 0 auto;
+  width: 100%;
 }
 
 /* Define custom properties for content theming */
@@ -317,65 +318,57 @@
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* Back Button */
-.admin-account-management__inner .back-button-container {
-  position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
+/* Notification container styles */
+.admin-account-management__inner .notification-container {
+  position: relative;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  z-index: 2000;
 }
 
-.admin-account-management__inner .back-button {
-  width: 2.5rem;
-  height: 2.5rem;
+/* Notification styles */
+.admin-account-management__inner .notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2001;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: var(--primary-color);
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: #ffffff;
-  font-size: 1.25rem;
-  border-radius: 50%;
+  max-width: 400px;
+  word-wrap: break-word;
+  pointer-events: auto;
+}
+
+.admin-account-management__inner .notification.success {
+  background: var(--accent-color);
+}
+
+.admin-account-management__inner .notification.error {
+  background: var(--error-color);
+}
+
+.admin-account-management__inner .notification-close {
+  background: none;
   border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-}
-
-.admin-account-management__inner .back-button:hover:not(:disabled) {
-  background: #255d7a;
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(44, 110, 143, 0.3);
-}
-
-.admin-account-management__inner .back-button:active {
-  transform: scale(1);
-  box-shadow: var(--shadow-sm);
-}
-
-.admin-account-management__inner .back-button i {
-  font-size: 1.25rem;
-}
-
-.admin-account-management__inner .back-button::after {
-  content: 'Back to Admin Home';
-  position: absolute;
-  top: -2.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--neutral-text);
   color: #ffffff;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
 }
 
-.admin-account-management__inner .back-button:hover:not(:disabled)::after {
-  opacity: 1;
+.admin-account-management__inner .notification-close:hover {
+  opacity: 0.8;
 }
 
 /* Title */
@@ -419,6 +412,13 @@
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-account-management__inner .tab-button:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
 }
 
 .admin-account-management__inner .tab-button.active {
@@ -427,14 +427,13 @@
   border-color: var(--primary-color);
 }
 
-.admin-account-management__inner .tab-button:hover:not(:disabled) {
-  background: #f1f5f9;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-sm);
-}
-
 .admin-account-management__inner .tab-button.active:hover {
   background: #255d7a;
+  transform: translateY(-1px);
+}
+
+.admin-account-management__inner .tab-button i {
+  font-size: 1rem;
 }
 
 /* Search Container */
@@ -524,20 +523,64 @@
   color: #94a3b8;
 }
 
-.admin-account-management__inner .error-message {
-  color: var(--error-color);
-  font-size: 0.875rem;
-  text-align: center;
-  margin-top: 0.5rem;
+/* Password Input Container */
+.admin-account-management__inner .password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
-.admin-account-management__inner .success-message {
-  color: var(--accent-color);
-  font-size: 0.875rem;
-  text-align: center;
-  margin-top: 0.5rem;
+.admin-account-management__inner .password-input-container input {
+  width: 100%;
+  padding-right: 2.5rem;
+  box-sizing: border-box;
 }
 
+.admin-account-management__inner .toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  font-size: 1.1rem;
+  transition: color 0.3s ease, transform 0.2s ease;
+  padding: 0.25rem;
+  z-index: 10;
+}
+
+.admin-account-management__inner .toggle-password:hover,
+.admin-account-management__inner .toggle-password:focus {
+  color: var(--primary-color);
+  transform: translateY(-50%) scale(1.1);
+  outline: none;
+}
+
+.admin-account-management__inner .toggle-password i {
+  font-size: 1.1rem;
+}
+
+.admin-account-management__inner .toggle-password-fallback {
+  display: none;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #64748b;
+}
+
+.admin-account-management__inner .toggle-password .fas:not(.fa-eye):not(.fa-eye-slash) + .toggle-password-fallback {
+  display: inline;
+}
+
+.admin-account-management__inner .form-text {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.25rem;
+}
+
+/* Submit Button */
 .admin-account-management__inner .submit-button {
   display: flex;
   align-items: center;
@@ -729,12 +772,102 @@
   background: #255d7a;
 }
 
+/* Error Message */
+.admin-account-management__inner .error-message {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
+  .admin-account-management__content {
+    margin-left: 56px;
+    width: calc(100% - 56px);
+    padding: 1.5rem;
+  }
+
   .admin-account-management__sidebar {
     width: 56px;
   }
 
+  .admin-account-management__inner .admin-account-title {
+    font-size: 2rem;
+  }
+
+  .admin-account-management__inner .admin-account-description {
+    font-size: 1rem;
+    max-width: 90%;
+  }
+
+  .admin-account-management__inner .tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .admin-account-management__inner .tab-button {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .admin-account-management__inner .search-container {
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+
+  .admin-account-management__inner .account-form-container {
+    padding: 1.5rem;
+    max-width: 90%;
+  }
+
+  .admin-account-management__inner .account-view-container {
+    padding: 1.5rem;
+  }
+
+  .admin-account-management__inner .account-table {
+    font-size: 0.85rem;
+  }
+
+  .admin-account-management__inner .account-table th,
+  .admin-account-management__inner .account-table td {
+    padding: 0.6rem;
+  }
+
+  .admin-account-management__inner .action-buttons {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .admin-account-management__inner .action-button {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+
+  .admin-account-management__inner .notification {
+    top: 15px;
+    right: 15px;
+    max-width: 85%;
+    font-size: 0.85rem;
+    padding: 0.8rem;
+  }
+
+  .admin-account-management__inner .password-input-container input {
+    padding-right: 2rem;
+  }
+
+  .admin-account-management__inner .toggle-password {
+    right: 0.6rem;
+    font-size: 1rem;
+  }
+
+  .admin-account-management__inner .toggle-password i {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
   .admin-account-management__content {
     margin-left: 56px;
     width: calc(100% - 56px);
@@ -746,16 +879,29 @@
   }
 
   .admin-account-management__inner .admin-account-description {
-    font-size: 1rem;
+    font-size: 0.95rem;
+    max-width: 95%;
   }
 
   .admin-account-management__inner .tabs {
     flex-direction: column;
     align-items: center;
+    gap: 0.5rem;
+  }
+
+  .admin-account-management__inner .tab-button {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 
   .admin-account-management__inner .account-form-container {
-    padding: 1.5rem;
+    padding: 1rem;
+  }
+
+  .admin-account-management__inner .account-view-container {
+    padding: 1rem;
   }
 
   .admin-account-management__inner .account-table {
@@ -768,41 +914,117 @@
   }
 
   .admin-account-management__inner .action-buttons {
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .admin-account-management__inner .action-button {
-    padding: 0.4rem 0.8rem;
+    width: 100%;
+    padding: 0.4rem;
+  }
+
+  .admin-account-management__inner .action-buttons select {
+    width: 100%;
+    padding: 0.4rem;
+  }
+
+  .admin-account-management__inner .notification {
+    top: 10px;
+    right: 10px;
+    max-width: 90%;
     font-size: 0.8rem;
+    padding: 0.6rem;
+  }
+
+  .admin-account-management__inner .password-input-container input {
+    padding-right: 1.8rem;
+  }
+
+  .admin-account-management__inner .toggle-password {
+    right: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .admin-account-management__inner .toggle-password i {
+    font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
+  .admin-account-management__content {
+    margin-left: 0;
+    width: 100%;
+    padding: 0.75rem;
+  }
+
+  .admin-account-management__sidebar {
+    width: 56px;
+  }
+
   .admin-account-management__inner .admin-account-title {
     font-size: 1.5rem;
   }
 
-  .admin-account-management__inner .account-form {
-    gap: 1rem;
+  .admin-account-management__inner .admin-account-description {
+    font-size: 0.9rem;
+    max-width: 100%;
+  }
+
+  .admin-account-management__inner .account-form-container {
+    padding: 0.75rem;
+    max-width: 100%;
+  }
+
+  .admin-account-management__inner .account-view-container {
+    padding: 0.75rem;
+  }
+
+  .admin-account-management__inner .account-table {
+    font-size: 0.75rem;
+  }
+
+  .admin-account-management__inner .account-table th,
+  .admin-account-management__inner .account-table td {
+    padding: 0.4rem;
+  }
+
+  .admin-account-management__inner .form-group label {
+    font-size: 0.8rem;
   }
 
   .admin-account-management__inner .form-group input,
   .admin-account-management__inner .form-group select {
-    font-size: 0.875rem;
+    font-size: 0.9rem;
+    padding: 0.6rem;
   }
 
   .admin-account-management__inner .submit-button {
-    font-size: 0.875rem;
-    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    padding: 0.6rem 1rem;
   }
 
-  .admin-account-management__inner .account-table {
-    display: block;
-    overflow-x: auto;
+  .admin-account-management__inner .notification {
+    top: 10px;
+    right: 10px;
+    max-width: 95%;
+    font-size: 0.75rem;
+    padding: 0.5rem;
   }
 
-  .admin-account-management__inner .pagination-button {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
+  .admin-account-management__inner .password-input-container input {
+    padding-right: 1.5rem;
+  }
+
+  .admin-account-management__inner .toggle-password {
+    right: 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .admin-account-management__inner .toggle-password i {
+    font-size: 0.85rem;
+  }
+
+  .admin-account-management__inner .form-text {
+    font-size: 0.7rem;
   }
 }
