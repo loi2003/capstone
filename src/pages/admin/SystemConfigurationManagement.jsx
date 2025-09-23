@@ -5,13 +5,22 @@ import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/SystemConfigurationManagement.css";
 
 const SystemConfigurationManagement = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsSidebarOpen(window.innerWidth > 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchUser = async () => {
-      const token = localStorage.getItem("token");
       if (!token) {
         navigate("/signin", { replace: true });
         return;
@@ -34,7 +43,7 @@ const SystemConfigurationManagement = () => {
       }
     };
     fetchUser();
-  }, [navigate]);
+  }, [navigate, token]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -43,13 +52,13 @@ const SystemConfigurationManagement = () => {
   const handleLogout = async () => {
     if (!window.confirm("Are you sure you want to sign out?")) return;
     try {
-      if (user?.userId) await logout(user.userId);
+      if (user?.id) await logout(user.id);
     } catch (error) {
       console.error("Error logging out:", error.message);
     } finally {
       localStorage.removeItem("token");
       setUser(null);
-      setIsSidebarOpen(true);
+      setIsSidebarOpen(window.innerWidth > 768);
       navigate("/signin", { replace: true });
     }
   };
@@ -91,11 +100,11 @@ const SystemConfigurationManagement = () => {
 
   const sidebarVariants = {
     open: {
-      width: "280px",
+      width: "240px",
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: "60px",
+      width: "56px",
       transition: { duration: 0.3, ease: "easeIn" },
     },
   };
@@ -110,28 +119,28 @@ const SystemConfigurationManagement = () => {
   };
 
   return (
-    <div className="system-config-management">
+    <div className="system-configuration-management">
       <motion.aside
-        className={`admin-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        className="system-configuration-management__sidebar"
         variants={sidebarVariants}
         animate={isSidebarOpen ? "open" : "closed"}
-        initial="open"
+        initial={window.innerWidth > 768 ? "open" : "closed"}
       >
-        <div className="sidebar-header">
+        <div className="system-configuration-management__sidebar-header">
           <Link
             to="/admin"
-            className="logo"
+            className="system-configuration-management__logo"
             onClick={() => setIsSidebarOpen(true)}
           >
             <motion.div
               variants={logoVariants}
               animate="animate"
               whileHover="hover"
-              className="logo-svg-container"
+              className="system-configuration-management__logo-svg-container"
             >
               <svg
-                width="40"
-                height="40"
+                width="36"
+                height="36"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -150,7 +159,7 @@ const SystemConfigurationManagement = () => {
             {isSidebarOpen && <span>Admin Panel</span>}
           </Link>
           <motion.button
-            className="sidebar-toggle"
+            className="system-configuration-management__sidebar-toggle"
             onClick={toggleSidebar}
             aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
@@ -172,19 +181,22 @@ const SystemConfigurationManagement = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="sidebar-nav"
+          className="system-configuration-management__sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin"
               onClick={() => setIsSidebarOpen(true)}
               title="Dashboard"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -196,13 +208,16 @@ const SystemConfigurationManagement = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/categories"
               onClick={() => setIsSidebarOpen(true)}
               title="Blog Categories"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -214,13 +229,16 @@ const SystemConfigurationManagement = () => {
               {isSidebarOpen && <span>Blog Categories</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/tutorial"
               onClick={() => setIsSidebarOpen(true)}
               title="Tutorial Management"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -232,13 +250,16 @@ const SystemConfigurationManagement = () => {
               {isSidebarOpen && <span>Tutorial Management</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/policy"
               onClick={() => setIsSidebarOpen(true)}
               title="Admin Policy"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -250,13 +271,16 @@ const SystemConfigurationManagement = () => {
               {isSidebarOpen && <span>Admin Policy</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/account-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Account Management"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -268,13 +292,16 @@ const SystemConfigurationManagement = () => {
               {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/system-configuration"
               onClick={() => setIsSidebarOpen(true)}
               title="System Configuration"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -286,13 +313,16 @@ const SystemConfigurationManagement = () => {
               {isSidebarOpen && <span>System Configuration</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="system-configuration-management__sidebar-nav-item"
+          >
             <Link
               to="/admin/payment-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Payment Management"
             >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
                   stroke="var(--admin-background)"
                   strokeWidth="2"
@@ -308,16 +338,16 @@ const SystemConfigurationManagement = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item admin-profile-section"
+                className="system-configuration-management__sidebar-nav-item system-configuration-management__admin-profile-section"
               >
                 <Link
                   to="/profile"
-                  className="admin-profile-info"
+                  className="system-configuration-management__admin-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
                   <svg
-                    width="24"
-                    height="24"
+                    width="22"
+                    height="22"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -329,21 +359,23 @@ const SystemConfigurationManagement = () => {
                     />
                   </svg>
                   {isSidebarOpen && (
-                    <span className="admin-profile-email">{user.email}</span>
+                    <span className="system-configuration-management__admin-profile-email">
+                      {user.email}
+                    </span>
                   )}
                 </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="system-configuration-management__sidebar-nav-item"
               >
                 <button
-                  className="logout-button"
+                  className="system-configuration-management__logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
                   title="Sign Out"
                 >
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                     <path
                       stroke="var(--admin-logout)"
                       strokeWidth="2"
@@ -357,13 +389,16 @@ const SystemConfigurationManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="system-configuration-management__sidebar-nav-item"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
                 title="Sign In"
               >
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                   <path
                     stroke="var(--admin-background)"
                     strokeWidth="2"
@@ -378,29 +413,29 @@ const SystemConfigurationManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-      <main className="admin-content">
-        <section className="admin-banner">
+      <main className={`system-configuration-management__content ${isSidebarOpen ? "" : "closed"}`}>
+        <section className="system-configuration-management__banner">
           <motion.div
-            className="admin-banner-content"
+            className="system-configuration-management__banner-content"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="admin-banner-title">System Configuration Management</h1>
-            <p className="admin-banner-subtitle">
+            <h1 className="system-configuration-management__banner-title">System Configuration Management</h1>
+            <p className="system-configuration-management__banner-subtitle">
               Customize platform settings, manage permissions, and configure system-wide policies to ensure optimal performance and compliance.
             </p>
-            <div className="admin-banner-buttons">
-              <Link to="/admin/system-configuration/permissions" className="admin-banner-button primary">
+            <div className="system-configuration-management__banner-buttons">
+              <Link to="/admin/system-configuration/permissions" className="system-configuration-management__banner-button primary">
                 Manage Permissions
               </Link>
-              <Link to="/admin/system-configuration/settings" className="admin-banner-button secondary">
+              <Link to="/admin/system-configuration/settings" className="system-configuration-management__banner-button secondary">
                 System Settings
               </Link>
             </div>
           </motion.div>
           <motion.div
-            className="admin-banner-image"
+            className="system-configuration-management__banner-image"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -425,40 +460,49 @@ const SystemConfigurationManagement = () => {
           </motion.div>
         </section>
         <motion.section
-          className="admin-features"
+          className="system-configuration-management__features"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
-          <h2 className="admin-features-title">Configuration Tools</h2>
-          <p className="admin-features-description">
+          <h2 className="system-configuration-management__features-title">Configuration Tools</h2>
+          <p className="system-configuration-management__features-description">
             Utilize advanced tools to manage system settings, permissions, and integrations for a seamless platform experience.
           </p>
-          <div className="admin-features-grid">
-            <motion.div variants={cardVariants} className="admin-feature-card">
+          <div className="system-configuration-management__features-grid">
+            <motion.div
+              variants={cardVariants}
+              className="system-configuration-management__feature-card"
+            >
               <h3>Permission Management</h3>
               <p>
                 Define and assign user roles and permissions to control access across the platform.
               </p>
-              <Link to="/admin/system-configuration/permissions" className="admin-feature-link">
+              <Link to="/admin/system-configuration/permissions" className="system-configuration-management__feature-link">
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="admin-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="system-configuration-management__feature-card"
+            >
               <h3>System Settings</h3>
               <p>
                 Adjust platform configurations, including feature toggles and system policies.
               </p>
-              <Link to="/admin/system-configuration/settings" className="admin-feature-link">
+              <Link to="/admin/system-configuration/settings" className="system-configuration-management__feature-link">
                 Explore
               </Link>
             </motion.div>
-            <motion.div variants={cardVariants} className="admin-feature-card">
+            <motion.div
+              variants={cardVariants}
+              className="system-configuration-management__feature-card"
+            >
               <h3>Integration Management</h3>
               <p>
                 Manage third-party integrations and API settings to enhance platform functionality.
               </p>
-              <Link to="/admin/system-configuration/integrations" className="admin-feature-link">
+              <Link to="/admin/system-configuration/integrations" className="system-configuration-management__feature-link">
                 Explore
               </Link>
             </motion.div>

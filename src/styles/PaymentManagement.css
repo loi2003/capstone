@@ -1,5 +1,5 @@
-```css
-* {
+/* Reset and base styles */
+.payment-management * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -11,9 +11,11 @@
   color: #124966;
   min-height: 100vh;
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
-:root {
+/* Define custom properties for consistent theming */
+.payment-management {
   --admin-primary: #146f89;
   --admin-primary-dark: #122f4b;
   --admin-secondary: #1aa3ab;
@@ -27,7 +29,8 @@
   --admin-transition: all 0.3s ease;
 }
 
-.payment-management .admin-sidebar {
+/* Sidebar styles */
+.payment-management__sidebar {
   background: linear-gradient(180deg, #146f89, #20dacc);
   color: var(--admin-background);
   position: fixed;
@@ -36,81 +39,79 @@
   height: 100vh;
   box-shadow: var(--admin-shadow);
   z-index: 1000;
-  transition: var(--admin-transition);
-  overflow-x: hidden;
-  overflow-y: auto;
-  max-width: 280px;
+  transition: width var(--admin-transition);
+  overflow: hidden;
+  width: 240px;
 }
 
-.payment-management .admin-sidebar.open {
-  width: 280px;
+.payment-management__sidebar.closed {
+  width: 56px;
+  overflow: hidden;
 }
 
-.payment-management .admin-sidebar.closed {
-  width: 60px;
-}
-
-.payment-management .sidebar-header {
+.payment-management__sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  padding: 0.8rem;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
 }
 
-.payment-management .admin-sidebar.closed .sidebar-header {
+.payment-management__sidebar.closed .payment-management__sidebar-header {
   flex-direction: column;
-  padding: 1rem 0.5rem;
-  gap: 0.75rem;
+  padding: 0.6rem 0.4rem;
+  gap: 0.6rem;
+  align-items: center;
 }
 
-.payment-management .logo {
+.payment-management__logo {
   display: flex;
   align-items: center;
   text-decoration: none;
-  gap: 10px;
+  gap: 8px;
   max-width: 100%;
 }
 
-.payment-management .logo span {
-  font-size: 1.25rem;
+.payment-management__logo span {
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--admin-background);
   letter-spacing: -0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 200px;
+  max-width: 160px;
 }
 
-.payment-management .admin-sidebar.closed .logo span {
+.payment-management__sidebar.closed .payment-management__logo span {
   display: none;
 }
 
-.payment-management .logo-svg-container {
+.payment-management__logo-svg-container {
   display: inline-flex;
 }
 
-.payment-management .logo-svg-container svg {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+.payment-management__logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
 }
 
-.payment-management .admin-sidebar.closed .logo-svg-container svg {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
+.payment-management__sidebar.closed .payment-management__logo-svg-container svg {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
 }
 
-.payment-management .sidebar-toggle {
+.payment-management__sidebar-toggle {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid var(--admin-background);
   cursor: pointer;
-  padding: 8px;
-  width: 36px;
-  height: 36px;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -118,54 +119,54 @@
   transition: var(--admin-transition);
 }
 
-.payment-management .admin-sidebar.closed .sidebar-toggle {
+.payment-management__sidebar.closed .payment-management__sidebar-toggle {
   margin: 0 auto;
 }
 
-.payment-management .sidebar-toggle:hover,
-.payment-management .sidebar-toggle:focus {
+.payment-management__sidebar-toggle:hover,
+.payment-management__sidebar-toggle:focus {
   background: var(--admin-background);
   border-color: var(--admin-primary);
 }
 
-.payment-management .sidebar-toggle svg path {
+.payment-management__sidebar-toggle svg path {
   stroke: var(--admin-background);
 }
 
-.payment-management .sidebar-toggle:hover svg path,
-.payment-management .sidebar-toggle:focus svg path {
+.payment-management__sidebar-toggle:hover svg path,
+.payment-management__sidebar-toggle:focus svg path {
   stroke: var(--admin-primary);
 }
 
-.payment-management .sidebar-nav {
+.payment-management__sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  padding: 0 1rem;
+  gap: 0.6rem;
+  padding: 0 0.8rem;
 }
 
-.payment-management .admin-sidebar.closed .sidebar-nav {
+.payment-management__sidebar.closed .payment-management__sidebar-nav {
   padding: 0;
-  gap: 1rem;
+  gap: 0.8rem;
 }
 
-.payment-management .sidebar-nav-item {
+.payment-management__sidebar-nav-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.payment-management .admin-sidebar.closed .sidebar-nav-item {
+.payment-management__sidebar.closed .payment-management__sidebar-nav-item {
   justify-content: center;
 }
 
-.payment-management .sidebar-nav a,
-.payment-management .sidebar-nav button {
+.payment-management__sidebar-nav a,
+.payment-management__sidebar-nav button {
   color: var(--admin-background);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border-radius: var(--admin-border-radius);
   transition: var(--admin-transition);
   background: none;
@@ -174,55 +175,55 @@
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   width: 100%;
   max-width: 100%;
   white-space: normal;
   word-wrap: break-word;
 }
 
-.payment-management .admin-sidebar.closed .sidebar-nav a,
-.payment-management .admin-sidebar.closed .sidebar-nav button {
-  padding: 0.75rem 0;
+.payment-management__sidebar.closed .payment-management__sidebar-nav a,
+.payment-management__sidebar.closed .payment-management__sidebar-nav button {
+  padding: 0.6rem 0;
   justify-content: center;
 }
 
-.payment-management .sidebar-nav a svg,
-.payment-management .sidebar-nav button svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.payment-management__sidebar-nav a svg,
+.payment-management__sidebar-nav button svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
-.payment-management .admin-sidebar.closed .sidebar-nav a span,
-.payment-management .admin-sidebar.closed .sidebar-nav button span {
+.payment-management__sidebar.closed .payment-management__sidebar-nav a span,
+.payment-management__sidebar.closed .payment-management__sidebar-nav button span {
   display: none;
 }
 
-.payment-management .sidebar-nav a:hover,
-.payment-management .sidebar-nav button:hover {
+.payment-management__sidebar-nav a:hover,
+.payment-management__sidebar-nav button:hover {
   background: var(--admin-primary-dark);
   transform: translateY(-2px);
 }
 
-.payment-management .sidebar-nav a:hover svg path,
-.payment-management .sidebar-nav button:hover svg path {
+.payment-management__sidebar-nav a:hover svg path,
+.payment-management__sidebar-nav button:hover svg path {
   stroke: var(--admin-background);
 }
 
-.payment-management .admin-profile-section {
-  margin-top: 1rem;
+.payment-management__admin-profile-section {
+  margin-top: 0.8rem;
 }
 
-.payment-management .admin-profile-info {
+.payment-management__admin-profile-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 0.6rem;
+  padding: 0.6rem;
   border-radius: var(--admin-border-radius);
   background: rgba(255, 255, 255, 0.1);
   color: var(--admin-background);
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   width: 100%;
   max-width: 100%;
@@ -230,74 +231,78 @@
   word-wrap: break-word;
 }
 
-.payment-management .admin-sidebar.closed .admin-profile-info {
-  padding: 0.75rem 0;
+.payment-management__sidebar.closed .payment-management__admin-profile-info {
+  padding: 0.6rem 0;
   justify-content: center;
 }
 
-.payment-management .admin-profile-info svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.payment-management__admin-profile-info svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
-.payment-management .admin-sidebar.closed .admin-profile-info span {
+.payment-management__sidebar.closed .payment-management__admin-profile-info span {
   display: none;
 }
 
-.payment-management .admin-profile-info:hover .admin-profile-email {
+.payment-management__admin-profile-info:hover .payment-management__admin-profile-email {
   text-decoration: underline;
 }
 
-.payment-management .logout-button {
+.payment-management__logout-button {
   background: rgba(229, 62, 62, 0.1);
   color: var(--admin-logout);
   font-weight: 600;
-  padding: 0.75rem;
+  padding: 0.6rem;
   border: 1px solid var(--admin-logout);
   border-radius: var(--admin-border-radius);
   transition: var(--admin-transition);
 }
 
-.payment-management .admin-sidebar.closed .logout-button {
-  padding: 0.75rem 0;
+.payment-management__sidebar.closed .payment-management__logout-button {
+  padding: 0.6rem 0;
   justify-content: center;
 }
 
-.payment-management .logout-button svg {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+.payment-management__logout-button svg {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
 }
 
-.payment-management .logout-button:hover,
-.payment-management .logout-button:focus {
+.payment-management__logout-button:hover,
+.payment-management__logout-button:focus {
   background: var(--admin-logout);
   color: var(--admin-background);
   transform: translateY(-2px);
 }
 
-.payment-management .logout-button svg path {
+.payment-management__logout-button svg path {
   stroke: var(--admin-logout);
 }
 
-.payment-management .logout-button:hover svg path,
-.payment-management .logout-button:focus svg path {
+.payment-management__logout-button:hover svg path,
+.payment-management__logout-button:focus svg path {
   stroke: var(--admin-background);
 }
 
-.payment-management .admin-content {
-  flex: 1;
-  margin-left: 280px;
+/* Content styles */
+.payment-management__content {
+  margin-left: 240px;
   padding: 2rem;
   transition: margin-left var(--admin-transition);
+  width: calc(100% - 240px);
+  min-width: 0;
 }
 
-.payment-management .admin-sidebar.closed + .admin-content {
-  margin-left: 60px;
+.payment-management__content.closed {
+  margin-left: 56px;
+  width: calc(100% - 56px);
 }
 
-.payment-management .admin-banner {
+/* Banner styles */
+.payment-management__banner {
   background: linear-gradient(135deg, #f4f7fa, var(--admin-accent));
   padding: 3rem;
   display: flex;
@@ -307,32 +312,35 @@
   flex-wrap: wrap;
   border-radius: var(--admin-border-radius);
   box-shadow: var(--admin-shadow);
+  max-width: 100%;
 }
 
-.payment-management .admin-banner-content {
+.payment-management__banner-content {
   max-width: 600px;
   color: var(--admin-primary);
+  flex: 1;
+  min-width: 0;
 }
 
-.payment-management .admin-banner-title {
+.payment-management__banner-title {
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 1rem;
 }
 
-.payment-management .admin-banner-subtitle {
+.payment-management__banner-subtitle {
   font-size: 1.1rem;
   opacity: 0.9;
   margin-bottom: 1.5rem;
 }
 
-.payment-management .admin-banner-buttons {
+.payment-management__banner-buttons {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.payment-management .admin-banner-button {
+.payment-management__banner-button {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
   font-weight: 500;
@@ -341,53 +349,54 @@
   transition: var(--admin-transition);
 }
 
-.payment-management .admin-banner-button.primary {
+.payment-management__banner-button.primary {
   background: var(--admin-background);
   color: var(--admin-primary);
 }
 
-.payment-management .admin-banner-button.primary:hover,
-.payment-management .admin-banner-button.primary:focus {
+.payment-management__banner-button.primary:hover,
+.payment-management__banner-button.primary:focus {
   background: #e6f0f5;
   transform: translateY(-3px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.payment-management .admin-banner-button.secondary {
+.payment-management__banner-button.secondary {
   background: transparent;
   color: var(--admin-primary);
   border: 2px solid var(--admin-accent);
 }
 
-.payment-management .admin-banner-button.secondary:hover,
-.payment-management .admin-banner-button.secondary:focus {
+.payment-management__banner-button.secondary:hover,
+.payment-management__banner-button.secondary:focus {
   background: var(--admin-accent);
   color: var(--admin-primary);
   transform: translateY(-3px);
 }
 
-.payment-management .admin-banner-image svg {
+.payment-management__banner-image svg {
   width: 200px;
   height: 200px;
   max-width: 100%;
   filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
 }
 
-.payment-management .admin-features {
+/* Features section */
+.payment-management__features {
   max-width: 1200px;
   margin: 3rem auto;
   padding: 2rem;
   text-align: center;
 }
 
-.payment-management .admin-features-title {
+.payment-management__features-title {
   font-size: 2rem;
   font-weight: 600;
   color: var(--admin-text);
   margin-bottom: 1rem;
 }
 
-.payment-management .admin-features-description {
+.payment-management__features-description {
   font-size: 1.1rem;
   color: #5f788a;
   margin-bottom: 2rem;
@@ -396,13 +405,13 @@
   margin-right: auto;
 }
 
-.payment-management .admin-features-grid {
+.payment-management__features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
 }
 
-.payment-management .admin-feature-card {
+.payment-management__feature-card {
   background: var(--admin-background);
   padding: 1.5rem;
   border-radius: var(--admin-border-radius);
@@ -410,26 +419,26 @@
   transition: var(--admin-transition);
 }
 
-.payment-management .admin-feature-card:hover,
-.payment-management .admin-feature-card:focus-within {
+.payment-management__feature-card:hover,
+.payment-management__feature-card:focus-within {
   transform: translateY(-5px);
   box-shadow: var(--admin-shadow-hover);
 }
 
-.payment-management .admin-feature-card h3 {
+.payment-management__feature-card h3 {
   font-size: 1.5rem;
   font-weight: 500;
   color: var(--admin-text);
   margin-bottom: 0.75rem;
 }
 
-.payment-management .admin-feature-card p {
+.payment-management__feature-card p {
   font-size: 0.95rem;
   color: #5f788a;
   margin-bottom: 1rem;
 }
 
-.payment-management .admin-feature-link {
+.payment-management__feature-link {
   display: inline-flex;
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
@@ -441,232 +450,111 @@
   transition: var(--admin-transition);
 }
 
-.payment-management .admin-feature-link:hover,
-.payment-management .admin-feature-link:focus {
+.payment-management__feature-link:hover,
+.payment-management__feature-link:focus {
   background: var(--admin-primary-dark);
   box-shadow: var(--admin-shadow);
 }
 
+/* Responsive adjustments */
 @media (max-width: 1024px) {
-  .payment-management .admin-sidebar {
-    max-width: 240px;
+  .payment-management__features {
+    grid-template-columns: 1fr;
   }
 
-  .payment-management .admin-sidebar.open {
-    width: 240px;
-  }
-
-  .payment-management .admin-content {
-    margin-left: 240px;
-  }
-
-  .payment-management .admin-sidebar.closed + .admin-content {
-    margin-left: 60px;
-  }
-
-  .payment-management .admin-banner {
+  .payment-management__banner {
     padding: 2rem;
     flex-direction: column;
     text-align: center;
   }
 
-  .payment-management .admin-banner-image svg {
-    width: 180px;
-    height: 180px;
+  .payment-management__banner-content {
+    max-width: 100%;
   }
 
-  .payment-management .logo span {
-    max-width: 160px;
+  .payment-management__banner-title {
+    font-size: 2rem;
+  }
+
+  .payment-management__banner-image svg {
+    width: 150px;
+    height: 150px;
   }
 }
 
 @media (max-width: 768px) {
-  .payment-management .admin-sidebar {
-    max-width: 220px;
-  }
-
-  .payment-management .admin-sidebar.open {
-    width: 220px;
-  }
-
-  .payment-management .admin-content {
-    margin-left: 220px;
+  .payment-management__content {
+    margin-left: 56px;
+    width: calc(100% - 56px);
     padding: 1.5rem;
   }
 
-  .payment-management .admin-sidebar.closed + .admin-content {
-    margin-left: 60px;
+  .payment-management__content.closed {
+    margin-left: 56px;
+    width: calc(100% - 56px);
   }
 
-  .payment-management .admin-banner-title {
-    font-size: 2rem;
+  .payment-management__sidebar {
+    width: 56px;
   }
 
-  .payment-management .admin-banner-subtitle {
-    font-size: 1rem;
+  .payment-management__features {
+    padding: 1.5rem;
+    margin: 1.5rem auto;
   }
 
-  .payment-management .admin-banner-image svg {
-    width: 150px;
-    height: 150px;
+  .payment-management__feature-card {
+    padding: 1rem;
   }
 
-  .payment-management .admin-features-title {
+  .payment-management__banner-title {
     font-size: 1.8rem;
   }
 
-  .payment-management .admin-features-grid {
-    gap: 1rem;
-  }
-
-  .payment-management .logo span {
-    font-size: 1.125rem;
-    max-width: 140px;
+  .payment-management__banner-subtitle {
+    font-size: 1rem;
   }
 }
 
 @media (max-width: 480px) {
-  .payment-management .admin-sidebar {
-    max-width: 200px;
-    padding: 0.75rem 0;
-  }
-
-  .payment-management .admin-sidebar.open {
-    width: 200px;
-  }
-
-  .payment-management .admin-content {
-    margin-left: 200px;
-    padding: 1rem;
-  }
-
-  .payment-management .admin-sidebar.closed + .admin-content {
-    margin-left: 60px;
-  }
-
-  .payment-management .sidebar-header {
-    padding: 0.75rem;
-    gap: 0.5rem;
-  }
-
-  .payment-management .admin-sidebar.closed .sidebar-header {
-    padding: 0.75rem 0;
-    gap: 0.5rem;
-  }
-
-  .payment-management .logo span {
-    font-size: 1rem;
-    max-width: 120px;
-  }
-
-  .payment-management .logo-svg-container svg {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-  }
-
-  .payment-management .admin-sidebar.closed .logo-svg-container svg {
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-  }
-
-  .payment-management .sidebar-toggle {
-    width: 32px;
-    height: 32px;
-    padding: 6px;
-  }
-
-  .payment-management .sidebar-toggle svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-  }
-
-  .payment-management .sidebar-nav a,
-  .payment-management .sidebar-nav button {
-    font-size: 0.9rem;
-    padding: 0.6rem 0.5rem;
-  }
-
-  .payment-management .admin-sidebar.closed .sidebar-nav a,
-  .payment-management .admin-sidebar.closed .sidebar-nav button {
-    padding: 0.6rem 0;
-  }
-
-  .payment-management .sidebar-nav a svg,
-  .payment-management .sidebar-nav button svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-  }
-
-  .payment-management .admin-profile-info {
-    padding: 0.6rem 0.5rem;
-  }
-
-  .payment-management .admin-sidebar.closed .admin-profile-info {
-    padding: 0.6rem 0;
-  }
-
-  .payment-management .admin-profile-info svg {
-    width: 20px;
-    height: 20px;
-    min-width: 20px;
-  }
-
-  .payment-management .admin-profile-email {
-    font-size: 0.95rem;
-  }
-
-  .payment-management .admin-banner {
+  .payment-management__banner {
     padding: 1.5rem;
   }
 
-  .payment-management .admin-banner-title {
+  .payment-management__banner-title {
     font-size: 1.5rem;
   }
 
-  .payment-management .admin-banner-subtitle {
+  .payment-management__banner-subtitle {
     font-size: 0.9rem;
   }
 
-  .payment-management .admin-banner-button {
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .payment-management .admin-banner-image svg {
+  .payment-management__banner-image svg {
     width: 120px;
     height: 120px;
   }
 
-  .payment-management .admin-features {
-    padding: 1.5rem;
-  }
-
-  .payment-management .admin-features-title {
+  .payment-management__features-title {
     font-size: 1.5rem;
   }
 
-  .payment-management .admin-features-description {
+  .payment-management__features-description {
     font-size: 0.9rem;
   }
 
-  .payment-management .admin-features-grid {
+  .payment-management__features-grid {
     grid-template-columns: 1fr;
-    gap: 1rem;
   }
 
-  .payment-management .admin-feature-card {
+  .payment-management__feature-card {
     padding: 1rem;
   }
 
-  .payment-management .admin-feature-card h3 {
+  .payment-management__feature-card h3 {
     font-size: 1.25rem;
   }
 
-  .payment-management .admin-feature-link {
+  .payment-management__feature-link {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;
   }
