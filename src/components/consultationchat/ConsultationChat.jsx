@@ -816,7 +816,11 @@ const ConsultationChat = () => {
 
         // Process the message for attachments
         // In the useEffect that handles incoming messages, update the message processing:
-        const processedMessage = { ...latest };
+        const processedMessage = {
+          ...latest,
+          // this somehow fix duplicate real-time mesage
+          messageText: latest.messageText?.trim(),
+        };
         if (
           latest.media &&
           Array.isArray(latest.media) &&
