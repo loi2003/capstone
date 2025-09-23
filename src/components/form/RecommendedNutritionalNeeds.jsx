@@ -249,7 +249,7 @@ const RecommendedNutritionalNeeds = () => {
     setNutrients([]);
     setLoading(true);
 
-    if (!week || !dob) {
+    if (!week) {
       setError("Please enter both gestational week and date of birth.");
       setLoading(false);
       return;

@@ -268,7 +268,7 @@ const CustomMealPlanner = () => {
         </select>
 
         {/* DOB */}
-        <label>Date of Birth</label>
+        <label>Date of Birth (Optional)</label>
         <input
           type="date"
           value={dateOfBirth}
@@ -579,14 +579,14 @@ const CustomMealPlanner = () => {
 
               {/* Action Buttons */}
               <div className="custommealplanner-menu-actions">
-                {generatedMenus.length < 4 && (
+                {/* {generatedMenus.length < 4 && (
                   <button
                     className="custommealplanner-btn secondary"
                     onClick={handleGenerateMore}
                   >
                     See More Menus
                   </button>
-                )}
+                )} */}
                 <button
                   className="custommealplanner-btn primary"
                   onClick={handleNewMenu}

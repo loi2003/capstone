@@ -69,6 +69,8 @@ import MessengerManagement from "../pages/nutrientspecialist/MessengerManagement
 import SystemConfigurationManagement from "../pages/admin/SystemConfigurationManagement";
 import PaymentManagement from "../pages/admin/PaymentManagement";
 import ConsultationManagement from "../components/consultationchat/ConsultationManagement";
+import PaymentCancel from "../components/subscription/PaymentCancel";
+import PaymentSuccess from "../components/subscription/PaymentSuccess";
 
 
 const AppRoutes = () => {
@@ -175,6 +177,9 @@ const AppRoutes = () => {
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
         <Route path="/consultation/consultation-management" element={<ConsultationManagement />} />
         <Route path="/consultation-chat" element={<ConsultationChat />} />
+
+        <Route path="/payment-cancel" element={<PaymentCancel />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
       </Routes>
     </ThemeProvider>
   );
