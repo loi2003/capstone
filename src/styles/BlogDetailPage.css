@@ -58,6 +58,7 @@
   text-decoration: none;
   font-weight: 600;
   font-size: 1rem;
+  margin-top: 2rem;
   margin-bottom: 40px;
   width: fit-content;
   transition: var(--transition);

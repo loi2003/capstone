@@ -22,6 +22,7 @@ import {
   FaFile,
   FaPaperclip,
   FaTimes,
+  FaClock,
 } from "react-icons/fa";
 import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
@@ -36,6 +37,8 @@ const ConsultationChat = () => {
   const {
     selectedConsultant: preSelectedConsultant,
     currentUserId: passedUserId,
+    clinicConsultants = [],
+    clinicInfo = null,
   } = location.state || {};
 
   const [currentUserId, setCurrentUserId] = useState(passedUserId || "");
@@ -62,11 +65,20 @@ const ConsultationChat = () => {
     // Use requestAnimationFrame to ensure DOM is updated
     requestAnimationFrame(() => {
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
-        });
+        const messagesContainer = messagesEndRef.current.closest(
+          ".consultation-chat-messages"
+        );
+        if (messagesContainer) {
+          // Scroll the messages container, not the element itself
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          // Fallback to original method
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
+        }
       }
     });
   };
@@ -124,6 +136,10 @@ const ConsultationChat = () => {
   }, []);
 
   const initializePage = async () => {
+    // console.log("DEBUG: location.state =", location.state);
+    // console.log("DEBUG: clinicConsultants =", clinicConsultants);
+    // console.log("DEBUG: clinicInfo =", clinicInfo);
+    // console.log("DEBUG: preSelectedConsultant =", preSelectedConsultant);
     try {
       let userId = passedUserId;
       if (!userId) {
@@ -729,28 +745,45 @@ const ConsultationChat = () => {
     }
   };
 
-  let filteredConsultants = [];
+  // const searchFilter = (consultant) => {
+  //   if (!searchTerm) return true;
 
+  //   const searchLower = searchTerm.toLowerCase();
+  //   const profile = chatThreads[consultant.user.id]?.consultant || consultant;
+
+  //   return (
+  //     profile?.user?.userName?.toLowerCase().includes(searchLower) ||
+  //     profile?.specialization?.toLowerCase().includes(searchLower) ||
+  //     profile?.clinic?.name?.toLowerCase().includes(searchLower) ||
+  //     profile?.clinic?.user?.userName?.toLowerCase().includes(searchLower)
+  //   );
+  // };
+
+  let filteredConsultants;
   if (preSelectedConsultant) {
-    filteredConsultants = consultants.filter(
-      (consultant) => consultant.user.id === preSelectedConsultant.user.id
+    // Show clinic consultants first, then others with existing threads
+    const clinicConsultantsList = clinicConsultants.filter(
+      (c) => c.user.id !== preSelectedConsultant.user.id
     );
+
+    const consultantsWithThreads = consultants.filter((c) => {
+      const consultantId = c.user?.id || c.id;
+      return (
+        chatThreads[consultantId] &&
+        !clinicConsultantsList.some((clinic) => clinic.user.id === consultantId)
+      );
+    });
+
+    filteredConsultants = [...clinicConsultantsList, ...consultantsWithThreads];
   } else {
+    // Existing logic for when no preselected consultant
     const consultantsWithThreads = consultants.filter((c) => {
       const consultantId = c.user?.id || c.id;
       return chatThreads[consultantId];
     });
 
-    const searchFilter = (consultant) => {
-      if (!searchTerm) return true;
-      return (
-        consultant.user.userName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        consultant.clinic.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    };
-    filteredConsultants = consultantsWithThreads.filter(searchFilter);
+    // filteredConsultants = consultantsWithThreads.filter(searchFilter);
+    filteredConsultants = consultantsWithThreads;
   }
 
   const activeThread =
@@ -816,7 +849,11 @@ const ConsultationChat = () => {
 
         // Process the message for attachments
         // In the useEffect that handles incoming messages, update the message processing:
-        const processedMessage = { ...latest };
+        const processedMessage = {
+          ...latest,
+          // this somehow fix duplicate real-time mesage
+          messageText: latest.messageText?.trim(),
+        };
         if (
           latest.media &&
           Array.isArray(latest.media) &&
@@ -891,64 +928,207 @@ const ConsultationChat = () => {
             )}
 
             <div className="consultation-chat-consultants-list">
-              {filteredConsultants.length > 0 ? (
-                filteredConsultants.map((consultant) => {
-                  const profile =
-                    chatThreads[consultant.user.id]?.consultant || consultant;
-                  return (
-                    <div
-                      key={consultant.user.id}
-                      className={`consultation-chat-consultant-item ${
-                        selectedConsultant?.user.id === consultant.user.id
-                          ? "active"
-                          : ""
-                      }`}
-                      onClick={() => handleSelectConsultant(consultant)}
-                    >
-                      <div className="consultation-chat-consultant-avatar">
-                        <img
-                          src={
-                            profile?.user?.avatar?.fileUrl ||
-                            "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
-                          }
-                          alt={profile?.user?.userName}
-                        />
-                      </div>
-
-                      <div className="consultation-chat-consultant-info">
-                        <h4>{profile?.user?.userName}</h4>
-                        <p className="consultation-chat-specialization">
-                          {profile?.specialization}
-                        </p>
-                        <div className="consultation-chat-consultant-clinic">
-                          <FaHospital />
-                          <span>
-                            {profile?.clinic?.user?.userName ||
-                              profile?.clinic?.name}
-                          </span>
-                        </div>
-                      </div>
-
-                      {chatThreads[consultant.user.id] && (
-                        <div
-                          className="consultation-chat-status-indicator active"
-                          title="You have an ongoing conversation"
-                        />
-                      )}
+              {/* Show the selected consultant from clinic FIRST (if coming from ClinicDetail) */}
+              {preSelectedConsultant && (
+                <div className="consultant-group">
+                  <div className="consultant-group-header">
+                    <FaHospital />
+                    <h4>Selected Consultant</h4>
+                  </div>
+                  <div
+                    key={`selected-${preSelectedConsultant.user.id}`}
+                    className={`consultation-chat-consultant-item ${
+                      selectedConsultant?.user.id ===
+                      preSelectedConsultant.user.id
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      handleSelectConsultant(preSelectedConsultant)
+                    }
+                  >
+                    <div className="consultation-chat-consultant-avatar">
+                      <img
+                        src={
+                          preSelectedConsultant?.user?.avatar?.fileUrl ||
+                          "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                        }
+                        alt={preSelectedConsultant?.user?.userName}
+                      />
                     </div>
-                  );
-                })
-              ) : (
-                <div className="consultation-chat-empty-thread-list">
-                  <FaComments />
-                  <h3>No Chat History</h3>
-                  <p>
-                    {searchTerm
-                      ? "No consultants match your search criteria."
-                      : "You haven't started any consultations yet. Visit a clinic's page and click 'Start Consultation' with a consultant to begin."}
-                  </p>
+
+                    <div className="consultation-chat-consultant-info">
+                      <h4>{preSelectedConsultant?.user?.userName}</h4>
+                      <p className="consultation-chat-specialization">
+                        {preSelectedConsultant?.specialization}
+                      </p>
+                      <div className="consultation-chat-consultant-clinic">
+                        <FaHospital />
+                        <span>
+                          {preSelectedConsultant?.clinic?.name ||
+                            (clinicInfo && clinicInfo.name) ||
+                            "Selected Clinic"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="consultation-chat-new-consultant-badge">
+                      New
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Show other clinic consultants (excluding the selected one) */}
+              {clinicInfo &&
+                clinicConsultants &&
+                clinicConsultants.length > 0 && (
+                  <div className="consultant-group">
+                    <div className="consultant-group-header">
+                      <FaHospital />
+                      <h4>Other consultants at {clinicInfo.name}</h4>
+                    </div>
+                    {clinicConsultants
+                      .filter(
+                        (consultant) =>
+                          // Exclude the preselected consultant since it's shown above
+                          consultant.user.id !== preSelectedConsultant?.user.id
+                      )
+                      .map((consultant) => (
+                        <div
+                          key={`clinic-${consultant.user.id}`}
+                          className={`consultation-chat-consultant-item ${
+                            selectedConsultant?.user.id === consultant.user.id
+                              ? "active"
+                              : ""
+                          }`}
+                          onClick={() => handleSelectConsultant(consultant)}
+                        >
+                          <div className="consultation-chat-consultant-avatar">
+                            <img
+                              src={
+                                consultant?.user?.avatar?.fileUrl ||
+                                "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                              }
+                              alt={consultant?.user?.userName}
+                            />
+                          </div>
+
+                          <div className="consultation-chat-consultant-info">
+                            <h4>{consultant?.user?.userName}</h4>
+                            <p className="consultation-chat-specialization">
+                              {consultant?.specialization}
+                            </p>
+                            <div className="consultation-chat-consultant-clinic">
+                              <FaHospital />
+                              <span>{clinicInfo.name}</span>
+                            </div>
+                          </div>
+
+                          <div className="consultation-chat-new-consultant-badge">
+                            Available
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+              {/* Show previous conversations (excluding clinic consultants) */}
+              {Object.keys(chatThreads).length > 0 && (
+                <div className="consultant-group">
+                  <div className="consultant-group-header">
+                    <FaComments />
+                    <h4>Previous Consultations</h4>
+                  </div>
+                  {filteredConsultants
+                    .filter((consultant) => {
+                      const consultantId = consultant.user?.id || consultant.id;
+                      // Only show consultants with chat threads
+                      const hasThread = chatThreads[consultantId];
+                      // Exclude preselected consultant (shown above)
+                      const isPreSelected =
+                        preSelectedConsultant?.user.id === consultantId;
+                      // Exclude clinic consultants (shown above)
+                      const isClinicConsultant = clinicConsultants.some(
+                        (c) => c.user.id === consultantId
+                      );
+
+                      return hasThread && !isPreSelected && !isClinicConsultant;
+                    })
+                    .map((consultant) => {
+                      const profile =
+                        chatThreads[consultant.user.id]?.consultant ||
+                        consultant;
+                      const thread = chatThreads[consultant.user.id];
+
+                      return (
+                        <div
+                          key={`previous-${consultant.user.id}`}
+                          className={`consultation-chat-consultant-item ${
+                            selectedConsultant?.user.id === consultant.user.id
+                              ? "active"
+                              : ""
+                          }`}
+                          onClick={() => handleSelectConsultant(consultant)}
+                        >
+                          <div className="consultation-chat-consultant-avatar">
+                            <img
+                              src={
+                                profile?.user?.avatar?.fileUrl ||
+                                "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                              }
+                              alt={profile?.user?.userName}
+                            />
+                          </div>
+
+                          <div className="consultation-chat-consultant-info">
+                            <h4>{profile?.user?.userName}</h4>
+                            <p className="consultation-chat-specialization">
+                              {profile?.specialization}
+                            </p>
+                            <div className="consultation-chat-consultant-clinic">
+                              <FaHospital />
+                              <span>
+                                {profile?.clinic?.user?.userName ||
+                                  profile?.clinic?.name}
+                              </span>
+                            </div>
+                            {thread?.thread?.updatedAt && (
+                              <div className="consultation-chat-last-activity">
+                                <FaClock />
+                                <span>
+                                  {new Date(
+                                    thread.thread.updatedAt
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div
+                            className="consultation-chat-status-indicator active"
+                            title="You have an ongoing conversation"
+                          />
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* Show empty state only if no consultants at all */}
+              {filteredConsultants.length === 0 &&
+                (!clinicConsultants || clinicConsultants.length === 0) &&
+                !preSelectedConsultant && (
+                  <div className="consultation-chat-empty-thread-list">
+                    <FaComments />
+                    <h3>No Chat History</h3>
+                    <p>
+                      {searchTerm
+                        ? "No consultants match your search criteria."
+                        : "You haven't started any consultations yet. Visit a clinic's page and click 'Start Consultation' with a consultant to begin."}
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
 

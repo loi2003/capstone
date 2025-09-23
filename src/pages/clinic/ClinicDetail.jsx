@@ -26,23 +26,31 @@ const handleStartConsultation = (consultant) => {
     setShowLoginModal(true);
     return;
   }
-
-  // Navigate to ConsultationChat with consultant data
-  // The ConsultationChat component will handle checking for existing threads
-  navigate("/consultation-chat", {
+  
+  // Navigate to ConsultationChat with clinic and consultant context
+  navigate('/consultation-chat', {
     state: {
-      currentUserId,
       selectedConsultant: {
         ...consultant,
         clinic: {
           id: clinic.id,
           name: clinic.user?.userName || clinic.name,
-          address: clinic.address,
-        },
+          address: clinic.address
+        }
       },
-    },
+      currentUserId: currentUserId,
+      
+      // ADD THESE LINES - Pass the clinic data
+      clinicConsultants: clinic.consultants || [],
+      clinicInfo: {
+        id: clinic.id,
+        name: clinic.user?.userName || clinic.name,
+        address: clinic.address
+      }
+    }
   });
 };
+
 
 // Star rendering helper (with half star support)
 const renderStars = (stars) => {
@@ -212,29 +220,34 @@ const ClinicDetail = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
 
-  // MOVE handleStartConsultation INSIDE the component
   const handleStartConsultation = (consultant) => {
-    if (!currentUserId) {
-      setShowLoginModal(true);
-      return;
-    }
+  if (!currentUserId) {
+    setShowLoginModal(true);
+    return;
+  }
 
-    // Navigate to ConsultationChat page with consultant data, but don't auto-start
-    navigate("/consultation-chat", {
-      state: {
-        selectedConsultant: {
-          ...consultant,
-          clinic: {
-            id: clinic.id,
-            name: clinic.user?.userName || clinic.name,
-            address: clinic.address,
-          },
-        },
-        currentUserId: currentUserId,
-        autoStart: false, // Changed from true to false
+  // Navigate to ConsultationChat with consultant data
+  navigate('/consultation-chat', {
+    state: {
+      selectedConsultant: {
+        ...consultant,
+        clinic: {
+          id: clinic.id,
+          name: clinic.user?.userName || clinic.name,
+          address: clinic.address
+        }
       },
-    });
-  };
+      currentUserId: currentUserId,
+      clinicConsultants: clinic.consultants || [],
+      clinicInfo: {
+        id: clinic.id,
+        name: clinic.user?.userName || clinic.name,
+        address: clinic.address
+      }
+    }
+  });
+};
+
 
   // Image handling functions
   const handleImageError = (imageId) => {

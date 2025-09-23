@@ -67,11 +67,20 @@ const ConsultationManagement = () => {
     // Use requestAnimationFrame to ensure DOM is updated
     requestAnimationFrame(() => {
       if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-          inline: "nearest",
-        });
+        const messagesContainer = messagesEndRef.current.closest(
+          ".consultation-management-messages"
+        );
+        if (messagesContainer) {
+          // Scroll the messages container, not the element itself
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          // Fallback to original method
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
+        }
       }
     });
   };
@@ -696,12 +705,47 @@ const ConsultationManagement = () => {
   };
 
   useEffect(() => {
-    if (connection && selectedThread?.thread?.id) {
-      console.log("Joining thread:", selectedThread.thread.id);
+    if (
+      connection &&
+      connection.state === signalR.HubConnectionState.Connected &&
+      selectedThread?.thread?.id
+    ) {
+      console.log("Joining thread", selectedThread.thread.id);
+      console.log("Connection state:", connection.state);
+
       connection
         .invoke("JoinThread", selectedThread.thread.id)
-        .then(() => console.log("Successfully joined thread"))
-        .catch((err) => console.error("JoinThread failed:", err));
+        .then(() => {
+          console.log("Successfully joined thread:", selectedThread.thread.id);
+        })
+        .catch((err) => {
+          console.error("JoinThread failed:", err);
+          // Retry after a short delay if connection was lost
+          setTimeout(() => {
+            if (connection.state === signalR.HubConnectionState.Connected) {
+              connection
+                .invoke("JoinThread", selectedThread.thread.id)
+                .catch((retryErr) =>
+                  console.error("Retry JoinThread failed:", retryErr)
+                );
+            }
+          }, 1000);
+        });
+    } else if (connection && selectedThread?.thread?.id) {
+      console.log("Connection not ready, state:", connection.state);
+      // Wait for connection to be established
+      const checkConnection = setInterval(() => {
+        if (connection.state === signalR.HubConnectionState.Connected) {
+          clearInterval(checkConnection);
+          connection
+            .invoke("JoinThread", selectedThread.thread.id)
+            .then(() => console.log("Successfully joined thread after waiting"))
+            .catch((err) => console.error("Delayed JoinThread failed:", err));
+        }
+      }, 500);
+
+      // Clear interval after 10 seconds to prevent memory leak
+      setTimeout(() => clearInterval(checkConnection), 10000);
     }
   }, [connection, selectedThread]);
 
@@ -747,7 +791,10 @@ const ConsultationManagement = () => {
         console.log("Adding new message to thread for patient:", patientUserId);
 
         // Process the message for attachments
-        const processedMessage = { ...latest };
+        const processedMessage = {
+          ...latest,
+          messageText: latest.messageText?.trim(),
+        };
         if (
           latest.media &&
           Array.isArray(latest.media) &&
@@ -877,25 +924,25 @@ const ConsultationManagement = () => {
   };
 
   const handleLogout = async () => {
-      if (!currentConsultantData?.userId) {
+    if (!currentConsultantData?.userId) {
+      localStorage.removeItem("token");
+      setUser(null);
+      navigate("/signin", { replace: true });
+      return;
+    }
+    if (window.confirm("Are you sure you want to sign out?")) {
+      try {
+        await logout(currentConsultantData.userId);
+      } catch (error) {
+        console.error("Error logging out:", error.message);
+      } finally {
         localStorage.removeItem("token");
         setUser(null);
+        setIsSidebarOpen(true);
         navigate("/signin", { replace: true });
-        return;
       }
-      if (window.confirm("Are you sure you want to sign out?")) {
-        try {
-          await logout(currentConsultantData.userId);
-        } catch (error) {
-          console.error("Error logging out:", error.message);
-        } finally {
-          localStorage.removeItem("token");
-          setUser(null);
-          setIsSidebarOpen(true);
-          navigate("/signin", { replace: true });
-        }
-      }
-    };
+    }
+  };
 
   return (
     <div className="consultant-homepage">

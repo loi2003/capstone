@@ -1,27 +1,82 @@
 // src/components/Header.js
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { viewNotificationsByUserId } from "../../apis/notification-api";
 import { getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
 import "./Header.css";
 import { set } from "lodash";
-import { FaIdCard, FaComments } from 'react-icons/fa';
-import { CgProfile } from 'react-icons/cg';
-import { FaCircleQuestion } from 'react-icons/fa6';
+import { FaIdCard, FaComments } from "react-icons/fa";
+import { CgProfile } from "react-icons/cg";
+import { FaCircleQuestion } from "react-icons/fa6";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // const [showSubscription, setShowSubscription] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const navigate = useNavigate();
+  const location = useLocation();
   const dropdownRef = useRef(null);
+
+  // Scroll restoration utility function
+  const restoreScrollPosition = () => {
+    // Clean up all body scroll-lock styles
+    document.body.classList.remove("menu-open");
+    document.body.style.removeProperty("overflow");
+    document.body.style.removeProperty("position");
+    document.body.style.removeProperty("top");
+    document.body.style.removeProperty("width");
+    document.body.style.removeProperty("height");
+    
+    // Handle layout container if it exists
+    const layoutContainer = document.querySelector(".layout-container");
+    if (layoutContainer) {
+      layoutContainer.style.overflowY = "auto";
+    }
+    
+    // Get stored scroll position
+    const storedScrollY = document.body.dataset.scrollY || sessionStorage.getItem('headerScrollPosition') || "0";
+    window.scrollTo(0, parseInt(storedScrollY, 10));
+    
+    // Clean up stored positions
+    delete document.body.dataset.scrollY;
+    sessionStorage.removeItem('headerScrollPosition');
+  };
+
+  // Clean up scroll lock on route changes
+  useEffect(() => {
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+      restoreScrollPosition();
+    }
+  }, [location.pathname]);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (isMenuOpen) {
+        restoreScrollPosition();
+      }
+    };
+  }, [isMenuOpen]);
+
+  // Handle browser navigation/refresh
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isMenuOpen) {
+        restoreScrollPosition();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isMenuOpen]);
 
   const getAuthToken = () => {
     return (
@@ -45,6 +100,7 @@ const Header = () => {
       setLoading(true);
       const userResponse = await getCurrentUser(token);
       const userId = userResponse.data?.data?.id;
+
       if (!userId) {
         setError("Unable to fetch user ID. Please log in again.");
         setLoading(false);
@@ -52,15 +108,22 @@ const Header = () => {
       }
 
       const notificationResponse = await viewNotificationsByUserId(userId, token);
-      if (notificationResponse.error === 0 && Array.isArray(notificationResponse.data)) {
-        const notificationsWithId = notificationResponse.data.map((notif, index) => ({
-          ...notif,
-          id: notif.notificationId || notif.id || `notif-${index}`,
-        }));
+
+      if (
+        notificationResponse.error === 0 &&
+        Array.isArray(notificationResponse.data)
+      ) {
+        const notificationsWithId = notificationResponse.data.map(
+          (notif, index) => ({
+            ...notif,
+            id: notif.notificationId || notif.id || `notif-${index}`,
+          })
+        );
         setNotifications(notificationsWithId);
       } else {
         setNotifications([]);
       }
+
       setLoading(false);
     } catch (err) {
       const errorMessage = err.response?.data?.message || err.message;
@@ -77,7 +140,10 @@ const Header = () => {
         .then((response) => {
           const userId = response.data?.data?.id;
           if (userId) {
-            setUser({ userId, email: response.data?.data?.email || "user@example.com" });
+            setUser({
+              userId,
+              email: response.data?.data?.email || "user@example.com",
+            });
             fetchNotifications();
           } else {
             setUser(null);
@@ -97,6 +163,7 @@ const Header = () => {
         setShowNotification(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -105,21 +172,31 @@ const Header = () => {
     setIsMenuOpen((prev) => {
       const newState = !prev;
       const navLinks = document.querySelector(".nav-links");
+      
       if (navLinks) {
         navLinks.classList.toggle("open", newState);
       }
 
       if (newState) {
+        // Store current scroll position in multiple places for reliability
         const scrollY = window.scrollY;
+        document.body.dataset.scrollY = scrollY;
+        sessionStorage.setItem('headerScrollPosition', scrollY);
+        
+        // Apply scroll lock
         document.body.classList.add("menu-open");
+        document.body.style.overflow = "hidden";
+        document.body.style.position = "fixed";
         document.body.style.top = `-${scrollY}px`;
-        document.querySelector(".layout-container").style.overflowY = "hidden";
+        document.body.style.width = "100%";
+        
+        // Handle layout container if it exists
+        const layoutContainer = document.querySelector(".layout-container");
+        if (layoutContainer) {
+          layoutContainer.style.overflowY = "hidden";
+        }
       } else {
-        const scrollY = document.body.style.top;
-        document.body.classList.remove("menu-open");
-        document.body.style.top = "";
-        document.querySelector(".layout-container").style.overflowY = "auto";
-        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+        restoreScrollPosition();
       }
 
       if (isDropdownOpen) setIsDropdownOpen(false);
@@ -136,33 +213,51 @@ const Header = () => {
   const toggleNotification = () => {
     setShowNotification((prev) => {
       if (!prev) {
-        fetchNotifications(); // Refetch notifications when opening the dropdown
+        fetchNotifications();
       }
       return !prev;
     });
     setIsDropdownOpen(false);
   };
 
-  // const toggleSubscription = () => {
-  //   setShowSubscription((prev) => !prev);
-  //   setIsDropdownOpen(false);
-  // };
-
   const handleNotificationClick = () => {
     setShowNotification(false);
+    // Close menu and restore scroll when navigating
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+      restoreScrollPosition();
+    }
     navigate("/notifications");
+  };
+
+  const handleNavigation = (path) => {
+    // Close menu and restore scroll before navigating
+    if (isMenuOpen) {
+      setIsMenuOpen(false);
+      restoreScrollPosition();
+    }
+    navigate(path);
   };
 
   const handleLogout = async () => {
     try {
       if (user?.userId) {
-        await apiClient.post("/api/auth/user/logout", { userId: user.userId }, {
-          headers: { "Content-Type": "application/json" },
-        });
+        await apiClient.post(
+          "/api/auth/user/logout",
+          { userId: user.userId },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
       }
     } catch (error) {
       console.error("Error during logout:", error.message);
     } finally {
+      // Clean up everything before logout
+      if (isMenuOpen) {
+        restoreScrollPosition();
+      }
+      
       localStorage.removeItem("token");
       setUser(null);
       setNotifications([]);
@@ -213,7 +308,9 @@ const Header = () => {
           <div className="auth-section">
             {user ? (
               <div
-                className={`profile-section ${isDropdownOpen || showNotification ? "open" : ""}`}
+                className={`profile-section ${
+                  isDropdownOpen || showNotification ? "open" : ""
+                }`}
                 ref={dropdownRef}
               >
                 <div className="profile-icons">
@@ -255,15 +352,19 @@ const Header = () => {
                       />
                     </svg>
                     {hasNewNotifications && (
-                      <span className="notification-count">{notifications.filter((n) => !n.isRead).length}</span>
+                      <span className="notification-count">
+                        {notifications.filter((n) => !n.isRead).length}
+                      </span>
                     )}
                   </button>
-                  
                 </div>
                 {isDropdownOpen && (
                   <div className="profile-dropdown">
                     <div className="dropdown-header">
-                      <span className="profile-email" title={user.email || "Người dùng"}>
+                      <span
+                        className="profile-email"
+                        title={user.email || "Người dùng"}
+                      >
                         {user.email || "Người dùng"}
                       </span>
                     </div>
@@ -284,8 +385,11 @@ const Header = () => {
                         <FaCircleQuestion />
                         <span>Support</span>
                       </Link>
-                      
-                      <button onClick={handleLogout} className="dropdown-item logout-btn">
+
+                      <button
+                        onClick={handleLogout}
+                        className="dropdown-item logout-btn"
+                      >
                         <svg
                           width="20"
                           height="20"
@@ -310,18 +414,24 @@ const Header = () => {
                     </div>
                     <div className="notification-content">
                       {loading ? (
-                        <span className="notification-message">Loading notifications...</span>
+                        <span className="notification-message">
+                          Loading notifications...
+                        </span>
                       ) : error ? (
                         <span className="notification-message">{error}</span>
                       ) : notifications.length > 0 ? (
                         <>
                           <span className="notification-message">
-                            {hasNewNotifications ? "You have new notifications." : "All notifications are read."}
+                            {hasNewNotifications
+                              ? "You have new notifications."
+                              : "All notifications are read."}
                           </span>
                           {notifications.map((notification, index) => (
                             <div
                               key={notification.id || `notif-${index}`}
-                              className={`notification-item ${notification.isRead ? "read" : "unread"}`}
+                              className={`notification-item ${
+                                notification.isRead ? "read" : "unread"
+                              }`}
                               onClick={handleNotificationClick}
                             >
                               <div className="notification-icon">
@@ -339,12 +449,18 @@ const Header = () => {
                                 </svg>
                               </div>
                               <div className="notification-details">
-                                <span className="notification-title">{notification.message}</span>
+                                <span className="notification-title">
+                                  {notification.message}
+                                </span>
                                 <span className="notification-time">
-                                  {new Date(notification.createdAt || Date.now()).toLocaleString()}
+                                  {new Date(
+                                    notification.createdAt || Date.now()
+                                  ).toLocaleString()}
                                 </span>
                               </div>
-                              {!notification.isRead && <span className="notification-dot" />}
+                              {!notification.isRead && (
+                                <span className="notification-dot" />
+                              )}
                             </div>
                           ))}
                           <div className="notification-actions">
@@ -384,8 +500,12 @@ const Header = () => {
                               />
                             </svg>
                           </div>
-                          <span className="notification-empty-title">No Notifications</span>
-                          <span className="notification-empty-message">You don't have any notifications.</span>
+                          <span className="notification-empty-title">
+                            No Notifications
+                          </span>
+                          <span className="notification-empty-message">
+                            You don't have any notifications.
+                          </span>
                         </div>
                       )}
                     </div>
