@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   createHealthExpertAccount,
   createNutrientSpecialistAccount,
@@ -16,6 +16,28 @@ import {
 import { getCurrentUser, logout } from '../../apis/authentication-api';
 import '../../styles/AdminAccountManagement.css';
 
+const Notification = ({ message, type, onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <motion.div
+      className={`notification ${type}`}
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 100 }}
+      transition={{ duration: 0.3 }}
+    >
+      <span>{message}</span>
+      <button className="notification-close" onClick={onClose} aria-label="Close notification">
+        <i className="fas fa-times"></i>
+      </button>
+    </motion.div>
+  );
+};
+
 const AdminAccountManagement = () => {
   const [activeTab, setActiveTab] = useState('create');
   const [formData, setFormData] = useState({
@@ -25,8 +47,8 @@ const AdminAccountManagement = () => {
     phoneNumber: '',
     role: 'health-expert',
   });
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingStates, setLoadingStates] = useState({});
   const [users, setUsers] = useState([]);
@@ -41,12 +63,20 @@ const AdminAccountManagement = () => {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
-  // Role options for form (formValue) and API/display (value)
   const roleOptions = [
     { value: 3, label: 'Health Expert', formValue: 'health-expert' },
     { value: 4, label: 'Nutrient Specialist', formValue: 'nutrient-specialist' },
     { value: 5, label: 'Clinic', formValue: 'clinic' },
   ];
+
+  const addNotification = (message, type) => {
+    const id = Date.now();
+    setNotifications((prev) => [...prev, { id, message, type }]);
+  };
+
+  const removeNotification = (id) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -90,7 +120,6 @@ const AdminAccountManagement = () => {
           viewAllStaff(token),
           viewAllClinics(token),
         ]);
-        // Filter out accounts with roleId 6 or 7
         setUsers(usersResponse.data.data?.filter(user => ![6, 7].includes(user.roleId)) || []);
         setStaff(staffResponse.data.data?.filter(staff => ![6, 7].includes(staff.roleId)) || []);
         setClinics(clinicsResponse.data.data?.filter(clinic => ![6, 7].includes(clinic.roleId)) || []);
@@ -108,6 +137,10 @@ const AdminAccountManagement = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const toggleShowPassword = () => {
+    setShowPassword((prev) => !prev);
+  };
+
   const validateForm = () => {
     if (!/^[a-zA-Z0-9_-]{3,30}$/.test(formData.userName.trim())) {
       return 'Username must be 3-30 characters long and contain only letters, numbers, hyphens, or underscores.';
@@ -118,8 +151,8 @@ const AdminAccountManagement = () => {
     if (!/^(?=.*[a-zA-Z])(?=.*[0-9]).{8,}$/.test(formData.passwordHash)) {
       return 'Password must be at least 8 characters long and include both letters and numbers.';
     }
-    if (formData.phoneNumber && !/^\+?[1-9]\d{1,14}$/.test(formData.phoneNumber.trim())) {
-      return 'Phone number must be a valid international format (e.g., +1234567890).';
+    if (formData.phoneNumber && !/^(?:\+84|0)(?:3[2-9]|5[689]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(formData.phoneNumber.trim())) {
+      return 'Phone number must be a valid Vietnamese mobile number (e.g., +84912345678 or 0912345678).';
     }
     if (!roleOptions.some((role) => role.formValue === formData.role)) {
       return 'Invalid role selected.';
@@ -140,20 +173,18 @@ const AdminAccountManagement = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setSuccess(null);
     setLoading(true);
 
     const validationError = validateForm();
     if (validationError) {
-      setError(validationError);
+      addNotification(validationError, 'error');
       setLoading(false);
       return;
     }
 
     const duplicateError = checkDuplicates();
     if (duplicateError) {
-      setError(duplicateError);
+      addNotification(duplicateError, 'error');
       setLoading(false);
       return;
     }
@@ -197,7 +228,7 @@ const AdminAccountManagement = () => {
       const id = response.data?.data?.id || `temp-${Date.now()}`;
       const roleId = response.data?.data?.roleId || selectedRole.value;
 
-      setSuccess(`Account created successfully: ${userName} (${email}) as ${roleLabel}`);
+      addNotification(`Account created successfully: ${userName} (${email}) as ${roleLabel}`, 'success');
 
       const newAccount = {
         id,
@@ -219,22 +250,20 @@ const AdminAccountManagement = () => {
         phoneNumber: '',
         role: 'health-expert',
       });
+      setShowPassword(false);
       setActiveTab('view');
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create account. Please check the form and try again.');
+      addNotification(err.response?.data?.message || 'Failed to create account. Please check the form and try again.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleChangeRole = async (email, newRoleId) => {
-    setError(null);
-    setSuccess(null);
     setLoadingStates((prev) => ({ ...prev, [email]: true }));
 
-    // Prevent changing to roles 6 or 7
     if ([6, 7].includes(parseInt(newRoleId))) {
-      setError('Selected role is not available.');
+      addNotification('Selected role is not available.', 'error');
       setLoadingStates((prev) => ({ ...prev, [email]: false }));
       return;
     }
@@ -244,18 +273,16 @@ const AdminAccountManagement = () => {
       form.append('Email', email);
       form.append('RoleId', newRoleId);
       const response = await changeAccountAuthorize(form, token);
-      setSuccess(`Role changed successfully for ${email} to ${roleOptions.find((r) => r.value === parseInt(newRoleId))?.label || 'Unknown'}`);
+      addNotification(`Role changed successfully for ${email} to ${roleOptions.find((r) => r.value === parseInt(newRoleId))?.label || 'Unknown'}`, 'success');
       await refreshAccounts();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to change role. Please try again.');
+      addNotification(err.response?.data?.message || 'Failed to change role. Please try again.', 'error');
     } finally {
       setLoadingStates((prev) => ({ ...prev, [email]: false }));
     }
   };
 
   const handleBanAccount = async (email, currentStatus) => {
-    setError(null);
-    setSuccess(null);
     setLoadingStates((prev) => ({ ...prev, [email]: true }));
 
     const originalStates = {
@@ -267,21 +294,19 @@ const AdminAccountManagement = () => {
     try {
       updateAccountStatus(email, 'inactive');
       const response = await banAccount(email, token);
-      setSuccess(`Account ${email} banned successfully`);
+      addNotification(`Account ${email} banned successfully`, 'success');
       await retryFetchAccounts(email, ['inactive', 'banned', 'suspended']);
     } catch (err) {
       setUsers(originalStates.users);
       setStaff(originalStates.staff);
       setClinics(originalStates.clinics);
-      setError(err.response?.data?.message || 'Failed to ban account. Please try again.');
+      addNotification(err.response?.data?.message || 'Failed to ban account. Please try again.', 'error');
     } finally {
       setLoadingStates((prev) => ({ ...prev, [email]: false }));
     }
   };
 
   const handleUnbanAccount = async (email, currentStatus) => {
-    setError(null);
-    setSuccess(null);
     setLoadingStates((prev) => ({ ...prev, [email]: true }));
 
     const originalStates = {
@@ -293,13 +318,13 @@ const AdminAccountManagement = () => {
     try {
       updateAccountStatus(email, 'active');
       const response = await unbanAccount(email, token);
-      setSuccess(`Account ${email} unbanned successfully`);
+      addNotification(`Account ${email} unbanned successfully`, 'success');
       await retryFetchAccounts(email, 'active');
     } catch (err) {
       setUsers(originalStates.users);
       setStaff(originalStates.staff);
       setClinics(originalStates.clinics);
-      setError(err.response?.data?.message || 'Failed to unban account. Please try again.');
+      addNotification(err.response?.data?.message || 'Failed to unban account. Please try again.', 'error');
     } finally {
       setLoadingStates((prev) => ({ ...prev, [email]: false }));
     }
@@ -317,8 +342,6 @@ const AdminAccountManagement = () => {
     if (!window.confirm(`Are you sure you want to delete the account with email ${email}? This action cannot be undone.`)) {
       return;
     }
-    setError(null);
-    setSuccess(null);
     setLoadingStates((prev) => ({ ...prev, [email]: true }));
 
     const originalStates = {
@@ -332,13 +355,13 @@ const AdminAccountManagement = () => {
       setStaff((prev) => prev.filter((staff) => staff.email !== email));
       setClinics((prev) => prev.filter((clinic) => clinic.email !== email));
       const response = await hardDeleteAccount(email, token);
-      setSuccess(`Account ${email} deleted successfully`);
+      addNotification(`Account ${email} deleted successfully`, 'success');
       await refreshAccounts();
     } catch (err) {
       setUsers(originalStates.users);
       setStaff(originalStates.staff);
       setClinics(originalStates.clinics);
-      setError(err.response?.data?.message || 'Failed to delete account. Please try again.');
+      addNotification(err.response?.data?.message || 'Failed to delete account. Please try again.', 'error');
     } finally {
       setLoadingStates((prev) => ({ ...prev, [email]: false }));
     }
@@ -351,7 +374,6 @@ const AdminAccountManagement = () => {
         viewAllStaff(token),
         viewAllClinics(token),
       ]);
-      // Filter out accounts with roleId 6 or 7
       setUsers(usersResponse.data.data?.filter(user => ![6, 7].includes(user.roleId)) || []);
       setStaff(staffResponse.data.data?.filter(staff => ![6, 7].includes(staff.roleId)) || []);
       setClinics(clinicsResponse.data.data?.filter(clinic => ![6, 7].includes(clinic.roleId)) || []);
@@ -427,7 +449,7 @@ const AdminAccountManagement = () => {
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
-    setCurrentPage({ users: 1, staff: 1, clinics: 1 }); // Reset pagination on search
+    setCurrentPage({ users: 1, staff: 1, clinics: 1 });
   };
 
   const filterAccounts = (accounts) => {
@@ -812,15 +834,17 @@ const AdminAccountManagement = () => {
           initial="initial"
           animate="animate"
         >
-          <div className="back-button-container">
-            <button
-              className="back-button"
-              onClick={() => navigate('/admin')}
-              aria-label="Back to Admin Home"
-              title="Back to Admin Home"
-            >
-              <i className="fas fa-arrow-left"></i>
-            </button>
+          <div className="notification-container">
+            <AnimatePresence>
+              {notifications.map((notification) => (
+                <Notification
+                  key={notification.id}
+                  message={notification.message}
+                  type={notification.type}
+                  onClose={() => removeNotification(notification.id)}
+                />
+              ))}
+            </AnimatePresence>
           </div>
           <h1 className="admin-account-title">Account Management</h1>
           <p className="admin-account-description">
@@ -884,17 +908,39 @@ const AdminAccountManagement = () => {
                     placeholder="Enter email"
                   />
                 </div>
-                <div className="form-group">
+                <div className="form-group password-group">
                   <label htmlFor="passwordHash">Password</label>
-                  <input
-                    type="password"
-                    id="passwordHash"
-                    name="passwordHash"
-                    value={formData.passwordHash}
-                    onChange={handleInputChange}
-                    required
-                    placeholder="Enter password (min 8 characters)"
-                  />
+                  <div className="password-input-container">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="passwordHash"
+                      name="passwordHash"
+                      value={formData.passwordHash}
+                      onChange={handleInputChange}
+                      required
+                      placeholder="Enter password (min 8 characters)"
+                      aria-describedby="passwordHelp"
+                    />
+                    <button
+                      type="button"
+                      className="toggle-password"
+                      onClick={toggleShowPassword}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      title={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? (
+                        <i className="fas fa-eye-slash" aria-hidden="true"></i>
+                      ) : (
+                        <i className="fas fa-eye" aria-hidden="true"></i>
+                      )}
+                      <span className="toggle-password-fallback" aria-hidden="true">
+                        {showPassword ? 'Hide' : 'Show'}
+                      </span>
+                    </button>
+                  </div>
+                  <small id="passwordHelp" className="form-text">
+                    Password must be at least 8 characters with letters and numbers.
+                  </small>
                 </div>
                 <div className="form-group">
                   <label htmlFor="phoneNumber">Phone Number (Optional)</label>
@@ -904,11 +950,9 @@ const AdminAccountManagement = () => {
                     name="phoneNumber"
                     value={formData.phoneNumber}
                     onChange={handleInputChange}
-                    placeholder="Enter phone number (e.g., +1234567890)"
+                    placeholder="Enter Vietnamese phone number (e.g., +84912345678)"
                   />
                 </div>
-                {error && <div className="error-message">{error}</div>}
-                {success && <div className="success-message">{success}</div>}
                 <button type="submit" className="submit-button" disabled={loading}>
                   <i className="fas fa-plus-circle"></i> {loading ? 'Creating...' : 'Create Account'}
                 </button>
@@ -929,8 +973,6 @@ const AdminAccountManagement = () => {
                 <i className="fas fa-search search-icon"></i>
               </div>
               {viewError && <div className="error-message">{viewError}</div>}
-              {success && <div className="success-message">{success}</div>}
-              
               <h2 className="account-view-title">Users</h2>
               <table className="account-table">
                 <thead>

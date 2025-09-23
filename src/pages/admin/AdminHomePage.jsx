@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -423,22 +424,20 @@ const AdminHomePage = () => {
           >
             <h1 className="blog-category-management__banner-title">Admin Dashboard</h1>
             <p className="blog-category-management__banner-subtitle">
-              Oversee platform operations, manage user accounts, configure
-              system settings, and ensure smooth functionality with powerful
-              administrative tools.
+              Manage all aspects of the platform, from blog categories and tutorials to user accounts, policies, and payment systems with powerful administrative tools.
             </p>
             <div className="blog-category-management__banner-buttons">
               <Link
-                to="/admin/users"
+                to="/admin/categories"
                 className="blog-category-management__banner-button primary"
               >
-                Manage Users
+                Manage Blog Categories
               </Link>
               <Link
-                to="/admin/account-management"
+                to="/admin/tutorial"
                 className="blog-category-management__banner-button secondary"
               >
-                Account Management
+                Tutorial Management
               </Link>
             </div>
           </motion.div>
@@ -475,22 +474,49 @@ const AdminHomePage = () => {
         >
           <h2 className="blog-category-management__features-title">Core Administrative Tools</h2>
           <p className="blog-category-management__features-description">
-            Leverage a suite of tools designed to streamline user management,
-            account creation, and system configuration for optimal platform
-            performance.
+            Access a comprehensive suite of tools to manage blog categories, tutorials, policies, accounts, system settings, and payments for optimal platform performance.
           </p>
           <div className="blog-category-management__features-grid">
             <motion.div
               variants={cardVariants}
               className="blog-category-management__feature-card"
             >
-              <h3>User Management</h3>
+              <h3>Blog Categories</h3>
               <p>
-                View, edit, and assign roles to user accounts, ensuring secure
-                and efficient access control across the platform.
+                Organize and manage blog categories to streamline content creation and improve user navigation.
               </p>
               <Link
-                to="/admin/users"
+                to="/admin/categories"
+                className="blog-category-management__feature-link"
+              >
+                Explore
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={cardVariants}
+              className="blog-category-management__feature-card"
+            >
+              <h3>Tutorial Management</h3>
+              <p>
+                Create and manage educational tutorials to support user learning and engagement.
+              </p>
+              <Link
+                to="/admin/tutorial"
+                className="blog-category-management__feature-link"
+              >
+                Explore
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={cardVariants}
+              className="blog-category-management__feature-card"
+            >
+              <h3>Admin Policy</h3>
+              <p>
+                Define and enforce platform policies to ensure compliance and operational consistency.
+              </p>
+              <Link
+                to="/admin/policy"
                 className="blog-category-management__feature-link"
               >
                 Explore
@@ -502,8 +528,7 @@ const AdminHomePage = () => {
             >
               <h3>Account Management</h3>
               <p>
-                Create and manage accounts for Health Experts, Nutrient
-                Specialists, and Clinics to support platform operations.
+                Create and manage accounts for Health Experts, Nutrient Specialists, and Clinics.
               </p>
               <Link
                 to="/admin/account-management"
@@ -516,13 +541,27 @@ const AdminHomePage = () => {
               variants={cardVariants}
               className="blog-category-management__feature-card"
             >
-              <h3>System Settings</h3>
+              <h3>System Configuration</h3>
               <p>
-                Customize platform configurations, including policies and
-                permissions, to align with organizational needs.
+                Customize platform settings, including permissions and configurations, to meet organizational needs.
               </p>
               <Link
-                to="/admin/settings"
+                to="/admin/system-configuration"
+                className="blog-category-management__feature-link"
+              >
+                Explore
+              </Link>
+            </motion.div>
+            <motion.div
+              variants={cardVariants}
+              className="blog-category-management__feature-card"
+            >
+              <h3>Payment Management</h3>
+              <p>
+                Oversee payment systems, transactions, and billing to ensure smooth financial operations.
+              </p>
+              <Link
+                to="/admin/payment-management"
                 className="blog-category-management__feature-link"
               >
                 Explore
