@@ -240,27 +240,25 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
+    if (!user?.userId) {
+      localStorage.removeItem("token");
+      setUser(null);
+      navigate("/signin", { replace: true });
+      console.log("Logout without userId");
+      return;
+    }
+
     try {
-      if (user?.userId) {
-        await apiClient.post(
-          "/api/auth/user/logout",
-          { userId: user.userId },
-          {
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-      }
+      console.log("Sending logout request for userId:", user.userId);
+      await apiClient.post("/api/auth/user/logout", user.userId, {
+        headers: { "Content-Type": "application/json" },
+      });
+      console.log("Logout successful");
     } catch (error) {
       console.error("Error during logout:", error.message);
     } finally {
-      // Clean up everything before logout
-      if (isMenuOpen) {
-        restoreScrollPosition();
-      }
-      
       localStorage.removeItem("token");
       setUser(null);
-      setNotifications([]);
       setIsDropdownOpen(false);
       setIsMenuOpen(false);
       setShowNotification(false);

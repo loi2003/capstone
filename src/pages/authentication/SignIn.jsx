@@ -24,6 +24,31 @@ const decodeJWT = (token) => {
   }
 };
 
+const clearUserData = () => {
+  const keysToRemove = [
+    "token",
+    "userId",
+    "userRole",
+    "authToken",
+    "accessToken",
+    "refreshToken",
+    "userEmail",
+    "userName",
+    "userProfile",
+    "subscriptionData",
+    "userData",
+  ];
+
+  keysToRemove.forEach((key) => {
+    localStorage.removeItem(key);
+  });
+
+  // Clear API client authorization header
+  delete apiClient.defaults.headers.common["Authorization"];
+
+  console.log("All user data cleared from localStorage");
+};
+
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -77,14 +102,6 @@ const SignIn = () => {
       const loginResponse = await login({ email, passwordHash: password });
       console.log("Phản hồi đầy đủ từ API đăng nhập:", loginResponse);
       console.log("Dữ liệu phản hồi:", loginResponse.data);
-      console.log("Các key trong dữ liệu:", Object.keys(loginResponse.data));
-      console.log("Nội dung data.data:", loginResponse.data.data);
-      console.log(
-        "Các key trong data.data:",
-        loginResponse.data.data
-          ? Object.keys(loginResponse.data.data)
-          : "Không có trường data"
-      );
 
       const token =
         loginResponse.data.token ||
@@ -100,53 +117,71 @@ const SignIn = () => {
         loginResponse.data.user?.token ||
         loginResponse.data.user?.jwt;
 
-      if (token) {
-        localStorage.setItem("token", token);
-        apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        console.log("Đã lưu và thiết lập token:", token);
-      } else {
+      if (!token) {
         throw new Error(
           `Không tìm thấy token trong phản hồi. Các key: ${JSON.stringify(
             Object.keys(loginResponse.data)
-          )}; Key trong data.data: ${
-            loginResponse.data.data
-              ? JSON.stringify(Object.keys(loginResponse.data.data))
-              : "Không có"
-          }`
+          )}`
         );
       }
 
       let roleId = 2; // Mặc định là User
+      let userId = null;
+
+      // Try to get userId from login response
+      userId =
+        loginResponse.data.userId ||
+        loginResponse.data.id ||
+        loginResponse.data.data?.userId ||
+        loginResponse.data.data?.id ||
+        loginResponse.data.user?.userId ||
+        loginResponse.data.user?.id;
+
       const decodedToken = decodeJWT(token);
-      if (
-        decodedToken &&
-        decodedToken[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        ]
-      ) {
+      if (decodedToken) {
+        // Extract userId from token if not found in response
+        if (!userId) {
+          userId =
+            decodedToken.sub ||
+            decodedToken.userId ||
+            decodedToken.id ||
+            decodedToken[
+              "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+            ];
+        }
+
+        // Extract role from token
         const role =
           decodedToken[
             "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
           ];
-        console.log("Vai trò từ token:", role);
-        const roleMap = {
-          Admin: 1,
-          User: 2,
-          HealthExpert: 3,
-          NutrientSpecialist: 4,
-          Clinic: 5,
-          Consultant: 6,
-        };
-        if (roleMap[role]) {
-          roleId = roleMap[role];
+        if (role) {
+          console.log("Vai trò từ token:", role);
+          const roleMap = {
+            Admin: 1,
+            User: 2,
+            HealthExpert: 3,
+            NutrientSpecialist: 4,
+            Clinic: 5,
+            Consultant: 6,
+          };
+          if (roleMap[role]) {
+            roleId = roleMap[role];
+          }
         }
       }
 
+      // Try to get additional user info from getCurrentUser API
       try {
         const userResponse = await getCurrentUser(token);
         console.log("Phản hồi từ API lấy thông tin người dùng:", userResponse);
         console.log("Dữ liệu người dùng:", userResponse.data);
         console.log("roleId thô:", userResponse.data.data?.roleId);
+
+        if (userResponse.data.data?.id) {
+          userId = userResponse.data.data.id;
+          console.log("Found userId:", userId);
+        }
 
         const roleIdRaw = userResponse.data.data?.roleId;
         if (roleIdRaw && !isNaN(Number(roleIdRaw))) {
@@ -155,7 +190,7 @@ const SignIn = () => {
         }
       } catch (userError) {
         console.warn(
-          "Không lấy được thông tin người dùng, dùng vai trò từ token:",
+          "Không lấy được thông tin người dùng, dùng thông tin từ token:",
           userError
         );
       }
@@ -164,7 +199,48 @@ const SignIn = () => {
         throw new Error(`roleId không hợp lệ: ${roleId}`);
       }
 
-      localStorage.removeItem("userRole");
+      if (!userId) {
+        console.warn("Không tìm thấy userId, sử dụng email hoặc fallback");
+        userId = email; // Fallback to email if userId not found
+      }
+      // Helper function to save user data on successful login
+      const saveUserData = (token, userId, roleId, userProfileData) => {
+        try {
+          localStorage.setItem("token", token);
+          if (userId) {
+            localStorage.setItem("userId", userId);
+            console.log("Saved userId to localStorage:", userId);
+          }
+
+          // // Use the passed userProfileData instead of userResponse
+          // if (userProfileData) {
+          //   localStorage.setItem(
+          //     "userProfile",
+          //     JSON.stringify(userProfileData)
+          //   );
+          //   console.log("Saved user profile to localStorage");
+          // }
+
+          if (roleId) {
+            localStorage.setItem("userRole", roleId.toString());
+            console.log("Saved roleId to localStorage:", roleId);
+          }
+
+          // Set API client authorization header
+          apiClient.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${token}`;
+          console.log("User data saved successfully");
+        } catch (error) {
+          console.error("Error saving user data:", error);
+        }
+      };
+
+      // Clear any existing user data before saving new data
+      clearUserData();
+
+      // Save new user data
+      saveUserData(token, userId, roleId);
 
       setSuccessMessage("Login successful!");
       setTimeout(() => {
@@ -250,12 +326,15 @@ const SignIn = () => {
               loginResponse.data?.accessToken ||
               loginResponse.data?.data?.accessToken ||
               loginResponse.token;
+
             if (!token) throw new Error("Không nhận được token từ máy chủ.");
 
-            localStorage.setItem("token", token);
-            apiClient.defaults.headers.common[
-              "Authorization"
-            ] = `Bearer ${token}`;
+            // Extract userId from Google login response
+            let userId =
+              loginResponse.data?.userId ||
+              loginResponse.data?.data?.userId ||
+              loginResponse.data?.user?.userId ||
+              loginResponse.data?.user?.id;
 
             const decoded = decodeJWT(token);
             const role =
@@ -264,7 +343,6 @@ const SignIn = () => {
               ];
 
             if (role !== "User") {
-              localStorage.removeItem("token");
               setErrors({
                 ...errors,
                 server:
@@ -272,6 +350,21 @@ const SignIn = () => {
               });
               return;
             }
+
+            // Extract userId from token if not found in response
+            if (!userId && decoded) {
+              userId =
+                decoded.sub ||
+                decoded.userId ||
+                decoded.id ||
+                decoded[
+                  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
+                ];
+            }
+
+            // Clear existing data and save new user data
+            clearUserData();
+            saveUserData(token, userId, 2); // Google users are always User role (2)
 
             setSuccessMessage("Google login successful!");
             setTimeout(() => navigate("/", { replace: true }), 1500);
@@ -287,7 +380,7 @@ const SignIn = () => {
         },
       });
 
-      google.accounts.id.prompt(); // show login popup
+      google.accounts.id.prompt();
     } catch (err) {
       console.error("Google login setup error:", err);
       setErrors({
@@ -300,6 +393,11 @@ const SignIn = () => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+
+  // const handleSignOut = () => {
+  //   clearUserData();
+  //   navigate("/signin", { replace: true });
+  // };
 
   const formVariants = {
     initial: { opacity: 0, scale: 0.95, y: 20 },
@@ -331,7 +429,11 @@ const SignIn = () => {
           className="signin-branding"
         >
           <Link to="/" className="signin-logo">
-            <img src="/images/IMG_4602.PNG" alt="Logo" className="signin-web-logo" />
+            <img
+              src="/images/IMG_4602.PNG"
+              alt="Logo"
+              className="signin-web-logo"
+            />
             NestlyCare
           </Link>
           <div className="signin-branding-text">
@@ -420,7 +522,11 @@ const SignIn = () => {
             <div className="signin-divider">
               <span>or</span>
             </div>
-            <button className="google-login-btn" onClick={handleGoogleLogin}>
+            <button
+              type="button"
+              className="google-login-btn"
+              onClick={handleGoogleLogin}
+            >
               <img src={googleLogo} alt="Google Logo" className="google-logo" />
               Sign In With Google
             </button>
@@ -432,7 +538,9 @@ const SignIn = () => {
               animate="animate"
               exit="exit"
               className={`signin-notification-popup ${
-                errors.server ? "signin-notification-error" : "signin-notification-success"
+                errors.server
+                  ? "signin-notification-error"
+                  : "signin-notification-success"
               }`}
             >
               <span className="signin-notification-icon">
