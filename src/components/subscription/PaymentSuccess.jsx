@@ -26,10 +26,10 @@ const PaymentSuccess = () => {
               <span className="info-label">Status:</span>
               <span className="info-value success">Completed</span>
             </div>
-            <div className="info-item">
+            {/* <div className="info-item">
               <span className="info-label">Transaction ID:</span>
               <span className="info-value">#{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -42,7 +42,7 @@ const PaymentSuccess = () => {
           </button>
           <button 
             className="payment-success-btn secondary"
-            onClick={() => navigate('/subscriptionplan')}
+            onClick={() => navigate('/profile')}
           >
             View your Subscription
           </button>

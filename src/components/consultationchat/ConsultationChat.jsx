@@ -168,6 +168,29 @@ const ConsultationChat = () => {
     }
   };
 
+  // Auto-select preselected consultant and set up their data for header display
+  useEffect(() => {
+    if (preSelectedConsultant && !loading) {
+      const consultantId = preSelectedConsultant.user?.id;
+
+      if (consultantId && !chatThreads[consultantId]) {
+        // Set up the chat thread data for the preselected consultant
+        // This ensures the header can display immediately
+        setChatThreads((prevThreads) => ({
+          ...prevThreads,
+          [consultantId]: {
+            thread: null,
+            messages: [],
+            consultant: preSelectedConsultant, // This is key for header display
+          },
+        }));
+
+        // Make sure selectedConsultant is set (should already be set from useState init)
+        setSelectedConsultant(preSelectedConsultant);
+      }
+    }
+  }, [preSelectedConsultant, loading, chatThreads]);
+
   const loadExistingThreads = async (userId) => {
     try {
       const token = localStorage.getItem("token");
@@ -309,9 +332,25 @@ const ConsultationChat = () => {
       return;
     }
 
+    // Enhanced consultant data with complete clinic information
+    const enhancedConsultant = {
+      ...consultant,
+      clinic:
+        consultant.clinic?.address && consultant.clinic?.name
+          ? consultant.clinic
+          : {
+              id: clinicInfo?.id,
+              name: clinicInfo?.name,
+              address: clinicInfo?.address,
+            },
+    };
     setChatThreads((prevThreads) => ({
       ...prevThreads,
-      [consultantId]: { thread: null, messages: [], consultant: consultant },
+      [consultantId]: {
+        thread: null,
+        messages: [],
+        consultant: enhancedConsultant,
+      },
     }));
 
     setNewMessage("");
@@ -982,19 +1021,21 @@ const ConsultationChat = () => {
               {/* Show other clinic consultants (excluding the selected one) */}
               {clinicInfo &&
                 clinicConsultants &&
-                clinicConsultants.length > 0 && (
-                  <div className="consultant-group">
-                    <div className="consultant-group-header">
-                      <FaHospital />
-                      <h4>Other consultants at {clinicInfo.name}</h4>
-                    </div>
-                    {clinicConsultants
-                      .filter(
-                        (consultant) =>
-                          // Exclude the preselected consultant since it's shown above
-                          consultant.user.id !== preSelectedConsultant?.user.id
-                      )
-                      .map((consultant) => (
+                clinicConsultants.length > 0 &&
+                (() => {
+                  // Filter out the preselected consultant
+                  const otherConsultants = clinicConsultants.filter(
+                    (consultant) =>
+                      consultant.user.id !== preSelectedConsultant?.user.id
+                  );
+
+                  return otherConsultants.length > 0 ? (
+                    <div className="consultant-group">
+                      <div className="consultant-group-header">
+                        <FaHospital />
+                        <h4>Other consultants at {clinicInfo.name}</h4>
+                      </div>
+                      {otherConsultants.map((consultant) => (
                         <div
                           key={`clinic-${consultant.user.id}`}
                           className={`consultation-chat-consultant-item ${
@@ -1030,8 +1071,9 @@ const ConsultationChat = () => {
                           </div>
                         </div>
                       ))}
-                  </div>
-                )}
+                    </div>
+                  ) : null;
+                })()}
 
               {/* Show previous conversations (excluding clinic consultants) */}
               {Object.keys(chatThreads).length > 0 && (
