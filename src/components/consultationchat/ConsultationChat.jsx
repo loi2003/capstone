@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import * as signalR from "@microsoft/signalr";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   startChatThread,
@@ -21,23 +22,29 @@ import {
   FaFile,
   FaPaperclip,
   FaTimes,
+  FaClock,
 } from "react-icons/fa";
 import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
 import LoadingOverlay from "../popup/LoadingOverlay";
+import { useMessages } from "../../utils/useMessages";
 
 const ConsultationChat = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const messagesEndRef = useRef(null);
-
+  const { connection, messages, addMessage } = useMessages();
   const {
     selectedConsultant: preSelectedConsultant,
     currentUserId: passedUserId,
+    clinicConsultants = [],
+    clinicInfo = null,
   } = location.state || {};
 
   const [currentUserId, setCurrentUserId] = useState(passedUserId || "");
   const [loading, setLoading] = useState(true);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [consultants, setConsultants] = useState([]);
   const [chatThreads, setChatThreads] = useState({});
@@ -53,6 +60,28 @@ const ConsultationChat = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const fileInputRef = useRef(null);
+
+  const scrollToBottom = () => {
+    // Use requestAnimationFrame to ensure DOM is updated
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        const messagesContainer = messagesEndRef.current.closest(
+          ".consultation-chat-messages"
+        );
+        if (messagesContainer) {
+          // Scroll the messages container, not the element itself
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          // Fallback to original method
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
+        }
+      }
+    });
+  };
 
   // Size formatter
   const formatBytes = (bytes) => {
@@ -107,6 +136,10 @@ const ConsultationChat = () => {
   }, []);
 
   const initializePage = async () => {
+    // console.log("DEBUG: location.state =", location.state);
+    // console.log("DEBUG: clinicConsultants =", clinicConsultants);
+    // console.log("DEBUG: clinicInfo =", clinicInfo);
+    // console.log("DEBUG: preSelectedConsultant =", preSelectedConsultant);
     try {
       let userId = passedUserId;
       if (!userId) {
@@ -180,29 +213,49 @@ const ConsultationChat = () => {
             const consultantData = consultantRes?.data || null;
 
             // Process messages to include attachment data
-            const processedMessages = (thread.messages || []).map((msg) => {
-              // Check if message has attachment data from backend
-              if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
-                return {
-                  ...msg,
-                  attachment: {
-                    fileName:
-                      msg.attachmentFileName || msg.fileName || "Attachment",
-                    fileSize: msg.attachmentFileSize || msg.fileSize,
-                    fileType: msg.attachmentFileType || msg.fileType,
-                    isImage: isImageFile(
-                      msg.attachmentFileName || msg.fileName || ""
-                    ),
-                    // Use the URL from backend, not local filePreview
-                    url:
-                      msg.attachmentUrl ||
-                      msg.attachmentPath ||
-                      msg.attachment?.url,
-                  },
-                };
-              }
-              return msg;
-            });
+            const processedMessages =
+              thread.messages?.map((msg) => {
+                // Handle existing attachment data
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  return {
+                    ...msg,
+                    attachment: {
+                      fileName:
+                        msg.attachmentFileName || msg.fileName || "Attachment",
+                      fileSize: msg.attachmentFileSize || msg.fileSize,
+                      fileType: msg.attachmentFileType || msg.fileType,
+                      isImage: isImageFile(
+                        msg.attachmentFileName || msg.fileName
+                      ),
+                      url:
+                        msg.attachmentUrl ||
+                        msg.attachmentPath ||
+                        msg.attachment?.url,
+                    },
+                  };
+                }
+
+                // Handle media array - ADD THIS PART
+                if (
+                  msg.media &&
+                  Array.isArray(msg.media) &&
+                  msg.media.length > 0
+                ) {
+                  const firstMedia = msg.media[0];
+                  return {
+                    ...msg,
+                    attachment: {
+                      fileName: firstMedia.fileName || "Attachment",
+                      fileSize: firstMedia.fileSize,
+                      fileType: firstMedia.fileType,
+                      isImage: isImageFile(firstMedia.fileName || ""),
+                      url: firstMedia.fileUrl || firstMedia.url,
+                    },
+                  };
+                }
+
+                return msg;
+              }) || [];
 
             threadsMap[consultantId] = {
               thread,
@@ -377,6 +430,14 @@ const ConsultationChat = () => {
 
   // Enhanced send message function with file support
   const handleSendMessage = async () => {
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
+      console.error("SignalR connection not established");
+      alert("Connection lost. Please refresh the page.");
+      return;
+    }
     const consultantId = selectedConsultant?.user?.id;
     const activeThread =
       consultantId && chatThreads[consultantId]
@@ -389,6 +450,10 @@ const ConsultationChat = () => {
       sendingMessage
     )
       return;
+    // if (!selectedFile) {
+    //   alert("Please attach a file to send");
+    //   return;
+    // }
 
     try {
       setSendingMessage(true);
@@ -403,6 +468,8 @@ const ConsultationChat = () => {
       }
 
       if (selectedFile) {
+        formData.append("Attachments", selectedFile);
+        // Also append metadata to help backend process
         formData.append("AttachmentFileName", selectedFile.name);
         formData.append("AttachmentFileType", selectedFile.type);
         formData.append("AttachmentFileSize", selectedFile.size.toString());
@@ -496,6 +563,7 @@ const ConsultationChat = () => {
                   messages: processedMessages,
                 },
               }));
+              scrollToBottom();
             }
           } catch (error) {
             console.error("Error refreshing thread:", error);
@@ -517,6 +585,9 @@ const ConsultationChat = () => {
     const media = Array.isArray(msg.media) ? msg.media : [];
     const hasAttachment = msg.attachment;
 
+    // Prioritize attachment object over media array to prevent duplicates
+    const shouldRenderMedia = !hasAttachment && media.length > 0;
+
     return (
       <div key={idx} className={`consultation-chat-message ${messageClass}`}>
         <div className="consultation-chat-message-content">
@@ -524,77 +595,82 @@ const ConsultationChat = () => {
             <p>{msg.messageText || msg.message}</p>
           )}
 
-          {/* Handle attachments (images + files) */}
-          {hasAttachment && (
-            <>
-              {msg.attachment.isImage ? (
-                <img
-                  src={msg.attachment.url}
-                  alt={msg.attachment.fileName}
-                  className="consultation-chat-attachment-image"
-                  onClick={() => window.open(msg.attachment.url, "_blank")}
-                />
-              ) : (
-                <div className="consultation-chat-attachment">
-                  <AttachmentCard att={msg.attachment} />
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Legacy media array handling */}
-          {media.map((m, i) => {
-            const isImg = (m.fileType || "").startsWith("image/");
-            const url = m.fileUrl || m.url;
-            if (!url) return null;
-
-            return isImg ? (
+          {/* Handle attachment object (priority) */}
+          {hasAttachment &&
+            (msg.attachment.isImage ? (
               <img
-                key={i}
-                src={url}
-                alt={`attachment-${i}`}
+                src={msg.attachment.url}
+                alt={msg.attachment.fileName}
                 className="consultation-chat-attachment-image"
-                onClick={() => window.open(url, "_blank")}
+                onClick={() => window.open(msg.attachment.url, "_blank")}
               />
             ) : (
-              <a
-                key={i}
-                href={url}
-                target="_blank"
-                rel="noreferrer"
-                className="consultation-chat-attachment-document"
-              >
-                <FaFileAlt className="document-file-icon" />
-                <span className="chat-attachment-name">
-                  {m.fileName || "Download file"}
-                </span>
-              </a>
-            );
-          })}
+              <div className="consultation-chat-attachment-document">
+                <a
+                  href={msg.attachment.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="consultation-chat-attachment-link"
+                >
+                  <div className="consultation-chat-attachment-info">
+                    <FaFileAlt className="consultation-chat-document-file-icon" />
+                    <div className="consultation-chat-attachment-details">
+                      <span className="consultation-chat-attachment-name">
+                        {msg.attachment.fileName}
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            ))}
 
-          <span className="consultation-chat-message-time">
-            {formatMessageTime(msg.createdAt)}
+          {/* Handle media array only if no attachment object exists */}
+          {shouldRenderMedia &&
+            media.map((m, i) => {
+              const isImg = m.fileType?.startsWith("image");
+              const url = m.fileUrl || m.url;
+              if (!url) return null;
+
+              return isImg ? (
+                <img
+                  key={i}
+                  src={url}
+                  alt={`attachment-${i}`}
+                  className="consultation-chat-attachment-image"
+                  onClick={() => window.open(url, "_blank")}
+                />
+              ) : (
+                <a
+                  key={i}
+                  href={url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="consultation-chat-attachment-document"
+                >
+                  <FaFileAlt className="consultation-chat-document-file-icon" />
+                  <span className="consultation-chat-attachment-name">
+                    {m.fileName} - Download file
+                  </span>
+                </a>
+              );
+            })}
+
+          <span
+            className="consultation-chat-message-time"
+            style={{
+              fontSize: "11px",
+              opacity: 0.7,
+              fontWeight: 500,
+              marginTop: "8px",
+              display: "block",
+              textAlign: isSent ? "right" : "left",
+              color: isSent ? "rgba(255,255,255,0.7)" : "rgba(30,41,59,0.7)",
+            }}
+          >
+            {formatMessageTime(
+              msg.createdAt || msg.sentAt || msg.timestamp || msg.creationDate
+            )}
           </span>
-        </div>
-      </div>
-    );
-  };
-
-  const AttachmentCard = ({ att }) => {
-    if (!att?.url) return null;
-    const iconKey = getFileIcon(att.fileName, att.fileType);
-    const onClick = () => window.open(att.url, "_blank");
-    return (
-      <div
-        className={`msg-attach-card icon-${iconKey}`}
-        onClick={onClick}
-        role="button"
-        tabIndex={0}
-      >
-        <div className="msg-attach-icon" aria-hidden />
-        <div className="msg-attach-meta">
-          <div className="msg-attach-name">{att.fileName || "Attachment"}</div>
-          <div className="msg-attach-size">{formatBytes(att.fileSize)}</div>
         </div>
       </div>
     );
@@ -608,41 +684,55 @@ const ConsultationChat = () => {
   };
 
   const formatMessageTime = (timestamp) => {
+    // console.log("timestamp", timestamp);
     if (!timestamp) return "";
 
     try {
-      let date;
+      let utcDate;
 
       // Handle different timestamp formats
       if (typeof timestamp === "string") {
-        date = new Date(timestamp);
+        // If string doesn't end with 'Z', assume it's UTC and add 'Z'
+        // if (
+        //   !timestamp.endsWith("Z") &&
+        //   !timestamp.includes("+") &&
+        //   !timestamp.includes("-")
+        // ) {
+        if (!timestamp.endsWith("Z")) {
+          utcDate = new Date(timestamp + "Z"); // Force UTC parsing
+        } else {
+          utcDate = new Date(timestamp);
+        }
       } else if (typeof timestamp === "number") {
         // Handle Unix timestamp (seconds or milliseconds)
-        date =
+        utcDate =
           timestamp > 1000000000000
             ? new Date(timestamp)
             : new Date(timestamp * 1000);
       } else if (timestamp instanceof Date) {
-        date = timestamp;
+        utcDate = timestamp;
       } else {
         return "";
       }
 
       // Check if date is valid
-      if (isNaN(date.getTime())) {
+      if (isNaN(utcDate.getTime())) {
+        console.warn("Invalid timestamp:", timestamp);
         return "";
       }
+      // console.log("log utcDate", utcDate);
 
-      // Format with fallback
+      // Convert to local timezone and format
       try {
-        return date.toLocaleTimeString([], {
+        return utcDate.toLocaleTimeString([], {
           hour: "2-digit",
           minute: "2-digit",
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         });
       } catch (e) {
-        // Manual fallback formatting
-        const hours = date.getHours().toString().padStart(2, "0");
-        const minutes = date.getMinutes().toString().padStart(2, "0");
+        // Manual fallback formatting (already in local time)
+        const hours = utcDate.getHours().toString().padStart(2, "0");
+        const minutes = utcDate.getMinutes().toString().padStart(2, "0");
         return `${hours}:${minutes}`;
       }
     } catch (error) {
@@ -651,28 +741,45 @@ const ConsultationChat = () => {
     }
   };
 
-  let filteredConsultants = [];
+  // const searchFilter = (consultant) => {
+  //   if (!searchTerm) return true;
 
+  //   const searchLower = searchTerm.toLowerCase();
+  //   const profile = chatThreads[consultant.user.id]?.consultant || consultant;
+
+  //   return (
+  //     profile?.user?.userName?.toLowerCase().includes(searchLower) ||
+  //     profile?.specialization?.toLowerCase().includes(searchLower) ||
+  //     profile?.clinic?.name?.toLowerCase().includes(searchLower) ||
+  //     profile?.clinic?.user?.userName?.toLowerCase().includes(searchLower)
+  //   );
+  // };
+
+  let filteredConsultants;
   if (preSelectedConsultant) {
-    filteredConsultants = consultants.filter(
-      (consultant) => consultant.user.id === preSelectedConsultant.user.id
+    // Show clinic consultants first, then others with existing threads
+    const clinicConsultantsList = clinicConsultants.filter(
+      (c) => c.user.id !== preSelectedConsultant.user.id
     );
+
+    const consultantsWithThreads = consultants.filter((c) => {
+      const consultantId = c.user?.id || c.id;
+      return (
+        chatThreads[consultantId] &&
+        !clinicConsultantsList.some((clinic) => clinic.user.id === consultantId)
+      );
+    });
+
+    filteredConsultants = [...clinicConsultantsList, ...consultantsWithThreads];
   } else {
+    // Existing logic for when no preselected consultant
     const consultantsWithThreads = consultants.filter((c) => {
       const consultantId = c.user?.id || c.id;
       return chatThreads[consultantId];
     });
 
-    const searchFilter = (consultant) => {
-      if (!searchTerm) return true;
-      return (
-        consultant.user.userName
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        consultant.clinic.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    };
-    filteredConsultants = consultantsWithThreads.filter(searchFilter);
+    // filteredConsultants = consultantsWithThreads.filter(searchFilter);
+    filteredConsultants = consultantsWithThreads;
   }
 
   const activeThread =
@@ -689,6 +796,100 @@ const ConsultationChat = () => {
     selectedConsultant && chatThreads[selectedConsultant.user.id]
       ? chatThreads[selectedConsultant.user.id].consultant
       : null;
+
+  useEffect(() => {
+    if (connection && activeThread?.id) {
+      connection
+        .invoke("JoinThread", activeThread.id)
+        .catch((err) => console.error("JoinThread failed:", err));
+    }
+  }, [connection, activeThread]);
+
+  //handle message in realtime
+  // Add a ref to track processed message IDs for ConsultationChat
+  const processedMessageIds = useRef(new Set());
+
+  // Updated useEffect for handling incoming messages
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const latest = messages[messages.length - 1];
+    console.log("Processing incoming message in ConsultationChat:", latest);
+
+    // *** ADD EARLY DUPLICATE CHECK ***
+    if (!latest.id || processedMessageIds.current.has(latest.id)) {
+      console.log("Message already processed, skipping:", latest.id);
+      return;
+    }
+
+    // Mark message as processed immediately
+    processedMessageIds.current.add(latest.id);
+
+    if (selectedConsultant?.user?.id) {
+      const consultantId = selectedConsultant.user.id;
+
+      setChatThreads((prev) => {
+        const existingMessages = prev[consultantId]?.messages || [];
+
+        // Secondary check at state level
+        const messageExists = existingMessages.some((m) => m.id === latest.id);
+        if (messageExists) {
+          console.log("Message already exists in thread, skipping:", latest.id);
+          return prev;
+        }
+
+        console.log(
+          "Adding new message to thread for consultant:",
+          consultantId
+        );
+
+        // Process the message for attachments
+        // In the useEffect that handles incoming messages, update the message processing:
+        const processedMessage = {
+          ...latest,
+          // this somehow fix duplicate real-time mesage
+          messageText: latest.messageText?.trim(),
+        };
+        if (
+          latest.media &&
+          Array.isArray(latest.media) &&
+          latest.media.length > 0
+        ) {
+          const firstMedia = latest.media[0];
+          processedMessage.attachment = {
+            fileName: firstMedia.fileName || "Attachment",
+            fileSize: firstMedia.fileSize,
+            fileType: firstMedia.fileType,
+            isImage: isImageFile(firstMedia.fileName || ""),
+            url: firstMedia.fileUrl || firstMedia.url,
+          };
+        }
+
+        return {
+          ...prev,
+          [consultantId]: {
+            ...prev[consultantId],
+            messages: [...existingMessages, processedMessage],
+          },
+        };
+      });
+
+      // Auto scroll
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [messages, selectedConsultant?.user?.id, currentUserId]);
+
+  // Add cleanup for processed message IDs
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      if (processedMessageIds.current.size > 1000) {
+        console.log("Cleaning up processed message IDs");
+        processedMessageIds.current.clear();
+      }
+    }, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(cleanup);
+  }, []);
 
   if (loading) {
     return (
@@ -723,64 +924,207 @@ const ConsultationChat = () => {
             )}
 
             <div className="consultation-chat-consultants-list">
-              {filteredConsultants.length > 0 ? (
-                filteredConsultants.map((consultant) => {
-                  const profile =
-                    chatThreads[consultant.user.id]?.consultant || consultant;
-                  return (
-                    <div
-                      key={consultant.user.id}
-                      className={`consultation-chat-consultant-item ${
-                        selectedConsultant?.user.id === consultant.user.id
-                          ? "active"
-                          : ""
-                      }`}
-                      onClick={() => handleSelectConsultant(consultant)}
-                    >
-                      <div className="consultation-chat-consultant-avatar">
-                        <img
-                          src={
-                            profile?.user?.avatar?.fileUrl ||
-                            "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
-                          }
-                          alt={profile?.user?.userName}
-                        />
-                      </div>
-
-                      <div className="consultation-chat-consultant-info">
-                        <h4>{profile?.user?.userName}</h4>
-                        <p className="consultation-chat-specialization">
-                          {profile?.specialization}
-                        </p>
-                        <div className="consultation-chat-consultant-clinic">
-                          <FaHospital />
-                          <span>
-                            {profile?.clinic?.user?.userName ||
-                              profile?.clinic?.name}
-                          </span>
-                        </div>
-                      </div>
-
-                      {chatThreads[consultant.user.id] && (
-                        <div
-                          className="consultation-chat-status-indicator active"
-                          title="You have an ongoing conversation"
-                        />
-                      )}
+              {/* Show the selected consultant from clinic FIRST (if coming from ClinicDetail) */}
+              {preSelectedConsultant && (
+                <div className="consultant-group">
+                  <div className="consultant-group-header">
+                    <FaHospital />
+                    <h4>Selected Consultant</h4>
+                  </div>
+                  <div
+                    key={`selected-${preSelectedConsultant.user.id}`}
+                    className={`consultation-chat-consultant-item ${
+                      selectedConsultant?.user.id ===
+                      preSelectedConsultant.user.id
+                        ? "active"
+                        : ""
+                    }`}
+                    onClick={() =>
+                      handleSelectConsultant(preSelectedConsultant)
+                    }
+                  >
+                    <div className="consultation-chat-consultant-avatar">
+                      <img
+                        src={
+                          preSelectedConsultant?.user?.avatar?.fileUrl ||
+                          "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                        }
+                        alt={preSelectedConsultant?.user?.userName}
+                      />
                     </div>
-                  );
-                })
-              ) : (
-                <div className="consultation-chat-empty-thread-list">
-                  <FaComments />
-                  <h3>No Chat History</h3>
-                  <p>
-                    {searchTerm
-                      ? "No consultants match your search criteria."
-                      : "You haven't started any consultations yet. Visit a clinic's page and click 'Start Consultation' with a consultant to begin."}
-                  </p>
+
+                    <div className="consultation-chat-consultant-info">
+                      <h4>{preSelectedConsultant?.user?.userName}</h4>
+                      <p className="consultation-chat-specialization">
+                        {preSelectedConsultant?.specialization}
+                      </p>
+                      <div className="consultation-chat-consultant-clinic">
+                        <FaHospital />
+                        <span>
+                          {preSelectedConsultant?.clinic?.name ||
+                            (clinicInfo && clinicInfo.name) ||
+                            "Selected Clinic"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="consultation-chat-new-consultant-badge">
+                      New
+                    </div>
+                  </div>
                 </div>
               )}
+
+              {/* Show other clinic consultants (excluding the selected one) */}
+              {clinicInfo &&
+                clinicConsultants &&
+                clinicConsultants.length > 0 && (
+                  <div className="consultant-group">
+                    <div className="consultant-group-header">
+                      <FaHospital />
+                      <h4>Other consultants at {clinicInfo.name}</h4>
+                    </div>
+                    {clinicConsultants
+                      .filter(
+                        (consultant) =>
+                          // Exclude the preselected consultant since it's shown above
+                          consultant.user.id !== preSelectedConsultant?.user.id
+                      )
+                      .map((consultant) => (
+                        <div
+                          key={`clinic-${consultant.user.id}`}
+                          className={`consultation-chat-consultant-item ${
+                            selectedConsultant?.user.id === consultant.user.id
+                              ? "active"
+                              : ""
+                          }`}
+                          onClick={() => handleSelectConsultant(consultant)}
+                        >
+                          <div className="consultation-chat-consultant-avatar">
+                            <img
+                              src={
+                                consultant?.user?.avatar?.fileUrl ||
+                                "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                              }
+                              alt={consultant?.user?.userName}
+                            />
+                          </div>
+
+                          <div className="consultation-chat-consultant-info">
+                            <h4>{consultant?.user?.userName}</h4>
+                            <p className="consultation-chat-specialization">
+                              {consultant?.specialization}
+                            </p>
+                            <div className="consultation-chat-consultant-clinic">
+                              <FaHospital />
+                              <span>{clinicInfo.name}</span>
+                            </div>
+                          </div>
+
+                          <div className="consultation-chat-new-consultant-badge">
+                            Available
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+              {/* Show previous conversations (excluding clinic consultants) */}
+              {Object.keys(chatThreads).length > 0 && (
+                <div className="consultant-group">
+                  <div className="consultant-group-header">
+                    <FaComments />
+                    <h4>Previous Consultations</h4>
+                  </div>
+                  {filteredConsultants
+                    .filter((consultant) => {
+                      const consultantId = consultant.user?.id || consultant.id;
+                      // Only show consultants with chat threads
+                      const hasThread = chatThreads[consultantId];
+                      // Exclude preselected consultant (shown above)
+                      const isPreSelected =
+                        preSelectedConsultant?.user.id === consultantId;
+                      // Exclude clinic consultants (shown above)
+                      const isClinicConsultant = clinicConsultants.some(
+                        (c) => c.user.id === consultantId
+                      );
+
+                      return hasThread && !isPreSelected && !isClinicConsultant;
+                    })
+                    .map((consultant) => {
+                      const profile =
+                        chatThreads[consultant.user.id]?.consultant ||
+                        consultant;
+                      const thread = chatThreads[consultant.user.id];
+
+                      return (
+                        <div
+                          key={`previous-${consultant.user.id}`}
+                          className={`consultation-chat-consultant-item ${
+                            selectedConsultant?.user.id === consultant.user.id
+                              ? "active"
+                              : ""
+                          }`}
+                          onClick={() => handleSelectConsultant(consultant)}
+                        >
+                          <div className="consultation-chat-consultant-avatar">
+                            <img
+                              src={
+                                profile?.user?.avatar?.fileUrl ||
+                                "https://www.placeholderimage.online/placeholder/420/310/ffffff/ededed?text=image&font=Lato.png"
+                              }
+                              alt={profile?.user?.userName}
+                            />
+                          </div>
+
+                          <div className="consultation-chat-consultant-info">
+                            <h4>{profile?.user?.userName}</h4>
+                            <p className="consultation-chat-specialization">
+                              {profile?.specialization}
+                            </p>
+                            <div className="consultation-chat-consultant-clinic">
+                              <FaHospital />
+                              <span>
+                                {profile?.clinic?.user?.userName ||
+                                  profile?.clinic?.name}
+                              </span>
+                            </div>
+                            {thread?.thread?.updatedAt && (
+                              <div className="consultation-chat-last-activity">
+                                <FaClock />
+                                <span>
+                                  {new Date(
+                                    thread.thread.updatedAt
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div
+                            className="consultation-chat-status-indicator active"
+                            title="You have an ongoing conversation"
+                          />
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* Show empty state only if no consultants at all */}
+              {filteredConsultants.length === 0 &&
+                (!clinicConsultants || clinicConsultants.length === 0) &&
+                !preSelectedConsultant && (
+                  <div className="consultation-chat-empty-thread-list">
+                    <FaComments />
+                    <h3>No Chat History</h3>
+                    <p>
+                      {searchTerm
+                        ? "No consultants match your search criteria."
+                        : "You haven't started any consultations yet. Visit a clinic's page and click 'Start Consultation' with a consultant to begin."}
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
 

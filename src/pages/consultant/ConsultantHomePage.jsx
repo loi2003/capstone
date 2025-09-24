@@ -2,8 +2,22 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
+import {
+  FaChartLine,
+  FaCalendarAlt,
+  FaUsers,
+  FaQuestionCircle,
+  FaVideo,
+  FaHospital,
+  FaUser,
+  FaSignOutAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaBriefcase,
+  FaBars,
+  FaQuestion,
+} from "react-icons/fa";
 import "../../styles/ConsultantHomePage.css";
-
 const ConsultantHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(null);
@@ -102,7 +116,7 @@ const ConsultantHomePage = () => {
       transition: { duration: 0.3, ease: "easeOut" },
     },
     closed: {
-      width: "60px",
+      width: "100px",
       transition: { duration: 0.3, ease: "easeIn" },
     },
   };
@@ -136,47 +150,7 @@ const ConsultantHomePage = () => {
               whileHover="hover"
               className="logo-svg-container"
             >
-              {/* <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Consultant icon for logo"
-              >
-                <path
-                  d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
-                  fill="var(--consultant-accent)"
-                  stroke="var(--consultant-background)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 12H20C20.5523 12 21 11.5523 21 11C21 10.4477 20.5523 10 20 10H4C3.44772 10 3 10.4477 3 11C3 11.5523 3.44772 12 4 12Z"
-                  fill="var(--consultant-accent)"
-                  stroke="var(--consultant-background)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 18H16C16.5523 18 17 17.5523 17 17C17 16.4477 16.5523 16 16 16H4C3.44772 16 3 16.4477 3 17C3 17.5523 3.44772 18 4 18Z"
-                  fill="var(--consultant-accent)"
-                  stroke="var(--consultant-background)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M7 4.5L8 5.5L10 3.5"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M7 10.5L8 11.5L10 9.5"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
+              {/* <FaBars className="logo-svg" /> */}
             </motion.div>
             {isSidebarOpen && (
               <span className="logo-text">Consultant Panel</span>
@@ -186,29 +160,14 @@ const ConsultantHomePage = () => {
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
-            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            <svg
-              width="24"
-              height="24"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-label="Toggle sidebar icon"
-            >
-              <path
-                stroke="var(--consultant-background)"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d={
-                  isSidebarOpen
-                    ? "M13 18L7 12L13 6M18 18L12 12L18 6"
-                    : "M6 18L12 12L6 6M11 18L17 12L11 6"
-                }
-              />
-            </svg>
+            {isSidebarOpen ? (
+              <FaChevronLeft size={24} />
+            ) : (
+              <FaChevronRight size={24} />
+            )}
           </motion.button>
         </div>
         <motion.nav
@@ -220,160 +179,63 @@ const ConsultantHomePage = () => {
         >
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/consultant/dashboard"
+              to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
               title="Dashboard"
             >
-              {/* <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Consultant icon for dashboard"
-              >
-                <path
-                  d="M4 6H20C20.5523 6 21 5.55228 21 5C21 4.44772 20.5523 4 20 4H4C3.44772 4 3 4.44772 3 5C3 5.55228 3.44772 6 4 6Z"
-                  fill="var(--consultant-primary)"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 12H20C20.5523 12 21 11.5523 21 11C21 10.4477 20.5523 10 20 10H4C3.44772 10 3 10.4477 3 11C3 11.5523 3.44772 12 4 12Z"
-                  fill="var(--consultant-primary)"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M4 18H16C16.5523 18 17 17.5523 17 17C17 16.4477 16.5523 16 16 16H4C3.44772 16 3 16.4477 3 17C3 17.5523 3.44772 18 4 18Z"
-                  fill="var(--consultant-primary)"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M7 4.5L8 5.5L10 3.5"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M7 10.5L8 11.5L10 9.5"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
-              <span>📊</span>
+              <FaChartLine size={20} />
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/consultant/schedule"
+              to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
               title="Schedule"
             >
-              {/* <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Calendar icon for schedule"
-              >
-                <path
-                  d="M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2zM16 2v4M8 2v4M3 10h18"
-                  fill="var(--consultant-secondary)"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
-              <span>📅</span>
+              <FaCalendarAlt size={20} />
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/consultant/clients"
+              to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
               title="Clients"
             >
-              {/* <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Users icon for clients"
-              >
-                <path
-                  d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2m8-10a4 4 0 100-8 4 4 0 000 8zm6 10v-2a4 4 0 00-3-3.87m4-5.13a4 4 0 100-8 4 4 0 000 8z"
-                  fill="var(--consultant-accent)"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
-              <span>👥</span>
+              <FaUsers size={20} />
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
-              to="/consultant/support"
+              to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
               title="Support"
             >
-              {/* <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Support icon"
-              >
-                <path
-                  d="M18.364 5.636a9 9 0 11-12.728 12.728 9 9 0 0112.728-12.728M12 9v3m0 3h.01"
-                  fill="var(--consultant-light-accent)"
-                  stroke="var(--consultant-text)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
-              <span>❓</span>
+              <FaQuestionCircle size={20} />
               {isSidebarOpen && <span>Support</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <Link
+              to="/consultation/consultation-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Consultation Chat"
+            >
+              <FaUsers size={20} />
+              {isSidebarOpen && <span>Patient Consultation</span>}
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <button
               className="sidebar-action-button"
               title="Add Consultation"
-              onClick={() => navigate("/consultation/online-consultation-management")}
+              onClick={() =>
+                navigate("/consultation/online-consultation-management")
+              }
             >
-              {/* <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Plus icon for add consultation"
-              >
-                <path
-                  d="M12 5v14m-7-7h14"
-                  fill="var(--consultant-background)"
-                  stroke="var(--consultant-light-accent)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
-              <span>💻</span>
+              <FaVideo size={20} />
               {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
@@ -381,26 +243,11 @@ const ConsultantHomePage = () => {
             <button
               className="sidebar-action-button"
               title="Add Consultation"
-              onClick={() => navigate("/consultation/offline-consultation-management")}
+              onClick={() =>
+                navigate("/consultation/offline-consultation-management")
+              }
             >
-              {/* <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-label="Plus icon for add consultation"
-              >
-                <path
-                  d="M12 5v14m-7-7h14"
-                  fill="var(--consultant-background)"
-                  stroke="var(--consultant-light-accent)"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg> */}
-              <span>🏥</span>
+              <FaHospital size={20} />
               {isSidebarOpen && <span>Offline Consultation</span>}
             </button>
           </motion.div>
@@ -415,25 +262,7 @@ const ConsultantHomePage = () => {
                   className="consultant-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="User icon for profile"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
-        10 10 10-4.48 10-10S17.52 2 12 2zm0 
-        3c1.66 0 3 1.34 3 3s-1.34 
-        3-3 3-3-1.34-3-3 1.34-3 
-        3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
-        4-3.08 6-3.08 1.99 0 5.97 1.09 
-        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--consultant-background)"
-                    />
-                  </svg>
+                  <FaUser size={20} />
                   {isSidebarOpen && (
                     <span className="consultant-profile-email">
                       {user.email}
@@ -466,6 +295,8 @@ const ConsultantHomePage = () => {
                     />
                   </svg>
                   {isSidebarOpen && <span>Sign Out</span>}
+                  <FaSignOutAlt size={20} />
+                  {isSidebarOpen && <span>Sign out</span>}
                 </button>
               </motion.div>
             </>
@@ -492,6 +323,8 @@ const ConsultantHomePage = () => {
                   />
                 </svg>
                 {isSidebarOpen && <span>Sign In</span>}
+                <FaSignOutAlt size={20} />
+                {isSidebarOpen && <span>Sign out</span>}
               </Link>
             </motion.div>
           )}
@@ -532,21 +365,7 @@ const ConsultantHomePage = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <svg
-              width="200"
-              height="200"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-label="Briefcase icon for consultant"
-            >
-              <path
-                d="M20 7h-6a2 2 0 01-2-2V3a2 2 0 012-2h6a2 2 0 012 2v4a2 2 0 01-2 2zm-6 0V3h6v4h-6zm-4 10h10a2 2 0 002-2v-2a2 2 0 00-2-2H10a2 2 0 00-2 2v2a2 2 0 002 2zm0-2v-2h10v2H10zm-6 5h12a2 2 0 002-2v-1a2 2 0 00-2-2H4a2 2 0 00-2 2v1a2 2 0 002 2zm0-2v-1h12v1H4z"
-                fill="var(--consultant-accent)"
-                stroke="var(--consultant-primary)"
-                strokeWidth="1"
-              />
-            </svg>
+            <FaBriefcase size={200} color="var(--consultant-accent)" />
           </motion.div>
         </section>
         <motion.section
