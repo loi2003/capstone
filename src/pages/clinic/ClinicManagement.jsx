@@ -652,7 +652,8 @@ const ClinicManagement = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item clinic-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="clinic-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
@@ -672,7 +673,7 @@ const ClinicManagement = () => {
                   {isSidebarOpen && (
                     <span className="clinic-profile-email">{user.email}</span>
                   )}
-                </div>
+                </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}

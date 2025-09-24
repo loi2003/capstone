@@ -9,6 +9,7 @@ import {
   softDeleteOnlineConsultation,
   createOnlineConsultation,
   getOnlineConsultationById,
+  sendOnlineConsultationEmails,
 } from "../../apis/online-consultation-api";
 import "../../styles/OnlineConsultationManagement.css";
 import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
@@ -96,7 +97,7 @@ const OnlineConsultationManagement = () => {
           navigate("/signin", { replace: true });
         }
       } catch (error) {
-        localStorage.removeItem("token");
+        localStorage.removeItem("token", error.message);
         setUser(null);
         navigate("/signin", { replace: true });
       }
@@ -113,7 +114,7 @@ const OnlineConsultationManagement = () => {
         // Ensure users is always an array
         setUserList(Array.isArray(users) ? users : users?.data || []);
       } catch (err) {
-        setUserList([]);
+        setUserList([], err.message);
       }
       setUserListLoading(false);
     };
@@ -281,7 +282,7 @@ const OnlineConsultationManagement = () => {
         setConsultations(consultationsRes?.data || consultationsRes || []);
       }
     } catch (err) {
-      setErrorMessage("Update Consultation Fail!");
+      setErrorMessage("Update Consultation Fail!", err.message);
       setTimeout(() => setErrorMessage(""), 3000);
     }
     setEditLoading(false);
@@ -295,7 +296,7 @@ const OnlineConsultationManagement = () => {
         setSuccessMessage("Remove Consultation Successful!");
         setTimeout(() => setSuccessMessage(""), 3000);
       } catch (err) {
-        setErrorMessage("Remove Consultation Fail!");
+        setErrorMessage("Remove Consultation Fail!", err.message);
         setTimeout(() => setErrorMessage(""), 3000);
       }
     }
@@ -359,7 +360,7 @@ const OnlineConsultationManagement = () => {
       return;
     }
     try {
-      await createOnlineConsultation(
+      const response = await createOnlineConsultation(
         {
           ...createForm,
           Attachments: createForm.Attachments,
@@ -368,7 +369,19 @@ const OnlineConsultationManagement = () => {
         },
         token
       );
-      // Optionally, refresh the list
+
+      // Send notification emails
+      if (response?.data?.id) {
+        try {
+          await sendOnlineConsultationEmails(response.data.id, token);
+        } catch (emailErr) {
+          console.error(
+            "Error sending online consultation email:",
+            emailErr.message
+          );
+        }
+      }
+
       const consultationsRes = await getAllOnlineConsultationsByConsultantId(
         consultant.id
       );
@@ -389,7 +402,7 @@ const OnlineConsultationManagement = () => {
       setSuccessMessage("Create Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setErrorMessage("Create Consultation Fail!");
+      setErrorMessage("Create Consultation Fail!", err.message);
       setTimeout(() => setErrorMessage(""), 3000);
     }
   };
@@ -736,7 +749,8 @@ const OnlineConsultationManagement = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item consultant-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="consultant-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
@@ -758,7 +772,7 @@ const OnlineConsultationManagement = () => {
                       {user.email}
                     </span>
                   )}
-                </div>
+                </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
@@ -784,7 +798,7 @@ const OnlineConsultationManagement = () => {
                       d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                     />
                   </svg>
-                  {isSidebarOpen && <span>Đăng Xuất</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
@@ -810,7 +824,7 @@ const OnlineConsultationManagement = () => {
                     d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                   />
                 </svg>
-                {isSidebarOpen && <span>Đăng Nhập</span>}
+                {isSidebarOpen && <span>Sign In</span>}
               </Link>
             </motion.div>
           )}

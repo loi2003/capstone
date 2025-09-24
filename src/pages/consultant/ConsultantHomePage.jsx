@@ -465,7 +465,7 @@ const ConsultantHomePage = () => {
                       d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                     />
                   </svg>
-                  {isSidebarOpen && <span>Đăng Xuất</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
@@ -491,7 +491,7 @@ const ConsultantHomePage = () => {
                     d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                   />
                 </svg>
-                {isSidebarOpen && <span>Đăng Nhập</span>}
+                {isSidebarOpen && <span>Sign In</span>}
               </Link>
             </motion.div>
           )}
