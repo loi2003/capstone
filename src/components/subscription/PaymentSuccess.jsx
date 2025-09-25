@@ -42,7 +42,7 @@ const PaymentSuccess = () => {
           </button>
           <button 
             className="payment-success-btn secondary"
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/subscriptionplan')}
           >
             View your Subscription
           </button>

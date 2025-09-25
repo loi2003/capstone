@@ -203,38 +203,6 @@ const SignIn = () => {
         console.warn("Không tìm thấy userId, sử dụng email hoặc fallback");
         userId = email; // Fallback to email if userId not found
       }
-      // Helper function to save user data on successful login
-      const saveUserData = (token, userId, roleId, userProfileData) => {
-        try {
-          localStorage.setItem("token", token);
-          if (userId) {
-            localStorage.setItem("userId", userId);
-            console.log("Saved userId to localStorage:", userId);
-          }
-
-          // // Use the passed userProfileData instead of userResponse
-          // if (userProfileData) {
-          //   localStorage.setItem(
-          //     "userProfile",
-          //     JSON.stringify(userProfileData)
-          //   );
-          //   console.log("Saved user profile to localStorage");
-          // }
-
-          if (roleId) {
-            localStorage.setItem("userRole", roleId.toString());
-            console.log("Saved roleId to localStorage:", roleId);
-          }
-
-          // Set API client authorization header
-          apiClient.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${token}`;
-          console.log("User data saved successfully");
-        } catch (error) {
-          console.error("Error saving user data:", error);
-        }
-      };
 
       // Clear any existing user data before saving new data
       clearUserData();
@@ -290,6 +258,37 @@ const SignIn = () => {
     }
   };
 
+  // Helper function to save user data on successful login
+  const saveUserData = (token, userId, roleId, userProfileData) => {
+    try {
+      localStorage.setItem("token", token);
+      if (userId) {
+        localStorage.setItem("userId", userId);
+        console.log("Saved userId to localStorage:", userId);
+      }
+
+      // // Use the passed userProfileData instead of userResponse
+      // if (userProfileData) {
+      //   localStorage.setItem(
+      //     "userProfile",
+      //     JSON.stringify(userProfileData)
+      //   );
+      //   console.log("Saved user profile to localStorage");
+      // }
+
+      if (roleId) {
+        localStorage.setItem("userRole", roleId.toString());
+        console.log("Saved roleId to localStorage:", roleId);
+      }
+
+      // Set API client authorization header
+      apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      console.log("User data saved successfully");
+    } catch (error) {
+      console.error("Error saving user data:", error);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
       const google = window.google;
@@ -314,12 +313,10 @@ const SignIn = () => {
             // Login user via Google Login API
             const loginResponse = await apiClient.post(
               "/api/auth/google-login",
-              {
-                idToken: idToken,
-              }
+              { idToken: idToken }
             );
 
-            // Attempt all fallback paths
+            // Attempt all fallback paths for token
             const token =
               loginResponse.data?.token ||
               loginResponse.data?.data?.token ||
@@ -327,7 +324,9 @@ const SignIn = () => {
               loginResponse.data?.data?.accessToken ||
               loginResponse.token;
 
-            if (!token) throw new Error("Không nhận được token từ máy chủ.");
+            if (!token) {
+              throw new Error("Không nhận được token từ máy chủ.");
+            }
 
             // Extract userId from Google login response
             let userId =
@@ -342,24 +341,47 @@ const SignIn = () => {
                 "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
               ];
 
-            if (role !== "User") {
+            if (role && role !== "User") {
               setErrors({
                 ...errors,
                 server:
-                  "Google chỉ hỗ trợ đăng nhập với tài khoản người dùng thường (User).",
+                  "Google chỉ hỗ trợ đăng nhập với tài khoản người dùng thông thường (User).",
               });
               return;
             }
 
             // Extract userId from token if not found in response
-            if (!userId && decoded) {
+            if (!userId) {
               userId =
-                decoded.sub ||
-                decoded.userId ||
-                decoded.id ||
-                decoded[
+                decoded?.sub ||
+                decoded?.userId ||
+                decoded?.id ||
+                decoded?.[
                   "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"
                 ];
+            }
+
+            // If still no userId found, try to get it from the API
+            if (!userId) {
+              try {
+                const userResponse = await getCurrentUser(token);
+                if (userResponse.data?.data?.id) {
+                  userId = userResponse.data.data.id;
+                  console.log("Found userId from getCurrentUser API:", userId);
+                }
+              } catch (userError) {
+                console.warn("Could not get user info from API:", userError);
+              }
+            }
+
+            // Final check - if still no userId, show error instead of using email
+            if (!userId) {
+              setErrors({
+                ...errors,
+                server:
+                  "Could not retrieve user ID. Please try logging in with email and password instead.",
+              });
+              return;
             }
 
             // Clear existing data and save new user data
@@ -367,7 +389,9 @@ const SignIn = () => {
             saveUserData(token, userId, 2); // Google users are always User role (2)
 
             setSuccessMessage("Google login successful!");
-            setTimeout(() => navigate("/", { replace: true }), 1500);
+            setTimeout(() => {
+              navigate("/", { replace: true });
+            }, 1500);
           } catch (err) {
             console.error("Lỗi đăng nhập Google:", err);
             setErrors({
@@ -383,10 +407,7 @@ const SignIn = () => {
       google.accounts.id.prompt();
     } catch (err) {
       console.error("Google login setup error:", err);
-      setErrors({
-        ...errors,
-        server: "Error initializing Google login.",
-      });
+      setErrors({ ...errors, server: "Error initializing Google login." });
     }
   };
 

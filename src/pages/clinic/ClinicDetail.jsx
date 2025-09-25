@@ -10,6 +10,7 @@ import { HiPaperAirplane } from "react-icons/hi2";
 import MainLayout from "../../layouts/MainLayout";
 import ConsultationChat from "../../components/consultationchat/ConsultationChat";
 import "../../styles/ClinicDetail.css";
+import { viewUserSubscriptionByUserId } from "../../apis/user-subscription-api";
 
 // Helper to calculate average rating and convert to 5-star scale
 function getStarRating(feedbacks) {
@@ -26,31 +27,30 @@ const handleStartConsultation = (consultant) => {
     setShowLoginModal(true);
     return;
   }
-  
+
   // Navigate to ConsultationChat with clinic and consultant context
-  navigate('/consultation-chat', {
+  navigate("/consultation-chat", {
     state: {
       selectedConsultant: {
         ...consultant,
         clinic: {
           id: clinic.id,
           name: clinic.user?.userName || clinic.name,
-          address: clinic.address
-        }
+          address: clinic.address,
+        },
       },
       currentUserId: currentUserId,
-      
+
       // ADD THESE LINES - Pass the clinic data
       clinicConsultants: clinic.consultants || [],
       clinicInfo: {
         id: clinic.id,
         name: clinic.user?.userName || clinic.name,
-        address: clinic.address
-      }
-    }
+        address: clinic.address,
+      },
+    },
   });
 };
-
 
 // Star rendering helper (with half star support)
 const renderStars = (stars) => {
@@ -126,6 +126,7 @@ const ConsultantCard = ({
   consultant,
   onStartConsultation,
   currentUserId,
+  hasValidSubscription,
   onImageError,
   onImageLoad,
   imageErrors,
@@ -179,10 +180,18 @@ const ConsultantCard = ({
         </div>
       </div>
       <button
-        className="consultant-send-message-btn"
-        title="Start Consultation"
+        className={`consultant-send-message-btn ${
+          !currentUserId || !hasValidSubscription ? "disabled" : ""
+        }`}
+        title={
+          !currentUserId
+            ? "Please log in"
+            : !hasValidSubscription
+            ? "Subscription required"
+            : "Start Consultation"
+        }
         onClick={() => onStartConsultation(consultant)}
-        disabled={!currentUserId}
+        disabled={!currentUserId || !hasValidSubscription}
         type="button"
         style={{ marginTop: 8 }}
       >
@@ -216,38 +225,100 @@ const ClinicDetail = () => {
   const [showAllDoctors, setShowAllDoctors] = useState(false);
   const [showAllConsultants, setShowAllConsultants] = useState(false);
 
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [userSubscription, setUserSubscription] = useState(null);
+
   // Chat state
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [currentUserId, setCurrentUserId] = useState("");
 
-  const handleStartConsultation = (consultant) => {
-  if (!currentUserId) {
-    setShowLoginModal(true);
-    return;
-  }
-
-  // Navigate to ConsultationChat with consultant data
-  navigate('/consultation-chat', {
-    state: {
-      selectedConsultant: {
-        ...consultant,
-        clinic: {
-          id: clinic.id,
-          name: clinic.user?.userName || clinic.name,
-          address: clinic.address
-        }
-      },
-      currentUserId: currentUserId,
-      clinicConsultants: clinic.consultants || [],
-      clinicInfo: {
-        id: clinic.id,
-        name: clinic.user?.userName || clinic.name,
-        address: clinic.address
-      }
+  const checkValidSubscription = (userSubscriptions) => {
+    if (!userSubscriptions || !Array.isArray(userSubscriptions)) {
+      return false;
     }
-  });
-};
 
+    // Find an active subscription with Plus or Pro
+    const activeValidSubscription = userSubscriptions.find((subscription) => {
+      if (!subscription || !subscription.subscriptionPlan) {
+        return false;
+      }
+
+      const subscriptionName = subscription.subscriptionPlan.subscriptionName;
+      const status = subscription.status;
+
+      // Check if it's Plus or Pro and Active
+      return (
+        (subscriptionName === "Plus" || subscriptionName === "Pro") &&
+        status === "Active"
+      );
+    });
+
+    return !!activeValidSubscription;
+  };
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!currentUserId) return;
+      try {
+        const data = await viewUserSubscriptionByUserId(currentUserId);
+        setUserSubscription(data);
+      } catch (err) {
+        console.error("Subscription fetch failed:", err);
+        setUserSubscription(null);
+      }
+    };
+    fetchSubscription();
+  }, [currentUserId]);
+
+  const handleStartConsultation = async (consultant) => {
+    // First check if user is logged in
+    if (!currentUserId) {
+      setShowLoginModal(true);
+      return;
+    }
+
+    try {
+      // Check user subscription status
+      const subscriptionData = await viewUserSubscriptionByUserId(
+        currentUserId
+      );
+
+      // Check if user has plus or pro subscription using the new helper
+      const hasValidSubscription = checkValidSubscription(subscriptionData);
+
+      if (!hasValidSubscription) {
+        // Show subscription required modal or prevent action
+        setShowSubscriptionModal(true);
+        return;
+      }
+
+      // Navigate to ConsultationChat with clinic and consultant context
+      navigate("/consultation-chat", {
+        state: {
+          selectedConsultant: {
+            ...consultant,
+            clinic: {
+              id: clinic.id,
+              name: clinic.user?.userName || clinic.name,
+              address: clinic.address,
+            },
+          },
+          currentUserId: currentUserId,
+          // Pass the clinic data
+          clinicConsultants: clinic.consultants || [],
+          clinicInfo: {
+            id: clinic.id,
+            name: clinic.user?.userName || clinic.name,
+            address: clinic.address,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+      // Handle error - you might want to show an error modal or assume no subscription
+      setShowSubscriptionModal(true);
+    }
+  };
 
   // Image handling functions
   const handleImageError = (imageId) => {
@@ -403,6 +474,8 @@ const ClinicDetail = () => {
     }
     setFeedbackLoading(false);
   };
+  // Add this line before the return statement (around line 580-590)
+  const hasValidSubscription = checkValidSubscription(userSubscription);
 
   if (loading) {
     return (
@@ -604,6 +677,7 @@ const ClinicDetail = () => {
                       key={consultant.id}
                       consultant={consultant}
                       onStartConsultation={handleStartConsultation} // Updated handler
+                      hasValidSubscription={hasValidSubscription}
                       currentUserId={currentUserId}
                       onImageError={handleImageError}
                       onImageLoad={handleImageLoad}
@@ -808,6 +882,23 @@ const ClinicDetail = () => {
             imageLoading={imageLoading}
           />
         )} */}
+        {/* Subscription Modal */}
+        {showSubscriptionModal && (
+          <div className="modal-overlay">
+            <div className="login-modal">
+              <p>
+                Please upgrade to Plus or Pro subscription to start a
+                consultation
+              </p>
+              <button onClick={() => setShowSubscriptionModal(false)}>
+                Close
+              </button>
+              <button onClick={() => navigate("/subscription")}>
+                Upgrade Now
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Login Modal Placeholder - You can implement this based on your needs */}
         {showLoginModal && (

@@ -1,9 +1,12 @@
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../apis/url-api";
-import { getCurrentUser, uploadAvatar, editUserProfile } from "../apis/authentication-api";
+import {
+  getCurrentUser,
+  uploadAvatar,
+  editUserProfile,
+} from "../apis/authentication-api";
 import "../styles/ProfilePage.css";
 
 const ProfilePage = () => {
@@ -27,6 +30,42 @@ const ProfilePage = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [status, setStatus] = useState({ message: "", type: "" });
+  const [subscriptionPlan, setSubscriptionPlan] = useState("N/A");
+
+  const fetchUserSubscription = async (userId) => {
+    try {
+      const response = await apiClient.get(
+        `/api/user-subscription/view-user-subscription-by-user-id/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "*/*",
+          },
+        }
+      );
+
+      if (response.data && Array.isArray(response.data)) {
+        // Find the active subscription
+        const activeSubscription = response.data.find(
+          (sub) => sub.status === "Active"
+        );
+
+        if (activeSubscription && activeSubscription.subscriptionPlan) {
+          setSubscriptionPlan(
+            activeSubscription.subscriptionPlan.subscriptionName
+          );
+        } else {
+          setSubscriptionPlan("N/A");
+        }
+      } else {
+        setSubscriptionPlan("N/A");
+      }
+    } catch (error) {
+      console.error("Failed to fetch user subscription:", error);
+      setSubscriptionPlan("N/A");
+    }
+  };
+
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -43,6 +82,9 @@ const ProfilePage = () => {
               phoneNumber: user.phoneNumber || "",
               dateOfBirth: user.dateOfBirth?.split("T")[0] || "",
             });
+            if (user.id) {
+              await fetchUserSubscription(user.id);
+            }
           }
         } catch (error) {
           console.error("Failed to fetch user:", error);
@@ -63,8 +105,16 @@ const ProfilePage = () => {
     setPasswordMode(!passwordMode);
     setEditMode(false);
     setStatus({ message: "", type: "" });
-    setPasswordData({ oldPassword: "", newPassword: "", confirmNewPassword: "" });
-    setShowPasswords({ oldPassword: false, newPassword: false, confirmNewPassword: false });
+    setPasswordData({
+      oldPassword: "",
+      newPassword: "",
+      confirmNewPassword: "",
+    });
+    setShowPasswords({
+      oldPassword: false,
+      newPassword: false,
+      confirmNewPassword: false,
+    });
   };
 
   const handleInputChange = (e) => {
@@ -101,19 +151,28 @@ const ProfilePage = () => {
       if (avatarFile && currentUser?.id) {
         const response = await uploadAvatar(currentUser.id, avatarFile, token);
         if (response.data?.error === 0) {
-          setStatus({ message: "Avatar uploaded successfully", type: "success" });
+          setStatus({
+            message: "Avatar uploaded successfully",
+            type: "success",
+          });
           const userResponse = await getCurrentUser(token);
           if (userResponse.data?.data) {
             setCurrentUser(userResponse.data.data);
           }
           setAvatarFile(null);
         } else {
-          setStatus({ message: response.data?.message || "Failed to upload avatar", type: "error" });
+          setStatus({
+            message: response.data?.message || "Failed to upload avatar",
+            type: "error",
+          });
         }
       }
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      setStatus({ message: error.response?.data?.message || "Failed to upload avatar", type: "error" });
+      setStatus({
+        message: error.response?.data?.message || "Failed to upload avatar",
+        type: "error",
+      });
     }
   };
 
@@ -136,14 +195,18 @@ const ProfilePage = () => {
         token
       );
       if (response.data?.error === 0) {
-        setStatus({ message: "Profile updated successfully!", type: "success" });
+        setStatus({
+          message: "Profile updated successfully!",
+          type: "success",
+        });
         const userResponse = await getCurrentUser(token);
         if (userResponse.data?.data) {
           setCurrentUser(userResponse.data.data);
           setUserData({
             userName: userResponse.data.data.userName || "",
             phoneNumber: userResponse.data.data.phoneNumber || "",
-            dateOfBirth: userResponse.data.data.dateOfBirth?.split("T")[0] || "",
+            dateOfBirth:
+              userResponse.data.data.dateOfBirth?.split("T")[0] || "",
           });
         }
         setEditMode(false);
@@ -153,7 +216,9 @@ const ProfilePage = () => {
     } catch (error) {
       console.error("Update failed:", error);
       setStatus({
-        message: `Update failed: ${error.response?.data?.message || error.message}`,
+        message: `Update failed: ${
+          error.response?.data?.message || error.message
+        }`,
         type: "error",
       });
     }
@@ -169,28 +234,48 @@ const ProfilePage = () => {
       const formData = new FormData();
       formData.append("OldPassword", passwordData.oldPassword);
       formData.append("NewPassword", passwordData.newPassword);
-      const response = await apiClient.post("/api/auth/user/password/change", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Accept: "*/*",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await apiClient.post(
+        "/api/auth/user/password/change",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "*/*",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (response.data?.error === 0) {
-        setStatus({ message: "Password changed successfully! Please log in again.", type: "success" });
+        setStatus({
+          message: "Password changed successfully! Please log in again.",
+          type: "success",
+        });
         // Optionally clear token and redirect to login
         localStorage.removeItem("token");
         setTimeout(() => navigate("/login"), 2000); // Redirect after 2 seconds
         setPasswordMode(false);
-        setPasswordData({ oldPassword: "", newPassword: "", confirmNewPassword: "" });
-        setShowPasswords({ oldPassword: false, newPassword: false, confirmNewPassword: false });
+        setPasswordData({
+          oldPassword: "",
+          newPassword: "",
+          confirmNewPassword: "",
+        });
+        setShowPasswords({
+          oldPassword: false,
+          newPassword: false,
+          confirmNewPassword: false,
+        });
       } else {
-        setStatus({ message: response.data?.message || "Password change failed", type: "error" });
+        setStatus({
+          message: response.data?.message || "Password change failed",
+          type: "error",
+        });
       }
     } catch (error) {
       console.error("Password change failed:", error);
       setStatus({
-        message: `Password change failed: ${error.response?.data?.message || error.message}`,
+        message: `Password change failed: ${
+          error.response?.data?.message || error.message
+        }`,
         type: "error",
       });
     }
@@ -281,24 +366,35 @@ const ProfilePage = () => {
                 <>
                   <div className="profile-detail">
                     <span className="detail-label">Email:</span>
-                    <span className="detail-value">{currentUser?.email || "Not set"}</span>
+                    <span className="detail-value">
+                      {currentUser?.email || "Not set"}
+                    </span>
                   </div>
                   <div className="profile-detail">
                     <span className="detail-label">Username:</span>
-                    <span className="detail-value">{currentUser?.userName || "Not set"}</span>
+                    <span className="detail-value">
+                      {currentUser?.userName || "Not set"}
+                    </span>
                   </div>
                   <div className="profile-detail">
                     <span className="detail-label">Phone Number:</span>
-                    <span className="detail-value">{currentUser?.phoneNumber || "Not set"}</span>
+                    <span className="detail-value">
+                      {currentUser?.phoneNumber || "Not set"}
+                    </span>
                   </div>
                   <div className="profile-detail">
                     <span className="detail-label">Date of Birth:</span>
-                    <span className="detail-value">{formatDate(currentUser?.dateOfBirth)}</span>
+                    <span className="detail-value">
+                      {formatDate(currentUser?.dateOfBirth)}
+                    </span>
                   </div>
                   <div className="profile-detail">
-                    <span className="detail-label">Current Subscription Plan:</span>
-                    <span className="detail-value">{currentUser?.subscription || "N/A"}</span>
+                    <span className="detail-label">
+                      Current Subscription Plan:  
+                    </span>
+                    <span className="detail-value">{subscriptionPlan}</span>
                   </div>
+
                   <div className="profile-detail">
                     <span className="detail-label">Status:</span>
                     <span className="detail-value">
@@ -409,17 +505,39 @@ const ProfilePage = () => {
                         type="button"
                         className="toggle-password"
                         onClick={() => toggleShowPassword("oldPassword")}
-                        aria-label={showPasswords.oldPassword ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPasswords.oldPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
                       >
                         {showPasswords.oldPassword ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary-color)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
                           </svg>
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary-color)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
                           </svg>
                         )}
                       </button>
@@ -441,27 +559,53 @@ const ProfilePage = () => {
                         type="button"
                         className="toggle-password"
                         onClick={() => toggleShowPassword("newPassword")}
-                        aria-label={showPasswords.newPassword ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPasswords.newPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
                       >
                         {showPasswords.newPassword ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary-color)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
                           </svg>
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary-color)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
                           </svg>
                         )}
                       </button>
                     </div>
                   </div>
                   <div className="form-group">
-                    <label htmlFor="confirmNewPassword">Confirm New Password</label>
+                    <label htmlFor="confirmNewPassword">
+                      Confirm New Password
+                    </label>
                     <div className="password-input-container">
                       <input
-                        type={showPasswords.confirmNewPassword ? "text" : "password"}
+                        type={
+                          showPasswords.confirmNewPassword ? "text" : "password"
+                        }
                         id="confirmNewPassword"
                         name="confirmNewPassword"
                         value={passwordData.confirmNewPassword}
@@ -473,17 +617,39 @@ const ProfilePage = () => {
                         type="button"
                         className="toggle-password"
                         onClick={() => toggleShowPassword("confirmNewPassword")}
-                        aria-label={showPasswords.confirmNewPassword ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPasswords.confirmNewPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
                       >
                         {showPasswords.confirmNewPassword ? (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
-                            <line x1="1" y1="1" x2="23" y2="23"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary-color)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                            <line x1="1" y1="1" x2="23" y2="23" />
                           </svg>
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                            <circle cx="12" cy="12" r="3"/>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--primary-color)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                            <circle cx="12" cy="12" r="3" />
                           </svg>
                         )}
                       </button>
