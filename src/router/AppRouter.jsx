@@ -72,6 +72,8 @@ import PaymentManagement from "../pages/admin/PaymentManagement";
 import ConsultationManagement from "../components/consultationchat/ConsultationManagement";
 import PaymentCancel from "../components/subscription/PaymentCancel";
 import PaymentSuccess from "../components/subscription/PaymentSuccess";
+import OfflineConsultationDetail from "../pages/consultation/OfflineConsultationDetail";
+import OnlineConsultationDetail from "../pages/consultation/OnlineConsultationDetail";
 
 
 const AppRoutes = () => {
@@ -179,6 +181,8 @@ const AppRoutes = () => {
         <Route path="/clinic/clinic-management" element={<ClinicManagement />} />
         <Route path="/consultation/consultation-management" element={<ConsultationManagement />} />
         <Route path="/consultation-chat" element={<ConsultationChat />} />
+        <Route path="/offline-consultation/:id" element={<OfflineConsultationDetail />} />
+        <Route path="/online-consultation/:id" element={<OnlineConsultationDetail />} />
 
         <Route path="/payment-cancel" element={<PaymentCancel />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />

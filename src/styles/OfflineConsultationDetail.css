@@ -1,0 +1,277 @@
+.offline-consultation-detail-container {
+  padding: 1rem;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.offline-consultation-detail-header {
+  background-color: #1780a6;
+  color: white;
+  padding: 30px;
+  text-align: center;
+  position: relative;
+  border-radius: 12px;
+  margin-top: 3rem;
+}
+
+.offline-consultation-detail-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  color: white;
+}
+
+.offline-consultation-detail-status-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  font-weight: bold;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.offline-consultation-detail-content {
+  padding: 40px;
+}
+
+.offline-consultation-detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.offline-consultation-detail-info-card {
+  background: white;
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.offline-consultation-detail-info-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #067dad;
+}
+
+.offline-consultation-detail-info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.offline-consultation-detail-card-title {
+  font-size: 1.4em;
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.offline-consultation-detail-card-title::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808f);
+  border-radius: 50%;
+}
+
+.offline-consultation-detail-info-item {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.offline-consultation-detail-info-label {
+  font-weight: 600;
+  color: #555;
+  min-width: 120px;
+}
+
+.offline-consultation-detail-info-value {
+  color: #333;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.offline-consultation-detail-schedules-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+}
+
+.offline-consultation-detail-schedules-title {
+  font-size: 1.6em;
+  color: #333;
+  margin-bottom: 25px;
+  text-align: center;
+  position: relative;
+}
+
+.offline-consultation-detail-schedules-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808f);
+  border-radius: 2px;
+}
+
+.offline-consultation-detail-schedule-item {
+  background: linear-gradient(145deg, #fff, #f9faff);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 15px;
+  border-left: 4px solid #067dad;
+  transition: all 0.3s ease;
+}
+
+.offline-consultation-detail-schedule-item:hover {
+  background: linear-gradient(
+    135deg,
+    rgba(79, 172, 254, 0.2),
+    rgba(0, 242, 254, 0.2)
+  );
+  transform: translateX(5px);
+}
+
+.offline-consultation-detail-schedule-time {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1em;
+}
+
+.offline-consultation-detail-datetime {
+  color: #666;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.offline-consultation-detail-health-note {
+  background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+  border-radius: 15px;
+  padding: 25px;
+  margin-top: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.offline-consultation-detail-health-note h3 {
+  color: #2d3436;
+  margin-bottom: 15px;
+  font-size: 1.3em;
+}
+
+.offline-consultation-detail-health-note p {
+  color: #636e72;
+  line-height: 1.6;
+  font-size: 1.1em;
+}
+
+.offline-consultation-detail-back-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: #1780a6;
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  width: fit-content;
+}
+
+.offline-consultation-detail-back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+}
+
+.offline-consultation-detail-consultation-period {
+  background: linear-gradient(
+    135deg,
+    rgba(116, 75, 162, 0.1),
+    rgba(102, 126, 234, 0.1)
+  );
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px solid rgba(116, 75, 162, 0.2);
+}
+
+@media (max-width: 768px) {
+  .offline-consultation-detail-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .offline-consultation-detail-content {
+    padding: 20px;
+  }
+
+  .offline-consultation-detail-header h1 {
+    font-size: 2em;
+  }
+}
+
+.offline-consultation-detail-avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 15px;
+}
+
+.offline-consultation-detail-doctor-info,
+.offline-consultation-detail-patient-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.offline-consultation-detail-contact-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.offline-consultation-detail-contact-info::before {
+  content: "📞";
+  margin-right: 8px;
+}
+
+.offline-consultation-detail-email-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.offline-consultation-detail-email-info::before {
+  content: "✉️";
+  margin-right: 8px;
+}
