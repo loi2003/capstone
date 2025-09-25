@@ -203,38 +203,6 @@ const SignIn = () => {
         console.warn("Không tìm thấy userId, sử dụng email hoặc fallback");
         userId = email; // Fallback to email if userId not found
       }
-      // Helper function to save user data on successful login
-      const saveUserData = (token, userId, roleId, userProfileData) => {
-        try {
-          localStorage.setItem("token", token);
-          if (userId) {
-            localStorage.setItem("userId", userId);
-            console.log("Saved userId to localStorage:", userId);
-          }
-
-          // // Use the passed userProfileData instead of userResponse
-          // if (userProfileData) {
-          //   localStorage.setItem(
-          //     "userProfile",
-          //     JSON.stringify(userProfileData)
-          //   );
-          //   console.log("Saved user profile to localStorage");
-          // }
-
-          if (roleId) {
-            localStorage.setItem("userRole", roleId.toString());
-            console.log("Saved roleId to localStorage:", roleId);
-          }
-
-          // Set API client authorization header
-          apiClient.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${token}`;
-          console.log("User data saved successfully");
-        } catch (error) {
-          console.error("Error saving user data:", error);
-        }
-      };
 
       // Clear any existing user data before saving new data
       clearUserData();
@@ -287,6 +255,37 @@ const SignIn = () => {
         ...errors,
         server: errorMessage,
       });
+    }
+  };
+
+  // Helper function to save user data on successful login
+  const saveUserData = (token, userId, roleId, userProfileData) => {
+    try {
+      localStorage.setItem("token", token);
+      if (userId) {
+        localStorage.setItem("userId", userId);
+        console.log("Saved userId to localStorage:", userId);
+      }
+
+      // // Use the passed userProfileData instead of userResponse
+      // if (userProfileData) {
+      //   localStorage.setItem(
+      //     "userProfile",
+      //     JSON.stringify(userProfileData)
+      //   );
+      //   console.log("Saved user profile to localStorage");
+      // }
+
+      if (roleId) {
+        localStorage.setItem("userRole", roleId.toString());
+        console.log("Saved roleId to localStorage:", roleId);
+      }
+
+      // Set API client authorization header
+      apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      console.log("User data saved successfully");
+    } catch (error) {
+      console.error("Error saving user data:", error);
     }
   };
 
