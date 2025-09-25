@@ -60,20 +60,18 @@ export const viewOfflineConsultationsByCreatedBy = async (userId, token) => {
 // POST: /api/offline-consultation/book-offline-consultation
 export const bookOfflineConsultation = async (consultationData, token) => {
   try {
-    const response = await fetch(
-      "https://localhost:7045/api/offline-consultation/book-offline-consultation",
+    const response = await apiClient.post(
+      "/api/offline-consultation/book-offline-consultation",
+      consultationData,
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(consultationData),
       }
     );
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
     console.error("Error booking offline consultation:", error.message);
     throw error;
@@ -127,20 +125,18 @@ export const softDeleteOfflineConsultation = async (consultationId, token) => {
 // PUT: /api/offline-consultation/update-offline-consultation
 export const updateOfflineConsultation = async (consultationData, token) => {
   try {
-    const response = await fetch(
-      "https://localhost:7045/api/offline-consultation/update-offline-consultation",
+    const response = await apiClient.put(
+      "/api/offline-consultation/update-offline-consultation",
+      consultationData,
       {
-        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(consultationData),
       }
     );
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
     console.error("Error updating offline consultation:", error.message);
     throw error;
@@ -156,22 +152,40 @@ export const addAttachmentsToOfflineConsultation = async (consultationId, files,
       formData.append("attachments", file);
     });
 
-    const response = await fetch(
-      `https://localhost:7045/api/offline-consultation/add-attachments/${consultationId}`,
+    const response = await apiClient.post(
+      `/api/offline-consultation/add-attachments/${consultationId}`,
+      formData,
       {
-        method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           Accept: "application/json",
           // Do NOT set Content-Type, let browser set it to multipart/form-data
         },
-        body: formData,
       }
     );
-    const data = await response.json();
-    return data;
+    return response.data;
   } catch (error) {
     console.error("Error adding attachments:", error.message);
+    throw error;
+  }
+};
+
+// Send booking offline consultation emails by consultationId
+export const sendBookingOfflineConsultationEmails = async (consultationId, token) => {
+  try {
+    const response = await apiClient.post(
+      `/api/offline-consultation/send-booking-offline-consultation-emails/${consultationId}`,
+      {}, // empty body
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error sending booking offline consultation emails:", error.message);
     throw error;
   }
 };

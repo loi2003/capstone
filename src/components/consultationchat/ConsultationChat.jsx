@@ -512,13 +512,13 @@ const ConsultationChat = () => {
         formData.append("AttachmentFileName", selectedFile.name);
         formData.append("AttachmentFileType", selectedFile.type);
         formData.append("AttachmentFileSize", selectedFile.size.toString());
+        formData.append("Attachments", selectedFile);
       }
 
       const response = await sendMessage(formData, token);
       console.log("Send message response:", response);
 
       if (response.error === 0) {
-        // Extract attachment URL from response
         const attachmentUrl =
           response.data?.attachmentUrl ||
           response.data?.attachmentPath ||
@@ -532,7 +532,6 @@ const ConsultationChat = () => {
           createdAt: response.data?.sentAt || new Date().toISOString(),
           messageType: selectedFile ? "attachment" : "text",
           isRead: false,
-          // Store attachment data from backend response
           attachmentUrl: attachmentUrl,
           attachmentFileName: selectedFile?.name,
           attachmentFileType: selectedFile?.type,
@@ -543,7 +542,6 @@ const ConsultationChat = () => {
                 fileSize: selectedFile.size,
                 fileType: selectedFile.type,
                 isImage: isImageFile(selectedFile.name),
-                // Use backend URL if available, otherwise use local preview temporarily
                 url: attachmentUrl || filePreview,
               }
             : null,
@@ -560,8 +558,6 @@ const ConsultationChat = () => {
         setNewMessage("");
         clearSelectedFile();
 
-        // Optionally refresh the thread to get the latest data from backend
-        // This ensures the attachment URL is properly stored
         setTimeout(async () => {
           try {
             const updatedThread = await getChatThreadById(

@@ -11,6 +11,7 @@ import {
   softDeleteOfflineConsultation,
   updateOfflineConsultation,
   addAttachmentsToOfflineConsultation,
+  sendBookingOfflineConsultationEmails,
 } from "../../apis/offline-consultation-api";
 import "../../styles/OfflineConsultationManagement.css";
 import "../../styles/ConsultantHomePage.css";
@@ -140,7 +141,7 @@ const OfflineConsultationManagement = () => {
       const doctors = await viewAllDoctors(token);
       setDoctorList(Array.isArray(doctors) ? doctors : doctors?.data || []);
     } catch (err) {
-      setDoctorList([]);
+      setDoctorList([], err.message);
     }
     setDoctorListLoading(false);
     setSelectedDoctor(null);
@@ -156,7 +157,7 @@ const OfflineConsultationManagement = () => {
       const users = await getAllUsers(token);
       setUserList(Array.isArray(users) ? users : users?.data || []);
     } catch (err) {
-      setUserList([]);
+      setUserList([], err.message);
     }
     setUserListLoading(false);
     setSelectedUserForConsultation(null);
@@ -223,7 +224,6 @@ const OfflineConsultationManagement = () => {
 
     try {
       const token = localStorage.getItem("token");
-      // Use fetch API as required
       const response = await bookOfflineConsultation(payload, token);
       if (response?.error === 1 && response?.message) {
         setErrorMessage(response.message);
@@ -238,6 +238,16 @@ const OfflineConsultationManagement = () => {
           token
         );
       }
+
+      // Send booking emails
+      if (response?.data?.id) {
+        try {
+          await sendBookingOfflineConsultationEmails(response.data.id, token);
+        } catch (emailErr) {
+          console.error("Error sending booking emails:", emailErr.message);
+        }
+      }
+
       setShowCreateModal(false);
       setLoading(true);
       const consultationsRes = await viewOfflineConsultationsByCreatedBy(
@@ -249,7 +259,7 @@ const OfflineConsultationManagement = () => {
       setSuccessMessage("Create Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setErrorMessage("Create Consultation Fail!");
+      setErrorMessage("Create Consultation Fail!", err.message);
       setTimeout(() => setErrorMessage(""), 3000);
     }
     setCreateLoading(false);
@@ -363,7 +373,7 @@ const OfflineConsultationManagement = () => {
         setSuccessMessage("Remove Consultation Successful!");
         setTimeout(() => setSuccessMessage(""), 3000);
       } catch (err) {
-        setErrorMessage("Remove Consultation Fail!");
+        setErrorMessage("Remove Consultation Fail!", err.message);
         setTimeout(() => setErrorMessage(""), 3000);
       }
     }
@@ -447,7 +457,7 @@ const OfflineConsultationManagement = () => {
       setSuccessMessage("Update Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (err) {
-      setErrorMessage("Update Consultation Fail!");
+      setErrorMessage("Update Consultation Fail!", err.message);
       setTimeout(() => setErrorMessage(""), 3000);
     }
     setEditLoading(false);
@@ -862,7 +872,7 @@ const OfflineConsultationManagement = () => {
                       d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                     />
                   </svg>
-                  {isSidebarOpen && <span>Đăng Xuất</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
@@ -888,7 +898,7 @@ const OfflineConsultationManagement = () => {
                     d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                   />
                 </svg>
-                {isSidebarOpen && <span>Đăng Nhập</span>}
+                {isSidebarOpen && <span>Sign In</span>}
               </Link>
             </motion.div>
           )}

@@ -289,14 +289,18 @@ const ClinicHomePage = () => {
             </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
-            <button className="sidebar-action-button" title="Add Appointment">
+            <Link
+              to="/clinic/clinic-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Doctor Management"
+            >
               <svg
                 width="24"
                 height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
-                aria-label="Clipboard plus icon for add appointment"
+                aria-label="Clipboard plus icon for doctors management"
               >
                 <path
                   d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2m4 6v6m-3-3h6"
@@ -307,8 +311,8 @@ const ClinicHomePage = () => {
                   strokeLinejoin="round"
                 />
               </svg>
-              {isSidebarOpen && <span>Add Appointment</span>}
-            </button>
+              {isSidebarOpen && <span>Clinic Management</span>}
+            </Link>
           </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
@@ -342,7 +346,8 @@ const ClinicHomePage = () => {
                 variants={navItemVariants}
                 className="sidebar-nav-item clinic-profile-section"
               >
-                <div
+                <Link
+                  to="/profile"
                   className="clinic-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
@@ -362,7 +367,7 @@ const ClinicHomePage = () => {
                   {isSidebarOpen && (
                     <span className="clinic-profile-email">{user.email}</span>
                   )}
-                </div>
+                </Link>
               </motion.div>
               <motion.div
                 variants={navItemVariants}
@@ -394,10 +399,7 @@ const ClinicHomePage = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div
-              variants={navItemVariants}
-              className="sidebar-nav-item"
-            >
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -434,7 +436,9 @@ const ClinicHomePage = () => {
           >
             <h1 className="clinic-banner-title">Clinic Dashboard</h1>
             <p className="clinic-banner-subtitle">
-              Optimize your clinic's operations with powerful tools for managing appointments, patient records, and support services, ensuring seamless healthcare delivery.
+              Optimize your clinic's operations with powerful tools for managing
+              appointments, patient records, and support services, ensuring
+              seamless healthcare delivery.
             </p>
             <div className="clinic-banner-buttons">
               <Link
@@ -480,28 +484,41 @@ const ClinicHomePage = () => {
           initial="initial"
           animate="animate"
         >
-          <h2 className="clinic-features-title">Core Clinic Management Tools</h2>
+          <h2 className="clinic-features-title">
+            Core Clinic Management Tools
+          </h2>
           <p className="clinic-features-description">
-            Utilize a comprehensive set of tools designed to streamline appointment scheduling, patient management, and support services for efficient clinic operations.
+            Utilize a comprehensive set of tools designed to streamline
+            appointment scheduling, patient management, and support services for
+            efficient clinic operations.
           </p>
           <div className="clinic-features-grid">
             <motion.div variants={cardVariants} className="clinic-feature-card">
               <h3>Appointment Scheduling</h3>
-              <p>Efficiently manage and organize clinic appointments to optimize your schedule and enhance patient care.</p>
+              <p>
+                Efficiently manage and organize clinic appointments to optimize
+                your schedule and enhance patient care.
+              </p>
               <Link to="/clinic/schedule" className="clinic-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="clinic-feature-card">
               <h3>Patient Management</h3>
-              <p>Securely access, update, and manage patient records to ensure accurate and up-to-date medical information.</p>
+              <p>
+                Securely access, update, and manage patient records to ensure
+                accurate and up-to-date medical information.
+              </p>
               <Link to="/clinic/patients" className="clinic-feature-link">
                 Explore
               </Link>
             </motion.div>
             <motion.div variants={cardVariants} className="clinic-feature-card">
               <h3>Support Services</h3>
-              <p>Access dedicated support to resolve operational challenges and maintain smooth clinic functionality.</p>
+              <p>
+                Access dedicated support to resolve operational challenges and
+                maintain smooth clinic functionality.
+              </p>
               <Link to="/clinic/support" className="clinic-feature-link">
                 Explore
               </Link>

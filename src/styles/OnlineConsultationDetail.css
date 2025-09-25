@@ -1,0 +1,324 @@
+.online-consultation-detail-container {
+  padding: 1rem;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.online-consultation-detail-header {
+  background-color: #1780a6;
+  color: white;
+  padding: 30px;
+  text-align: center;
+  position: relative;
+  border-radius: 12px;
+  margin-top: 3rem;
+}
+
+.online-consultation-detail-header h1 {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+  color: white;
+}
+
+.online-consultation-detail-consultation-date {
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  font-weight: bold;
+  margin-top: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.online-consultation-detail-content {
+  padding: 40px;
+}
+
+.online-consultation-detail-back-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  background-color: #1780a6;
+  color: white;
+  text-decoration: none;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+  width: fit-content;
+}
+
+.online-consultation-detail-back-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+}
+
+.online-consultation-detail-pregnancy-info {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 107, 0.1),
+    rgba(255, 142, 83, 0.1)
+  );
+  border-radius: 15px;
+  padding: 25px;
+  margin-bottom: 30px;
+  border-left: 5px solid #ff6b6b;
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+.online-consultation-detail-pregnancy-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.online-consultation-detail-pregnancy-stat .number {
+  font-size: 2.5em;
+  font-weight: bold;
+  color: #ff6b6b;
+  margin-bottom: 5px;
+}
+
+.online-consultation-detail-pregnancy-stat .label {
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  font-size: 0.9em;
+}
+
+.online-consultation-detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.online-consultation-detail-info-card {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.online-consultation-detail-info-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #067dad;
+}
+
+.online-consultation-detail-info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.online-consultation-detail-card-title {
+  font-size: 1.4em;
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.online-consultation-detail-card-title::before {
+  content: "";
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808f);
+  border-radius: 50%;
+}
+
+.online-consultation-detail-medical-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  border-left: 5px solid #067dad;
+}
+
+.online-consultation-detail-medical-section h3 {
+  font-size: 1.3em;
+  color: #333;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.online-consultation-detail-medical-section h3::before {
+  margin-right: 10px;
+  font-size: 1.2em;
+}
+
+.online-consultation-detail-medical-content {
+  background: rgba(0, 49, 184, 0.05);
+  border-radius: 10px;
+  padding: 20px;
+  border-left: 3px solid #067dad;
+  font-size: 1.1em;
+  line-height: 1.6;
+  color: #333;
+}
+
+.online-consultation-detail-info-item {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.online-consultation-detail-info-label {
+  font-weight: 600;
+  color: #555;
+  min-width: 140px;
+  margin-right: 15px;
+}
+
+.online-consultation-detail-info-value {
+  color: #333;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.online-consultation-detail-avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 15px;
+}
+
+.online-consultation-detail-person-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.online-consultation-detail-contact-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 0.95em;
+  color: #666;
+}
+
+.online-consultation-detail-contact-info::before {
+  margin-right: 8px;
+}
+
+.online-consultation-detail-phone::before {
+  content: "📞";
+}
+.online-consultation-detail-email::before {
+  content: "✉️";
+}
+
+.online-consultation-detail-specialization-list {
+  font-size: 0.9em;
+  line-height: 1.5;
+  color: #555;
+  margin-top: 10px;
+}
+
+.online-consultation-detail-hospital-description {
+  background: rgba(79, 172, 254, 0.05);
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 15px;
+  font-size: 0.95em;
+  line-height: 1.5;
+  color: #555;
+}
+
+.online-consultation-detail-status-active {
+  color: #00b894;
+  font-weight: bold;
+}
+
+.online-consultation-detail-status-active::before {
+  content: "● ";
+}
+
+.online-consultation-detail-experience-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #fdcb6e, #e17055);
+  color: white;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.9em;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+  .online-consultation-detail-info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .online-consultation-detail-pregnancy-info {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .online-consultation-detail-content {
+    padding: 20px;
+  }
+
+  .online-consultation-detail-header h1 {
+    font-size: 2em;
+  }
+
+  .online-consultation-detail-pregnancy-stat .number {
+    font-size: 2em;
+  }
+}
+
+.online-consultation-detail-attachment-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  text-align: center;
+  border: 2px dashed #ddd;
+}
+
+.online-consultation-detail-no-attachments {
+  color: #999;
+  font-style: italic;
+  padding: 20px;
+}
+
+.online-consultation-detail-trimester-indicator {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.9em;
+}

@@ -62,6 +62,7 @@ import MealManagement from "../pages/nutrientspecialist/MealManagement";
 import WarningManagement from "../pages/nutrientspecialist/WarningManagement";
 import EnergySuggestion from "../pages/nutrientspecialist/EnergySuggestion";
 import NutrientSuggestion from "../pages/nutrientspecialist/NutrientSuggestion"; // Added import
+import ClinicManagement from "../pages/clinic/ClinicManagement";
 import SubscriptionPlan from "../components/subscription/SubscriptionPlan";
 import SubscriptionCheckout from "../components/subscription/SubscriptionCheckout";
 import ConsultationChat from "../components/consultationchat/ConsultationChat";
@@ -71,6 +72,8 @@ import PaymentManagement from "../pages/admin/PaymentManagement";
 import ConsultationManagement from "../components/consultationchat/ConsultationManagement";
 import PaymentCancel from "../components/subscription/PaymentCancel";
 import PaymentSuccess from "../components/subscription/PaymentSuccess";
+import OfflineConsultationDetail from "../pages/consultation/OfflineConsultationDetail";
+import OnlineConsultationDetail from "../pages/consultation/OnlineConsultationDetail";
 
 
 const AppRoutes = () => {
@@ -175,8 +178,11 @@ const AppRoutes = () => {
         <Route path="/clinic/:id" element={<ClinicDetail />} />
         <Route path="/consultation/online-consultation-management" element={<OnlineConsultationManagement />} />
         <Route path="/consultation/offline-consultation-management" element={<OfflineConsultationManagement />} />
+        <Route path="/clinic/clinic-management" element={<ClinicManagement />} />
         <Route path="/consultation/consultation-management" element={<ConsultationManagement />} />
         <Route path="/consultation-chat" element={<ConsultationChat />} />
+        <Route path="/offline-consultation/:id" element={<OfflineConsultationDetail />} />
+        <Route path="/online-consultation/:id" element={<OnlineConsultationDetail />} />
 
         <Route path="/payment-cancel" element={<PaymentCancel />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
