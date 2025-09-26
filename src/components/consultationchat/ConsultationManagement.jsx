@@ -12,6 +12,7 @@ import { getCurrentUser } from "../../apis/authentication-api"; // Get current c
 import { getUserById } from "../../apis/user-api"; // Get patient details
 import MainLayout from "../../layouts/MainLayout";
 import "./ConsultationManagement.css";
+import "../../styles/ConsultantHomePage.css";
 import {
   FaComments,
   FaSearch,
@@ -60,7 +61,7 @@ const ConsultationManagement = () => {
   const fileInputRef = useRef(null);
   const [filterStatus, setFilterStatus] = useState("all"); // all, unread, active
 
-  // const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const scrollToBottom = () => {
@@ -1111,13 +1112,15 @@ const ConsultationManagement = () => {
                 title="Sign In"
               >
                 <FaSignOutAlt size={20} />
-                {isSidebarOpen && <span>Sign out</span>}
+                {isSidebarOpen && <span>Sign In</span>}
               </Link>
             </motion.div>
           )}
         </motion.nav>
       </motion.aside>
-      <div className="consultation-management-main-page">
+      <main className="consultant-content">
+        <section>
+          <div className="consultation-management-main-page">
         <div className="consultation-management">
           <div className="consultation-management-header">
             <h1 className="consultation-management-title">
@@ -1354,6 +1357,8 @@ const ConsultationManagement = () => {
           </div>
         </div>
       </div>
+        </section>
+      </main>
     </div>
   );
 };

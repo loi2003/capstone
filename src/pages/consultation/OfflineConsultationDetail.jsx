@@ -30,9 +30,13 @@ const OfflineConsultationDetail = () => {
 
   useEffect(() => {
     const fetchConsultation = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        navigate("/signin", { replace: true });
+        return;
+      }
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
         const response = await viewOfflineConsultationById(id, token);
         setConsultation(response?.data || response || null);
       } catch (error) {
@@ -42,7 +46,7 @@ const OfflineConsultationDetail = () => {
       }
     };
     if (id) fetchConsultation();
-  }, [id]);
+  }, [id, navigate]);
 
   return (
     <MainLayout>
@@ -50,7 +54,9 @@ const OfflineConsultationDetail = () => {
         {loading ? (
           <div className="consultation-detail-loading">Loading...</div>
         ) : !consultation ? (
-          <div className="consultation-detail-error">Offline Consultation not found.</div>
+          <div className="consultation-detail-error">
+            Offline Consultation not found.
+          </div>
         ) : (
           <>
             <div className="offline-consultation-detail-header">
@@ -81,7 +87,9 @@ const OfflineConsultationDetail = () => {
                   </span>
                 </div>
                 <div className="offline-consultation-detail-info-item">
-                  <span className="offline-consultation-detail-info-label">To:</span>
+                  <span className="offline-consultation-detail-info-label">
+                    To:
+                  </span>
                   <span className="offline-consultation-detail-info-value">
                     {formatDateTime(consultation.endDate)}
                   </span>
@@ -234,7 +242,11 @@ const OfflineConsultationDetail = () => {
                     🏥 Clinic Information
                   </h3>
                   <div
-                    style={{ fontWeight: "bold", marginBottom: 15, color: "#333" }}
+                    style={{
+                      fontWeight: "bold",
+                      marginBottom: 15,
+                      color: "#333",
+                    }}
                   >
                     {consultation?.clinic?.user?.userName}
                   </div>
@@ -267,12 +279,18 @@ const OfflineConsultationDetail = () => {
                       Specializations:
                     </div>
                     <div
-                      style={{ fontSize: "0.9em", lineHeight: 1.4, color: "#555" }}
+                      style={{
+                        fontSize: "0.9em",
+                        lineHeight: 1.4,
+                        color: "#555",
+                      }}
                     >
                       {consultation?.clinic?.specializations
                         ? consultation.clinic.specializations
                             .split(";")
-                            .map((spec, idx) => <div key={idx}>• {spec.trim()}</div>)
+                            .map((spec, idx) => (
+                              <div key={idx}>• {spec.trim()}</div>
+                            ))
                         : "N/A"}
                     </div>
                   </div>
@@ -328,7 +346,8 @@ const OfflineConsultationDetail = () => {
               <div className="offline-consultation-detail-attachments-section">
                 <h3>📎 Attachments</h3>
                 <div className="offline-consultation-detail-attachments-list">
-                  {consultation.attachments && consultation.attachments.length > 0 ? (
+                  {consultation.attachments &&
+                  consultation.attachments.length > 0 ? (
                     consultation.attachments.map((file, idx) => (
                       <a
                         key={idx}

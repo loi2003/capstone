@@ -279,22 +279,6 @@ const ConsultantHomePage = () => {
                   onClick={handleLogout}
                   aria-label="Sign out"
                 >
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    aria-label="Logout icon"
-                  >
-                    <path
-                      stroke="var(--consultant-logout)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Sign Out</span>}
                   <FaSignOutAlt size={20} />
                   {isSidebarOpen && <span>Sign out</span>}
                 </button>
