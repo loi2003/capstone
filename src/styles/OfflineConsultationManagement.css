@@ -552,7 +552,7 @@
 .offline-consultation-form-group select:focus,
 .offline-consultation-form-group textarea:focus {
   outline: none;
-  border-color: #7dd87f;
+  border-color: #7dbbd8;
 }
 
 .offline-consultation-form-row {
