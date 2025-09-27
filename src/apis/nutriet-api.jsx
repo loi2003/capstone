@@ -107,7 +107,6 @@ export const deleteNutrientCategory = async (nutrientCategoryId) => {
     throw error;
   }
 };
-
 export const getAllNutrients = async () => {
   try {
     const response = await apiClient.get(`/api/nutrient/view-all-nutrients`, {
@@ -282,7 +281,6 @@ export const deleteNutrient = async (nutrientId) => {
     throw error;
   }
 };
-
 export const getAllFoodCategories = async () => {
   try {
     const response = await apiClient.get(
