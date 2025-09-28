@@ -56,7 +56,7 @@
 }
 
 /* Sidebar header */
-.consultant-homepage .sidebar-header {
+.consultant-homepage .consultant-sidebar-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -65,13 +65,13 @@
   margin-bottom: 1.5rem;
 }
 
-.consultant-homepage .consultant-sidebar.closed .sidebar-header {
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-header {
   flex-direction: column;
   padding: 1rem 0.5rem;
   gap: 0.75rem;
 }
 
-.consultant-homepage .sidebar-title {
+.consultant-homepage .consultant-sidebar-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--consultant-background);
@@ -81,7 +81,7 @@
   max-width: 180px;
 }
 
-.consultant-homepage .consultant-sidebar.closed .sidebar-title {
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-title {
   display: none;
 }
 
@@ -166,30 +166,30 @@
 }
 
 /* Sidebar navigation */
-.consultant-homepage .sidebar-nav {
+.consultant-homepage .consultant-sidebar-nav {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
   padding: 0 1rem;
 }
 
-.consultant-homepage .consultant-sidebar.closed .sidebar-nav {
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav {
   padding: 0;
   gap: 1rem;
 }
 
-.consultant-homepage .sidebar-nav-item {
+.consultant-homepage .consultant-sidebar-nav-item {
   display: flex;
   align-items: center;
   justify-content: flex-start;
 }
 
-.consultant-homepage .consultant-sidebar.closed .sidebar-nav-item {
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav-item {
   justify-content: center;
 }
 
-.consultant-homepage .sidebar-nav a,
-.consultant-homepage .sidebar-nav button {
+.consultant-homepage .consultant-sidebar-nav a,
+.consultant-homepage .consultant-sidebar-nav button {
   color: var(--consultant-background);
   text-decoration: none;
   font-size: 0.95rem;
@@ -211,32 +211,32 @@
   text-overflow: ellipsis;
 }
 
-.consultant-homepage .consultant-sidebar.closed .sidebar-nav a,
-.consultant-homepage .consultant-sidebar.closed .sidebar-nav button {
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav a,
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav button {
   padding: 0.75rem 0;
   justify-content: center;
 }
 /* 
-.consultant-homepage .sidebar-nav a svg,
-.consultant-homepage .sidebar-nav button svg {
+.consultant-homepage .consultant-sidebar-nav a svg,
+.consultant-homepage .consultant-sidebar-nav button svg {
   width: 24px;
   height: 24px;
   min-width: 24px;
 } */
 
-.consultant-homepage .consultant-sidebar.closed .sidebar-nav a span,
-.consultant-homepage .consultant-sidebar.closed .sidebar-nav button span {
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav a span,
+.consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav button span {
   display: none;
 }
 
-.consultant-homepage .sidebar-nav a:hover,
-.consultant-homepage .sidebar-nav button:hover {
+.consultant-homepage .consultant-sidebar-nav a:hover,
+.consultant-homepage .consultant-sidebar-nav button:hover {
   background: #1E7699;
   transform: translateY(-2px);
 }
 
-.consultant-homepage .sidebar-nav a:hover svg path,
-.consultant-homepage .sidebar-nav button:hover svg path {
+.consultant-homepage .consultant-sidebar-nav a:hover svg path,
+.consultant-homepage .consultant-sidebar-nav button:hover svg path {
   fill: var(--consultant-background);
   stroke: var(--consultant-text);
 }
@@ -507,13 +507,13 @@
 
 
 
-.sidebar-nav-item.active {
+.consultant-sidebar-nav-item.active {
   background: linear-gradient(135deg, rgba(5, 102, 141, 0.15) 0%, rgba(30, 118, 153, 0.1) 100%);
   border-left: 4px solid var(--consultant-accent);
   position: relative;
 }
 
-.sidebar-nav-item.active::before {
+.consultant-sidebar-nav-item.active::before {
   content: '';
   position: absolute;
   left: 0;
@@ -525,46 +525,46 @@
 }
 
 /* Active navigation link styling */
-.sidebar-nav-item.active .active-nav-link,
-.sidebar-nav-item.active a {
+.consultant-sidebar-nav-item.active .active-nav-link,
+.consultant-sidebar-nav-item.active a {
   color: white !important;
   font-weight: 600;
   background: rgba(5, 102, 141, 0.05);
 }
 
-.sidebar-nav-item.active svg {
+.consultant-sidebar-nav-item.active svg {
   color: white !important;
 }
 
 /* HOVER EFFECTS for Active Navigation Item */
-.sidebar-nav-item.active:hover {
+.consultant-sidebar-nav-item.active:hover {
   background: var(--consultant-accent);
   transform: translateX(2px);
   box-shadow: 0 4px 12px rgba(5, 102, 141, 0.2);
 }
 
-.sidebar-nav-item.active:hover .active-nav-link,
-.sidebar-nav-item.active:hover a {
+.consultant-sidebar-nav-item.active:hover .active-nav-link,
+.consultant-sidebar-nav-item.active:hover a {
   background: rgba(5, 102, 141, 0.1);
   color: white !important;
   transform: translateX(2px);
 }
 
 /* Smooth transitions for all states */
-.sidebar-nav-item.active,
-.sidebar-nav-item.active a,
-.sidebar-nav-item.active svg,
-.sidebar-nav-item.active::before {
+.consultant-sidebar-nav-item.active,
+.consultant-sidebar-nav-item.active a,
+.consultant-sidebar-nav-item.active svg,
+.consultant-sidebar-nav-item.active::before {
   transition: all 0.3s ease;
 }
 
 /* When sidebar is closed - adjust active hover behavior */
-.consultant-sidebar.closed .sidebar-nav-item.active:hover {
+.consultant-sidebar.closed .consultant-sidebar-nav-item.active:hover {
   transform: translateX(0);
   background: linear-gradient(135deg, rgba(5, 102, 141, 0.2) 0%, rgba(30, 118, 153, 0.15) 100%);
 }
 
-.consultant-sidebar.closed .sidebar-nav-item.active:hover a {
+.consultant-sidebar.closed .consultant-sidebar-nav-item.active:hover a {
   transform: scale(1.1);
 }
 /* Responsive design */
@@ -701,17 +701,17 @@
     margin-left: 60px;
   }
 
-  .consultant-homepage .sidebar-header {
+  .consultant-homepage .consultant-sidebar-header {
     padding: 0.75rem 0.5rem;
     gap: 0.5rem;
   }
 
-  .consultant-homepage .consultant-sidebar.closed .sidebar-header {
+  .consultant-homepage .consultant-sidebar.closed .consultant-sidebar-header {
     padding: 0.75rem 0;
     gap: 0.5rem;
   }
 
-  .consultant-homepage .sidebar-title {
+  .consultant-homepage .consultant-sidebar-title {
     font-size: 1.125rem;
     max-width: 120px;
   }
@@ -745,27 +745,27 @@
     min-width: 20px;
   }
 
-  .consultant-homepage .sidebar-nav {
+  .consultant-homepage .consultant-sidebar-nav {
     padding: 0 0.5rem;
   }
 
-  .consultant-homepage .consultant-sidebar.closed .sidebar-nav {
+  .consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav {
     padding: 0;
   }
 
-  .consultant-homepage .sidebar-nav a,
-  .consultant-homepage .sidebar-nav button {
+  .consultant-homepage .consultant-sidebar-nav a,
+  .consultant-homepage .consultant-sidebar-nav button {
     font-size: 0.9rem;
     padding: 0.6rem 0.5rem;
   }
 
-  .consultant-homepage .consultant-sidebar.closed .sidebar-nav a,
-  .consultant-homepage .consultant-sidebar.closed .sidebar-nav button {
+  .consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav a,
+  .consultant-homepage .consultant-sidebar.closed .consultant-sidebar-nav button {
     padding: 0.6rem 0;
   }
 
-  .consultant-homepage .sidebar-nav a svg,
-  .consultant-homepage .sidebar-nav button svg {
+  .consultant-homepage .consultant-sidebar-nav a svg,
+  .consultant-homepage .consultant-sidebar-nav button svg {
     width: 20px;
     height: 20px;
     min-width: 20px;
