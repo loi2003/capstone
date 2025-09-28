@@ -7,7 +7,7 @@
   display: flex;
   flex-direction: column;
   background: #f5f7fa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .advice-content-wrapper {
@@ -135,7 +135,11 @@
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: linear-gradient(135deg, #ff4d4f, #ff8c00); /* Fiery red-orange gradient */
+  background: linear-gradient(
+    135deg,
+    #ff4d4f,
+    #ff8c00
+  ); /* Fiery red-orange gradient */
   border: none;
   border-radius: 50%;
   width: 28px;
@@ -156,7 +160,11 @@
 }
 
 .advice-delete-button:hover {
-  background: linear-gradient(135deg, #cc0000, #e67e00); /* Darker gradient on hover */
+  background: linear-gradient(
+    135deg,
+    #cc0000,
+    #e67e00
+  ); /* Darker gradient on hover */
 }
 
 .advice-delete-button:focus {
@@ -202,7 +210,11 @@
 }
 
 .advice-pagination-button:hover {
-  background: linear-gradient(135deg, #cc0000, #e67e00); /* Darker gradient on hover */
+  background: linear-gradient(
+    135deg,
+    #cc0000,
+    #e67e00
+  ); /* Darker gradient on hover */
   box-shadow: 0 0 8px rgba(255, 77, 79, 0.5); /* Fiery glow */
 }
 
@@ -246,11 +258,15 @@
 /* Main Content Styling */
 .advice-main-content {
   flex: 1;
-  padding: 2rem;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  height: 750px;
+  max-height: 750px;
 }
 
 /* Header Styling */
@@ -280,7 +296,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-image: url('/images/IMG_4602.PNG');
+  background-image: url("/images/IMG_4602.PNG");
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
@@ -554,7 +570,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-image: url('/images/IMG_4602.PNG');
+  background-image: url("/images/IMG_4602.PNG");
   background-size: cover;
   background-position: center;
   margin-right: 0.5rem;
@@ -629,7 +645,8 @@
 }
 
 @keyframes typing {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -708,6 +725,183 @@
 .advice-link:hover {
   color: #006cdc;
   text-decoration: underline;
+}
+
+/* Staff-specific message styling */
+.advice-message.message-staff {
+  justify-content: flex-start;
+}
+
+.advice-message-content.bg-staff {
+  background: #d1fae5;
+  color: #1a1a1a;
+  border-bottom-left-radius: 4px;
+}
+
+/* Staff info header styling */
+.advice-staff-info {
+  padding: 1rem;
+  background: #f0f8ff;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.advice-staff-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: #0084ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.advice-staff-details {
+  flex: 1;
+}
+
+.advice-staff-details h4 {
+  margin: 0 0 0.25rem 0;
+}
+
+.advice-staff-details p {
+  margin: 0;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* File preview styling */
+.advice-file-preview {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px 8px 0 0;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.advice-file-preview img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.advice-file-info {
+  flex: 1;
+}
+
+.advice-file-name {
+  font-weight: 500;
+}
+
+.advice-file-size {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.advice-remove-file {
+  background: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Attach button styling */
+.advice-attach-button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.advice-attach-button:hover {
+  background: #f0f0f0;
+}
+
+/* Message attachment styling */
+.advice-message-attachment {
+  margin-top: 0.5rem;
+}
+
+.advice-attachment-image {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.advice-attachment-file {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+/* Loading spinner */
+.advice-loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ffffff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Staff type buttons enhancement */
+.advice-staff-type-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+/* Responsive adjustments for staff mode */
+@media (max-width: 768px) {
+  .advice-staff-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+
+  .advice-file-preview {
+    padding: 0.75rem;
+  }
+
+  .advice-file-preview img {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* Responsive Design */
