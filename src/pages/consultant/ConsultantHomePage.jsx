@@ -16,6 +16,7 @@ import {
   FaBriefcase,
   FaBars,
   FaQuestion,
+  FaClipboardList,
 } from "react-icons/fa";
 import "../../styles/ConsultantHomePage.css";
 const ConsultantHomePage = () => {
@@ -138,7 +139,7 @@ const ConsultantHomePage = () => {
         animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
       >
-        <div className="sidebar-header">
+        <div className="consultant-sidebar-header">
           <Link
             to="/consultant"
             className="logo"
@@ -156,7 +157,7 @@ const ConsultantHomePage = () => {
               <span className="logo-text">Consultant Panel</span>
             )}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
+          {isSidebarOpen && <h2 className="consultant-sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -171,13 +172,13 @@ const ConsultantHomePage = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="sidebar-nav"
+          className="consultant-sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -187,7 +188,7 @@ const ConsultantHomePage = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -197,7 +198,7 @@ const ConsultantHomePage = () => {
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -207,7 +208,7 @@ const ConsultantHomePage = () => {
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -217,7 +218,7 @@ const ConsultantHomePage = () => {
               {isSidebarOpen && <span>Support</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultation/consultation-management"
               onClick={() => setIsSidebarOpen(true)}
@@ -227,7 +228,7 @@ const ConsultantHomePage = () => {
               {isSidebarOpen && <span>Patient Consultation</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <button
               className="sidebar-action-button"
               title="Add Consultation"
@@ -235,11 +236,11 @@ const ConsultantHomePage = () => {
                 navigate("/consultation/online-consultation-management")
               }
             >
-              <FaVideo size={20} />
+              <FaClipboardList size={20} />
               {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <button
               className="sidebar-action-button"
               title="Add Consultation"
@@ -255,7 +256,7 @@ const ConsultantHomePage = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item consultant-profile-section"
+                className="consultant-sidebar-nav-item consultant-profile-section"
               >
                 <Link
                   to="/profile"
@@ -272,14 +273,14 @@ const ConsultantHomePage = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="consultant-sidebar-nav-item"
               >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
                   aria-label="Sign out"
                 >
-                  <svg
+                  {/* <svg
                     width="24"
                     height="24"
                     fill="none"
@@ -293,16 +294,16 @@ const ConsultantHomePage = () => {
                       strokeLinejoin="round"
                       d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
                     />
-                  </svg>
-                  {isSidebarOpen && <span>Sign Out</span>}
+                  </svg> */}
+                  {/* {isSidebarOpen && <span>Sign Out</span>} */}
                   <FaSignOutAlt size={20} />
-                  {isSidebarOpen && <span>Sign out</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
-              <Link
+            <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
+              {/* <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
                 title="Sign In"
@@ -325,7 +326,7 @@ const ConsultantHomePage = () => {
                 {isSidebarOpen && <span>Sign In</span>}
                 <FaSignOutAlt size={20} />
                 {isSidebarOpen && <span>Sign out</span>}
-              </Link>
+              </Link> */}
             </motion.div>
           )}
         </motion.nav>
