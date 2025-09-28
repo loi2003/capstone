@@ -33,7 +33,14 @@ const ConsultationChat = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const messagesEndRef = useRef(null);
-  const { connection, messages, addMessage } = useMessages();
+  const {
+    connection,
+    messages,
+    addMessage,
+    connectionStatus,
+    isReconnecting,
+    isConnected,
+  } = useMessages();
   const {
     selectedConsultant: preSelectedConsultant,
     currentUserId: passedUserId,
@@ -469,14 +476,33 @@ const ConsultationChat = () => {
 
   // Enhanced send message function with file support
   const handleSendMessage = async () => {
-    if (
-      !connection ||
-      connection.state !== signalR.HubConnectionState.Connected
-    ) {
+    if (!connection || !isConnected) {
       console.error("SignalR connection not established");
-      alert("Connection lost. Please refresh the page.");
+
+      if (isReconnecting) {
+        alert("Reconnecting... Please try again in a moment.");
+      } else {
+        alert("Connection lost. Please wait while we reconnect...");
+      }
       return;
     }
+
+    // Additional state checking for extra safety
+    if (connection.state === signalR.HubConnectionState.Reconnecting) {
+      console.log("Connection is reconnecting, please wait...");
+      alert("Reconnecting... Please try again in a moment.");
+      return;
+    }
+
+    if (connection.state !== signalR.HubConnectionState.Connected) {
+      console.error(
+        "SignalR connection not ready. Current state:",
+        connection.state
+      );
+      alert("Connection not ready. Please wait a moment and try again.");
+      return;
+    }
+
     const consultantId = selectedConsultant?.user?.id;
     const activeThread =
       consultantId && chatThreads[consultantId]
@@ -611,10 +637,74 @@ const ConsultationChat = () => {
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      alert("Failed to send message. Please try again.");
+
+      // Enhanced error handling
+      if (
+        !isConnected ||
+        connection.state !== signalR.HubConnectionState.Connected
+      ) {
+        alert(
+          "Connection lost while sending message. Your message will be sent when reconnected."
+        );
+      } else {
+        alert("Failed to send message. Please try again.");
+      }
     } finally {
       setSendingMessage(false);
     }
+  };
+
+  const ConnectionStatusIndicator = () => {
+    if (isConnected && !isReconnecting) {
+      return null; // Don't show anything when connected
+    }
+
+    const getStatusMessage = () => {
+      switch (connectionStatus) {
+        case "connecting":
+          return "Connecting...";
+        case "reconnecting":
+          return "Reconnecting...";
+        case "disconnected":
+          return "Connection lost - Attempting to reconnect...";
+        default:
+          return "Connection status unknown";
+      }
+    };
+
+    const getStatusColor = () => {
+      switch (connectionStatus) {
+        case "connecting":
+          return "#2196f3";
+        case "reconnecting":
+          return "#ff9800";
+        case "disconnected":
+          return "#f44336";
+        default:
+          return "#9e9e9e";
+      }
+    };
+
+    return (
+      <div
+        className="connection-status-indicator"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: getStatusColor(),
+          color: "white",
+          padding: "8px 16px",
+          textAlign: "center",
+          zIndex: 1000,
+          fontSize: "14px",
+          fontWeight: "500",
+        }}
+      >
+        {getStatusMessage()}
+      </div>
+    );
   };
 
   // Enhanced message rendering
@@ -940,6 +1030,7 @@ const ConsultationChat = () => {
 
   return (
     <MainLayout>
+      <ConnectionStatusIndicator />
       <div className="consultation-chat">
         <div className="consultation-chat-content">
           {/* Sidebar */}
