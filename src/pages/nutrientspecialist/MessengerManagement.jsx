@@ -1,8 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import * as signalR from "@microsoft/signalr";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
+import {
+  startChatThread,
+  sendMessage,
+  getChatThreadByUserId,
+  getChatThreadById,
+} from "../../apis/message-api";
+import { getUserById } from "../../apis/user-api";
+import { useMessages } from "../../utils/useMessages";
 import "../../styles/MessengerManagement.css";
+import {
+  FaComments,
+  FaSearch,
+  FaUser,
+  FaPhone,
+  FaVideo,
+  FaFile,
+  FaPaperclip,
+  FaTimes,
+  FaClock,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { FaFileAlt } from "react-icons/fa";
+import { HiPaperAirplane } from "react-icons/hi2";
 
 const LoaderIcon = () => (
   <svg
@@ -44,19 +67,78 @@ const Notification = ({ message, type }) => {
 };
 
 const MessengerManagement = () => {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  // Original states
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+
+  // New consultation states (from ConsultationManagement)
+  const [currentStaffId, setCurrentStaffId] = useState(null);
+  const [currentStaffData, setCurrentStaffData] = useState(null);
+  const [chatThreads, setChatThreads] = useState({});
+  const [selectedThread, setSelectedThread] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const [filterStatus, setFilterStatus] = useState("all");
   const messagesEndRef = useRef(null);
 
+  const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+
+  // SignalR connection
+  const { connection } = useMessages();
+
+  // File handling utilities
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0;
+    let n = bytes;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return n.toFixed(n >= 10 || i === 0 ? 0 : 1) + " " + units[i];
+  };
+
+  const supportedImageTypes = [".jpg", ".jpeg", ".png"];
+  const supportedDocTypes = [".docx", ".xls", ".xlsx", ".pdf"];
+  const allSupportedTypes = [...supportedImageTypes, ...supportedDocTypes];
+
+  const isImageFile = (fileName) => {
+    if (!fileName) return false;
+    const extension = "." + fileName.toLowerCase().split(".").pop();
+    return supportedImageTypes.includes(extension);
+  };
+
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        const messagesContainer = messagesEndRef.current.closest(
+          ".messenger-management-messages"
+        );
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
+        }
+      }
+    });
+  };
+
+  // Original sidebar functions
   const toggleFoodDropdown = () => {
     setIsFoodDropdownOpen((prev) => !prev);
   };
@@ -83,6 +165,7 @@ const MessengerManagement = () => {
     navigate("/nutrient-specialist");
   };
 
+  // Initialize staff user (adapted from ConsultationManagement)
   useEffect(() => {
     const fetchUser = () => {
       if (!token) {
@@ -94,6 +177,9 @@ const MessengerManagement = () => {
           const userData = response.data?.data || response.data;
           if (userData && Number(userData.roleId) === 4) {
             setUser(userData);
+            setCurrentStaffId(userData.id);
+            setCurrentStaffData(userData);
+            loadStaffThreads(userData.id);
           } else {
             localStorage.removeItem("token");
             setUser(null);
@@ -105,10 +191,250 @@ const MessengerManagement = () => {
           localStorage.removeItem("token");
           setUser(null);
           navigate("/signin", { replace: true });
+        })
+        .finally(() => {
+          setLoading(false);
         });
     };
     fetchUser();
   }, [navigate, token]);
+
+  // Load staff threads (adapted from ConsultationManagement)
+  const loadStaffThreads = async (staffUserId) => {
+    try {
+      const threadsResponse = await getChatThreadByUserId(staffUserId, token);
+
+      let threads = [];
+      if (Array.isArray(threadsResponse)) {
+        threads = threadsResponse;
+      } else if (threadsResponse?.data && Array.isArray(threadsResponse.data)) {
+        threads = threadsResponse.data;
+      } else if (threadsResponse?.id) {
+        threads = [threadsResponse];
+      }
+
+      if (threads.length > 0) {
+        const threadsMap = {};
+
+        for (const thread of threads) {
+          let patientUserId = null;
+
+          if (thread.userId && thread.consultantId) {
+            if (thread.consultantId === staffUserId) {
+              patientUserId = thread.userId;
+            } else if (thread.userId === staffUserId) {
+              patientUserId = thread.consultantId;
+            }
+          } else if (thread.userId && thread.userId !== staffUserId) {
+            patientUserId = thread.userId;
+          }
+
+          if (!patientUserId) continue;
+
+          try {
+            const patientRes = await getUserById(patientUserId, token);
+            const patientData = patientRes?.data || patientRes || null;
+
+            const processedMessages =
+              thread.messages?.map((msg) => {
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  return {
+                    ...msg,
+                    attachment: {
+                      fileName:
+                        msg.attachmentFileName || msg.fileName || "Attachment",
+                      fileSize: msg.attachmentFileSize || msg.fileSize,
+                      fileType: msg.attachmentFileType || msg.fileType,
+                      isImage: isImageFile(
+                        msg.attachmentFileName || msg.fileName
+                      ),
+                      url:
+                        msg.attachmentUrl ||
+                        msg.attachmentPath ||
+                        msg.attachment?.url,
+                    },
+                  };
+                }
+                return msg;
+              }) || [];
+
+            const unreadCount = processedMessages.filter(
+              (msg) => !msg.isRead && msg.senderId === patientUserId
+            ).length;
+
+            threadsMap[patientUserId] = {
+              thread,
+              messages: processedMessages,
+              patient: patientData,
+              lastActivity: thread.updatedAt || thread.createdAt,
+              unreadCount: unreadCount,
+            };
+          } catch (err) {
+            console.error(`Failed to fetch patient ${patientUserId}:`, err);
+          }
+        }
+
+        setChatThreads(threadsMap);
+      }
+    } catch (error) {
+      console.error("Failed to load staff threads:", error);
+    }
+  };
+
+  // Handle selecting a chat thread
+  const handleSelectThread = (patientUserId) => {
+    const threadData = chatThreads[patientUserId];
+    if (threadData) {
+      setSelectedThread({
+        ...threadData,
+        patientUserId: patientUserId,
+      });
+
+      setChatThreads((prevThreads) => ({
+        ...prevThreads,
+        [patientUserId]: {
+          ...prevThreads[patientUserId],
+          unreadCount: 0,
+          messages: prevThreads[patientUserId].messages.map((msg) => ({
+            ...msg,
+            isRead: msg.senderId === patientUserId ? true : msg.isRead,
+          })),
+        },
+      }));
+    }
+  };
+
+  // File handling
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    const fileExtension = "." + fileName.split(".").pop();
+
+    if (!allSupportedTypes.includes(fileExtension)) {
+      alert(
+        `Unsupported file type. Supported types: ${allSupportedTypes.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    setSelectedFile(file);
+
+    if (supportedImageTypes.includes(fileExtension)) {
+      const reader = new FileReader();
+      reader.onload = (e) => setFilePreview(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Send message
+  const handleSendMessage = async () => {
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
+      alert("Connection lost. Please refresh the page.");
+      return;
+    }
+
+    const patientUserId = selectedThread?.patientUserId;
+    const activeThread = selectedThread?.thread;
+
+    if (
+      (!newMessage.trim() && !selectedFile) ||
+      !activeThread ||
+      sendingMessage
+    ) {
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      const formData = new FormData();
+
+      formData.append("ChatThreadId", activeThread.id);
+      formData.append("SenderId", currentStaffId);
+
+      if (newMessage.trim()) {
+        formData.append("MessageText", newMessage.trim());
+      }
+
+      if (selectedFile) {
+        formData.append("Attachments", selectedFile);
+        formData.append("AttachmentFileName", selectedFile.name);
+        formData.append("AttachmentFileType", selectedFile.type);
+        formData.append("AttachmentFileSize", selectedFile.size.toString());
+      }
+
+      const response = await sendMessage(formData, token);
+
+      if (response.error === 0) {
+        const attachmentUrl =
+          response.data?.attachmentUrl ||
+          response.data?.attachmentPath ||
+          response.data?.attachment?.url;
+
+        const newMsg = {
+          id: response.data?.id || Date.now().toString(),
+          senderId: currentStaffId,
+          receiverId: patientUserId,
+          messageText: newMessage.trim(),
+          createdAt: response.data?.sentAt || new Date().toISOString(),
+          messageType: selectedFile ? "attachment" : "text",
+          isRead: false,
+          attachmentUrl: attachmentUrl,
+          attachmentFileName: selectedFile?.name,
+          attachmentFileType: selectedFile?.type,
+          attachmentFileSize: selectedFile?.size,
+          attachment: selectedFile
+            ? {
+                fileName: selectedFile.name,
+                fileSize: selectedFile.size,
+                fileType: selectedFile.type,
+                isImage: isImageFile(selectedFile.name),
+                url: attachmentUrl || filePreview,
+              }
+            : null,
+        };
+
+        setChatThreads((prevThreads) => ({
+          ...prevThreads,
+          [patientUserId]: {
+            ...prevThreads[patientUserId],
+            messages: [...(prevThreads[patientUserId]?.messages || []), newMsg],
+            lastActivity: newMsg.createdAt,
+          },
+        }));
+
+        setSelectedThread((prev) => ({
+          ...prev,
+          messages: [...(prev?.messages || []), newMsg],
+        }));
+
+        setNewMessage("");
+        clearSelectedFile();
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      showNotification("Failed to send message", "error");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
@@ -117,30 +443,6 @@ const MessengerManagement = () => {
       document.removeEventListener("closeNotification", closeListener);
     };
     document.addEventListener("closeNotification", closeListener);
-  };
-
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) {
-      showNotification("Message cannot be empty", "error");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const message = {
-        id: Date.now(),
-        content: newMessage,
-        sender: user?.email || "User",
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      setMessages((prev) => [...prev, message]);
-      setNewMessage("");
-      showNotification("Message sent successfully", "success");
-    } catch (err) {
-      showNotification("Failed to send message", "error");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const toggleSidebar = () => {
@@ -161,6 +463,51 @@ const MessengerManagement = () => {
     }
   };
 
+  // Helper functions
+  const formatMessageTime = (timestamp) => {
+    if (!timestamp) return "";
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMinutes < 1) return "Just now";
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Filter threads
+  const filteredThreads = Object.entries(chatThreads).filter(
+    ([userId, thread]) => {
+      const searchMatch =
+        !searchTerm ||
+        thread.patient?.userName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        thread.patient?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const statusMatch =
+        filterStatus === "all" ||
+        (filterStatus === "unread" && thread.unreadCount > 0) ||
+        (filterStatus === "active" && thread.messages?.length > 0);
+
+      return searchMatch && statusMatch;
+    }
+  );
+
+  const totalUnreadCount = Object.values(chatThreads).reduce(
+    (sum, thread) => sum + thread.unreadCount,
+    0
+  );
+
   useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth > 768);
@@ -170,9 +517,10 @@ const MessengerManagement = () => {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    scrollToBottom();
+  }, [selectedThread?.messages]);
 
+  // Animation variants (keep original)
   const containerVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { duration: 0.5 } },
@@ -425,7 +773,9 @@ const MessengerManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
+                animate={
+                  isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -1126,94 +1476,355 @@ const MessengerManagement = () => {
         </motion.nav>
       </motion.aside>
       <motion.main
-        className={`content ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`content ${
+          isSidebarOpen ? "sidebar-open" : "sidebar-closed"
+        }`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Messenger Management</h1>
-            <p>Communicate and manage messages for nutrient-related queries</p>
+            <h1>User Consultation Management</h1>
+            <p>Connect with users for nutrition guidance and consultation</p>
           </div>
         </div>
+
+        {/* NEW: Refactored management-container with consultation functionality */}
         <div className="management-container">
-          <div className="chat-section">
-            <div className="section-header">
-              <h2>Chat Box</h2>
+          {loading ? (
+            <div className="loading-state">
+              <LoaderIcon />
+              <p>Loading conversations...</p>
             </div>
-            <div className="chat-card">
-              <div className="chat-messages">
-                {loading ? (
-                  <div className="loading-state">
-                    <LoaderIcon />
-                    <p>Loading messages...</p>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="empty-state">
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+          ) : (
+            <div className="consultation-layout">
+              {/* Conversations Sidebar */}
+              <div className="conversations-sidebar">
+                <div className="conversations-header">
+                  <h3>
+                    <FaComments />
+                    Conversations
+                    {totalUnreadCount > 0 && (
+                      <span className="unread-badge">{totalUnreadCount}</span>
+                    )}
+                  </h3>
+
+                  <div className="search-section">
+                    <div className="search-input-wrapper">
+                      <FaSearch className="search-icon" />
+                      <input
+                        type="text"
+                        placeholder="Search conversations..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
                       />
-                    </svg>
-                    <h3>No messages yet</h3>
-                    <p>Start a conversation by sending a message</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="messages-container">
-                    {messages.map((message) => (
-                      <motion.div
-                        key={message.id}
-                        className="message-bubble"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
+
+                  <div className="filter-tabs">
+                    <button
+                      className={`filter-tab ${
+                        filterStatus === "all" ? "active" : ""
+                      }`}
+                      onClick={() => setFilterStatus("all")}
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`filter-tab ${
+                        filterStatus === "unread" ? "active" : ""
+                      }`}
+                      onClick={() => setFilterStatus("unread")}
+                    >
+                      Unread
+                    </button>
+                    {/* <button
+                      className={`filter-tab ${
+                        filterStatus === "active" ? "active" : ""
+                      }`}
+                      onClick={() => setFilterStatus("active")}
+                    >
+                      Active
+                    </button> */}
+                  </div>
+                </div>
+
+                <div className="conversations-list">
+                  {filteredThreads.length === 0 ? (
+                    <div className="no-conversations">
+                      <FaComments className="no-conversations-icon" />
+                      <p>
+                        {searchTerm || filterStatus !== "all"
+                          ? "No conversations match your criteria."
+                          : "You don't have any user conversations yet."}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredThreads.map(([userId, thread]) => (
+                      <div
+                        key={userId}
+                        className={`conversation-item ${
+                          selectedThread?.patientUserId === userId
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() => handleSelectThread(userId)}
                       >
-                        <div className="message-header">
-                          <span className="message-sender">{message.sender}</span>
-                          <span className="message-timestamp">{message.timestamp}</span>
+                        <div className="conversation-avatar">
+                          <FaUser />
                         </div>
-                        <p className="message-content">{message.content}</p>
-                      </motion.div>
-                    ))}
-                    <div ref={messagesEndRef} />
+
+                        <div className="conversation-info">
+                          <div className="conversation-header">
+                            <h5 className="patient-name">
+                              {thread.patient?.userName || `User ${userId}`}
+                            </h5>
+                            {thread.unreadCount > 0 && (
+                              <span className="unread-count">
+                                {thread.unreadCount}
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="last-message">
+                            {thread.messages?.length > 0
+                              ? thread.messages[thread.messages.length - 1]
+                                  .messageText || "Attachment"
+                              : "No messages yet"}
+                          </p>
+
+                          <div className="conversation-meta">
+                            <span className="last-activity">
+                              {formatMessageTime(thread.lastActivity)}
+                            </span>
+                            {thread.patient?.email && (
+                              <span className="patient-email">
+                                {thread.patient.email}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Chat Area */}
+              <div className="chat-area">
+                {selectedThread ? (
+                  <>
+                    {/* Chat Header */}
+                    <div className="chat-header">
+                      <div className="patient-info">
+                        <div className="patient-avatar">
+                          <FaUser />
+                        </div>
+                        <div className="patient-details">
+                          <h3>{selectedThread.patient?.userName || "User"}</h3>
+                          <p className="patient-status">
+                            {selectedThread.patient?.email || "Consultation"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* <div className="chat-actions">
+                        <button className="action-btn" title="User Profile">
+                          <FaUser />
+                        </button>
+                        <button className="action-btn" title="Call">
+                          <FaPhone />
+                        </button>
+                        <button className="action-btn" title="Video Call">
+                          <FaVideo />
+                        </button>
+                      </div> */}
+                    </div>
+
+                    {/* Messages Area */}
+                    <div className="messenger-management-messages">
+                      {selectedThread.messages?.length === 0 ? (
+                        <div className="no-messages">
+                          <FaComments className="no-messages-icon" />
+                          <p>Send a message to begin the consultation.</p>
+                        </div>
+                      ) : (
+                        <>
+                          {selectedThread.messages?.map((msg, idx) => {
+                            const isSent = msg.senderId === currentStaffId;
+                            const messageClass = isSent ? "sent" : "received";
+                            const hasAttachment = msg.attachment;
+
+                            return (
+                              <motion.div
+                                key={idx}
+                                className={`message ${messageClass}`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <div className="message-content">
+                                  {msg.messageText && (
+                                    <div className="message-text">
+                                      {msg.messageText}
+                                    </div>
+                                  )}
+
+                                  {hasAttachment && (
+                                    <div className="message-attachment">
+                                      {msg.attachment.isImage ? (
+                                        <img
+                                          src={msg.attachment.url}
+                                          alt="Attachment"
+                                          className="attachment-image"
+                                          onClick={() =>
+                                            window.open(
+                                              msg.attachment.url,
+                                              "_blank"
+                                            )
+                                          }
+                                        />
+                                      ) : (
+                                        <div className="attachment-file">
+                                          <FaFileAlt className="file-icon" />
+                                          <div className="file-info">
+                                            <span className="file-name">
+                                              {msg.attachment.fileName}
+                                            </span>
+                                            <span className="file-size">
+                                              {formatBytes(
+                                                msg.attachment.fileSize
+                                              )}
+                                            </span>
+                                          </div>
+                                          <button
+                                            onClick={() =>
+                                              window.open(
+                                                msg.attachment.url,
+                                                "_blank"
+                                              )
+                                            }
+                                            className="download-btn"
+                                          >
+                                            <FaFile />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="message-time">
+                                    {new Date(msg.createdAt).toLocaleTimeString(
+                                      [],
+                                      {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      }
+                                    )}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                          <div ref={messagesEndRef} />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Message Input */}
+                    <div className="message-input-area">
+                      {selectedFile && (
+                        <div className="file-preview">
+                          {filePreview ? (
+                            <img
+                              src={filePreview}
+                              alt="Preview"
+                              className="preview-image"
+                            />
+                          ) : (
+                            <div className="file-info">
+                              <FaFileAlt className="file-icon" />
+                              <span>{selectedFile.name}</span>
+                              <span className="file-size">
+                                ({formatBytes(selectedFile.size)})
+                              </span>
+                            </div>
+                          )}
+                          <button
+                            onClick={clearSelectedFile}
+                            className="remove-file"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="input-container">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          accept={allSupportedTypes.join(",")}
+                          style={{ display: "none" }}
+                        />
+
+                        {/* <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="attach-btn"
+                          title="Attach file"
+                        >
+                          <FaPaperclip />
+                        </button> */}
+
+                        <input
+                          type="text"
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="Type your message..."
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendMessage();
+                            }
+                          }}
+                          disabled={sendingMessage}
+                          className="message-input"
+                        />
+
+                        <button
+                          onClick={handleSendMessage}
+                          disabled={
+                            (!newMessage.trim() && !selectedFile) ||
+                            sendingMessage
+                          }
+                          className="send-btn"
+                        >
+                          {sendingMessage ? (
+                            <div className="loading-spinner" />
+                          ) : (
+                            <HiPaperAirplane />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-selection">
+                    <div className="no-selection-content">
+                      <FaComments className="no-selection-icon" />
+                      <h3>Nutrition Staff Dashboard</h3>
+                      <p>
+                        Choose a user conversation from the list to view and
+                        respond to messages.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
-              <div className="chat-input">
-                <div className="form-group">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="input-field"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") handleSendMessage();
-                    }}
-                  />
-                </div>
-                <motion.button
-                  onClick={handleSendMessage}
-                  disabled={loading}
-                  className="button primary"
-                  whileHover={{ scale: loading ? 1 : 1.05 }}
-                  whileTap={{ scale: loading ? 1 : 0.95 }}
-                >
-                  {loading ? "Sending..." : "Send"}
-                </motion.button>
-              </div>
             </div>
-          </div>
+          )}
         </div>
       </motion.main>
     </div>

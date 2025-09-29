@@ -823,9 +823,10 @@ const AdvicePage = () => {
               <p className="advice-description">
                 {activeMode === "ai"
                   ? "Chat with our AI for instant pregnancy-related advice."
-                  : `Get personalized guidance from our ${
-                      selectedStaffType === "nutrition" ? "nutrition" : "health"
-                    } staff.`}
+                  // : `Get personalized guidance from our ${
+                  //     selectedStaffType === "nutrition" ? "nutrition" : "health"
+                  //   } staff.`}
+                    : `Get personalized guidance from our specialists`}
               </p>
             </div>
 
