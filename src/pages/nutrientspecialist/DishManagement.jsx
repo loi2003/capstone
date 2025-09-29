@@ -231,27 +231,113 @@ const DishManagement = () => {
     }
   };
 
-  const createDishHandler = async () => {
-    if (!newDish.dishName || newDish.dishName.trim() === "") {
+  const validateDishInputs = () => {
+    const nameRegex = /^[a-zA-Z0-9\s.,'-]+$/;
+    const descRegex = /^[a-zA-Z0-9\s.,'-]*$/;
+    const trimmedName = newDish.dishName?.trim() || "";
+    const trimmedDescription = newDish.description?.trim() || "";
+
+    // Validate dish name
+    if (!trimmedName) {
       showNotification("Dish name is required", "error");
-      return;
+      return false;
     }
+    if (trimmedName.length <= 2) {
+      showNotification("Dish name must be more than 2 characters", "error");
+      return false;
+    }
+    if (trimmedName.length > 50) {
+      showNotification("Dish name must be 50 characters or less", "error");
+      return false;
+    }
+    if (!nameRegex.test(trimmedName)) {
+      showNotification("Dish name contains invalid characters", "error");
+      return false;
+    }
+    if (
+      dishes.some(
+        (dish) =>
+          dish.dishName.toLowerCase() === trimmedName.toLowerCase() &&
+          (!isEditing || dish.id !== selectedDish?.id)
+      )
+    ) {
+      showNotification("Dish name already exists", "error");
+      return false;
+    }
+    if (/^\s+[a-zA-Z]/.test(newDish.dishName)) {
+      showNotification(
+        "Dish name cannot start with a space followed by a letter",
+        "error"
+      );
+      return false;
+    }
+
+    // Validate description
+    if (!trimmedDescription) {
+      showNotification("Description is required", "error");
+      return false;
+    }
+    if (
+      trimmedDescription.split(/\s+/).filter((word) => word.length > 0).length <=
+      1
+    ) {
+      showNotification("Description must contain more than one word", "error");
+      return false;
+    }
+    if (trimmedDescription.length > 500) {
+      showNotification("Description must be 500 characters or less", "error");
+      return false;
+    }
+    if (!descRegex.test(trimmedDescription)) {
+      showNotification("Description contains invalid characters", "error");
+      return false;
+    }
+    if (/^\s+[a-zA-Z]/.test(newDish.description)) {
+      showNotification(
+        "Description cannot start with a space followed by a letter",
+        "error"
+      );
+      return false;
+    }
+
+    // Validate food list
     if (newDish.foodList.length === 0) {
       showNotification("Please select at least one food", "error");
-      return;
+      return false;
     }
     if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
       showNotification(
         "Please provide valid unit and amount for all selected foods",
         "error"
       );
+      return false;
+    }
+
+    // Validate image (optional, but if provided, check file type and size)
+    if (newDish.image instanceof File) {
+      const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!validImageTypes.includes(newDish.image.type)) {
+        showNotification("Image must be a JPEG, PNG, or GIF", "error");
+        return false;
+      }
+      if (newDish.image.size > 5 * 1024 * 1024) {
+        showNotification("Image size must be less than 5MB", "error");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const createDishHandler = async () => {
+    if (!validateDishInputs()) {
       return;
     }
     setLoading(true);
     try {
       const dishResponse = await createDish({
-        dishName: newDish.dishName,
-        description: newDish.description,
+        dishName: newDish.dishName.trim(),
+        description: newDish.description.trim(),
         foodList: newDish.foodList,
       });
       const dishId = dishResponse?.data?.id || dishResponse?.id;
@@ -285,23 +371,15 @@ const DishManagement = () => {
   };
 
   const updateDishHandler = async () => {
-    if (!newDish.dishName || newDish.dishName.trim() === "") {
-      showNotification("Dish name is required", "error");
-      return;
-    }
-    if (newDish.foodList.some((food) => !food.unit || food.amount <= 0)) {
-      showNotification(
-        "Please provide valid unit and amount for all selected foods",
-        "error"
-      );
+    if (!validateDishInputs()) {
       return;
     }
     setLoading(true);
     try {
       await updateDish({
         dishId: selectedDish?.id,
-        dishName: newDish.dishName,
-        description: newDish.description,
+        dishName: newDish.dishName.trim(),
+        description: newDish.description.trim(),
         foodList: newDish.foodList.map((food) => ({
           foodId: food.foodId,
           unit: food.unit === "grams" ? "g" : food.unit,
@@ -335,10 +413,11 @@ const DishManagement = () => {
   };
 
   const removeDishImageHandler = async () => {
-    if (!window.confirm("Are you sure you want to remove the dish image?")) return;
+    if (!window.confirm("Are you sure you want to remove the dish image?"))
+      return;
     setLoading(true);
     try {
-      await updateDishImage(selectedDish?.id, null); // Assuming API supports null to remove image
+      await updateDishImage(selectedDish?.id, null);
       setNewDish((prev) => ({ ...prev, image: null }));
       if (fileInputRef.current) {
         fileInputRef.current.value = null;
@@ -1906,19 +1985,15 @@ const DishManagement = () => {
                     >
                       Previous
                     </motion.button>
-                    <span className="pagination-info">
+                                      <span className="pagination-info">
                       Page {currentPage} of {totalPages}
                     </span>
                     <motion.button
                       onClick={handleNextPage}
                       disabled={currentPage === totalPages}
                       className="pagination-button"
-                      whileHover={{
-                        scale: currentPage === totalPages ? 1 : 1.05,
-                      }}
-                      whileTap={{
-                        scale: currentPage === totalPages ? 1 : 0.95,
-                      }}
+                      whileHover={{ scale: currentPage === totalPages ? 1 : 1.05 }}
+                      whileTap={{ scale: currentPage === totalPages ? 1 : 0.95 }}
                     >
                       Next
                     </motion.button>
@@ -1928,16 +2003,16 @@ const DishManagement = () => {
             )}
           </div>
         </div>
-        <AnimatePresence>
-          {selectedViewDish && (
-            <DishModal
-              dish={selectedViewDish}
-              onClose={() => setSelectedViewDish(null)}
-              foods={foods}
-            />
-          )}
-        </AnimatePresence>
       </motion.main>
+      <AnimatePresence>
+        {selectedViewDish && (
+          <DishModal
+            dish={selectedViewDish}
+            onClose={() => setSelectedViewDish(null)}
+            foods={foods}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -1807,28 +1807,28 @@ export const createWarningFoodForAllergy = async (warningData) => {
 };
 
 export const viewWarningFoods = async (filterData) => {
-  try {
-    const payload = {
-      allergyIds: filterData.allergyIds || [],
-      diseaseIds: filterData.diseaseIds || [],
-    };
-    console.log("Sending view warning foods request with payload:", payload);
-    const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-    console.log("View warning foods response:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching warning foods:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-    });
-    throw error;
-  }
+  // try {
+  //   const payload = {
+  //     allergyIds: filterData.allergyIds || [],
+  //     diseaseIds: filterData.diseaseIds || [],
+  //   };
+  //   console.log("Sending view warning foods request with payload:", payload);
+  //   const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Accept: "application/json",
+  //     },
+  //   });
+  //   console.log("View warning foods response:", response.data);
+  //   return response.data;
+  // } catch (error) {
+  //   console.error("Error fetching warning foods:", {
+  //     message: error.message,
+  //     response: error.response?.data,
+  //     status: error.response?.status,
+  //   });
+  //   throw error;
+  // }
 };
 // EnergySuggestion Management APIs
 export const getAllEnergySuggestions = async () => {
@@ -1989,6 +1989,37 @@ export const updateEnergySuggestion = async (energySuggestionData, token) => {
     });
     throw error;
   }
+};
+export const deleteEnergySuggestion = async (energySuggestionId, token) => {
+  try {
+    if (!energySuggestionId || energySuggestionId === "") {
+      throw new Error("Energy Suggestion ID is null or empty");
+    }
+    console.log("Deleting energy suggestion with ID:", energySuggestionId);
+    const headers = {
+      Accept: "application/json",
+    };
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const response = await apiClient.delete(`/api/EnergySuggestion/delete-energy-suggestion-by-id`, {
+      params: {
+        energySuggestionId: energySuggestionId,
+      },
+      headers,
+      timeout: 60000,
+    });
+    console.log("Delete energy suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting energy suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
+    throw error;
+  }
 };// Nutrient Suggestion Management APIs
 export const createNutrientSuggestion = async (nutrientSuggestionData, token) => {
   try {
@@ -2030,28 +2061,27 @@ export const createNutrientSuggestion = async (nutrientSuggestionData, token) =>
     throw error;
   }
 };
-
 export const addNutrientSuggestionAttribute = async (attributeData, token) => {
   try {
     if (!attributeData.nutrientSuggestionId || !attributeData.nutrientId) {
       throw new Error("Nutrient suggestion ID and nutrient ID are required");
     }
-
     const isValidGuid = (guid) => {
       const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
     };
-
     if (!isValidGuid(attributeData.nutrientSuggestionId)) {
       throw new Error("Nutrient suggestion ID must be a valid GUID");
     }
     if (!isValidGuid(attributeData.nutrientId)) {
       throw new Error("Nutrient ID must be a valid GUID");
     }
-
+    if (attributeData.ageGroupId && !isValidGuid(attributeData.ageGroupId)) {
+      throw new Error("Age group ID must be a valid GUID");
+    }
     const payload = {
-      nutrientSuggetionId: attributeData.nutrientSuggestionId, // Changed to match backend's expected field name
-      ageGroudId: attributeData.ageGroudId || null, // Fixed typo to match backend: ageGroudId (missing 'p')
+      nutrientSuggetionId: attributeData.nutrientSuggestionId,
+      ageGroupId: attributeData.ageGroupId || null, // Corrected from ageGroudId
       trimester: attributeData.trimester || 0,
       maxEnergyPercentage: attributeData.maxEnergyPercentage || 0,
       minEnergyPercentage: attributeData.minEnergyPercentage || 0,
@@ -2063,24 +2093,20 @@ export const addNutrientSuggestionAttribute = async (attributeData, token) => {
       nutrientId: attributeData.nutrientId,
       type: attributeData.type || 0,
     };
-
     console.log("Sending add nutrient suggestion attribute request with payload:", payload);
-
+    console.log("Token:", token);
     const headers = {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
-
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-
     const response = await apiClient.put(
       `/api/NutrientSuggestion/AddAttribute`,
       payload,
       { headers }
     );
-
     console.log("Add nutrient suggestion attribute response:", response.data);
     return response.data;
   } catch (error) {
@@ -2088,6 +2114,8 @@ export const addNutrientSuggestionAttribute = async (attributeData, token) => {
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
+      headers: error.response?.headers,
+      config: error.config,
     });
     throw error;
   }

@@ -521,9 +521,27 @@
   background: #4b5563;
 }
 
+.energy-suggestion .nutrient-specialist-button.danger {
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+}
+
+.energy-suggestion .nutrient-specialist-button.danger:hover {
+  background: #b71c1c;
+}
+
 .energy-suggestion .nutrient-specialist-button:disabled {
   background: #d1d5db;
   cursor: not-allowed;
+}
+
+.energy-suggestion.dark-theme .nutrient-specialist-button.danger {
+  background: var(--nutrient-specialist-logout);
+  color: var(--nutrient-specialist-white);
+}
+
+.energy-suggestion.dark-theme .nutrient-specialist-button.danger:hover {
+  background: #b71c1c;
 }
 
 .energy-suggestion .nutrient-list-section {
@@ -596,7 +614,8 @@
 }
 
 .energy-suggestion .edit-button,
-.energy-suggestion .view-button {
+.energy-suggestion .view-button,
+.energy-suggestion .delete-button {
   flex: 1;
 }
 

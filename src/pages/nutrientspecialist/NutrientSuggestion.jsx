@@ -58,9 +58,7 @@ const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
   const attributes = Array.isArray(suggestion?.nutrientSuggestionAttributes)
     ? suggestion.nutrientSuggestionAttributes
     : [];
-
   console.log("NutrientSuggestionModal - suggestion data:", suggestion);
-
   return (
     <motion.div
       className="modal-overlay"
@@ -83,7 +81,7 @@ const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
           <ul>
             {attributes.map((attr, index) => {
               const attribute = attr.attribute || {};
-              const ageGroup = ageGroups.find((g) => g.id === attr.ageGroudId);
+              const ageGroup = ageGroups.find((g) => g.id === attr.ageGroupId); // Updated to ageGroupId
               return (
                 <li key={index}>
                   <strong>Nutrient:</strong> {attribute.nutrientName || "Unknown Nutrient"}<br />
@@ -92,7 +90,7 @@ const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
                   <strong>Age Group:</strong>{" "}
                   {ageGroup
                     ? ageGroup.name || `Age ${ageGroup.fromAge}-${ageGroup.toAge}`
-                    : "Unknown Age Group"} (ID: {attr.ageGroudId || "N/A"})<br />
+                    : "Unknown Age Group"} (ID: {attr.ageGroupId || "N/A"})<br />
                   <strong>Trimester:</strong> {attr.trimester || "N/A"}<br />
                   <strong>Type:</strong> {attribute.type || "N/A"}<br />
                   <strong>Min Energy %:</strong> {attribute.minEnergyPercentage || "N/A"}<br />
@@ -132,7 +130,7 @@ const NutrientAttributeModal = ({
 }) => {
   const [attributeData, setAttributeData] = useState({
     nutrientSuggestionId: suggestionId || "",
-    ageGroudId: "",
+    ageGroupId: "", // Corrected from ageGroudId
     trimester: "",
     maxEnergyPercentage: "",
     minEnergyPercentage: "",
@@ -158,7 +156,12 @@ const NutrientAttributeModal = ({
     if (!isValidGuid(attributeData.nutrientSuggestionId)) {
       return "NutrientSuggestionId is required and must be a valid GUID";
     }
-
+    if (!isValidGuid(attributeData.nutrientId)) {
+      return "NutrientId is required and must be a valid GUID";
+    }
+    if (attributeData.ageGroupId && !isValidGuid(attributeData.ageGroupId)) {
+      return "AgeGroupId must be a valid GUID";
+    }
     if (
       attributeData.minValuePerDay !== "" &&
       attributeData.maxValuePerDay !== "" &&
@@ -166,7 +169,13 @@ const NutrientAttributeModal = ({
     ) {
       return "MinValuePerDay cannot be greater than MaxValuePerDay";
     }
-
+    if (
+      attributeData.minEnergyPercentage !== "" &&
+      attributeData.maxEnergyPercentage !== "" &&
+      parseFloat(attributeData.minEnergyPercentage) > parseFloat(attributeData.maxEnergyPercentage)
+    ) {
+      return "MinEnergyPercentage cannot be greater than MaxEnergyPercentage";
+    }
     if (
       attributeData.minAnimalProteinPercentageRequire !== "" &&
       (parseFloat(attributeData.minAnimalProteinPercentageRequire) < 0 ||
@@ -174,27 +183,18 @@ const NutrientAttributeModal = ({
     ) {
       return "MinAnimalProteinPercentageRequire must be between 0 and 100";
     }
-
-    if (!attributeData.unit || attributeData.unit.trim() === "") {
-      return "Unit is required";
+    if (attributeData.unit && attributeData.unit.trim() === "") {
+      return "Unit cannot be an empty string";
     }
-
     if (attributeData.amount !== "" && parseFloat(attributeData.amount) < 0) {
       return "Amount must be non-negative";
     }
-
-    if (!isValidGuid(attributeData.nutrientId)) {
-      return "NutrientId is required and must be a valid GUID";
-    }
-
     if (attributeData.type !== "" && parseInt(attributeData.type) < 0) {
       return "Type must be non-negative";
     }
-
     if (attributeData.trimester !== "" && ![1, 2, 3].includes(parseInt(attributeData.trimester))) {
       return "Trimester must be 1, 2, or 3";
     }
-
     return null;
   };
 
@@ -203,29 +203,31 @@ const NutrientAttributeModal = ({
       alert("Please select a nutrient");
       return;
     }
-    if (!isValidGuid(attributeData.ageGroudId)) {
+    if (!isValidGuid(attributeData.ageGroupId)) {
       alert("Please select an age group");
       return;
     }
-
     const validationError = validateAttributeData();
     if (validationError) {
       alert(validationError);
       return;
     }
-
     try {
-      await onSave({
-        ...attributeData,
-        trimester: attributeData.trimester ? parseInt(attributeData.trimester) : undefined,
-        maxEnergyPercentage: attributeData.maxEnergyPercentage ? parseFloat(attributeData.maxEnergyPercentage) : undefined,
-        minEnergyPercentage: attributeData.minEnergyPercentage ? parseFloat(attributeData.minEnergyPercentage) : undefined,
-        maxValuePerDay: attributeData.maxValuePerDay ? parseFloat(attributeData.maxValuePerDay) : undefined,
-        minValuePerDay: attributeData.minValuePerDay ? parseFloat(attributeData.minValuePerDay) : undefined,
-        amount: attributeData.amount ? parseFloat(attributeData.amount) : undefined,
-        minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire ? parseFloat(attributeData.minAnimalProteinPercentageRequire) : undefined,
-        type: attributeData.type ? parseInt(attributeData.type) : undefined,
-      });
+      const cleanedAttributeData = {
+        nutrientSuggestionId: attributeData.nutrientSuggestionId,
+        nutrientId: attributeData.nutrientId,
+        ageGroupId: attributeData.ageGroupId || null,
+        trimester: attributeData.trimester ? parseInt(attributeData.trimester) : null,
+        maxEnergyPercentage: attributeData.maxEnergyPercentage ? parseFloat(attributeData.maxEnergyPercentage) : null,
+        minEnergyPercentage: attributeData.minEnergyPercentage ? parseFloat(attributeData.minEnergyPercentage) : null,
+        maxValuePerDay: attributeData.maxValuePerDay ? parseFloat(attributeData.maxValuePerDay) : null,
+        minValuePerDay: attributeData.minValuePerDay ? parseFloat(attributeData.minValuePerDay) : null,
+        unit: attributeData.unit || null,
+        amount: attributeData.amount ? parseFloat(attributeData.amount) : null,
+        minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire ? parseFloat(attributeData.minAnimalProteinPercentageRequire) : null,
+        type: attributeData.type ? parseInt(attributeData.type) : null,
+      };
+      await onSave(cleanedAttributeData);
       onClose();
     } catch (error) {
       console.error("Error saving attribute:", error);
@@ -276,11 +278,11 @@ const NutrientAttributeModal = ({
           )}
         </div>
         <div className="form-group">
-          <label htmlFor="ageGroudId">Age Group</label>
+          <label htmlFor="ageGroupId">Age Group</label>
           <select
-            id="ageGroudId"
-            value={attributeData.ageGroudId}
-            onChange={(e) => handleInputChange("ageGroudId", e.target.value)}
+            id="ageGroupId"
+            value={attributeData.ageGroupId}
+            onChange={(e) => handleInputChange("ageGroupId", e.target.value)}
             className="input-field"
           >
             <option value="">Select Age Group</option>
@@ -428,7 +430,7 @@ const NutrientAttributeModal = ({
             className="nutrient-specialist-button primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            disabled={!isValidGuid(attributeData.nutrientId) || !isValidGuid(attributeData.ageGroudId)}
+            disabled={!isValidGuid(attributeData.nutrientId) || !isValidGuid(attributeData.ageGroupId)}
           >
             Save Attribute
           </motion.button>
@@ -546,11 +548,9 @@ const NutrientSuggestion = () => {
         getAllNutrients(),
         getAllAgeGroups(),
       ]);
-
       console.log("Suggestions Response:", suggestionsResponse);
       console.log("Nutrients Response:", nutrientsResponse);
       console.log("Age Groups Response:", ageGroupsResponse);
-
       const suggestionsData = extractData(suggestionsResponse);
       if (!Array.isArray(suggestionsData)) {
         console.warn("Suggestions data is not an array:", suggestionsData);
@@ -558,7 +558,6 @@ const NutrientSuggestion = () => {
       } else {
         setSuggestions(suggestionsData);
       }
-
       const nutrientsData = extractData(nutrientsResponse);
       if (!Array.isArray(nutrientsData)) {
         console.warn("Nutrients data is not an array:", nutrientsData);
@@ -569,7 +568,6 @@ const NutrientSuggestion = () => {
         console.log("Valid Nutrients:", validNutrients);
         setNutrients(validNutrients);
       }
-
       const ageGroupsData = extractData(ageGroupsResponse);
       if (!Array.isArray(ageGroupsData)) {
         console.warn("Age groups data is not an array:", ageGroupsData);
@@ -604,7 +602,6 @@ const NutrientSuggestion = () => {
       showNotification("Invalid suggestion ID", "error");
       return;
     }
-
     setLoading(true);
     try {
       const response = await getNutrientSuggestionById(id, token);
@@ -636,12 +633,10 @@ const NutrientSuggestion = () => {
       const response = await getNutrientSuggestionById(id, token);
       const data = response.data?.data || response.data || response;
       console.log("fetchSuggestionByIdForView - response data:", data);
-
       if (!Array.isArray(data.nutrientSuggestionAttributes)) {
         console.warn("nutrientSuggestionAttributes is not an array, setting to empty array:", data.nutrientSuggestionAttributes);
         data.nutrientSuggestionAttributes = [];
       }
-
       setSelectedViewSuggestion(data);
       return data;
     } catch (err) {
@@ -662,7 +657,6 @@ const NutrientSuggestion = () => {
       showNotification("Suggestion name is required", "error");
       return;
     }
-
     setLoading(true);
     try {
       await createNutrientSuggestion({ name: newSuggestion.name }, token);
@@ -690,7 +684,6 @@ const NutrientSuggestion = () => {
       showNotification("Invalid or missing suggestion ID", "error");
       return;
     }
-
     setLoading(true);
     try {
       await updateNutrientSuggestion(
@@ -725,9 +718,7 @@ const NutrientSuggestion = () => {
       showNotification("Invalid suggestion ID", "error");
       return;
     }
-
     if (!window.confirm("Are you sure you want to delete this suggestion?")) return;
-
     setLoading(true);
     try {
       await deleteNutrientSuggestion(id, token);
@@ -766,7 +757,7 @@ const NutrientSuggestion = () => {
       await fetchData();
     } catch (error) {
       console.error("Error adding attribute:", error);
-      showNotification(`Failed to add attribute: ${error.message}`, "error");
+      showNotification(`Failed to add attribute: ${error.response?.data?.message || error.message}`, "error");
     } finally {
       setLoading(false);
     }
@@ -1336,7 +1327,8 @@ const NutrientSuggestion = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 24"
+                    viewBox="0 0 24 3
+                    24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Plate icon for dish management"

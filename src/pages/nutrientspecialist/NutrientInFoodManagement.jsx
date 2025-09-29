@@ -15,10 +15,9 @@ const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       document.dispatchEvent(new CustomEvent("closeNotification"));
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -108,7 +107,6 @@ const NutrientInFoodManagement = () => {
       ]);
       console.log("Fetched nutrients:", nutrientsData);
       console.log("Fetched foods:", foodsData);
-
       const nutrientMap = new Map(nutrientsData.map((n) => [n.id, n.name]));
       const foodNutrientData = [];
       foodsData.forEach((food) => {
@@ -127,7 +125,6 @@ const NutrientInFoodManagement = () => {
           });
         });
       });
-
       setNutrients(nutrientsData);
       setFoods(foodsData);
       setFoodNutrients(foodNutrientData);
@@ -163,8 +160,7 @@ const NutrientInFoodManagement = () => {
       totalWeight,
       foodEquivalent,
     } = newFoodNutrient;
-
-    if (!foodId || !nutrientId || !unit || !foodEquivalent) {
+    if (!foodId || !nutrientId || !unit || !foodEquivalent || !nutrientEquivalent || !amountPerUnit || !totalWeight) {
       showNotification("All fields are required", "error");
       return;
     }
@@ -180,7 +176,6 @@ const NutrientInFoodManagement = () => {
       );
       return;
     }
-
     // Check for duplicate nutrient-food association
     const existingAssociation = foodNutrients.find(
       (item) => item.foodId === foodId && item.nutrientId === nutrientId
@@ -194,7 +189,6 @@ const NutrientInFoodManagement = () => {
       );
       return;
     }
-
     setLoading(true);
     try {
       const payload = {
@@ -246,8 +240,7 @@ const NutrientInFoodManagement = () => {
       totalWeight,
       foodEquivalent,
     } = newFoodNutrient;
-
-    if (!foodId || !nutrientId || !unit || !foodEquivalent) {
+    if (!foodId || !nutrientId || !unit || !foodEquivalent || !nutrientEquivalent || !amountPerUnit || !totalWeight) {
       showNotification("All fields are required", "error");
       return;
     }
@@ -263,7 +256,6 @@ const NutrientInFoodManagement = () => {
       );
       return;
     }
-
     setLoading(true);
     try {
       const payload = {
@@ -372,10 +364,23 @@ const NutrientInFoodManagement = () => {
     }
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+ const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  if (name === "unit" || name === "foodEquivalent") {
+    // Allow letters, numbers, and spaces, but not leading space
+    if (/^\s+/.test(value)) {
+      showNotification(
+        `${name === "unit" ? "Unit" : "Food Equivalent"} cannot start with a space`,
+        "error"
+      );
+      return;
+    }
+    const sanitizedValue = value.replace(/[^a-zA-Z0-9\s]/g, "");
+    setNewFoodNutrient({ ...newFoodNutrient, [name]: sanitizedValue });
+  } else {
     setNewFoodNutrient({ ...newFoodNutrient, [name]: value });
-  };
+  }
+};
 
   const toggleSidebar = () => {
     setIsSidebarOpen((prev) => !prev);
@@ -499,7 +504,6 @@ const NutrientInFoodManagement = () => {
           />
         )}
       </AnimatePresence>
-
       <motion.aside
         className={`nutrient-specialist-sidebar ${
           isSidebarOpen ? "open" : "closed"
@@ -1406,7 +1410,6 @@ const NutrientInFoodManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
       <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
@@ -1421,7 +1424,6 @@ const NutrientInFoodManagement = () => {
             <p>Associate nutrients with foods and manage their details</p>
           </div>
         </div>
-
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
@@ -1554,7 +1556,7 @@ const NutrientInFoodManagement = () => {
                   name="foodEquivalent"
                   value={newFoodNutrient.foodEquivalent}
                   onChange={handleInputChange}
-                  placeholder="e.g., 1 cup"
+                  placeholder="e.g., 1cup"
                   className="input-field"
                   aria-label="Food equivalent"
                   required
@@ -1606,7 +1608,6 @@ const NutrientInFoodManagement = () => {
               </div>
             </div>
           </div>
-
           <div className="nutrient-list-section">
             <div className="section-header">
               <h2>Nutrient-Food Associations</h2>

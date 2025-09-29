@@ -6,6 +6,7 @@ import {
   getEnergySuggestionById,
   createEnergySuggestion,
   updateEnergySuggestion,
+  deleteEnergySuggestion,
   getAllAgeGroups,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
@@ -259,20 +260,16 @@ const EnergySuggestion = () => {
       }
       const response = await getEnergySuggestionById(id, token);
       console.log("Raw API response:", response);
-
       if (!response) {
         showNotification("Energy suggestion not found", "error");
         console.warn("No data in response:", response);
         return;
       }
-
       const data = response;
       console.log("Extracted data:", data);
-
       if (!data || typeof data !== "object" || !data.id) {
         throw new Error("Invalid response data format. Expected an object with an ID.");
       }
-
       const normalizedData = {
         ...data,
         activityLevel: normalizeActivityLevel(data.activityLevel),
@@ -304,24 +301,38 @@ const EnergySuggestion = () => {
     }
   };
 
-  const createSuggestionHandler = async () => {
+  const validateSuggestion = () => {
     if (!newSuggestion.ageGroupId || newSuggestion.ageGroupId.trim() === "") {
-      showNotification("Age Group is required", "error");
-      return;
+      return "Age Group is required";
     }
-    if (
-      !newSuggestion.activityLevel ||
-      newSuggestion.activityLevel.trim() === ""
-    ) {
-      showNotification("Activity Level is required", "error");
-      return;
+    if (!newSuggestion.activityLevel || newSuggestion.activityLevel.trim() === "") {
+      return "Activity Level is required";
     }
-    if (
-      !newSuggestion.baseCalories ||
-      isNaN(newSuggestion.baseCalories) ||
-      newSuggestion.baseCalories <= 0
-    ) {
-      showNotification("Valid Base Calories is required", "error");
+    if (!newSuggestion.baseCalories || newSuggestion.baseCalories.trim() === "") {
+      return "Base Calories is required";
+    }
+    if (isNaN(newSuggestion.baseCalories) || parseFloat(newSuggestion.baseCalories) <= 0) {
+      return "Base Calories must be a positive number";
+    }
+    if (!newSuggestion.trimester || newSuggestion.trimester.trim() === "") {
+      return "Trimester is required";
+    }
+    if (!["1", "2", "3"].includes(newSuggestion.trimester)) {
+      return "Trimester must be 1, 2, or 3";
+    }
+    if (!newSuggestion.additionalCalories || newSuggestion.additionalCalories.trim() === "") {
+      return "Additional Calories is required";
+    }
+    if (isNaN(newSuggestion.additionalCalories) || parseFloat(newSuggestion.additionalCalories) < 0) {
+      return "Additional Calories must be a non-negative number";
+    }
+    return null;
+  };
+
+  const createSuggestionHandler = async () => {
+    const validationError = validateSuggestion();
+    if (validationError) {
+      showNotification(validationError, "error");
       return;
     }
     const activityLevelValue = newSuggestion.activityLevel.split("-")[0];
@@ -332,10 +343,8 @@ const EnergySuggestion = () => {
           ageGroupId: newSuggestion.ageGroupId,
           activityLevel: parseInt(activityLevelValue),
           baseCalories: parseFloat(newSuggestion.baseCalories),
-          trimester: newSuggestion.trimester
-            ? parseInt(newSuggestion.trimester)
-            : 0,
-          additionalCalories: parseFloat(newSuggestion.additionalCalories) || 0,
+          trimester: parseInt(newSuggestion.trimester),
+          additionalCalories: parseFloat(newSuggestion.additionalCalories),
         },
         token
       );
@@ -397,10 +406,8 @@ const EnergySuggestion = () => {
           ageGroupId: newSuggestion.ageGroupId,
           activityLevel: parseInt(activityLevelValue),
           baseCalories: parseFloat(newSuggestion.baseCalories),
-          trimester: newSuggestion.trimester
-            ? parseInt(newSuggestion.trimester)
-            : 0,
-          additionalCalories: parseFloat(newSuggestion.additionalCalories) || 0,
+          trimester: parseInt(newSuggestion.trimester),
+          additionalCalories: parseFloat(newSuggestion.additionalCalories),
         },
         token
       );
@@ -419,6 +426,33 @@ const EnergySuggestion = () => {
       const errorMessage = err.response?.data?.message || err.message;
       showNotification(`Failed to update suggestion: ${errorMessage}`, "error");
       console.error("Update suggestion error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteSuggestionHandler = async (id) => {
+    if (!id) {
+      showNotification("Invalid suggestion ID", "error");
+      console.error("deleteSuggestionHandler called with invalid ID:", id);
+      return;
+    }
+    if (!window.confirm("Are you sure you want to delete this energy suggestion?")) {
+      return;
+    }
+    setLoading(true);
+    try {
+      await deleteEnergySuggestion(id, token);
+      await fetchData();
+      showNotification("Energy suggestion deleted successfully", "success");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message;
+      showNotification(`Failed to delete suggestion: ${errorMessage}`, "error");
+      console.error("Delete suggestion error details:", {
         message: err.message,
         response: err.response?.data,
         status: err.response?.status,
@@ -1578,10 +1612,9 @@ const EnergySuggestion = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="trimester">Trimester (Optional)</label>
-                <input
+                <label htmlFor="trimester">Trimester</label>
+                <select
                   id="trimester"
-                  type="number"
                   value={newSuggestion.trimester}
                   onChange={(e) =>
                     setNewSuggestion((prev) => ({
@@ -1589,15 +1622,17 @@ const EnergySuggestion = () => {
                       trimester: e.target.value,
                     }))
                   }
-                  placeholder="Enter trimester (1-3)"
                   className="input-field"
-                  min="0"
-                  max="3"
-                />
+                >
+                  <option value="">Select Trimester</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
               </div>
               <div className="form-group">
                 <label htmlFor="additional-calories">
-                  Additional Calories (kcal, Optional)
+                  Additional Calories (kcal)
                 </label>
                 <select
                   id="additional-calories"
@@ -1739,6 +1774,14 @@ const EnergySuggestion = () => {
                           whileTap={{ scale: 0.95 }}
                         >
                           View
+                        </motion.button>
+                        <motion.button
+                          onClick={() => deleteSuggestionHandler(suggestion.id)}
+                          className="delete-button nutrient-specialist-button danger"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          Delete
                         </motion.button>
                       </div>
                     </motion.div>

@@ -31,7 +31,7 @@ const Notification = ({ message, type }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       document.dispatchEvent(new CustomEvent("closeNotification"));
-    }, 5000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -152,7 +152,6 @@ const DiseaseManagement = () => {
       console.log("Fetching disease with ID:", id, "Token:", token.substring(0, 10) + "...");
       const apiResponse = await getDiseaseById(id, token);
       console.log("Raw API response:", apiResponse);
-
       let data;
       if (apiResponse && typeof apiResponse === "object" && "error" in apiResponse) {
         if (apiResponse.error !== 0) {
@@ -162,11 +161,9 @@ const DiseaseManagement = () => {
       } else {
         data = apiResponse;
       }
-
       if (!data || typeof data !== "object" || !data.id) {
         throw new Error("Invalid or empty response data from API");
       }
-
       console.log("Fetched disease data:", data);
       setSelectedDisease(data);
       setNewDisease({
@@ -192,7 +189,6 @@ const DiseaseManagement = () => {
           response: err.response,
         } : null,
       });
-
       let errorMessage = "Failed to fetch disease";
       if (err.message.includes("not found")) {
         errorMessage = "Disease not found.";
@@ -209,16 +205,126 @@ const DiseaseManagement = () => {
       } else {
         errorMessage = err.response?.data?.message || err.message || "Unknown error";
       }
-
       showNotification(errorMessage, "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const createDiseaseHandler = async () => {
+  const validateDisease = () => {
+    // Regular expression for checking if first character is a letter
+    const startsWithLetter = /^[a-zA-Z]/;
+    // Regular expression for counting words
+    const wordCount = (str) => str.trim().split(/\s+/).filter(word => word.length > 0).length;
+
+    // Disease name validations
     if (!newDisease.name || newDisease.name.trim() === "") {
-      showNotification("Disease name is required", "error");
+      return "Disease name is required";
+    }
+    if (newDisease.name.length < 2) {
+      return "Disease name must be at least 2 letters";
+    }
+    if (newDisease.name.length > 100) {
+      return "Disease name must be 100 characters or less";
+    }
+    if (newDisease.name.trim() !== newDisease.name) {
+      return "Disease name cannot start with a space";
+    }
+    if (!startsWithLetter.test(newDisease.name)) {
+      return "Disease name must start with a letter";
+    }
+    // Check for duplicate disease name (case-insensitive), excluding the current disease when editing
+    const normalizedName = newDisease.name.toLowerCase().trim();
+    if (
+      diseases.some(
+        (disease) =>
+          disease.name.toLowerCase().trim() === normalizedName &&
+          (!isEditing || disease.id !== selectedDisease?.id)
+      )
+    ) {
+      return "Disease name already exists";
+    }
+
+    // Description validations
+    if (!newDisease.description || newDisease.description.trim() === "") {
+      return "Description is required";
+    }
+    if (newDisease.description.length > 1000) {
+      return "Description must be 1000 characters or less";
+    }
+    if (newDisease.description.trim() !== newDisease.description) {
+      return "Description cannot start with a space";
+    }
+    if (!startsWithLetter.test(newDisease.description)) {
+      return "Description must start with a letter";
+    }
+    if (wordCount(newDisease.description) < 2) {
+      return "Description must have at least 2 words";
+    }
+
+    // Symptoms validations
+    if (newDisease.symptoms && newDisease.symptoms.trim() !== "") {
+      if (newDisease.symptoms.length > 1000) {
+        return "Symptoms must be 1000 characters or less";
+      }
+      if (newDisease.symptoms.trim() !== newDisease.symptoms) {
+        return "Symptoms cannot start with a space";
+      }
+      if (!startsWithLetter.test(newDisease.symptoms)) {
+        return "Symptoms must start with a letter";
+      }
+      if (wordCount(newDisease.symptoms) < 2) {
+        return "Symptoms must have at least 2 words";
+      }
+    }
+
+    // Treatment options validations
+    if (newDisease.treatmentOptions && newDisease.treatmentOptions.trim() !== "") {
+      if (newDisease.treatmentOptions.length > 1000) {
+        return "Treatment options must be 1000 characters or less";
+      }
+      if (newDisease.treatmentOptions.trim() !== newDisease.treatmentOptions) {
+        return "Treatment options cannot start with a space";
+      }
+      if (!startsWithLetter.test(newDisease.treatmentOptions)) {
+        return "Treatment options must start with a letter";
+      }
+      if (wordCount(newDisease.treatmentOptions) < 2) {
+        return "Treatment options must have at least 2 words";
+      }
+    }
+
+    // Risk level validations
+    if (!newDisease.riskLevel || newDisease.riskLevel.trim() === "") {
+      return "Risk level is required";
+    }
+    if (!["Low", "Medium", "High"].includes(newDisease.riskLevel)) {
+      return "Risk level must be Low, Medium, or High";
+    }
+
+    // Type of disease validations
+    if (newDisease.typeOfDesease && newDisease.typeOfDesease.trim() !== "") {
+      if (newDisease.typeOfDesease.length > 100) {
+        return "Type of disease must be 100 characters or less";
+      }
+      if (newDisease.typeOfDesease.trim() !== newDisease.typeOfDesease) {
+        return "Type of disease cannot start with a space";
+      }
+      if (!startsWithLetter.test(newDisease.typeOfDesease)) {
+        return "Type of disease must start with a letter";
+      }
+      if (wordCount(newDisease.typeOfDesease) < 2) {
+        return "Type of disease must have at least 2 words";
+      }
+    }
+
+    return null;
+  };
+
+  const createDiseaseHandler = async () => {
+    const validationError = validateDisease();
+    if (validationError) {
+      showNotification(validationError, "error");
       return;
     }
     setLoading(true);
@@ -268,8 +374,9 @@ const DiseaseManagement = () => {
   };
 
   const updateDiseaseHandler = async () => {
-    if (!newDisease.name || newDisease.name.trim() === "") {
-      showNotification("Disease name is required", "error");
+    const validationError = validateDisease();
+    if (validationError) {
+      showNotification(validationError, "error");
       return;
     }
     if (!selectedDisease || !selectedDisease.id) {
@@ -279,10 +386,6 @@ const DiseaseManagement = () => {
     if (!token) {
       showNotification("Authentication token missing", "error");
       navigate("/signin", { replace: true });
-      return;
-    }
-    if (newDisease.riskLevel && !["Low", "Medium", "High"].includes(newDisease.riskLevel)) {
-      showNotification("Risk level must be Low, Medium, or High", "error");
       return;
     }
     setLoading(true);
@@ -530,7 +633,6 @@ const DiseaseManagement = () => {
           />
         )}
       </AnimatePresence>
-
       <motion.aside
         className={`nutrient-specialist-sidebar ${isSidebarOpen ? "open" : "closed"}`}
         variants={sidebarVariants}
@@ -1429,7 +1531,6 @@ const DiseaseManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
       <motion.main
         className={`nutrient-specialist-content ${
           isSidebarOpen ? "sidebar-open" : "sidebar-closed"
@@ -1444,7 +1545,6 @@ const DiseaseManagement = () => {
             <p>Create, edit, and manage diseases for nutritional guidance</p>
           </div>
         </div>
-
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
@@ -1468,7 +1568,7 @@ const DiseaseManagement = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="disease-description">Description</label>
+                <label htmlFor="disease-description">Description *</label>
                 <textarea
                   id="disease-description"
                   value={newDisease.description}
@@ -1617,7 +1717,6 @@ const DiseaseManagement = () => {
               </div>
             </div>
           </div>
-
           <div className="nutrient-list-section">
             <div className="section-header">
               <h2>Disease List</h2>
