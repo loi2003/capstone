@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bar } from "react-chartjs-2";
 import {
   getAllFoodCategories,
   getFoodCategoryById,
@@ -12,25 +11,6 @@ import {
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/FoodCategoryManagement.css";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
 
 // SVG Icons
 const SearchIcon = () => (
@@ -112,6 +92,55 @@ const FoodCategoryManagement = () => {
       document.removeEventListener("closeNotification", closeListener);
     };
     document.addEventListener("closeNotification", closeListener);
+  };
+
+  // Validate inputs
+  const validateInputs = () => {
+    const nameRegex = /^[a-zA-Z0-9\s.,'-]+$/;
+    const descRegex = /^[a-zA-Z0-9\s.,'-]*$/;
+    if (!newCategory.name.trim()) {
+      showNotification("Category name is required", "error");
+      return false;
+    }
+    if (newCategory.name.trim().length <= 2) {
+      showNotification("Category name must be more than 2 letters", "error");
+      return false;
+    }
+    if (newCategory.name.length > 50) {
+      showNotification("Category name must be 50 characters or less", "error");
+      return false;
+    }
+    if (!nameRegex.test(newCategory.name.trim())) {
+      showNotification("Category name contains invalid characters", "error");
+      return false;
+    }
+    if (
+      foodCategories.some(
+        (cat) =>
+          cat.name.toLowerCase() === newCategory.name.trim().toLowerCase() &&
+          (!isEditing || cat.id !== selectedCategory?.id)
+      )
+    ) {
+      showNotification("Category name already exists", "error");
+      return false;
+    }
+    if (!newCategory.description.trim()) {
+      showNotification("Description is required when category name is provided", "error");
+      return false;
+    }
+    if (newCategory.description.trim().split(/\s+/).filter(word => word.length > 0).length <= 1) {
+      showNotification("Description must contain more than one word", "error");
+      return false;
+    }
+    if (newCategory.description.length > 500) {
+      showNotification("Description must be 500 characters or less", "error");
+      return false;
+    }
+    if (newCategory.description && !descRegex.test(newCategory.description)) {
+      showNotification("Description contains invalid characters", "error");
+      return false;
+    }
+    return true;
   };
 
   // Fetch user, food categories, and food counts
@@ -263,24 +292,13 @@ const FoodCategoryManagement = () => {
   };
 
   const createCategoryHandler = async () => {
-    if (!newCategory.name?.trim()) {
-      showNotification("Category name is required", "error");
+    if (!validateInputs()) {
       return;
     }
     setLoading(true);
     try {
-      const trimmedName = newCategory.name.trim();
-      const isDuplicate = foodCategories.some(
-        (category) =>
-          category.name === trimmedName ||
-          category.name.toLowerCase() === trimmedName.toLowerCase()
-      );
-      if (isDuplicate) {
-        showNotification("Category name already exists", "error");
-        return;
-      }
       await createFoodCategory({
-        name: trimmedName,
+        name: newCategory.name.trim(),
         description: newCategory.description?.trim() || "",
       });
       setNewCategory({ name: "", description: "" });
@@ -299,8 +317,7 @@ const FoodCategoryManagement = () => {
   };
 
   const updateCategoryHandler = async () => {
-    if (!newCategory.name?.trim()) {
-      showNotification("Category name is required", "error");
+    if (!validateInputs()) {
       return;
     }
     if (!selectedCategory?.id) {
@@ -451,90 +468,6 @@ const FoodCategoryManagement = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  // Chart data
-  const chartData = {
-    labels: foodCategories.map((category) => category.name),
-    datasets: [
-      {
-        label: "Number of Foods",
-        data: foodCategories.map(
-          (category) =>
-            foodCounts.find((count) => count.categoryId === category.id)
-              ?.count || 0
-        ),
-        backgroundColor: "rgba(30, 136, 229, 0.6)",
-        borderColor: "rgba(30, 136, 229, 1)",
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "top",
-        labels: {
-          color: document.documentElement.classList.contains("dark-theme")
-            ? "#ffffff"
-            : "#0d47a1",
-        },
-      },
-      title: {
-        display: true,
-        text: "Number of Foods per Category",
-        color: document.documentElement.classList.contains("dark-theme")
-          ? "#ffffff"
-          : "#0d47a1",
-        font: {
-          size: 16,
-        },
-      },
-      tooltip: {
-        backgroundColor: document.documentElement.classList.contains(
-          "dark-theme"
-        )
-          ? "#2a4b6e"
-          : "#ffffff",
-        titleColor: document.documentElement.classList.contains("dark-theme")
-          ? "#ffffff"
-          : "#0d47a1",
-        bodyColor: document.documentElement.classList.contains("dark-theme")
-          ? "#ffffff"
-          : "#0d47a1",
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: document.documentElement.classList.contains("dark-theme")
-            ? "#ffffff"
-            : "#0d47a1",
-        },
-        grid: {
-          color: document.documentElement.classList.contains("dark-theme")
-            ? "rgba(255, 255, 255, 0.1)"
-            : "rgba(0, 0, 0, 0.1)",
-        },
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          color: document.documentElement.classList.contains("dark-theme")
-            ? "#ffffff"
-            : "#0d47a1",
-          stepSize: 1,
-        },
-        grid: {
-          color: document.documentElement.classList.contains("dark-theme")
-            ? "rgba(255, 255, 255, 0.1)"
-            : "rgba(0, 0, 0, 0.1)",
-        },
-      },
-    },
-  };
 
   // Sidebar animation variants
   const sidebarVariants = {
@@ -1524,11 +1457,6 @@ const FoodCategoryManagement = () => {
           </div>
         </div>
         <div className="management-container">
-          <div className="chart-section">
-            <div className="chart-container">
-              <Bar data={chartData} options={chartOptions} />
-            </div>
-          </div>
           <div className="form-section">
             <div className="section-header">
               <h2>{isEditing ? "Edit Category" : "Create New Category"}</h2>

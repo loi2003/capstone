@@ -98,7 +98,6 @@ const Notification = ({ message, type, onClose }) => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -271,7 +270,6 @@ const AllergyCategoryManagement = () => {
         document.documentElement.classList.contains("dark-theme");
       const textColor = isDarkTheme ? "#ffffff" : "#0d47a1";
       const backgroundColor = isDarkTheme ? "#1a3c5e" : "#e3f2fd";
-
       setChartData({
         labels: allergyCategories.map((category) => category.name),
         datasets: [
@@ -289,7 +287,6 @@ const AllergyCategoryManagement = () => {
           },
         ],
       });
-
       setChartOptions({
         responsive: true,
         maintainAspectRatio: false,
@@ -365,19 +362,73 @@ const AllergyCategoryManagement = () => {
     }
   }, [allergyCategories, allergies]);
 
-  // Handle input changes with sanitization
+  // Handle input changes with sanitization and validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: sanitizeInput(value) }));
+
+    if (name === "name" || name === "description") {
+      // Check for leading spaces
+      if (/^\s+/.test(value)) {
+        showNotification(
+          `${name === "name" ? "Name" : "Description"} cannot start with a space`,
+          "error"
+        );
+        return;
+      }
+
+      if (name === "name") {
+        // Check if first character is a number
+        if (value && /^[0-9]/.test(value)) {
+          showNotification("Name cannot start with a number", "error");
+          return;
+        }
+        // Allow letters, numbers, spaces, and certain special characters
+        const sanitizedValue = sanitizeInput(value.replace(/[^a-zA-Z0-9\s.,-]/g, ""));
+        setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
+      } else if (name === "description") {
+        // Allow letters, numbers, spaces, and certain special characters
+        const sanitizedValue = sanitizeInput(value.replace(/[^a-zA-Z0-9\s.,-]/g, ""));
+        setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: sanitizeInput(value) }));
+    }
+  };
+
+  // Validate form data
+  const validateForm = () => {
+    // Check if all fields are filled
+    if (!formData.name || !formData.description) {
+      showNotification("All fields must be filled", "error");
+      return false;
+    }
+
+    // Validate name: at least 2 letters
+    const letterCount = (formData.name.match(/[a-zA-Z]/g) || []).length;
+    if (letterCount < 2) {
+      showNotification("Name must contain at least 2 letters", "error");
+      return false;
+    }
+
+    // Validate description: at least 2 words
+    const words = formData.description.trim().split(/\s+/);
+    if (words.length < 2 || words.some(word => word === "")) {
+      showNotification("Description must contain at least 2 words", "error");
+      return false;
+    }
+
+    return true;
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name) {
-      showNotification("Please fill in the name field", "error");
+
+    // Validate form data
+    if (!validateForm()) {
       return;
     }
+
     setIsLoading(true);
     try {
       if (isEditing) {
@@ -443,6 +494,22 @@ const AllergyCategoryManagement = () => {
       console.error("Invalid allergyCategoryId format:", allergyCategoryId);
       return;
     }
+
+    // Check if there are allergies associated with this category
+    const hasAllergies = allergies.some(
+      (allergy) => allergy.allergyCategoryId === allergyCategoryId
+    );
+    if (hasAllergies) {
+      showNotification(
+        "Cannot delete this allergy category because there are allergies inside",
+        "error"
+      );
+      console.error(
+        `Cannot delete allergy category ${allergyCategoryId} due to associated allergies`
+      );
+      return;
+    }
+
     if (
       window.confirm("Are you sure you want to delete this allergy category?")
     ) {
@@ -511,6 +578,7 @@ const AllergyCategoryManagement = () => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
+
   const handleSearch = (e) => debouncedSearch(sanitizeInput(e.target.value));
 
   // Toggle sidebar
@@ -534,10 +602,12 @@ const AllergyCategoryManagement = () => {
     (allergyCategory) =>
       allergyCategory.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
   const paginatedAllergyCategories = filteredAllergyCategories.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
   const totalPages = Math.ceil(filteredAllergyCategories.length / itemsPerPage);
 
   // Handle window resize to toggle sidebar
@@ -708,7 +778,6 @@ const AllergyCategoryManagement = () => {
           />
         )}
       </AnimatePresence>
-
       {/* Sidebar */}
       <motion.aside
         className={`nutrient-specialist-sidebar ${
@@ -1586,7 +1655,6 @@ const AllergyCategoryManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
       {/* Main Content */}
       <motion.main
         className={`nutrient-specialist-content ${
@@ -1639,6 +1707,7 @@ const AllergyCategoryManagement = () => {
                       placeholder="Enter category description"
                       className="textarea-field"
                       rows="4"
+                      required
                       aria-label="Category description"
                     />
                   </div>
@@ -1678,7 +1747,6 @@ const AllergyCategoryManagement = () => {
                 </div>
               </form>
             </section>
-
             {/* Chart Section */}
             <section className="chart-section">
               <div className="section-header">
@@ -1705,7 +1773,6 @@ const AllergyCategoryManagement = () => {
               </div>
             </section>
           </div>
-
           {/* Allergy Category List Section */}
           <section className="category-list-section">
             <div className="section-header">

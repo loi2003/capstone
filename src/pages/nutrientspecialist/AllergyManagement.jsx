@@ -40,6 +40,64 @@ const sanitizeInput = (input) => {
   );
 };
 
+// Validation for allergy name
+const validateName = (value) => {
+  const errors = [];
+  const sanitizedValue = sanitizeInput(value);
+  if (!sanitizedValue.trim()) {
+    errors.push("Allergy name is required.");
+  }
+  if (sanitizedValue.startsWith(" ")) {
+    errors.push("Allergy name cannot start with a space.");
+  }
+  if (/^\d/.test(sanitizedValue)) {
+    errors.push("Allergy name cannot start with a number.");
+  }
+  const letterCount = (sanitizedValue.match(/[a-zA-Z]/g) || []).length;
+  if (letterCount < 2) {
+    errors.push("Allergy name must contain at least 2 letters.");
+  }
+  if (!/^[a-zA-Z][a-zA-Z0-9\s\.\-]*$/.test(sanitizedValue)) {
+    errors.push(
+      "Allergy name can only contain letters, numbers, spaces, periods, and hyphens."
+    );
+  }
+  return {
+    isValid: errors.length === 0,
+    errors,
+    sanitizedValue,
+  };
+};
+
+// Validation for description, commonSymptoms, and pregnancyRisk
+const validateTextField = (value, fieldName) => {
+  const errors = [];
+  const sanitizedValue = sanitizeInput(value);
+  if (!sanitizedValue.trim()) {
+    errors.push(`${fieldName} is required.`);
+  }
+  if (sanitizedValue.startsWith(" ")) {
+    errors.push(`${fieldName} cannot start with a space.`);
+  }
+  const words = sanitizedValue.trim().split(/\s+/).filter(Boolean);
+  if (words.length < 2 && sanitizedValue.trim().length > 0) {
+    errors.push(`${fieldName} must contain at least 2 words.`);
+  }
+  if (
+    sanitizedValue.trim().length > 0 &&
+    !/^[a-zA-Z0-9\s\.\-]+$/.test(sanitizedValue)
+  ) {
+    errors.push(
+      `${fieldName} can only contain letters, numbers, spaces, periods, and hyphens.`
+    );
+  }
+  return {
+    isValid: errors.length === 0,
+    errors,
+    sanitizedValue,
+  };
+};
+
 // Search Icon
 const SearchIcon = () => (
   <svg
@@ -64,7 +122,6 @@ const Notification = ({ message, type, onClose }) => {
     const timer = setTimeout(onClose, 3000);
     return () => clearTimeout(timer);
   }, [onClose]);
-
   return (
     <motion.div
       className={`notification ${type}`}
@@ -113,6 +170,13 @@ const AllergyManagement = () => {
     allergyCategoryId: "",
     commonSymptoms: "",
     pregnancyRisk: "",
+  });
+  const [validationErrors, setValidationErrors] = useState({
+    name: [],
+    description: [],
+    commonSymptoms: [],
+    pregnancyRisk: [],
+    allergyCategoryId: [],
   });
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -214,7 +278,6 @@ const AllergyManagement = () => {
     try {
       const response = await getAllAllergyCategories(token);
       console.log("Raw API response for allergy categories:", response);
-
       let data = [];
       if (Array.isArray(response)) {
         data = response;
@@ -223,10 +286,8 @@ const AllergyManagement = () => {
       } else if (response.data && Array.isArray(response.data.data)) {
         data = response.data.data;
       }
-
- console.log("Processed allergy categories:", data);
+      console.log("Processed allergy categories:", data);
       setAllergyCategories(data);
-
       if (data.length === 0) {
         console.warn("No allergy categories returned from API");
       }
@@ -248,27 +309,96 @@ const AllergyManagement = () => {
     fetchAllergyCategories();
   }, []);
 
-  // Handle input changes with sanitization
+  // Handle input changes with validation
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: sanitizeInput(value) }));
+    let validationResult;
+    if (name === "name") {
+      validationResult = validateName(value);
+    } else if (["description", "commonSymptoms", "pregnancyRisk"].includes(name)) {
+      validationResult = validateTextField(
+        value,
+        name.charAt(0).toUpperCase() + name.slice(1).replace(/([A-Z])/g, " $1")
+      );
+    } else if (name === "allergyCategoryId") {
+      const sanitizedValue = sanitizeInput(value);
+      const errors = [];
+      if (!sanitizedValue) {
+        errors.push("Allergy category is required.");
+      }
+      setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
+      setValidationErrors((prev) => ({ ...prev, [name]: errors }));
+      return;
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: sanitizeInput(value) }));
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: validationResult.sanitizedValue,
+    }));
+    setValidationErrors((prev) => ({
+      ...prev,
+      [name]: validationResult.errors,
+    }));
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name) {
-      showNotification("Please fill in the name field", "error");
+    // Validate all fields and show the first error only
+    const nameValidation = validateName(formData.name);
+    if (!nameValidation.isValid) {
+      showNotification(nameValidation.errors[0], "error");
       return;
     }
+
+    const descriptionValidation = validateTextField(formData.description, "Description");
+    if (!descriptionValidation.isValid) {
+      showNotification(descriptionValidation.errors[0], "error");
+      return;
+    }
+
+    const commonSymptomsValidation = validateTextField(formData.commonSymptoms, "Common Symptoms");
+    if (!commonSymptomsValidation.isValid) {
+      showNotification(commonSymptomsValidation.errors[0], "error");
+      return;
+    }
+
+    const pregnancyRiskValidation = validateTextField(formData.pregnancyRisk, "Pregnancy Risk");
+    if (!pregnancyRiskValidation.isValid) {
+      showNotification(pregnancyRiskValidation.errors[0], "error");
+      return;
+    }
+
+    const categoryValidation = {
+      isValid: !!formData.allergyCategoryId,
+      errors: formData.allergyCategoryId ? [] : ["Allergy category is required."],
+      sanitizedValue: formData.allergyCategoryId,
+    };
+    if (!categoryValidation.isValid) {
+      showNotification(categoryValidation.errors[0], "error");
+      return;
+    }
+
+    // Check for duplicate allergy name (case-insensitive)
+    const isDuplicate = allergies.some((allergy) => {
+      if (isEditing && allergy.id === formData.allergyId) return false;
+      return allergy.name.toLowerCase() === nameValidation.sanitizedValue.toLowerCase();
+    });
+    if (isDuplicate) {
+      showNotification("An allergy with this name already exists.", "error");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const allergyData = {
-        name: formData.name,
-        description: formData.description || "",
-        allergyCategoryId: formData.allergyCategoryId || null,
-        commonSymptoms: formData.commonSymptoms || "",
-        pregnancyRisk: formData.pregnancyRisk || "",
+        name: nameValidation.sanitizedValue,
+        description: descriptionValidation.sanitizedValue,
+        allergyCategoryId: categoryValidation.sanitizedValue,
+        commonSymptoms: commonSymptomsValidation.sanitizedValue,
+        pregnancyRisk: pregnancyRiskValidation.sanitizedValue,
       };
       if (isEditing) {
         allergyData.id = formData.allergyId;
@@ -281,6 +411,13 @@ const AllergyManagement = () => {
         showNotification("Allergy created successfully", "success");
       }
       resetForm();
+      setValidationErrors({
+        name: [],
+        description: [],
+        commonSymptoms: [],
+        pregnancyRisk: [],
+        allergyCategoryId: [],
+      });
       fetchAllergies();
       fetchAllergyCategories();
     } catch (error) {
@@ -314,6 +451,13 @@ const AllergyManagement = () => {
       allergyCategoryId: allergy.allergyCategoryId || "",
       commonSymptoms: allergy.commonSymptoms || "",
       pregnancyRisk: allergy.pregnancyRisk || "",
+    });
+    setValidationErrors({
+      name: [],
+      description: [],
+      commonSymptoms: [],
+      pregnancyRisk: [],
+      allergyCategoryId: [],
     });
     setIsEditing(true);
   };
@@ -400,6 +544,7 @@ const AllergyManagement = () => {
     setSearchTerm(value);
     setCurrentPage(1);
   }, 300);
+
   const handleSearch = (e) => debouncedSearch(sanitizeInput(e.target.value));
 
   // Toggle sidebar
@@ -516,7 +661,6 @@ const AllergyManagement = () => {
       "#e3f2fd",
       "#0d47a1",
     ];
-
     if (chartFilter === "category") {
       const categoryCounts = {};
       filteredAllergies.forEach((allergy) => {
@@ -548,7 +692,6 @@ const AllergyManagement = () => {
       labels = Object.keys(riskCounts);
       data = Object.values(riskCounts);
     }
-
     return {
       labels,
       datasets: [
@@ -605,7 +748,6 @@ const AllergyManagement = () => {
           />
         )}
       </AnimatePresence>
-
       {/* Sidebar */}
       <motion.aside
         className={`nutrient-specialist-sidebar ${
@@ -1483,7 +1625,6 @@ const AllergyManagement = () => {
           )}
         </motion.nav>
       </motion.aside>
-
       {/* Main Content */}
       <motion.main
         className={`nutrient-specialist-content ${
@@ -1509,7 +1650,7 @@ const AllergyManagement = () => {
               <form onSubmit={handleSubmit} className="form-card">
                 <div className="input-section">
                   <div className="form-group">
-                    <label htmlFor="name">Allergy Name</label>
+                    <label htmlFor="name">Allergy Name *</label>
                     <input
                       type="text"
                       id="name"
@@ -1523,7 +1664,7 @@ const AllergyManagement = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="allergyCategoryId">Allergy Category</label>
+                    <label htmlFor="allergyCategoryId">Allergy Category *</label>
                     <select
                       id="allergyCategoryId"
                       name="allergyCategoryId"
@@ -1532,16 +1673,13 @@ const AllergyManagement = () => {
                       className="input-field"
                       aria-label="Allergy category"
                       disabled={isCategoriesLoading}
+                      required
                     >
-                      <option value="">Select a category (optional)</option>
+                      <option value="" disabled>Select a category</option>
                       {isCategoriesLoading ? (
-                        <option value="" disabled>
-                          Loading categories...
-                        </option>
+                        <option value="" disabled>Loading categories...</option>
                       ) : categoryFetchError ? (
-                        <option value="" disabled>
-                          Error loading categories
-                        </option>
+                        <option value="" disabled>Error loading categories</option>
                       ) : allergyCategories.length > 0 ? (
                         allergyCategories.map((category) => (
                           <option key={category.id} value={category.id}>
@@ -1549,9 +1687,7 @@ const AllergyManagement = () => {
                           </option>
                         ))
                       ) : (
-                        <option value="" disabled>
-                          No categories available
-                        </option>
+                        <option value="" disabled>No categories available</option>
                       )}
                     </select>
                     {categoryFetchError && (
@@ -1559,7 +1695,7 @@ const AllergyManagement = () => {
                     )}
                   </div>
                   <div className="form-group">
-                    <label htmlFor="description">Description</label>
+                    <label htmlFor="description">Description *</label>
                     <textarea
                       id="description"
                       name="description"
@@ -1569,10 +1705,11 @@ const AllergyManagement = () => {
                       className="textarea-field"
                       rows="4"
                       aria-label="Allergy description"
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="commonSymptoms">Common Symptoms</label>
+                    <label htmlFor="commonSymptoms">Common Symptoms *</label>
                     <textarea
                       id="commonSymptoms"
                       name="commonSymptoms"
@@ -1582,10 +1719,11 @@ const AllergyManagement = () => {
                       className="textarea-field"
                       rows="4"
                       aria-label="Common symptoms"
+                      required
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="pregnancyRisk">Pregnancy Risk</label>
+                    <label htmlFor="pregnancyRisk">Pregnancy Risk *</label>
                     <textarea
                       id="pregnancyRisk"
                       name="pregnancyRisk"
@@ -1595,6 +1733,7 @@ const AllergyManagement = () => {
                       className="textarea-field"
                       rows="4"
                       aria-label="Pregnancy risk"
+                      required
                     />
                   </div>
                 </div>
@@ -1629,7 +1768,6 @@ const AllergyManagement = () => {
                 </div>
               </form>
             </section>
-
             {/* Chart Section */}
             <section className="chart-section">
               <div className="section-header">
@@ -1656,7 +1794,6 @@ const AllergyManagement = () => {
               </div>
             </section>
           </div>
-
           {/* Allergy List Section */}
           <section className="category-list-section">
             <div className="section-header">
@@ -1826,14 +1963,14 @@ const AllergyManagement = () => {
                   >
                     Next
                   </motion.button>
-                </div>
-              </>
-            )}
-          </section>
-        </div>
-      </motion.main>
-    </motion.div>
-  );
+                  </div>
+                </>
+              )}
+            </section>
+          </div>
+        </motion.main>
+      </motion.div>
+    );
 };
 
 export default AllergyManagement;
