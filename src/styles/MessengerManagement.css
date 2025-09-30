@@ -713,6 +713,10 @@
   transition: all 0.2s;
 }
 
+.filter-tab:hover {
+  background: none;
+}
+
 .filter-tab.active {
   background: white;
   color: #4caf50;
@@ -902,11 +906,36 @@
 
 .messenger-management-messages {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; /* Enable vertical scrolling */
+  overflow-x: hidden; /* Hide horizontal scrollbar */
   padding: 1.5rem 2rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  /* Remove max-height constraint and use min-height instead */
+  min-height: 300px;
+  max-height: 400px; /* Fixed height that will force scrolling */
+  scroll-behavior: smooth;
+  /* Force scrollbar to always show */
+  scrollbar-gutter: stable;
+}
+
+.messenger-management-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messenger-management-messages::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.messenger-management-messages::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.messenger-management-messages::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 .no-messages {
@@ -1041,11 +1070,10 @@
 
 .message-time {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #bcc6d6;
   margin-top: 0.25rem;
   align-self: flex-end;
 }
-
 /* Message Input Area */
 .message-input-area {
   border-top: 1px solid #e5e7eb;

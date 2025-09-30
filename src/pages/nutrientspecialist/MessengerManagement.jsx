@@ -237,25 +237,56 @@ const MessengerManagement = () => {
 
             const processedMessages =
               thread.messages?.map((msg) => {
+                // Fix UTC timestamp by adding Z if missing
+                let createdAt =
+                  msg.createdAt || msg.sentAt || new Date().toISOString();
+                let sentAt =
+                  msg.sentAt || msg.createdAt || new Date().toISOString();
+
+                // Add Z to UTC timestamps if they don't have timezone info
+                if (
+                  typeof createdAt === "string" &&
+                  !createdAt.includes("Z") &&
+                  !createdAt.includes("+") &&
+                  !createdAt.includes("-")
+                ) {
+                  createdAt = createdAt + "Z";
+                }
+
+                if (
+                  typeof sentAt === "string" &&
+                  !sentAt.includes("Z") &&
+                  !sentAt.includes("+") &&
+                  !sentAt.includes("-")
+                ) {
+                  sentAt = sentAt + "Z";
+                }
+
+                const processedMsg = {
+                  ...msg,
+                  createdAt: createdAt,
+                  sentAt: sentAt,
+                  messageText: msg.messageText || msg.message || msg.text || "",
+                };
+
+                // Handle attachments
                 if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
-                  return {
-                    ...msg,
-                    attachment: {
-                      fileName:
-                        msg.attachmentFileName || msg.fileName || "Attachment",
-                      fileSize: msg.attachmentFileSize || msg.fileSize,
-                      fileType: msg.attachmentFileType || msg.fileType,
-                      isImage: isImageFile(
-                        msg.attachmentFileName || msg.fileName
-                      ),
-                      url:
-                        msg.attachmentUrl ||
-                        msg.attachmentPath ||
-                        msg.attachment?.url,
-                    },
+                  processedMsg.attachment = {
+                    fileName:
+                      msg.attachmentFileName || msg.fileName || "Attachment",
+                    fileSize: msg.attachmentFileSize || msg.fileSize,
+                    fileType: msg.attachmentFileType || msg.fileType,
+                    isImage: isImageFile(
+                      msg.attachmentFileName || msg.fileName
+                    ),
+                    url:
+                      msg.attachmentUrl ||
+                      msg.attachmentPath ||
+                      msg.attachment?.url,
                   };
                 }
-                return msg;
+
+                return processedMsg;
               }) || [];
 
             const unreadCount = processedMessages.filter(
@@ -465,23 +496,45 @@ const MessengerManagement = () => {
 
   // Helper functions
   const formatMessageTime = (timestamp) => {
-    if (!timestamp) return "";
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMinutes = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    if (!timestamp) return "Unknown";
 
-    if (diffMinutes < 1) return "Just now";
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    try {
+      // Add Z to UTC timestamp if missing
+      if (
+        typeof timestamp === "string" &&
+        !timestamp.includes("Z") &&
+        !timestamp.includes("+") &&
+        !timestamp.includes("-")
+      ) {
+        timestamp = timestamp + "Z";
+      }
 
-    return date.toLocaleDateString([], {
-      month: "short",
-      day: "numeric",
-    });
+      const date = new Date(timestamp);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return "Unknown";
+      }
+
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMinutes = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMinutes < 1) return "Just now";
+      if (diffMinutes < 60) return `${diffMinutes}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.error("Error formatting message time:", error);
+      return "Unknown";
+    }
   };
 
   // Filter threads
@@ -1715,14 +1768,43 @@ const MessengerManagement = () => {
                                     </div>
                                   )}
                                   <div className="message-time">
-                                    {new Date(msg.createdAt).toLocaleTimeString(
-                                      [],
-                                      {
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                        hour12: true,
+                                    {(() => {
+                                      try {
+                                        let timestamp =
+                                          msg.createdAt ||
+                                          msg.sentAt ||
+                                          Date.now();
+
+                                        // Add Z to UTC timestamp if missing
+                                        if (
+                                          typeof timestamp === "string" &&
+                                          !timestamp.includes("Z")
+                                          // !timestamp.includes("+") &&
+                                          // !timestamp.includes("-")
+                                        ) {
+                                          timestamp = timestamp + "Z";
+                                        }
+
+                                        const date = new Date(timestamp);
+
+                                        // Check if date is valid
+                                        if (isNaN(date.getTime())) {
+                                          return "Now";
+                                        }
+
+                                        return date.toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          hour12: true,
+                                        });
+                                      } catch (error) {
+                                        console.error(
+                                          "Error formatting message time:",
+                                          error
+                                        );
+                                        return "Now";
                                       }
-                                    )}
+                                    })()}
                                   </div>
                                 </div>
                               </motion.div>
