@@ -3,6 +3,27 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/HealthExpertHomePage.css";
+import {
+  FaComments,
+  FaSearch,
+  FaUser,
+  FaPhone,
+  FaVideo,
+  FaFile,
+  FaPaperclip,
+  FaTimes,
+  FaClock,
+  FaCheckCircle,
+  FaHeartbeat,
+  FaStethoscope,
+  FaPills,
+  FaClipboardCheck,
+  FaNotesMedical,
+  FaUserMd,
+  FaSignOutAlt,
+  FaBars,
+  FaClipboardList,
+} from "react-icons/fa";
 
 const HealthExpertHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -284,6 +305,16 @@ const HealthExpertHomePage = () => {
                 />
               </svg>
               {isSidebarOpen && <span>Blog Management</span>}
+            </Link>
+          </motion.div>
+          <motion.div variants={navItemVariants} className="sidebar-nav-item active">
+            <Link
+              to="/health-expert/consultation"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Consultation"
+            >
+              <FaClipboardList size={20} />
+              {isSidebarOpen && <span>Staff Advice</span>}
             </Link>
           </motion.div>
           {user ? (

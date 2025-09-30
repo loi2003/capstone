@@ -294,13 +294,13 @@ const MessengerManagement = () => {
 
   // Real-time message handling - DEBUG VERSION
   useEffect(() => {
-    console.log("=== MESSAGE EFFECT TRIGGERED ===");
-    console.log("messages.length:", messages.length);
-    console.log("currentStaffId:", currentStaffId);
-    console.log(
-      "selectedThread?.patientUserId:",
-      selectedThread?.patientUserId
-    );
+    // console.log("=== MESSAGE EFFECT TRIGGERED ===");
+    // console.log("messages.length:", messages.length);
+    // console.log("currentStaffId:", currentStaffId);
+    // console.log(
+    //   "selectedThread?.patientUserId:",
+    //   selectedThread?.patientUserId
+    // );
 
     if (messages.length === 0) {
       console.log("No messages, returning early");
@@ -309,7 +309,7 @@ const MessengerManagement = () => {
 
     const latest = messages[messages.length - 1];
     console.log("=== PROCESSING NEW MESSAGE ===");
-    console.log("Latest message:", JSON.stringify(latest, null, 2));
+    // console.log("Latest message:", JSON.stringify(latest, null, 2));
 
     // Early duplicate check
     if (!latest.id || processedMessageIds.current.has(latest.id)) {
@@ -342,13 +342,13 @@ const MessengerManagement = () => {
       });
 
       if (!patientUserId) {
-        console.log("❌ Message not from any patient in our threads");
-        console.log("Sender ID:", senderId);
-        console.log("Expected patients:", Object.keys(prev));
+        // console.log("Message not from any patient in our threads");
+        // console.log("Sender ID:", senderId);
+        // console.log("Expected patients:", Object.keys(prev));
         return prev;
       }
 
-      console.log("✅ Message from patient:", patientUserId);
+      // console.log("Message from patient:", patientUserId);
 
       const existingMessages = prev[patientUserId]?.messages || [];
       console.log("Existing messages count:", existingMessages.length);
@@ -356,17 +356,17 @@ const MessengerManagement = () => {
       // Secondary check at state level
       const messageExists = existingMessages.some((m) => m.id === latest.id);
       if (messageExists) {
-        console.log(
-          "❌ Message already exists in thread, skipping:",
-          latest.id
-        );
+        // console.log(
+        //   "Message already exists in thread, skipping:",
+        //   latest.id
+        // );
         return prev;
       }
 
-      console.log(
-        "✅ Adding new message to thread for patient:",
-        patientUserId
-      );
+      // console.log(
+      //   "Adding new message to thread for patient:",
+      //   patientUserId
+      // );
 
       // Process the message
       const processedMessage = {
@@ -409,15 +409,15 @@ const MessengerManagement = () => {
 
       // Update selected thread if this is the active conversation
       if (selectedThread && selectedThread.patientUserId === patientUserId) {
-        console.log("✅ Updating selected thread for active conversation");
+        console.log("Updating selected thread for active conversation");
         setTimeout(() => {
           setSelectedThread((prevSelected) => ({
             ...prevSelected,
             messages: updatedMessages,
           }));
-          console.log("✅ Selected thread updated");
+          console.log("Selected thread updated");
           scrollToBottom();
-          console.log("✅ Scrolled to bottom");
+          console.log("Scrolled to bottom");
         }, 100);
       }
 
