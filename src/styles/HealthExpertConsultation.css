@@ -1,0 +1,820 @@
+/* Root container */
+.health-expert-consultation {
+  display: flex;
+  min-height: 100vh;
+  font-family: "Roboto", sans-serif;
+  background-color: var(--health-expert-color4);
+  color: var(--health-expert-text);
+  width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.header-content h1 {
+  text-align: left;
+}
+
+/* Sidebar */
+.health-expert-consultation .sidebar {
+  background: linear-gradient(
+    180deg,
+    var(--health-expert-color1),
+    var(--health-expert-color2)
+  );
+  color: var(--health-expert-background);
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  box-shadow: var(--health-expert-shadow);
+  z-index: 1000;
+  transition: width var(--health-expert-transition);
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: hidden;
+}
+
+.health-expert-consultation .sidebar.open {
+  width: 280px;
+}
+
+.health-expert-consultation .sidebar.closed {
+  width: 60px;
+}
+
+.health-expert-consultation .sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-shrink: 0;
+}
+
+.health-expert-consultation .sidebar.closed .sidebar-header {
+  flex-direction: column;
+  padding: 0.75rem 0.5rem;
+  gap: 0.5rem;
+}
+
+.health-expert-consultation .logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.health-expert-consultation .logo-text {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--health-expert-background);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.health-expert-consultation .sidebar.closed .logo-text {
+  display: none;
+}
+
+.health-expert-consultation .logo-svg-container {
+  display: inline-flex;
+}
+
+.health-expert-consultation .logo-svg-container svg {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  stroke: var(--health-expert-background);
+}
+
+.health-expert-consultation .sidebar.closed .logo-svg-container svg {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+}
+
+.health-expert-consultation .sidebar-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--health-expert-background);
+  cursor: pointer;
+  padding: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--health-expert-transition);
+  color: var(--health-expert-background);
+}
+
+.health-expert-consultation .sidebar.closed .sidebar-toggle {
+  margin: 0 auto;
+}
+
+.health-expert-consultation .sidebar-toggle:hover,
+.health-expert-consultation .sidebar-toggle:focus {
+  background: var(--health-expert-background);
+  border-color: var(--health-expert-color1);
+  color: var(--health-expert-color1);
+}
+
+.health-expert-consultation .sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  flex-grow: 1;
+  flex-shrink: 0;
+  overflow-y: hidden;
+}
+
+.health-expert-consultation .sidebar.closed .sidebar-nav {
+  padding: 0;
+  gap: 0.5rem;
+}
+
+.health-expert-consultation .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.health-expert-consultation .sidebar.closed .sidebar-nav-item {
+  justify-content: center;
+}
+
+.health-expert-consultation .sidebar-nav a,
+.health-expert-consultation .sidebar-nav button,
+.health-expert-consultation .profile-info {
+  color: var(--health-expert-background);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  border-radius: var(--health-expert-border-radius);
+  transition: var(--health-expert-transition);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-wrap: break-word;
+}
+
+.health-expert-consultation .sidebar.closed .sidebar-nav a,
+.health-expert-consultation .sidebar.closed .sidebar-nav button,
+.health-expert-consultation .sidebar.closed .profile-info {
+  padding: 0.5rem 0;
+  justify-content: center;
+}
+
+.health-expert-consultation .sidebar-nav a svg,
+.health-expert-consultation .sidebar-nav button svg,
+.health-expert-consultation .profile-info svg {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+}
+
+.health-expert-consultation .sidebar.closed .sidebar-nav a span,
+.health-expert-consultation .sidebar.closed .sidebar-nav button span,
+.health-expert-consultation .sidebar.closed .profile-email {
+  display: none;
+}
+
+.health-expert-consultation .sidebar-nav a:hover,
+.health-expert-consultation .sidebar-nav button:hover,
+.health-expert-consultation .profile-info:hover,
+.health-expert-consultation .sidebar-nav a.active {
+  background: var(--health-expert-color3);
+  color: var(--health-expert-text);
+  transform: translateY(-2px);
+}
+
+.health-expert-consultation .health-dropdown,
+.health-expert-consultation .service-dropdown {
+  overflow: hidden;
+}
+
+.health-expert-consultation .health-dropdown-item,
+.health-expert-consultation .service-dropdown-item {
+  padding-left: 1.5rem;
+}
+
+.health-expert-consultation .sidebar.closed .health-dropdown-item,
+.health-expert-consultation .sidebar.closed .service-dropdown-item {
+  padding-left: 0;
+}
+
+.health-expert-consultation .dropdown-icon {
+  margin-left: auto;
+  transition: var(--health-expert-transition);
+}
+
+.health-expert-consultation .dropdown-icon.open {
+  transform: rotate(90deg);
+}
+
+.health-expert-consultation .profile-section {
+  margin-top: auto;
+  padding: 0.75rem;
+}
+
+.health-expert-consultation .profile-email {
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--health-expert-background);
+  opacity: 0.8;
+}
+
+.health-expert-consultation .logout-button {
+  color: var(--health-expert-logout) !important;
+  margin-top: 0.5rem;
+}
+
+.health-expert-consultation .logout-button:hover {
+  background: var(--health-expert-logout) !important;
+  color: var(--health-expert-background) !important;
+}
+
+/* Main content */
+.health-expert-consultation .content {
+  flex: 1;
+  margin-left: 280px;
+  transition: margin-left var(--health-expert-transition),
+    width var(--health-expert-transition);
+  padding: 1rem;
+  width: calc(100% - 280px); /* Default width when sidebar is open */
+  box-sizing: border-box;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.health-expert-consultation .content.sidebar-closed {
+  margin-left: 60px; /* When sidebar is closed */
+  width: calc(100% - 60px);
+}
+
+/* Header */
+.health-expert-consultation .management-header {
+  background: var(--health-expert-background);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--health-expert-color3);
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: var(--health-expert-border-radius);
+  box-shadow: var(--health-expert-shadow);
+  margin-bottom: 1rem;
+}
+
+.health-expert-consultation .management-header h1 {
+  color: var(--health-expert-color1);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.health-expert-consultation .management-header p {
+  color: var(--health-expert-text);
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Management container */
+.health-expert-consultation .management-container {
+  padding: 0;
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Loading and empty states */
+.health-expert-consultation .loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 0;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--health-expert-text);
+}
+
+.health-expert-consultation .loading-state svg {
+  width: 2rem;
+  height: 2rem;
+  animation: spin 1s linear infinite;
+  stroke: var(--health-expert-color1);
+}
+
+/* Consultation Layout */
+.consultation-layout {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 0;
+  height: calc(100vh - 180px); /* Fixed height */
+  background: var(--health-expert-background);
+  border-radius: var(--health-expert-border-radius);
+  overflow: hidden;
+  box-shadow: var(--health-expert-shadow);
+  max-height: calc(100vh - 180px);
+}
+
+/* Conversations Sidebar */
+.conversations-sidebar {
+  border-right: 1px solid var(--health-expert-color3);
+  display: flex;
+  flex-direction: column;
+  background: var(--health-expert-color5);
+}
+
+.conversations-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--health-expert-color3);
+  background: var(--health-expert-background);
+}
+
+.conversations-header h3 {
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--health-expert-color1);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.unread-badge {
+  background: var(--health-expert-logout);
+  color: var(--health-expert-background);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  margin-left: 0.5rem;
+}
+
+.search-section {
+  margin-bottom: 1rem;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--health-expert-color2);
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+  border: 2px solid var(--health-expert-color3);
+  border-radius: var(--health-expert-border-radius);
+  font-size: 0.9rem;
+  transition: var(--health-expert-transition);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--health-expert-color1);
+  box-shadow: 0 0 0 3px rgba(85, 138, 161, 0.1);
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--health-expert-color4);
+  border-radius: var(--health-expert-border-radius);
+  padding: 0.25rem;
+}
+
+.filter-tab {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--health-expert-text);
+  cursor: pointer;
+  transition: var(--health-expert-transition);
+}
+
+.filter-tab.active {
+  background: var(--health-expert-background);
+  color: var(--health-expert-color1);
+  box-shadow: var(--health-expert-shadow);
+}
+
+.conversations-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.conversation-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border-radius: var(--health-expert-border-radius);
+  cursor: pointer;
+  transition: var(--health-expert-transition);
+  border: 1px solid transparent;
+  background: var(--health-expert-background);
+}
+
+.conversation-item:hover {
+  background: var(--health-expert-color5);
+  border-color: var(--health-expert-color3);
+  transform: translateY(-2px);
+  box-shadow: var(--health-expert-shadow);
+}
+
+.conversation-item.active {
+  background: var(--health-expert-color3);
+  border-color: var(--health-expert-color1);
+  box-shadow: var(--health-expert-shadow-hover);
+}
+
+.conversation-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--health-expert-color1) 0%,
+    var(--health-expert-color2) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--health-expert-background);
+  margin-right: 1rem;
+  flex-shrink: 0;
+}
+
+.conversation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversation-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.patient-name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--health-expert-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread-count {
+  background: var(--health-expert-logout);
+  color: var(--health-expert-background);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.last-message {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.85rem;
+  color: var(--health-expert-text);
+  opacity: 0.7;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conversation-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--health-expert-text);
+  opacity: 0.6;
+}
+
+.patient-email {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 120px;
+}
+
+.no-conversations {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--health-expert-text);
+  opacity: 0.7;
+}
+
+.no-conversations-icon {
+  font-size: 3rem;
+  color: var(--health-expert-color2);
+  margin-bottom: 1rem;
+}
+
+/* Chat Area */
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  background: var(--health-expert-background);
+  height: 100%; /* Take full height of parent */
+  overflow: hidden;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--health-expert-color3);
+  background: var(--health-expert-background);
+}
+
+.patient-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.patient-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--health-expert-color1) 0%,
+    var(--health-expert-color2) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--health-expert-background);
+  font-size: 1.2rem;
+}
+
+.patient-details h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--health-expert-text);
+}
+
+.patient-status {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--health-expert-text);
+  opacity: 0.7;
+}
+
+.chat-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--health-expert-color3);
+  background: var(--health-expert-background);
+  border-radius: var(--health-expert-border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--health-expert-text);
+  cursor: pointer;
+  transition: var(--health-expert-transition);
+}
+
+.action-btn:hover {
+  background: var(--health-expert-color5);
+  color: var(--health-expert-color1);
+  border-color: var(--health-expert-color1);
+}
+
+.health-expert-messages {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-height: calc(100vh - 300px);
+  scroll-behavior: smooth;
+}
+
+.health-expert-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.health-expert-messages::-webkit-scrollbar-track {
+  background: var(--health-expert-color4);
+  border-radius: 3px;
+}
+
+.health-expert-messages::-webkit-scrollbar-thumb {
+  background: var(--health-expert-color2);
+  border-radius: 3px;
+}
+
+.health-expert-messages::-webkit-scrollbar-thumb:hover {
+  background: var(--health-expert-color1);
+}
+
+.no-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--health-expert-text);
+  opacity: 0.7;
+  gap: 1rem;
+}
+
+.no-messages-icon {
+  font-size: 3rem;
+  color: var(--health-expert-color2);
+}
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  max-width: 70%;
+  gap: 0.5rem;
+}
+
+.message.sent {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message.received {
+  align-self: flex-start;
+}
+
+.message-content {
+  background: var(--health-expert-color5);
+  padding: 0.75rem 1rem;
+  border-radius: 18px;
+  max-width: 100%;
+  word-wrap: break-word;
+  border: 1px solid var(--health-expert-color3);
+}
+
+.message.sent .message-content {
+  background: var(--health-expert-color1);
+  color: var(--health-expert-background);
+}
+
+.message-text {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.message-attachment {
+  margin-top: 0.5rem;
+}
+
+.attachment-image {
+  max-width: 250px;
+  max-height: 200px;
+  border-radius: var(--health-expert-border-radius);
+  cursor: pointer;
+  transition: var(--health-expert-transition);
+}
+
+.attachment-image:hover {
+  transform: scale(1.02);
+}
+
+.attachment-file {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--health-expert-border-radius);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.message.received .attachment-file {
+  background: var(--health-expert-background);
+  border-color: var(--health-expert-color3);
+}
+
+.file-icon {
+  color: var(--health-expert-color1);
+  font-size: 1.5rem;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  display: block;
+  font-weight: 500;
+  font-size: 0.85rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-top: 0.25rem;
+}
+
+.download-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+  transition: var(--health-expert-transition);
+}
+
+.health-expert-consultation .content {
+  flex: 1;
+  margin-left: 280px;
+  padding: 1rem;
+  transition: margin-left var(--health-expert-transition);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.heart-logo {
+  color: white !important;
+}
+
+.health-expert-consultation .sidebar.closed + .content {
+  margin-left: 60px;
+}
+
+.health-expert-consultation .content.sidebar-open {
+  margin-left: 280px;
+  width: calc(100% - 280px);
+}
+
+.health-expert-consultation .content.sidebar-closed {
+  margin-left: 60px;
+  width: calc(100% - 60px);
+}
+
+.health-expert-consultation .content.sidebar-closed .consultation-layout {
+  grid-template-columns: 420px 1fr; /* Wider conversation sidebar when we have more space */
+}
+
+.health-expert-consultation .content.sidebar-closed .conversations-sidebar {
+  min-width: 420px; /* Ensure minimum width when expanded */
+}
+
+.health-expert-consultation .content.sidebar-closed .conversations-header {
+  padding: 1.5rem 2rem; /* More padding when we have space */
+}

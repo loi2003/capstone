@@ -705,60 +705,6 @@ const ClinicDetail = () => {
                 )}
             </div>
 
-            <div className="clinic-section">
-              <div className="clinic-section-title">Feedback</div>
-              <div className="clinic-feedback-rating">
-                {renderStars(avg)}
-                <span className="rating-value">{avg.toFixed(1)}</span>
-                <span className="review-count">({count} reviews)</span>
-              </div>
-              <div className="clinic-feedback-list">
-                {clinic.feedbacks && clinic.feedbacks.length > 0 ? (
-                  clinic.feedbacks.map((feedback) => {
-                    const stars = Math.round(feedback.rating / 2);
-                    return (
-                      <div className="clinic-feedback-card" key={feedback.id}>
-                        <div className="feedback-stars">
-                          {[...Array(5)].map((_, i) =>
-                            i < stars ? (
-                              <FaStar
-                                key={i}
-                                style={{
-                                  color: "#f7b801",
-                                  fontSize: "1.2em",
-                                  marginRight: "2px",
-                                }}
-                              />
-                            ) : (
-                              <FaRegStar
-                                key={i}
-                                style={{
-                                  color: "#ccc",
-                                  fontSize: "1.2em",
-                                  marginRight: "2px",
-                                }}
-                              />
-                            )
-                          )}
-                        </div>
-                        <div style={{ color: "#848785", marginTop: 4 }}>
-                          {feedback.comment}
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div>No feedback yet</div>
-                )}
-              </div>
-              <button
-                className="clinic-detail-give-feedback-btn"
-                onClick={handleOpenFeedbackModal}
-              >
-                Send Feedback
-              </button>
-            </div>
-
             {/* Feedback Modal - Removed duplicate */}
             {showFeedbackModal && (
               <div className="modal-overlay clinic-feedback-modal-overlay">
@@ -849,22 +795,57 @@ const ClinicDetail = () => {
           </div>
 
           <aside className="clinic-main-right">
-            <div className="clinic-booking-widget">
-              <div className="clinic-booking-title">Book Appointment</div>
-              <div className="clinic-booking-field">
-                <label>Clinic</label>
-                <input type="text" value={clinic.name} disabled />
+            <div className="clinic-section">
+              <div className="clinic-section-title">Feedback</div>
+              <div className="clinic-feedback-rating">
+                {renderStars(avg)}
+                <span className="rating-value">{avg.toFixed(1)}</span>
+                <span className="review-count">({count} reviews)</span>
               </div>
-              <div className="clinic-booking-field">
-                <label>Specialization</label>
-                <input type="text" value={clinic.specializations} disabled />
+              <div className="clinic-feedback-list">
+                {clinic.feedbacks && clinic.feedbacks.length > 0 ? (
+                  clinic.feedbacks.map((feedback) => {
+                    const stars = Math.round(feedback.rating / 2);
+                    return (
+                      <div className="clinic-feedback-card" key={feedback.id}>
+                        <div className="feedback-stars">
+                          {[...Array(5)].map((_, i) =>
+                            i < stars ? (
+                              <FaStar
+                                key={i}
+                                style={{
+                                  color: "#f7b801",
+                                  fontSize: "1.2em",
+                                  marginRight: "2px",
+                                }}
+                              />
+                            ) : (
+                              <FaRegStar
+                                key={i}
+                                style={{
+                                  color: "#ccc",
+                                  fontSize: "1.2em",
+                                  marginRight: "2px",
+                                }}
+                              />
+                            )
+                          )}
+                        </div>
+                        <div style={{ color: "#848785", marginTop: 4 }}>
+                          {feedback.comment}
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div>No feedback yet</div>
+                )}
               </div>
-              <div className="clinic-booking-field">
-                <label>Doctor</label>
-                <input type="text" placeholder="Select doctor" disabled />
-              </div>
-              <button className="clinic-booking-btn" disabled>
-                Book Now
+              <button
+                className="clinic-detail-give-feedback-btn"
+                onClick={handleOpenFeedbackModal}
+              >
+                Send Feedback
               </button>
             </div>
           </aside>

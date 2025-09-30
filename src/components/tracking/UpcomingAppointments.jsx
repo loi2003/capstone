@@ -267,7 +267,11 @@ const UpcomingAppointments = ({
       </div>
 
       {expanded && (
-        <button className="schedule-new-btn">
+        <button className="schedule-new-btn"
+        onClick={() => {
+                    // Navigate to OnlineConsultationDetail page with the onlineConsultationId
+                    navigate(`/clinic/list`);
+                  }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
               d="M12 5v14m-7-7h14"
