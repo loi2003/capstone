@@ -10,6 +10,8 @@ import {
   removeRecommendOrWarningFoodForDisease,
   removeRecommendOrWarningFoodForAllergy,
   viewWarningFoods,
+  viewWarningFoodsByDiseaseIds,
+  viewWarningFoodsByAllergyIds,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/WarningManagement.css";
@@ -73,14 +75,14 @@ const WarningModal = ({ warning, onClose, foods }) => {
       >
         <h2>Warning Food Details</h2>
         <h3>
-          Food:{" "}
-          {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}
+          Food: {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}
         </h3>
         <p>
           <strong>Type:</strong> {warning.type}
         </p>
         <p>
-          <strong>Related ID:</strong> {warning.relatedId}
+          <strong>Related:</strong>{" "}
+          {warning.relatedName || "Unknown"}
         </p>
         <p>
           <strong>Description:</strong>{" "}
@@ -121,6 +123,7 @@ const WarningManagement = () => {
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFilter, setSelectedFilter] = useState(null); // New state for filtering by disease/allergy
   const itemsPerPage = 6;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
@@ -168,12 +171,11 @@ const WarningManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [diseasesResponse, allergiesResponse, foodsResponse] =
-        await Promise.all([
-          getAllDiseases(token),
-          getAllAllergies(token),
-          getAllFoods(),
-        ]);
+      const [diseasesResponse, allergiesResponse, foodsResponse] = await Promise.all([
+        getAllDiseases(token),
+        getAllAllergies(token),
+        getAllFoods(),
+      ]);
 
       const diseasesData = Array.isArray(diseasesResponse?.data?.data)
         ? diseasesResponse.data.data
@@ -189,9 +191,6 @@ const WarningManagement = () => {
 
       const foodsData = Array.isArray(foodsResponse) ? foodsResponse : [];
 
-      console.log("Foods response:", foodsResponse);
-      console.log("Foods data:", foodsData);
-
       setDiseases(diseasesData);
       setAllergies(allergiesData);
       setFoods(foodsData);
@@ -199,15 +198,22 @@ const WarningManagement = () => {
       if (diseasesData.length > 0 || allergiesData.length > 0) {
         const diseaseIds = diseasesData.map((disease) => disease.id);
         const allergyIds = allergiesData.map((allergy) => allergy.id);
-        const warningsResponse = await viewWarningFoods({
-          allergyIds,
-          diseaseIds,
-        });
+        const warningsResponse = await viewWarningFoods({ allergyIds, diseaseIds });
 
         const warningsData = Array.isArray(warningsResponse?.data?.data)
-          ? warningsResponse.data.data
+          ? warningsResponse.data.data.map(warning => ({
+              ...warning,
+              relatedName: warning.type === "Disease"
+                ? diseasesData.find(d => d.id === warning.relatedId)?.name
+                : allergiesData.find(a => a.id === warning.relatedId)?.name
+            }))
           : Array.isArray(warningsResponse?.data)
-          ? warningsResponse.data
+          ? warningsResponse.data.map(warning => ({
+              ...warning,
+              relatedName: warning.type === "Disease"
+                ? diseasesData.find(d => d.id === warning.relatedId)?.name
+                : allergiesData.find(a => a.id === warning.relatedId)?.name
+            }))
           : [];
         setWarnings(warningsData);
       } else {
@@ -227,6 +233,53 @@ const WarningManagement = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchWarningsByFilter = async (type, id) => {
+    setLoading(true);
+    try {
+      let warningsResponse;
+      if (type === "Disease") {
+        warningsResponse = await viewWarningFoodsByDiseaseIds([id]);
+      } else {
+        warningsResponse = await viewWarningFoodsByAllergyIds([id]);
+      }
+
+      const warningsData = Array.isArray(warningsResponse?.data?.data)
+        ? warningsResponse.data.data.map(warning => ({
+            ...warning,
+            relatedName: type === "Disease"
+              ? diseases.find(d => d.id === warning.relatedId)?.name
+              : allergies.find(a => a.id === warning.relatedId)?.name
+          }))
+        : Array.isArray(warningsResponse?.data)
+        ? warningsResponse.data.map(warning => ({
+            ...warning,
+            relatedName: type === "Disease"
+              ? diseases.find(d => d.id === warning.relatedId)?.name
+              : allergies.find(a => a.id === warning.relatedId)?.name
+          }))
+        : [];
+      setWarnings(warningsData);
+      setSelectedFilter({ type, id });
+      setCurrentPage(1);
+      showNotification(`Filtered warnings for ${type}: ${id}`, "success");
+    } catch (err) {
+      console.error(`Error fetching warnings for ${type}:`, {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(`Failed to fetch warnings: ${err.message}`, "error");
+      setWarnings([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetFilter = async () => {
+    setSelectedFilter(null);
+    await fetchData();
   };
 
   const createWarningHandler = async () => {
@@ -396,16 +449,33 @@ const WarningManagement = () => {
       foods
         .find((f) => f.id === warning.foodId)
         ?.name.toLowerCase()
-        .includes(searchTerm.toLowerCase())
+        .includes(searchTerm.toLowerCase()) ||
+      warning.relatedName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const indexOfLastWarning = currentPage * itemsPerPage;
-  const indexOfFirstWarning = indexOfLastWarning - itemsPerPage;
-  const currentWarnings = filteredWarnings.slice(
-    indexOfFirstWarning,
-    indexOfLastWarning
+  const groupedWarnings = filteredWarnings.reduce((acc, warning) => {
+    const key = `${warning.type}-${warning.relatedId}`;
+    if (!acc[key]) {
+      acc[key] = {
+        type: warning.type,
+        relatedId: warning.relatedId,
+        relatedName: warning.relatedName,
+        warnings: [],
+      };
+    }
+    acc[key].warnings.push(warning);
+    return acc;
+  }, {});
+
+  const groupedWarningsArray = Object.values(groupedWarnings);
+
+  const indexOfLastGroup = currentPage * itemsPerPage;
+  const indexOfFirstGroup = indexOfLastGroup - itemsPerPage;
+  const currentGroups = groupedWarningsArray.slice(
+    indexOfFirstGroup,
+    indexOfLastGroup
   );
-  const totalPages = Math.ceil(filteredWarnings.length / itemsPerPage);
+  const totalPages = Math.ceil(groupedWarningsArray.length / itemsPerPage);
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -1076,7 +1146,7 @@ const WarningManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 16px 0 24 24"
+                    viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Warning icon for warning management"
@@ -1581,10 +1651,28 @@ const WarningManagement = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by type or food name"
+                placeholder="Search by type, food name, or related name"
                 className="search-input"
               />
             </div>
+            {selectedFilter && (
+              <div className="filter-info">
+                <p>
+                  Showing warnings for {selectedFilter.type}:{" "}
+                  {selectedFilter.type === "Disease"
+                    ? diseases.find((d) => d.id === selectedFilter.id)?.name
+                    : allergies.find((a) => a.id === selectedFilter.id)?.name}
+                </p>
+                <motion.button
+                  onClick={resetFilter}
+                  className="nutrient-specialist-button secondary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Clear Filter
+                </motion.button>
+              </div>
+            )}
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
@@ -1611,56 +1699,59 @@ const WarningManagement = () => {
               </div>
             ) : (
               <>
-                <div className="warning-grid">
-                  {currentWarnings.map((warning, index) => (
+                <div className="warning-group-grid">
+                  {currentGroups.map((group, index) => (
                     <motion.div
-                      key={`${warning.foodId}-${warning.relatedId}`}
-                      className="warning-card"
+                      key={`${group.type}-${group.relatedId}`}
+                      className="warning-group-card"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                       whileHover={{ y: -5 }}
                     >
-                      <div className="card-header">
-                        <h3>
-                          {foods.find((f) => f.id === warning.foodId)?.name ||
-                            `Warning #${index + 1}`}
+                      <div className="group-header">
+                        <h3
+                          className="group-title"
+                          onClick={() => fetchWarningsByFilter(group.type, group.relatedId)}
+                        >
+                          {group.relatedName} ({group.type})
                         </h3>
                       </div>
-                      <div className="warning-details">
-                        <p>
-                          <strong>Type:</strong> {warning.type}
-                        </p>
-                        <p>
-                          <strong>Related:</strong>{" "}
-                          {(warning.type === "Disease"
-                            ? diseases
-                            : allergies
-                          ).find((item) => item.id === warning.relatedId)
-                            ?.name || "Unknown"}
-                        </p>
-                        <p>
-                          <strong>Description:</strong>{" "}
-                          {warning.description || "No description"}
-                        </p>
-                      </div>
-                      <div className="card-actions">
-                        <motion.button
-                          onClick={() => setSelectedViewWarning(warning)}
-                          className="view-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          View
-                        </motion.button>
-                        <motion.button
-                          onClick={() => deleteWarningHandler(warning)}
-                          className="delete-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          Delete
-                        </motion.button>
+                      <div className="group-warnings">
+                        {group.warnings.map((warning, warningIndex) => (
+                          <div
+                            key={`${warning.foodId}-${warning.relatedId}`}
+                            className="warning-item"
+                          >
+                            <p>
+                              <strong>Food:</strong>{" "}
+                              {foods.find((f) => f.id === warning.foodId)?.name ||
+                                `Warning #${warningIndex + 1}`}
+                            </p>
+                            <p>
+                              <strong>Description:</strong>{" "}
+                              {warning.description || "No description"}
+                            </p>
+                            <div className="card-actions">
+                              <motion.button
+                                onClick={() => setSelectedViewWarning(warning)}
+                                className="view-button nutrient-specialist-button secondary"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                View
+                              </motion.button>
+                              <motion.button
+                                onClick={() => deleteWarningHandler(warning)}
+                                className="delete-button nutrient-specialist-button secondary"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                Delete
+                              </motion.button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </motion.div>
                   ))}
