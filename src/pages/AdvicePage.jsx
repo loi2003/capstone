@@ -31,14 +31,48 @@ import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
 
 const AdvicePage = () => {
+  // Use the same pattern as ConsultationChat
+  const messagesEndRef = useRef(null);
+  const {
+    connection,
+    messages,
+    addMessage,
+    connectionStatus,
+    isReconnecting,
+    isConnected,
+  } = useMessages();
+
   // Separate message states for AI and Staff
   const [aiMessages, setAiMessages] = useState([]);
   const [staffMessages, setStaffMessages] = useState([]);
 
   // Original AdvicePage states
-  const [input, setInput] = useState("");
-  const [activeMode, setActiveMode] = useState("ai");
+  const [currentUserId, setCurrentUserId] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [input, setInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+
+  // Staff consultation states
+  const [activeMode, setActiveMode] = useState("ai");
+  const [staffMembers, setStaffMembers] = useState([]);
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [chatThreads, setChatThreads] = useState({});
+  const [staffChatHistory, setStaffChatHistory] = useState([]);
+
+  // Message input and file handling
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Add the same processedMessageIds pattern from ConsultationChat
+  const processedMessageIds = useRef(new Set());
+
+  const supportedImageTypes = [".jpg", ".jpeg", ".png"];
+  const supportedDocTypes = [".docx", ".xls", ".xlsx", ".pdf"];
+  const allSupportedTypes = [...supportedImageTypes, ...supportedDocTypes];
+
   const [isLoading, setIsLoading] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showStaffTypePrompt, setShowStaffTypePrompt] = useState(false);
@@ -49,44 +83,45 @@ const AdvicePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const chatsPerPage = 3;
 
-  // Staff chat functionality states
-  const [currentUserId, setCurrentUserId] = useState("");
-  const [staffMembers, setStaffMembers] = useState([]);
-  const [chatThreads, setChatThreads] = useState({});
-  const [selectedStaff, setSelectedStaff] = useState(null);
-  const [newMessage, setNewMessage] = useState("");
-  const [sendingMessage, setSendingMessage] = useState(false);
-  const [startingChat, setStartingChat] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [filePreview, setFilePreview] = useState(null);
-  const [randomStaffSelected, setRandomStaffSelected] = useState(false);
-  const [staffChatHistory, setStaffChatHistory] = useState([]);
-
   const chatContainerRef = useRef(null);
   const staffPromptRef = useRef(null);
   const inputRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const messagesEndRef = useRef(null);
 
-  // SignalR connection for staff chat
-  const {
-    connection,
-    addMessage,
-    connectionStatus,
-    isReconnecting,
-    isConnected,
-  } = useMessages();
+  // Utility functions (keep existing ones)
+  const scrollToBottom = () => {
+  requestAnimationFrame(() => {
+    if (messagesEndRef.current) {
+      // Try to find the specific messages container in AdvicePage
+      const messagesContainer = messagesEndRef.current.closest(
+        ".staff-chat-messages, .ai-chat-messages, .chat-messages-area, .messages-container"
+      );
+      
+      if (messagesContainer) {
+        // Scroll only the messages container
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      } else {
+        // Alternative: Find parent with overflow scroll
+        let parent = messagesEndRef.current.parentElement;
+        while (parent) {
+          const styles = window.getComputedStyle(parent);
+          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
+            parent.scrollTop = parent.scrollHeight;
+            return;
+          }
+          parent = parent.parentElement;
+        }
+        
+        // Last resort: scroll to the element but prevent page scroll
+        messagesEndRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest", // Changed from "end" to "nearest"
+          inline: "nearest",
+        });
+      }
+    }
+  });
+};
 
-  // File handling utilities
-  const supportedImageTypes = [".jpg", ".jpeg", ".png"];
-  const supportedDocTypes = [".docx", ".xls", ".xlsx", ".pdf"];
-  const allSupportedTypes = [...supportedImageTypes, ...supportedDocTypes];
-
-  const isImageFile = (fileName) => {
-    if (!fileName) return false;
-    const extension = "." + fileName.toLowerCase().split(".").pop();
-    return supportedImageTypes.includes(extension);
-  };
 
   const formatBytes = (bytes) => {
     if (!bytes && bytes !== 0) return "";
@@ -100,18 +135,18 @@ const AdvicePage = () => {
     return `${n.toFixed(n < 10 && i > 0 ? 1 : 0)} ${units[i]}`;
   };
 
+  const isImageFile = (fileName) => {
+    if (!fileName) return false;
+    const extension = "." + fileName.toLowerCase().split(".").pop();
+    return supportedImageTypes.includes(extension);
+  };
+
+  // Initialize user
   useEffect(() => {
-    checkAuthAndInitialize();
+    initializeUser();
   }, []);
 
-  useEffect(() => {
-    if (activeMode === "staff" && isLoggedIn && currentUserId) {
-      loadAllStaff();
-      loadExistingStaffThreads();
-    }
-  }, [activeMode, isLoggedIn, currentUserId]);
-
-  const checkAuthAndInitialize = async () => {
+  const initializeUser = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -119,29 +154,30 @@ const AdvicePage = () => {
         return;
       }
 
-      const userRes = await getCurrentUser(token);
-      const userId =
-        userRes?.data?.data?.id || userRes?.data?.id || userRes?.id || "";
+      const userResponse = await getCurrentUser(token);
+      const userData = userResponse?.data?.data || userResponse?.data;
 
-      if (userId) {
-        setCurrentUserId(userId);
+      if (userData?.id) {
+        setCurrentUserId(userData.id);
         setIsLoggedIn(true);
+        await loadAllStaff();
+        await loadExistingStaffThreads(userData.id);
       } else {
         setIsLoggedIn(false);
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
+      console.error("Failed to initialize user:", error);
       setIsLoggedIn(false);
     }
   };
 
+  // Load staff members
   const loadAllStaff = async () => {
     try {
       const token = localStorage.getItem("token");
       const usersResponse = await getAllUsers(token);
       const allUsers = usersResponse?.data || usersResponse || [];
 
-      // Filter for staff members (roleId 3 = health, roleId 4 = nutrition)
       const staffOnly = allUsers.filter(
         (user) => user.roleId === 3 || user.roleId === 4
       );
@@ -159,18 +195,21 @@ const AdvicePage = () => {
     }
   };
 
-  const loadExistingStaffThreads = async () => {
+  // Load existing staff threads (adapted from ConsultationChat pattern)
+  const loadExistingStaffThreads = async (userId) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const threadsResponse = await getChatThreadByUserId(currentUserId, token);
-      let threads = [];
+      const threadsResponse = await getChatThreadByUserId(userId, token);
 
+      let threads = [];
       if (Array.isArray(threadsResponse)) {
         threads = threadsResponse;
       } else if (threadsResponse?.data && Array.isArray(threadsResponse.data)) {
         threads = threadsResponse.data;
+      } else if (threadsResponse?.id) {
+        threads = [threadsResponse];
       }
 
       if (threads.length > 0) {
@@ -182,42 +221,74 @@ const AdvicePage = () => {
           if (!staffId) continue;
 
           try {
+            // Find staff member data
             const staffMember = staffMembers.find(
               (staff) => staff.id === staffId
             );
 
+            // Process messages with attachments
             const processedMessages =
-              thread.messages?.map((msg) => ({
-                ...msg,
-                text: msg.messageText || msg.message || msg.text,
-                time: msg.createdAt
-                  ? new Date(msg.createdAt).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    })
-                  : new Date().toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    }),
-                isUser: msg.senderId === currentUserId,
-                attachment:
-                  msg.attachmentUrl || msg.attachmentPath
-                    ? {
-                        fileName:
-                          msg.attachmentFileName ||
-                          msg.fileName ||
-                          "Attachment",
-                        fileSize: msg.attachmentFileSize || msg.fileSize,
-                        fileType: msg.attachmentFileType || msg.fileType,
-                        isImage: isImageFile(
-                          msg.attachmentFileName || msg.fileName
-                        ),
-                        url: msg.attachmentUrl || msg.attachmentPath,
-                      }
-                    : null,
-              })) || [];
+              thread.messages?.map((msg) => {
+                // Fix UTC timestamp by adding Z if missing
+                let createdAt =
+                  msg.createdAt || msg.sentAt || new Date().toISOString();
+                if (
+                  typeof createdAt === "string" &&
+                  !createdAt.includes("Z")
+                  // &&
+                  // !createdAt.includes("+") &&
+                  // !createdAt.includes("-")
+                ) {
+                  createdAt = createdAt + "Z";
+                }
+
+                const processedMsg = {
+                  ...msg,
+                  text: msg.messageText || msg.message || msg.text,
+                  time: new Date(createdAt).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: true,
+                  }),
+                  isUser: msg.senderId === userId,
+                  createdAt: createdAt,
+                };
+
+                // Handle attachments
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  processedMsg.attachment = {
+                    fileName:
+                      msg.attachmentFileName || msg.fileName || "Attachment",
+                    fileSize: msg.attachmentFileSize || msg.fileSize,
+                    fileType: msg.attachmentFileType || msg.fileType,
+                    isImage: isImageFile(
+                      msg.attachmentFileName || msg.fileName
+                    ),
+                    url:
+                      msg.attachmentUrl ||
+                      msg.attachmentPath ||
+                      msg.attachment?.url,
+                  };
+                }
+
+                // Handle media array (same as ConsultationChat)
+                if (
+                  msg.media &&
+                  Array.isArray(msg.media) &&
+                  msg.media.length > 0
+                ) {
+                  const firstMedia = msg.media[0];
+                  processedMsg.attachment = {
+                    fileName: firstMedia.fileName || "Attachment",
+                    fileSize: firstMedia.fileSize,
+                    fileType: firstMedia.fileType,
+                    isImage: isImageFile(firstMedia.fileName || ""),
+                    url: firstMedia.fileUrl || firstMedia.url,
+                  };
+                }
+
+                return processedMsg;
+              }) || [];
 
             threadsMap[staffId] = {
               thread,
@@ -230,7 +301,7 @@ const AdvicePage = () => {
               },
             };
 
-            // Add to chat history for sidebar
+            // Add to chat history
             if (processedMessages.length > 0) {
               const lastMessage =
                 processedMessages[processedMessages.length - 1];
@@ -251,10 +322,7 @@ const AdvicePage = () => {
               });
             }
           } catch (err) {
-            console.error(
-              `Failed to process thread for staff ${staffId}:`,
-              err
-            );
+            console.error(`Failed to fetch staff ${staffId}:`, err);
           }
         }
 
@@ -262,10 +330,432 @@ const AdvicePage = () => {
         setStaffChatHistory(history);
       }
     } catch (error) {
-      console.error("Failed to load existing threads:", error);
+      console.error("Failed to load existing staff threads:", error);
+    }
+  };
+  const [randomStaffSelected, setRandomStaffSelected] = useState(false);
+  const [startingChat, setStartingChat] = useState(false);
+
+  // Handle staff selection
+  const handleStaffSelect = async (staff) => {
+    setSelectedStaff(staff);
+    setActiveMode("staff");
+
+    const staffId = staff.id;
+
+    if (chatThreads[staffId]) {
+      // Load existing messages
+      setStaffMessages(chatThreads[staffId].messages);
+      return;
+    }
+
+    // Create empty chat thread for new staff
+    setChatThreads((prev) => ({
+      ...prev,
+      [staffId]: {
+        thread: null,
+        messages: [],
+        staff: staff,
+      },
+    }));
+    setStaffMessages([]);
+  };
+
+  // Join thread when staff is selected (same as ConsultationChat)
+  useEffect(() => {
+    if (
+      connection &&
+      selectedStaff &&
+      chatThreads[selectedStaff.id]?.thread?.id
+    ) {
+      const threadId = chatThreads[selectedStaff.id].thread.id;
+      connection
+        .invoke("JoinThread", threadId)
+        .catch((err) => console.error("JoinThread failed:", err));
+    }
+  }, [connection, selectedStaff, chatThreads]);
+
+  // Real-time message handling (exactly like ConsultationChat)
+  useEffect(() => {
+    if (messages.length === 0) return;
+
+    const latest = messages[messages.length - 1];
+    console.log("Processing incoming message in AdvicePage:", latest);
+
+    // Early duplicate check
+    if (!latest.id || processedMessageIds.current.has(latest.id)) {
+      console.log("Message already processed, skipping:", latest.id);
+      return;
+    }
+
+    // Mark message as processed immediately
+    processedMessageIds.current.add(latest.id);
+
+    if (selectedStaff?.id && activeMode === "staff") {
+      const staffId = selectedStaff.id;
+
+      setChatThreads((prev) => {
+        const existingMessages = prev[staffId]?.messages || [];
+
+        // Secondary check at state level
+        const messageExists = existingMessages.some((m) => m.id === latest.id);
+        if (messageExists) {
+          console.log("Message already exists in thread, skipping:", latest.id);
+          return prev;
+        }
+
+        console.log("Adding new message to staff thread for:", staffId);
+
+        // Process the message (same as ConsultationChat)
+        const processedMessage = {
+          ...latest,
+          text: latest.messageText || latest.message || latest.text,
+          time: (() => {
+            // Fix UTC timestamp by adding Z if missing
+            let timestamp = latest.createdAt || new Date().toISOString();
+            if (
+              typeof timestamp === "string" &&
+              !timestamp.includes("Z")
+              // &&
+              // !timestamp.includes("+") &&
+              // !timestamp.includes("-")
+            ) {
+              timestamp = timestamp + "Z";
+            }
+            return new Date(timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+          })(),
+          isUser: latest.senderId === currentUserId,
+          messageText: latest.messageText?.trim(),
+        };
+
+        // Handle media attachments (same as ConsultationChat)
+        if (
+          latest.media &&
+          Array.isArray(latest.media) &&
+          latest.media.length > 0
+        ) {
+          const firstMedia = latest.media[0];
+          processedMessage.attachment = {
+            fileName: firstMedia.fileName || "Attachment",
+            fileSize: firstMedia.fileSize,
+            fileType: firstMedia.fileType,
+            isImage: isImageFile(firstMedia.fileName || ""),
+            url: firstMedia.fileUrl || firstMedia.url,
+          };
+        }
+
+        // Update both chatThreads and staffMessages
+        const updatedMessages = [...existingMessages, processedMessage];
+
+        // Update staff messages if this is the active conversation
+        if (activeMode === "staff" && selectedStaff.id === staffId) {
+          setStaffMessages(updatedMessages);
+        }
+
+        return {
+          ...prev,
+          [staffId]: {
+            ...prev[staffId],
+            messages: updatedMessages,
+          },
+        };
+      });
+
+      // Auto scroll
+      setTimeout(() => scrollToBottom(), 100);
+    }
+  }, [messages, selectedStaff?.id, currentUserId, activeMode]);
+
+  // Cleanup for processed message IDs (same as ConsultationChat)
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      if (processedMessageIds.current.size > 1000) {
+        console.log("Cleaning up processed message IDs");
+        processedMessageIds.current.clear();
+      }
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(cleanup);
+  }, []);
+
+  // Send staff message function (adapted from ConsultationChat)
+  const handleSendStaffMessage = async () => {
+    if (!connection || !isConnected) {
+      console.error("SignalR connection not established");
+      if (isReconnecting) {
+        alert("Reconnecting... Please try again in a moment.");
+      } else {
+        alert("Connection lost. Please wait while we reconnect...");
+      }
+      return;
+    }
+
+    if (connection.state !== signalR.HubConnectionState.Connected) {
+      console.error(
+        "SignalR connection not ready. Current state:",
+        connection.state
+      );
+      alert("Connection not ready. Please wait a moment and try again.");
+      return;
+    }
+
+    const staffId = selectedStaff?.id;
+    const activeThread = chatThreads[staffId]?.thread;
+
+    if (
+      (!newMessage.trim() && !selectedFile) ||
+      !activeThread ||
+      sendingMessage
+    ) {
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      formData.append("ChatThreadId", activeThread.id);
+      formData.append("SenderId", currentUserId);
+
+      if (newMessage.trim()) {
+        formData.append("MessageText", newMessage.trim());
+      }
+
+      if (selectedFile) {
+        formData.append("Attachments", selectedFile);
+        formData.append("AttachmentFileName", selectedFile.name);
+        formData.append("AttachmentFileType", selectedFile.type);
+        formData.append("AttachmentFileSize", selectedFile.size.toString());
+      }
+
+      const response = await sendMessage(formData, token);
+      console.log("Send message response:", response);
+
+      if (response.error === 0) {
+        const attachmentUrl =
+          response.data?.attachmentUrl ||
+          response.data?.attachmentPath ||
+          response.data?.attachment?.url;
+
+        const newMsg = {
+          id: response.data?.id || Date.now().toString(),
+          senderId: currentUserId,
+          receiverId: staffId,
+          text: newMessage.trim(),
+          messageText: newMessage.trim(),
+          time: (() => {
+            // Fix UTC timestamp by adding Z if missing
+            let timestamp = response.data?.sentAt || new Date().toISOString();
+            if (
+              typeof timestamp === "string" &&
+              !timestamp.includes("Z")
+              // &&
+              // !timestamp.includes("+") &&
+              // !timestamp.includes("-")
+            ) {
+              timestamp = timestamp + "Z";
+            }
+            return new Date(timestamp).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+          })(),
+          isUser: true,
+          createdAt: (() => {
+            let timestamp = response.data?.sentAt || new Date().toISOString();
+            if (
+              typeof timestamp === "string" &&
+              !timestamp.includes("Z")
+              // &&
+              // !timestamp.includes("+") &&
+              // !timestamp.includes("-")
+            ) {
+              timestamp = timestamp + "Z";
+            }
+            return timestamp;
+          })(),
+          attachment: selectedFile
+            ? {
+                fileName: selectedFile.name,
+                fileSize: selectedFile.size,
+                fileType: selectedFile.type,
+                isImage: isImageFile(selectedFile.name),
+                url: attachmentUrl || filePreview,
+              }
+            : null,
+        };
+
+        // Update chat threads and staff messages
+        setChatThreads((prevThreads) => ({
+          ...prevThreads,
+          [staffId]: {
+            ...prevThreads[staffId],
+            messages: [...(prevThreads[staffId]?.messages || []), newMsg],
+          },
+        }));
+
+        setStaffMessages((prev) => [...prev, newMsg]);
+
+        setNewMessage("");
+        clearSelectedFile();
+        scrollToBottom();
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      if (
+        !isConnected ||
+        connection.state !== signalR.HubConnectionState.Connected
+      ) {
+        alert(
+          "Connection lost while sending message. Your message will be sent when reconnected."
+        );
+      } else {
+        alert("Failed to send message. Please try again.");
+      }
+    } finally {
+      setSendingMessage(false);
     }
   };
 
+  // File handling functions
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    const fileExtension = "." + fileName.split(".").pop();
+
+    if (!allSupportedTypes.includes(fileExtension)) {
+      alert(
+        `Unsupported file type. Supported types: ${allSupportedTypes.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    setSelectedFile(file);
+
+    if (supportedImageTypes.includes(fileExtension)) {
+      const reader = new FileReader();
+      reader.onload = (e) => setFilePreview(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Start chat thread (when user sends first message)
+  const handleStartStaffChat = async () => {
+    if (!selectedStaff) return;
+
+    const staffId = selectedStaff.id;
+    if (chatThreads[staffId]?.thread) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const threadData = {
+        userId: currentUserId,
+        consultantId: staffId,
+      };
+
+      const createdThread = await startChatThread(threadData, token);
+      const threadId =
+        createdThread?.data?.id ||
+        createdThread?.data?.chatThreadId ||
+        createdThread?.chatThreadId;
+
+      if (!threadId) {
+        console.error("No threadId found in response:", createdThread);
+        return;
+      }
+
+      const threadWithMessages = await getChatThreadById(threadId, token);
+
+      setChatThreads((prevThreads) => ({
+        ...prevThreads,
+        [staffId]: {
+          thread: threadWithMessages?.data || {
+            id: threadId,
+            consultantId: staffId,
+            userId: currentUserId,
+          },
+          messages: threadWithMessages?.data?.messages || [],
+          staff: selectedStaff,
+        },
+      }));
+    } catch (error) {
+      console.error("Failed to start staff chat thread:", error);
+    }
+  };
+
+  // Connection status indicator (same as ConsultationChat)
+  const ConnectionStatusIndicator = () => {
+    if (isConnected && !isReconnecting) {
+      return null;
+    }
+
+    const getStatusMessage = () => {
+      switch (connectionStatus) {
+        case "connecting":
+          return "Connecting...";
+        case "reconnecting":
+          return "Reconnecting...";
+        case "disconnected":
+          return "Connection lost - Attempting to reconnect...";
+        default:
+          return "Connection status unknown";
+      }
+    };
+
+    const getStatusColor = () => {
+      switch (connectionStatus) {
+        case "connecting":
+          return "#2196f3";
+        case "reconnecting":
+          return "#ff9800";
+        case "disconnected":
+          return "#f44336";
+        default:
+          return "#9e9e9e";
+      }
+    };
+
+    return (
+      <div
+        className="connection-status-indicator"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: getStatusColor(),
+          color: "white",
+          padding: "8px 16px",
+          textAlign: "center",
+          zIndex: 1000,
+          fontSize: "14px",
+          fontWeight: "500",
+        }}
+      >
+        {getStatusMessage()}
+      </div>
+    );
+  };
   // AI Chat functionality (keep original)
   const handleAISubmit = async () => {
     if (!input.trim()) return;
@@ -357,6 +847,89 @@ const AdvicePage = () => {
     }
   };
 
+  useEffect(() => {
+    if (!connection || !isConnected) return;
+
+    const messageListener = (message) => {
+      console.log("Received message:", message);
+
+      if (activeMode === "staff" && selectedStaff) {
+        const staffId = selectedStaff.id;
+
+        // Check if message is for the current staff conversation
+        if (
+          message.senderId === staffId ||
+          message.receiverId === currentUserId
+        ) {
+          // Process the incoming message
+          const incomingMsg = {
+            id: message.id || Date.now(),
+            senderId: message.senderId,
+            receiverId: message.receiverId || currentUserId,
+            messageText: message.messageText || message.message || message.text,
+            createdAt: message.createdAt || new Date().toISOString(),
+            attachment: message.attachment || null,
+          };
+
+          // Update staff messages
+          setStaffMessages((prev) => {
+            // Check if message already exists to prevent duplicates
+            if (prev.some((msg) => msg.id === incomingMsg.id)) {
+              return prev;
+            }
+            return [...prev, incomingMsg];
+          });
+
+          // Update chat threads
+          setChatThreads((prev) => ({
+            ...prev,
+            [staffId]: {
+              ...prev[staffId],
+              messages: prev[staffId]?.messages.some(
+                (msg) => msg.id === incomingMsg.id
+              )
+                ? prev[staffId].messages
+                : [...(prev[staffId]?.messages || []), incomingMsg],
+            },
+          }));
+
+          // Update staff chat history
+          setStaffChatHistory((prev) => {
+            const existingIndex = prev.findIndex(
+              (chat) => chat.staffId === staffId
+            );
+            if (existingIndex >= 0) {
+              const updated = [...prev];
+              updated[existingIndex] = {
+                ...updated[existingIndex],
+                lastMessage: incomingMsg.messageText || "New message",
+                timestamp: new Date().toLocaleString([], {
+                  month: "short",
+                  day: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                }),
+              };
+              return updated;
+            }
+            return prev;
+          });
+        }
+      }
+    };
+
+    // Add message listener
+    connection.on("ReceiveMessage", messageListener);
+
+    // Cleanup
+    return () => {
+      if (connection) {
+        connection.off("ReceiveMessage", messageListener);
+      }
+    };
+  }, [connection, isConnected, activeMode, selectedStaff, currentUserId]);
+
   const handleStaffTypeSelection = (staffType) => {
     setSelectedStaffType(staffType);
     setShowStaffTypePrompt(false);
@@ -395,187 +968,13 @@ const AdvicePage = () => {
     }
   };
 
-  const handleStartStaffChat = async () => {
-    if (!selectedStaff) return;
-
-    const staffId = selectedStaff.id;
-    if (chatThreads[staffId]?.thread) {
-      return;
-    }
-
-    try {
-      setStartingChat(true);
-      const token = localStorage.getItem("token");
-
-      const threadData = {
-        userId: currentUserId,
-        consultantId: staffId,
-      };
-
-      const createdThread = await startChatThread(threadData, token);
-      const threadId =
-        createdThread?.data?.id ||
-        createdThread?.data?.chatThreadId ||
-        createdThread?.chatThreadId;
-
-      if (!threadId) {
-        console.error("No threadId found in response:", createdThread);
-        return;
-      }
-
-      const threadWithMessages = await getChatThreadById(threadId, token);
-
-      setChatThreads((prevThreads) => ({
-        ...prevThreads,
-        [staffId]: {
-          thread: threadWithMessages?.data || {
-            id: threadId,
-            consultantId: staffId,
-            userId: currentUserId,
-          },
-          messages: [],
-          staff: selectedStaff,
-        },
-      }));
-    } catch (error) {
-      console.error("Failed to start chat thread:", error);
-    } finally {
-      setStartingChat(false);
-    }
-  };
-
-  const handleSendStaffMessage = async () => {
-    if (!connection || !isConnected) {
-      console.error("SignalR connection not established");
-      return;
-    }
-
-    const staffId = selectedStaff?.id;
-    const activeThread =
-      staffId && chatThreads[staffId] ? chatThreads[staffId].thread : null;
-
-    if (
-      (!newMessage.trim() && !selectedFile) ||
-      !activeThread ||
-      sendingMessage
-    )
-      return;
-
-    const userMessage = {
-      text: newMessage.trim(),
-      isUser: true,
-      time: new Date().toLocaleTimeString(),
-      id: Date.now(),
-    };
-
-    // Add message to staff messages immediately
-    const updatedMessages = [...staffMessages, userMessage];
-    setStaffMessages(updatedMessages);
-
-    try {
-      setSendingMessage(true);
-      const token = localStorage.getItem("token");
-      const formData = new FormData();
-
-      formData.append("ChatThreadId", activeThread.id);
-      formData.append("SenderId", currentUserId);
-
-      if (newMessage.trim()) {
-        formData.append("MessageText", newMessage.trim());
-      }
-
-      if (selectedFile) {
-        formData.append("Attachments", selectedFile);
-        formData.append("AttachmentFileName", selectedFile.name);
-        formData.append("AttachmentFileType", selectedFile.type);
-        formData.append("AttachmentFileSize", selectedFile.size.toString());
-      }
-
-      const response = await sendMessage(formData, token);
-
-      if (response.error === 0) {
-        // Update thread messages
-        setChatThreads((prevThreads) => ({
-          ...prevThreads,
-          [staffId]: {
-            ...prevThreads[staffId],
-            messages: updatedMessages,
-          },
-        }));
-
-        // Update staff chat history
-        setStaffChatHistory((prev) => {
-          const existingIndex = prev.findIndex(
-            (chat) => chat.staffId === staffId
-          );
-          if (existingIndex >= 0) {
-            const updated = [...prev];
-            updated[existingIndex] = {
-              ...updated[existingIndex],
-              lastMessage: userMessage.text,
-              timestamp: userMessage.time,
-              messages: updatedMessages,
-            };
-            return updated;
-          } else {
-            return [
-              {
-                id: activeThread.id,
-                staffId: staffId,
-                staffName: selectedStaff.userName,
-                staffType: selectedStaff.staffType,
-                lastMessage: userMessage.text,
-                timestamp: userMessage.time,
-                messages: updatedMessages,
-              },
-              ...prev,
-            ];
-          }
-        });
-
-        setNewMessage("");
-        clearSelectedFile();
-      }
-    } catch (error) {
-      console.error("Error sending message:", error);
-    } finally {
-      setSendingMessage(false);
-    }
-  };
-
-  // File handling
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const fileName = file.name.toLowerCase();
-    const fileExtension = "." + fileName.split(".").pop();
-
-    if (!allSupportedTypes.includes(fileExtension)) {
-      alert(
-        `Unsupported file type. Supported types: ${allSupportedTypes.join(
-          ", "
-        )}`
-      );
-      return;
-    }
-
-    setSelectedFile(file);
-
-    if (supportedImageTypes.includes(fileExtension)) {
-      const reader = new FileReader();
-      reader.onload = (e) => setFilePreview(e.target.result);
-      reader.readAsDataURL(file);
+  const handleStaffMessageSend = async () => {
+    if (!chatThreads[selectedStaff?.id]?.thread) {
+      await handleStartStaffChat();
+      // Wait a bit for thread creation, then send
+      setTimeout(() => handleSendStaffMessage(), 500);
     } else {
-      setFilePreview(null);
-    }
-  };
-
-  const clearSelectedFile = () => {
-    setSelectedFile(null);
-    setFilePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      await handleSendStaffMessage();
     }
   };
 
@@ -652,6 +1051,7 @@ const AdvicePage = () => {
 
   return (
     <MainLayout>
+      <ConnectionStatusIndicator />
       <div className="advice-page">
         {/* Overlay for modals */}
         <AnimatePresence>
@@ -823,10 +1223,10 @@ const AdvicePage = () => {
               <p className="advice-description">
                 {activeMode === "ai"
                   ? "Chat with our AI for instant pregnancy-related advice."
-                  // : `Get personalized guidance from our ${
-                  //     selectedStaffType === "nutrition" ? "nutrition" : "health"
-                  //   } staff.`}
-                    : `Get personalized guidance from our specialists`}
+                  : // : `Get personalized guidance from our ${
+                    //     selectedStaffType === "nutrition" ? "nutrition" : "health"
+                    //   } staff.`}
+                    `Get personalized guidance from our specialists`}
               </p>
             </div>
 
