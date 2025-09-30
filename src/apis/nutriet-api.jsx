@@ -1805,30 +1805,83 @@ export const createWarningFoodForAllergy = async (warningData) => {
     throw error;
   }
 };
-
 export const viewWarningFoods = async (filterData) => {
-  // try {
-  //   const payload = {
-  //     allergyIds: filterData.allergyIds || [],
-  //     diseaseIds: filterData.diseaseIds || [],
-  //   };
-  //   console.log("Sending view warning foods request with payload:", payload);
-  //   const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Accept: "application/json",
-  //     },
-  //   });
-  //   console.log("View warning foods response:", response.data);
-  //   return response.data;
-  // } catch (error) {
-  //   console.error("Error fetching warning foods:", {
-  //     message: error.message,
-  //     response: error.response?.data,
-  //     status: error.response?.status,
-  //   });
-  //   throw error;
-  // }
+  try {
+    const payload = {
+      allergyIds: filterData.allergyIds || [],
+      diseaseIds: filterData.diseaseIds || [],
+    };
+    console.log("Sending view warning foods request with payload:", payload);
+    const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    console.log("View warning foods response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching warning foods:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const viewWarningFoodsByDiseaseIds = async (diseaseIds) => {
+  try {
+    if (!diseaseIds || !Array.isArray(diseaseIds) || diseaseIds.length === 0) {
+      throw new Error("At least one disease ID is required");
+    }
+    if (diseaseIds.some((id) => !id || id === "")) {
+      throw new Error("All disease IDs must be valid");
+    }
+    console.log("Sending view warning foods by disease IDs request with payload:", diseaseIds);
+    const response = await apiClient.post(`/api/food/view-warning-foods-by-disease-ids`, diseaseIds, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    console.log("View warning foods by disease IDs response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching warning foods by disease IDs:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
+};
+
+export const viewWarningFoodsByAllergyIds = async (allergyIds) => {
+  try {
+    if (!allergyIds || !Array.isArray(allergyIds) || allergyIds.length === 0) {
+      throw new Error("At least one allergy ID is required");
+    }
+    if (allergyIds.some((id) => !id || id === "")) {
+      throw new Error("All allergy IDs must be valid");
+    }
+    console.log("Sending view warning foods by allergy IDs request with payload:", allergyIds);
+    const response = await apiClient.post(`/api/food/view-warning-foods-by-allergiy-ids`, allergyIds, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
+    console.log("View warning foods by allergy IDs response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching warning foods by allergy IDs:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    throw error;
+  }
 };
 // EnergySuggestion Management APIs
 export const getAllEnergySuggestions = async () => {
