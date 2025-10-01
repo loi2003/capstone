@@ -10,6 +10,8 @@ import {
   getAllNutrients,
   addNutrientSuggestionAttribute,
   getAllAgeGroups,
+  deleteNutrientSuggestionAttribute,
+  updateNutrientSuggestionAttribute,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/NutrientSuggestion.css";
@@ -54,7 +56,13 @@ const Notification = ({ message, type }) => {
 };
 
 // NutrientSuggestionModal Component
-const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
+const NutrientSuggestionModal = ({
+  suggestion,
+  onClose,
+  ageGroups,
+  onDeleteAttribute,
+  onUpdateAttribute,
+}) => {
   const attributes = Array.isArray(suggestion?.nutrientSuggestionAttributes)
     ? suggestion.nutrientSuggestionAttributes
     : [];
@@ -75,32 +83,87 @@ const NutrientSuggestionModal = ({ suggestion, onClose, ageGroups }) => {
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>{suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}</h2>
+        <h2>
+          {suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}
+        </h2>
         <h3>Attributes:</h3>
         {attributes.length > 0 ? (
           <ul>
-            {attributes.map((attr, index) => {
+            {attributes.map((attr) => {
               const attribute = attr.attribute || {};
-              const ageGroup = ageGroups.find((g) => g.id === attr.ageGroupId); // Updated to ageGroupId
+              const ageGroup = ageGroups.find((g) => g.id === attr.ageGroupId);
               return (
-                <li key={index}>
-                  <strong>Nutrient:</strong> {attribute.nutrientName || "Unknown Nutrient"}<br />
-                  <strong>ID:</strong> {attr.nutrientSuggestionAttributeId || "N/A"}<br />
-                  <strong>Nutrient ID:</strong> {attribute.nutrientId || "N/A"}<br />
+                <li
+                  key={
+                    attr.nutrientSuggestionAttributeId ||
+                    `attr-${attr.attributeId || Math.random()}`
+                  }
+                >
+                  <strong>Nutrient:</strong>{" "}
+                  {attribute.nutrientName || "Unknown Nutrient"}
+                  <br />
+                  <strong>ID:</strong>{" "}
+                  {attr.nutrientSuggestionAttributeId || "N/A"}
+                  <br />
+                  <strong>Nutrient ID:</strong> {attribute.nutrientId || "N/A"}
+                  <br />
                   <strong>Age Group:</strong>{" "}
                   {ageGroup
-                    ? ageGroup.name || `Age ${ageGroup.fromAge}-${ageGroup.toAge}`
-                    : "Unknown Age Group"} (ID: {attr.ageGroupId || "N/A"})<br />
-                  <strong>Trimester:</strong> {attr.trimester || "N/A"}<br />
-                  <strong>Type:</strong> {attribute.type || "N/A"}<br />
-                  <strong>Min Energy %:</strong> {attribute.minEnergyPercentage || "N/A"}<br />
-                  <strong>Max Energy %:</strong> {attribute.maxEnergyPercentage || "N/A"}<br />
-                  <strong>Min Value Per Day:</strong> {attribute.minValuePerDay || "N/A"}<br />
-                  <strong>Max Value Per Day:</strong> {attribute.maxValuePerDay || "N/A"}<br />
-                  <strong>Amount:</strong> {attribute.amount || "N/A"}<br />
-                  <strong>Unit:</strong> {attribute.unit || "N/A"}<br />
+                    ? ageGroup.name ||
+                      `Age ${ageGroup.fromAge}-${ageGroup.toAge}`
+                    : "Unknown Age Group"}{" "}
+                  (ID: {attr.ageGroupId || "N/A"})<br />
+                  <strong>Trimester:</strong> {attr.trimester || "N/A"}
+                  <br />
+                  <strong>Type:</strong> {attribute.type || "N/A"}
+                  <br />
+                  <strong>Min Energy %:</strong>{" "}
+                  {attribute.minEnergyPercentage || "N/A"}
+                  <br />
+                  <strong>Max Energy %:</strong>{" "}
+                  {attribute.maxEnergyPercentage || "N/A"}
+                  <br />
+                  <strong>Min Value Per Day:</strong>{" "}
+                  {attribute.minValuePerDay || "N/A"}
+                  <br />
+                  <strong>Max Value Per Day:</strong>{" "}
+                  {attribute.maxValuePerDay || "N/A"}
+                  <br />
+                  <strong>Amount:</strong> {attribute.amount || "N/A"}
+                  <br />
+                  <strong>Unit:</strong> {attribute.unit || "N/A"}
+                  <br />
                   <strong>Min Animal Protein % Require:</strong>{" "}
                   {attribute.minAnimalProteinPercentageRequire || "N/A"}
+                  <div className="attribute-actions">
+                    <motion.button
+                      onClick={() => {
+                        console.log(
+                          "Edit button clicked for attribute:",
+                          JSON.stringify(attr, null, 2)
+                        );
+                        onUpdateAttribute(attr);
+                      }}
+                      className="edit-attribute-button nutrient-specialist-button primary"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Edit
+                    </motion.button>
+                    <motion.button
+                      onClick={() =>
+                        onDeleteAttribute(
+                          suggestion.id,
+                          attr.nutrientSuggestionAttributeId
+                        )
+                      }
+                      className="delete-attribute-button nutrient-specialist-button secondary"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Delete
+                    </motion.button>
+                  </div>
                 </li>
               );
             })}
@@ -127,29 +190,51 @@ const NutrientAttributeModal = ({
   ageGroups,
   onClose,
   onSave,
+  attribute,
+  isEditing = false,
 }) => {
   const [attributeData, setAttributeData] = useState({
     nutrientSuggestionId: suggestionId || "",
-    ageGroupId: "", // Corrected from ageGroudId
-    trimester: "",
-    maxEnergyPercentage: "",
-    minEnergyPercentage: "",
-    maxValuePerDay: "",
-    minValuePerDay: "",
-    unit: "milligrams",
-    amount: "",
-    minAnimalProteinPercentageRequire: "",
-    nutrientId: "",
-    type: "",
+    ageGroupId: attribute?.ageGroupId || "",
+    trimester: attribute?.trimester || "",
+    maxEnergyPercentage: attribute?.attribute?.maxEnergyPercentage || "",
+    minEnergyPercentage: attribute?.attribute?.minEnergyPercentage || "",
+    maxValuePerDay: attribute?.attribute?.maxValuePerDay || "",
+    minValuePerDay: attribute?.attribute?.minValuePerDay || "",
+    unit: attribute?.attribute?.unit || "milligrams",
+    amount: attribute?.attribute?.amount || "",
+    minAnimalProteinPercentageRequire:
+      attribute?.attribute?.minAnimalProteinPercentageRequire || "",
+    nutrientId: attribute?.attribute?.nutrientId || "",
+    type: attribute?.attribute?.type || "",
+    nutrientSuggestionAttributeId:
+      attribute?.nutrientSuggestionAttributeId || "", // Changed from attributeId
   });
+
+  // Log the attribute prop and initial state for debugging
+  useEffect(() => {
+    console.log(
+      "NutrientAttributeModal - attribute prop:",
+      JSON.stringify(attribute, null, 2)
+    );
+    console.log(
+      "NutrientAttributeModal - initial attributeData:",
+      JSON.stringify(attributeData, null, 2)
+    );
+  }, [attribute]);
 
   const handleInputChange = (field, value) => {
     setAttributeData((prev) => ({ ...prev, [field]: value }));
   };
 
   const isValidGuid = (guid) => {
-    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
+    const guidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return (
+      guid &&
+      guid !== "00000000-0000-0000-0000-000000000000" &&
+      guidRegex.test(guid)
+    );
   };
 
   const validateAttributeData = () => {
@@ -165,14 +250,16 @@ const NutrientAttributeModal = ({
     if (
       attributeData.minValuePerDay !== "" &&
       attributeData.maxValuePerDay !== "" &&
-      parseFloat(attributeData.minValuePerDay) > parseFloat(attributeData.maxValuePerDay)
+      parseFloat(attributeData.minValuePerDay) >
+        parseFloat(attributeData.maxValuePerDay)
     ) {
       return "MinValuePerDay cannot be greater than MaxValuePerDay";
     }
     if (
       attributeData.minEnergyPercentage !== "" &&
       attributeData.maxEnergyPercentage !== "" &&
-      parseFloat(attributeData.minEnergyPercentage) > parseFloat(attributeData.maxEnergyPercentage)
+      parseFloat(attributeData.minEnergyPercentage) >
+        parseFloat(attributeData.maxEnergyPercentage)
     ) {
       return "MinEnergyPercentage cannot be greater than MaxEnergyPercentage";
     }
@@ -192,8 +279,17 @@ const NutrientAttributeModal = ({
     if (attributeData.type !== "" && parseInt(attributeData.type) < 0) {
       return "Type must be non-negative";
     }
-    if (attributeData.trimester !== "" && ![1, 2, 3].includes(parseInt(attributeData.trimester))) {
+    if (
+      attributeData.trimester !== "" &&
+      ![1, 2, 3].includes(parseInt(attributeData.trimester))
+    ) {
       return "Trimester must be 1, 2, or 3";
+    }
+    if (
+      isEditing &&
+      !isValidGuid(attributeData.nutrientSuggestionAttributeId)
+    ) {
+      return "NutrientSuggestionAttributeId is required and must be a valid GUID for editing";
     }
     return null;
   };
@@ -217,21 +313,43 @@ const NutrientAttributeModal = ({
         nutrientSuggestionId: attributeData.nutrientSuggestionId,
         nutrientId: attributeData.nutrientId,
         ageGroupId: attributeData.ageGroupId || null,
-        trimester: attributeData.trimester ? parseInt(attributeData.trimester) : null,
-        maxEnergyPercentage: attributeData.maxEnergyPercentage ? parseFloat(attributeData.maxEnergyPercentage) : null,
-        minEnergyPercentage: attributeData.minEnergyPercentage ? parseFloat(attributeData.minEnergyPercentage) : null,
-        maxValuePerDay: attributeData.maxValuePerDay ? parseFloat(attributeData.maxValuePerDay) : null,
-        minValuePerDay: attributeData.minValuePerDay ? parseFloat(attributeData.minValuePerDay) : null,
+        trimester: attributeData.trimester
+          ? parseInt(attributeData.trimester)
+          : null,
+        maxEnergyPercentage: attributeData.maxEnergyPercentage
+          ? parseFloat(attributeData.maxEnergyPercentage)
+          : null,
+        minEnergyPercentage: attributeData.minEnergyPercentage
+          ? parseFloat(attributeData.minEnergyPercentage)
+          : null,
+        maxValuePerDay: attributeData.maxValuePerDay
+          ? parseFloat(attributeData.maxValuePerDay)
+          : null,
+        minValuePerDay: attributeData.minValuePerDay
+          ? parseFloat(attributeData.minValuePerDay)
+          : null,
         unit: attributeData.unit || null,
         amount: attributeData.amount ? parseFloat(attributeData.amount) : null,
-        minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire ? parseFloat(attributeData.minAnimalProteinPercentageRequire) : null,
+        minAnimalProteinPercentageRequire:
+          attributeData.minAnimalProteinPercentageRequire
+            ? parseFloat(attributeData.minAnimalProteinPercentageRequire)
+            : null,
         type: attributeData.type ? parseInt(attributeData.type) : null,
+        nutrientSuggestionAttributeId:
+          attributeData.nutrientSuggestionAttributeId || null, // Changed from attributeId
       };
-      await onSave(cleanedAttributeData);
+      console.log(
+        "Submitting attribute data:",
+        JSON.stringify(cleanedAttributeData, null, 2)
+      );
+      await onSave(cleanedAttributeData, isEditing);
       onClose();
     } catch (error) {
       console.error("Error saving attribute:", error);
-      alert("Failed to save attribute: " + (error.response?.data?.message || error.message));
+      alert(
+        "Failed to save attribute: " +
+          (error.response?.data?.message || error.message)
+      );
     }
   };
 
@@ -251,7 +369,7 @@ const NutrientAttributeModal = ({
         transition={{ duration: 0.3 }}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2>Add Attribute to Suggestion</h2>
+        <h2>{isEditing ? "Edit Attribute" : "Add Attribute to Suggestion"}</h2>
         <div className="form-group">
           <label htmlFor="nutrientId">Nutrient</label>
           <select
@@ -274,7 +392,9 @@ const NutrientAttributeModal = ({
             )}
           </select>
           {nutrients.length === 0 && (
-            <p className="error-text">No nutrients loaded. Please try again later.</p>
+            <p className="error-text">
+              No nutrients loaded. Please try again later.
+            </p>
           )}
         </div>
         <div className="form-group">
@@ -299,7 +419,9 @@ const NutrientAttributeModal = ({
             )}
           </select>
           {ageGroups.length === 0 && (
-            <p className="error-text">No age groups loaded. Please try again later.</p>
+            <p className="error-text">
+              No age groups loaded. Please try again later.
+            </p>
           )}
         </div>
         <div className="form-group">
@@ -322,7 +444,9 @@ const NutrientAttributeModal = ({
             id="minEnergyPercentage"
             type="number"
             value={attributeData.minEnergyPercentage}
-            onChange={(e) => handleInputChange("minEnergyPercentage", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("minEnergyPercentage", e.target.value)
+            }
             className="input-field"
             min="0"
             step="0.1"
@@ -335,7 +459,9 @@ const NutrientAttributeModal = ({
             id="maxEnergyPercentage"
             type="number"
             value={attributeData.maxEnergyPercentage}
-            onChange={(e) => handleInputChange("maxEnergyPercentage", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("maxEnergyPercentage", e.target.value)
+            }
             className="input-field"
             min="0"
             step="0.1"
@@ -348,7 +474,9 @@ const NutrientAttributeModal = ({
             id="minValuePerDay"
             type="number"
             value={attributeData.minValuePerDay}
-            onChange={(e) => handleInputChange("minValuePerDay", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("minValuePerDay", e.target.value)
+            }
             className="input-field"
             min="0"
             step="0.1"
@@ -361,7 +489,9 @@ const NutrientAttributeModal = ({
             id="maxValuePerDay"
             type="number"
             value={attributeData.maxValuePerDay}
-            onChange={(e) => handleInputChange("maxValuePerDay", e.target.value)}
+            onChange={(e) =>
+              handleInputChange("maxValuePerDay", e.target.value)
+            }
             className="input-field"
             min="0"
             step="0.1"
@@ -403,7 +533,10 @@ const NutrientAttributeModal = ({
             type="number"
             value={attributeData.minAnimalProteinPercentageRequire}
             onChange={(e) =>
-              handleInputChange("minAnimalProteinPercentageRequire", e.target.value)
+              handleInputChange(
+                "minAnimalProteinPercentageRequire",
+                e.target.value
+              )
             }
             className="input-field"
             min="0"
@@ -430,9 +563,12 @@ const NutrientAttributeModal = ({
             className="nutrient-specialist-button primary"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            disabled={!isValidGuid(attributeData.nutrientId) || !isValidGuid(attributeData.ageGroupId)}
+            disabled={
+              !isValidGuid(attributeData.nutrientId) ||
+              !isValidGuid(attributeData.ageGroupId)
+            }
           >
-            Save Attribute
+            {isEditing ? "Update Attribute" : "Save Attribute"}
           </motion.button>
           <motion.button
             onClick={onClose}
@@ -447,7 +583,6 @@ const NutrientAttributeModal = ({
     </motion.div>
   );
 };
-
 const NutrientSuggestion = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [nutrients, setNutrients] = useState([]);
@@ -455,7 +590,9 @@ const NutrientSuggestion = () => {
   const [newSuggestion, setNewSuggestion] = useState({ name: "" });
   const [selectedSuggestion, setSelectedSuggestion] = useState(null);
   const [selectedViewSuggestion, setSelectedViewSuggestion] = useState(null);
-  const [selectedAttributeSuggestion, setSelectedAttributeSuggestion] = useState(null);
+  const [selectedAttributeSuggestion, setSelectedAttributeSuggestion] =
+    useState(null);
+  const [selectedEditAttribute, setSelectedEditAttribute] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [notification, setNotification] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -543,11 +680,12 @@ const NutrientSuggestion = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [suggestionsResponse, nutrientsResponse, ageGroupsResponse] = await Promise.all([
-        getAllNutrientSuggestions(token),
-        getAllNutrients(),
-        getAllAgeGroups(),
-      ]);
+      const [suggestionsResponse, nutrientsResponse, ageGroupsResponse] =
+        await Promise.all([
+          getAllNutrientSuggestions(token),
+          getAllNutrients(),
+          getAllAgeGroups(),
+        ]);
       console.log("Suggestions Response:", suggestionsResponse);
       console.log("Nutrients Response:", nutrientsResponse);
       console.log("Age Groups Response:", ageGroupsResponse);
@@ -561,24 +699,37 @@ const NutrientSuggestion = () => {
       const nutrientsData = extractData(nutrientsResponse);
       if (!Array.isArray(nutrientsData)) {
         console.warn("Nutrients data is not an array:", nutrientsData);
-        showNotification("Failed to load nutrients: Invalid data format", "error");
+        showNotification(
+          "Failed to load nutrients: Invalid data format",
+          "error"
+        );
         setNutrients([]);
       } else {
-        const validNutrients = nutrientsData.filter(nutrient => nutrient.id && nutrient.name);
+        const validNutrients = nutrientsData.filter(
+          (nutrient) => nutrient.id && nutrient.name
+        );
         console.log("Valid Nutrients:", validNutrients);
         setNutrients(validNutrients);
       }
       const ageGroupsData = extractData(ageGroupsResponse);
       if (!Array.isArray(ageGroupsData)) {
         console.warn("Age groups data is not an array:", ageGroupsData);
-        showNotification("Failed to load age groups: Invalid data format", "error");
+        showNotification(
+          "Failed to load age groups: Invalid data format",
+          "error"
+        );
         setAgeGroups([]);
       } else if (ageGroupsData.length === 0) {
         console.warn("No age groups returned from API");
         showNotification("No age groups available", "warning");
         setAgeGroups([]);
       } else {
-        const validAgeGroups = ageGroupsData.filter(group => group.id && (group.name || (group.fromAge !== undefined && group.toAge !== undefined)));
+        const validAgeGroups = ageGroupsData.filter(
+          (group) =>
+            group.id &&
+            (group.name ||
+              (group.fromAge !== undefined && group.toAge !== undefined))
+        );
         console.log("Valid Age Groups:", validAgeGroups);
         setAgeGroups(validAgeGroups);
       }
@@ -621,7 +772,10 @@ const NutrientSuggestion = () => {
         response: err.response?.data,
         status: err.response?.status,
       });
-      showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
+      showNotification(
+        `Failed to fetch suggestion details: ${err.message}`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
@@ -634,7 +788,10 @@ const NutrientSuggestion = () => {
       const data = response.data?.data || response.data || response;
       console.log("fetchSuggestionByIdForView - response data:", data);
       if (!Array.isArray(data.nutrientSuggestionAttributes)) {
-        console.warn("nutrientSuggestionAttributes is not an array, setting to empty array:", data.nutrientSuggestionAttributes);
+        console.warn(
+          "nutrientSuggestionAttributes is not an array, setting to empty array:",
+          data.nutrientSuggestionAttributes
+        );
         data.nutrientSuggestionAttributes = [];
       }
       setSelectedViewSuggestion(data);
@@ -645,7 +802,10 @@ const NutrientSuggestion = () => {
         response: err.response?.data,
         status: err.response?.status,
       });
-      showNotification(`Failed to fetch suggestion details: ${err.message}`, "error");
+      showNotification(
+        `Failed to fetch suggestion details: ${err.message}`,
+        "error"
+      );
       return null;
     } finally {
       setLoading(false);
@@ -667,7 +827,9 @@ const NutrientSuggestion = () => {
     } catch (err) {
       console.error("Create suggestion error:", err);
       showNotification(
-        `Failed to create suggestion: ${err.response?.data?.message || err.message}`,
+        `Failed to create suggestion: ${
+          err.response?.data?.message || err.message
+        }`,
         "error"
       );
     } finally {
@@ -705,7 +867,9 @@ const NutrientSuggestion = () => {
         status: err.response?.status,
       });
       showNotification(
-        `Failed to update suggestion: ${err.response?.data?.message || err.message}`,
+        `Failed to update suggestion: ${
+          err.response?.data?.message || err.message
+        }`,
         "error"
       );
     } finally {
@@ -718,7 +882,8 @@ const NutrientSuggestion = () => {
       showNotification("Invalid suggestion ID", "error");
       return;
     }
-    if (!window.confirm("Are you sure you want to delete this suggestion?")) return;
+    if (!window.confirm("Are you sure you want to delete this suggestion?"))
+      return;
     setLoading(true);
     try {
       await deleteNutrientSuggestion(id, token);
@@ -740,7 +905,9 @@ const NutrientSuggestion = () => {
         );
       } else {
         showNotification(
-          `Failed to delete suggestion: ${err.response?.data?.message || err.message}`,
+          `Failed to delete suggestion: ${
+            err.response?.data?.message || err.message
+          }`,
           "error"
         );
       }
@@ -749,20 +916,76 @@ const NutrientSuggestion = () => {
     }
   };
 
-  const handleAddAttribute = async (attributeData) => {
+  const handleAddAttribute = async (attributeData, isEditing) => {
     setLoading(true);
     try {
-      await addNutrientSuggestionAttribute(attributeData, token);
-      showNotification("Attribute added successfully", "success");
+      if (isEditing) {
+        console.log("Updating attribute with data:", attributeData);
+        await updateNutrientSuggestionAttribute(attributeData, token);
+        showNotification("Attribute updated successfully", "success");
+      } else {
+        console.log("Adding attribute with data:", attributeData);
+        await addNutrientSuggestionAttribute(attributeData, token);
+        showNotification("Attribute added successfully", "success");
+      }
       await fetchData();
+      if (selectedViewSuggestion) {
+        await fetchSuggestionByIdForView(selectedViewSuggestion.id);
+      }
+      setIsEditing(false);
     } catch (error) {
-      console.error("Error adding attribute:", error);
-      showNotification(`Failed to add attribute: ${error.response?.data?.message || error.message}`, "error");
+      console.error(
+        `Error ${isEditing ? "updating" : "adding"} attribute:`,
+        error
+      );
+      showNotification(
+        `Failed to ${isEditing ? "update" : "add"} attribute: ${
+          error.response?.data?.message || error.message
+        }`,
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  const handleDeleteAttribute = async (suggestionId, attributeId) => {
+    if (!window.confirm("Are you sure you want to delete this attribute?"))
+      return;
+    setLoading(true);
+    try {
+      await deleteNutrientSuggestionAttribute(suggestionId, attributeId, token);
+      showNotification("Attribute deleted successfully", "success");
+      await fetchData();
+      if (selectedViewSuggestion) {
+        await fetchSuggestionByIdForView(selectedViewSuggestion.id);
+      }
+    } catch (error) {
+      console.error("Error deleting attribute:", error);
+      showNotification(
+        `Failed to delete attribute: ${
+          error.response?.data?.message || error.message
+        }`,
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditAttribute = (attribute) => {
+    console.log(
+      "handleEditAttribute - attribute:",
+      JSON.stringify(attribute, null, 2)
+    );
+    setSelectedEditAttribute({
+      ...attribute,
+      nutrientSuggestionAttributeId:
+        attribute.nutrientSuggestionAttributeId || attribute.attributeId, // Map attributeId to nutrientSuggestionAttributeId if necessary
+    });
+    setSelectedAttributeSuggestion(selectedViewSuggestion);
+    setIsEditing(true);
+  };
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -793,11 +1016,10 @@ const NutrientSuggestion = () => {
     fetchData();
   }, []);
 
-  const filteredSuggestions = suggestions.filter(
-    (suggestion) =>
-      (suggestion.nutrientSuggestionName || "")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+  const filteredSuggestions = suggestions.filter((suggestion) =>
+    (suggestion.nutrientSuggestionName || "")
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
 
   const indexOfLastSuggestion = currentPage * itemsPerPage;
@@ -1063,7 +1285,9 @@ const NutrientSuggestion = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
+                animate={
+                  isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"
+                }
                 initial="closed"
               >
                 <motion.div
@@ -1327,8 +1551,7 @@ const NutrientSuggestion = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 3
-                    24"
+                    viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Plate icon for dish management"
@@ -1777,14 +2000,18 @@ const NutrientSuggestion = () => {
         <div className="management-header">
           <div className="header-content">
             <h1>Manage Nutrient Suggestions</h1>
-            <p>Create, edit, and manage nutrient suggestions for dietary plans</p>
+            <p>
+              Create, edit, and manage nutrient suggestions for dietary plans
+            </p>
           </div>
         </div>
         <div className="management-container">
           <div className="form-section">
             <div className="section-header">
               <h2>
-                {isEditing ? "Edit Nutrient Suggestion" : "Add New Nutrient Suggestion"}
+                {isEditing
+                  ? "Edit Nutrient Suggestion"
+                  : "Add New Nutrient Suggestion"}
               </h2>
             </div>
             <div className="form-card">
@@ -1807,7 +2034,9 @@ const NutrientSuggestion = () => {
               <div className="button-group">
                 <motion.button
                   onClick={
-                    isEditing ? updateSuggestionHandler : createSuggestionHandler
+                    isEditing
+                      ? updateSuggestionHandler
+                      : createSuggestionHandler
                   }
                   disabled={loading}
                   className="submit-button nutrient-specialist-button primary"
@@ -1840,157 +2069,235 @@ const NutrientSuggestion = () => {
               </div>
             </div>
           </div>
-          <div className="nutrient-list-section">
+          <div className="list-section">
             <div className="section-header">
-              <h2>Nutrient Suggestion List</h2>
-              <div className="nutrient-count">
-                {filteredSuggestions.length}{" "}
-                {filteredSuggestions.length === 1 ? "suggestion" : "suggestions"} found
+              <h2>Nutrient Suggestions</h2>
+              <div className="search-bar">
+                <input
+                  type="text"
+                  placeholder="Search suggestions..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setCurrentPage(1); // Reset to first page on search
+                  }}
+                  className="input-field"
+                />
+                <svg
+                  className="search-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 001.48-4.23 6.5 6.5 0 10-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"
+                    fill="var(--nutrient-specialist-primary)"
+                  />
+                </svg>
               </div>
             </div>
-            <div className="form-group">
-              <label htmlFor="search-suggestions">Search Suggestions</label>
-              <input
-                id="search-suggestions"
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name"
-                className="search-input"
-              />
-            </div>
             {loading ? (
-              <div className="loading-state">
+              <div className="loading-container">
                 <LoaderIcon />
                 <p>Loading suggestions...</p>
               </div>
-            ) : !Array.isArray(suggestions) || suggestions.length === 0 ? (
-              <div className="empty-state">
-                <svg
-                  width="64"
-                  height="64"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <h3>No suggestions found</h3>
-                <p>Create your first nutrient suggestion to get started</p>
-              </div>
+            ) : filteredSuggestions.length === 0 ? (
+              <p className="no-data">No nutrient suggestions found.</p>
             ) : (
-              <>
-                <div className="nutrient-grid">
-                  {currentSuggestions.map((suggestion) => (
-                    <motion.div
-                      key={suggestion.id}
-                      className="nutrient-card"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3 }}
-                      whileHover={{ y: -5 }}
-                    >
-                      <div className="card-header">
-                        <h3>
-                          {suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}
-                        </h3>
-                      </div>
-                      <div className="card-actions">
-                        <motion.button
-                          onClick={() => setSelectedAttributeSuggestion(suggestion)}
-                          className="add-attribute-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+              <div className="suggestions-list">
+                {currentSuggestions.map((suggestion) => (
+                  <motion.div
+                    key={suggestion.id}
+                    className="suggestion-card"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <div className="suggestion-info">
+                      <h3>
+                        {suggestion.nutrientSuggestionName ||
+                          `Suggestion #${suggestion.id}`}
+                      </h3>
+                    </div>
+                    <div className="suggestion-actions">
+                      <motion.button
+                        onClick={() => fetchSuggestionById(suggestion.id)}
+                        className="edit-button nutrient-specialist-button primary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        title="Edit suggestion"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          Add Attribute
-                        </motion.button>
-                        <motion.button
-                          onClick={() => fetchSuggestionById(suggestion.id)}
-                          className="edit-button nutrient-specialist-button primary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                             >
-                          Edit
-                        </motion.button>
-                        <motion.button
-                          onClick={() => fetchSuggestionByIdForView(suggestion.id)}
-                          className="view-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          <path
+                            d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7m-1.5-8.5l-4 4m0 0l-4-4m4 4V2"
+                            stroke="var(--nutrient-specialist-white)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <span>Edit</span>
+                      </motion.button>
+                      <motion.button
+                        onClick={() =>
+                          fetchSuggestionByIdForView(suggestion.id)
+                        }
+                        className="view-button nutrient-specialist-button secondary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        title="View attributes"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          View
-                        </motion.button>
-                        <motion.button
-                          onClick={() => deleteSuggestionHandler(suggestion.id)}
-                          className="delete-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          <path
+                            d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                            stroke="var(--nutrient-specialist-white)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                          <path
+                            d="M12 15a3 3 0 100-6 3 3 0 000 6z"
+                            stroke="var(--nutrient-specialist-white)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <span>View Attributes</span>
+                      </motion.button>
+                      <motion.button
+                        onClick={() => {
+                          setSelectedAttributeSuggestion(suggestion);
+                        }}
+                        className="add-attribute-button nutrient-specialist-button primary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        title="Add attribute"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          Delete
-                        </motion.button>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-                {totalPages > 0 && (
-                  <div className="pagination-controls">
-                    <motion.button
-                      onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                      className="pagination-button"
-                      whileHover={{ scale: currentPage === 1 ? 1 : 1.05 }}
-                      whileTap={{ scale: currentPage === 1 ? 1 : 0.95 }}
-                    >
-                      Previous
-                    </motion.button>
-                    <span className="pagination-info">
-                      Page {currentPage} of {totalPages}
-                    </span>
-                    <motion.button
-                      onClick={() =>
-                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                      }
-                      disabled={currentPage === totalPages}
-                      className="pagination-button"
-                      whileHover={{
-                        scale: currentPage === totalPages ? 1 : 1.05,
-                      }}
-                      whileTap={{
-                        scale: currentPage === totalPages ? 1 : 0.95,
-                      }}
-                    >
-                      Next
-                    </motion.button>
-                  </div>
-                )}
-              </>
+                          <path
+                            d="M12 4v16m8-8H4"
+                            stroke="var(--nutrient-specialist-white)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <span>Add Attribute</span>
+                      </motion.button>
+                      <motion.button
+                        onClick={() => deleteSuggestionHandler(suggestion.id)}
+                        className="delete-button nutrient-specialist-button secondary"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        title="Delete suggestion"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2m-6 5v6m4-6v6"
+                            stroke="var(--nutrient-specialist-white)"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                        <span>Delete</span>
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+            {totalPages > 1 && (
+              <div className="pagination">
+                <motion.button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                  disabled={currentPage === 1 || loading}
+                  className="pagination-button nutrient-specialist-button secondary"
+                  whileHover={{
+                    scale: loading || currentPage === 1 ? 1 : 1.05,
+                  }}
+                  whileTap={{ scale: loading || currentPage === 1 ? 1 : 0.95 }}
+                >
+                  Previous
+                </motion.button>
+                <span className="pagination-info">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <motion.button
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                  disabled={currentPage === totalPages || loading}
+                  className="pagination-button nutrient-specialist-button secondary"
+                  whileHover={{
+                    scale: loading || currentPage === totalPages ? 1 : 1.05,
+                  }}
+                  whileTap={{
+                    scale: loading || currentPage === totalPages ? 1 : 0.95,
+                  }}
+                >
+                  Next
+                </motion.button>
+              </div>
             )}
           </div>
         </div>
-        <AnimatePresence>
-          {selectedViewSuggestion && (
-            <NutrientSuggestionModal
-              suggestion={selectedViewSuggestion}
-              onClose={() => setSelectedViewSuggestion(null)}
-              ageGroups={ageGroups}
-            />
-          )}
-          {selectedAttributeSuggestion && (
-            <NutrientAttributeModal
-              suggestionId={selectedAttributeSuggestion.id}
-              nutrients={nutrients}
-              ageGroups={ageGroups}
-              onClose={() => setSelectedAttributeSuggestion(null)}
-              onSave={handleAddAttribute}
-            />
-          )}
-        </AnimatePresence>
       </motion.main>
+      <AnimatePresence>
+        {selectedViewSuggestion && (
+          <NutrientSuggestionModal
+            suggestion={selectedViewSuggestion}
+            ageGroups={ageGroups}
+            onClose={() => setSelectedViewSuggestion(null)}
+            onDeleteAttribute={handleDeleteAttribute}
+            onUpdateAttribute={handleEditAttribute}
+          />
+        )}
+        {selectedAttributeSuggestion && (
+          <NutrientAttributeModal
+            suggestionId={selectedAttributeSuggestion.id}
+            nutrients={nutrients}
+            ageGroups={ageGroups}
+            onClose={() => {
+              setSelectedAttributeSuggestion(null);
+              setSelectedEditAttribute(null);
+              setIsEditing(false); // Reset isEditing on close
+            }}
+            onSave={handleAddAttribute}
+            attribute={selectedEditAttribute}
+            isEditing={!!selectedEditAttribute} // Ensure isEditing is based on selectedEditAttribute
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
