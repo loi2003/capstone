@@ -1889,8 +1889,7 @@ export const createWarningFoodForAllergy = async (warningData) => {
     });
     throw error;
   }
-};
-export const viewWarningFoods = async (filterData) => {
+};export const viewWarningFoods = async (filterData) => {
   try {
     const payload = {
       allergyIds: filterData.allergyIds || [],
@@ -1966,7 +1965,7 @@ export const viewWarningFoodsByAllergyIds = async (allergyIds) => {
       allergyIds
     );
     const response = await apiClient.post(
-      `/api/food/view-warning-foods-by-allergiy-ids`,
+      `/api/food/view-warning-foods-by-allergy-ids`, // Fixed typo
       allergyIds,
       {
         headers: {
@@ -2525,95 +2524,30 @@ export const deleteNutrientSuggestionById = async (
     throw error;
   }
 };
-export const deleteNutrientSuggestionAttribute = async (
-  nutrientSuggestionId,
-  attributeId,
-  token
-) => {
+export const updateNutrientSuggestionAttribute = async (attributeData, token) => {
   try {
-    if (!nutrientSuggestionId || nutrientSuggestionId === "") {
-      throw new Error("Nutrient Suggestion ID is null or empty");
-    }
-    if (!attributeId || attributeId === "") {
-      throw new Error("Attribute ID is null or empty");
+    if (!attributeData.attributeId) {
+      throw new Error("Attribute ID is required for updating");
     }
 
-    const guidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!guidRegex.test(nutrientSuggestionId)) {
-      throw new Error("Invalid Nutrient Suggestion ID format");
-    }
-    if (!guidRegex.test(attributeId)) {
-      throw new Error("Invalid Attribute ID format");
-    }
-
-    console.log(
-      "Sending delete nutrient suggestion attribute request for NutrientSuggestionID:",
-      nutrientSuggestionId,
-      "and AttributeID:",
-      attributeId
-    );
-
-    const headers = {
-      Accept: "application/json",
+    const isValidGuid = (guid) => {
+      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return (
+        guid &&
+        guid !== "00000000-0000-0000-0000-000000000000" &&
+        guidRegex.test(guid)
+      );
     };
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    if (!isValidGuid(attributeData.attributeId)) {
+      throw new Error("Attribute ID must be a valid GUID");
     }
-
-    const response = await apiClient.delete(
-      `/api/NutrientSuggestion/delete-attribute`,
-      {
-        params: { nutrientSuggestionId, attributeId },
-        headers,
-      }
-    );
-
-    console.log(
-      "Delete nutrient suggestion attribute response:",
-      response.data
-    );
-    return response.data;
-  } catch (error) {
-    console.error("Error deleting nutrient suggestion attribute:", {
-      message: error.message,
-      response: error.response?.data,
-      status: error.response?.status,
-      params: { nutrientSuggestionId, attributeId },
-    });
-    if (error.response?.status === 400 && error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    throw error;
-  }
-};export const updateNutrientSuggestionAttribute = async (attributeData, token) => {
-  try {
-    if (!attributeData.nutrientSuggestionAttributeId || attributeData.nutrientSuggestionAttributeId === "") {
-      throw new Error("Nutrient Suggestion Attribute ID is null or empty");
-    }
-    if (!attributeData.nutrientId || attributeData.nutrientId === "") {
-      throw new Error("Nutrient ID is null or empty");
-    }
-    if (!attributeData.nutrientSuggestionId || attributeData.nutrientSuggestionId === "") {
-      throw new Error("Nutrient Suggestion ID is null or empty");
-    }
-
-    // Validate GUID format
-    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!guidRegex.test(attributeData.nutrientSuggestionAttributeId)) {
-      throw new Error("Invalid Nutrient Suggestion Attribute ID format");
-    }
-    if (!guidRegex.test(attributeData.nutrientId)) {
-      throw new Error("Invalid Nutrient ID format");
-    }
-    if (!guidRegex.test(attributeData.nutrientSuggestionId)) {
-      throw new Error("Invalid Nutrient Suggestion ID format");
+    if (!isValidGuid(attributeData.nutrientId)) {
+      throw new Error("Nutrient ID must be a valid GUID");
     }
 
     const payload = {
-      nutrientSuggestionAttributeId: attributeData.nutrientSuggestionAttributeId, // Changed from attributeId
-      nutrientSuggestionId: attributeData.nutrientSuggestionId,
+      attributeId: attributeData.attributeId,
       trimester: attributeData.trimester || 0,
       maxEnergyPercentage: attributeData.maxEnergyPercentage || 0,
       minEnergyPercentage: attributeData.minEnergyPercentage || 0,
@@ -2626,7 +2560,10 @@ export const deleteNutrientSuggestionAttribute = async (
       type: attributeData.type || 0,
     };
 
-    console.log("Sending update nutrient suggestion attribute request with payload:", payload);
+    console.log(
+      "Sending update nutrient suggestion attribute request with payload:",
+      payload
+    );
 
     const headers = {
       "Content-Type": "application/json",
@@ -2650,8 +2587,72 @@ export const deleteNutrientSuggestionAttribute = async (
       message: error.message,
       response: error.response?.data,
       status: error.response?.status,
+      headers: error.response?.headers,
       config: error.config,
     });
+    throw error;
+  }
+};export const deleteNutrientSuggestionAttribute = async (
+  nutrientSuggestionId,
+  nutrientSuggestionAttributeId, // Renamed for clarity
+  token
+) => {
+  try {
+    if (!nutrientSuggestionId || nutrientSuggestionId === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+    if (!nutrientSuggestionAttributeId || nutrientSuggestionAttributeId === "") {
+      throw new Error("Nutrient Suggestion Attribute ID is null or empty");
+    }
+
+    // Validate GUID format for both IDs
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(nutrientSuggestionId)) {
+      throw new Error("Invalid Nutrient Suggestion ID format");
+    }
+    if (!guidRegex.test(nutrientSuggestionAttributeId)) {
+      throw new Error("Invalid Nutrient Suggestion Attribute ID format");
+    }
+
+    console.log(
+      "Sending delete nutrient suggestion attribute request for NutrientSuggestionID:",
+      nutrientSuggestionId,
+      "and NutrientSuggestionAttributeID:",
+      nutrientSuggestionAttributeId
+    );
+
+    const headers = {
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.delete(
+      `/api/NutrientSuggestion/delete-attribute`,
+      {
+        params: {
+          nutrientSuggestionId: nutrientSuggestionId,
+          attributeId: nutrientSuggestionAttributeId // This is actually the junction table ID
+        },
+        headers,
+      }
+    );
+
+    console.log("Delete nutrient suggestion attribute response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting nutrient suggestion attribute:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    
+    if (error.response?.status === 400) {
+      const errorMessage = error.response?.data?.message || error.response?.data || "Attribute not found";
+      throw new Error(errorMessage);
+    }
     throw error;
   }
 };
