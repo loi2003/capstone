@@ -11,6 +11,7 @@ import {
   sendMessage,
   getChatThreadByUserId,
   getChatThreadById,
+  softDeleteChatThread,
 } from "../apis/message-api";
 import { getAllUsers } from "../apis/user-api";
 import { useMessages } from "../utils/useMessages";
@@ -105,7 +106,6 @@ const AdvicePage = () => {
       if (savedSessions) {
         const parsedSessions = JSON.parse(savedSessions);
         setAiChatSessions(parsedSessions);
-
         // Load the most recent session if no session is selected
         if (parsedSessions.length > 0 && !selectedAiChatId) {
           const latestSession = parsedSessions[0];
@@ -117,6 +117,12 @@ const AdvicePage = () => {
       console.error("Failed to load AI chat history:", error);
     }
   };
+
+  useEffect(() => {
+    if (currentUserId) {
+      loadAiChatHistory();
+    }
+  }, [currentUserId]);
 
   // Save AI chat history to localStorage
   const saveAiChatHistory = (messages) => {
@@ -225,13 +231,12 @@ const AdvicePage = () => {
 
   const handleSendAiMessage = async (messageText = null, retryAttempt = 0) => {
     const messageToSend = messageText || newMessage.trim();
-
     if (!messageToSend || isAiLoading) return;
 
     // Create clean user message object
     const userMessage = {
       id: `ai_user_${Date.now()}_${Math.random()}`,
-      text: String(messageToSend), // Ensure it's a string
+      text: String(messageToSend),
       sender: "user",
       timestamp: new Date().toISOString(),
       time: new Date().toLocaleTimeString([], {
@@ -255,7 +260,6 @@ const AdvicePage = () => {
 
     try {
       console.log("🤖 Sending message to AI:", messageToSend);
-
       const response = await getAIChatResponse(messageToSend);
       console.log("🤖 AI Response received:", response);
 
@@ -294,6 +298,7 @@ const AdvicePage = () => {
         currentSessions = [newSession, ...currentSessions];
         currentSessionId = newSession.id;
         setSelectedAiChatId(currentSessionId);
+        setAiChatSessions(currentSessions); // ADD THIS LINE
       } else {
         // Update existing session
         currentSessions = currentSessions.map((session) =>
@@ -306,9 +311,10 @@ const AdvicePage = () => {
               }
             : session
         );
+        setAiChatSessions(currentSessions); // ADD THIS LINE
       }
 
-      setAiChatSessions(currentSessions);
+      // Save to localStorage
       saveAiChatSessions(currentSessions);
 
       // Reset retry count on success
@@ -1191,7 +1197,9 @@ const AdvicePage = () => {
     if (chatThreads[staffId]?.thread) return;
 
     try {
+      setStartingChat(true);
       const token = localStorage.getItem("token");
+
       const threadData = {
         userId: currentUserId,
         consultantId: staffId,
@@ -1210,10 +1218,12 @@ const AdvicePage = () => {
 
       const threadWithMessages = await getChatThreadById(threadId, token);
 
+      // Update chat threads
       setChatThreads((prevThreads) => ({
         ...prevThreads,
         [staffId]: {
-          thread: threadWithMessages?.data || {
+          thread: {
+            ...threadWithMessages?.data,
             id: threadId,
             consultantId: staffId,
             userId: currentUserId,
@@ -1222,8 +1232,30 @@ const AdvicePage = () => {
           staff: selectedStaff,
         },
       }));
+
+      // **ADD THIS: Create history entry immediately after starting consultation**
+      const newHistoryEntry = {
+        id: threadId,
+        staffId: staffId,
+        staffName: selectedStaff.userName,
+        staffType: selectedStaff.staffType,
+        lastMessage: "Chat started",
+        timestamp: new Date().toLocaleString({
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        messages: [],
+      };
+
+      // Add to staff chat history so it appears in the sidebar
+      setStaffChatHistory((prev) => [newHistoryEntry, ...prev]);
     } catch (error) {
       console.error("Failed to start staff chat thread:", error);
+    } finally {
+      setStartingChat(false);
     }
   };
 
@@ -1489,6 +1521,7 @@ const AdvicePage = () => {
         },
       }));
       setStaffMessages([]);
+      scrollToBottom();
     }
   };
 
@@ -1529,25 +1562,54 @@ const AdvicePage = () => {
           setStaffMessages(chat.messages || []);
         }
       }
+      scrollToBottom();
     }
   };
 
-  const handleDeleteChat = (chatId) => {
+  const handleDeleteChat = async (chatId) => {
     if (activeMode === "ai") {
       handleDeleteAiChat(chatId);
     } else {
-      // Existing staff chat deletion logic
-      const updatedChats = chatHistory.filter((chat) => chat.id !== chatId);
-      setChatHistory(updatedChats);
-      localStorage.setItem(
-        `chat_history_${currentUserId}`,
-        JSON.stringify(updatedChats)
-      );
+      // Staff chat deletion with API call
+      try {
+        const token = localStorage.getItem("token");
 
-      if (selectedChatId === chatId) {
-        setSelectedChatId(null);
-        setSelectedStaff(null);
-        setStaffMessages([]);
+        // Find the chat to delete
+        const chatToDelete = staffChatHistory.find(
+          (chat) => chat.id === chatId
+        );
+        if (!chatToDelete) return;
+
+        // Call the soft delete API
+        await softDeleteChatThread(chatId, token);
+
+        // Remove from local state
+        const updatedHistory = staffChatHistory.filter(
+          (chat) => chat.id !== chatId
+        );
+        setStaffChatHistory(updatedHistory);
+
+        // Remove from chatThreads
+        if (chatToDelete.staffId) {
+          setChatThreads((prev) => {
+            const updated = { ...prev };
+            delete updated[chatToDelete.staffId];
+            return updated;
+          });
+        }
+
+        // Clear current chat if it's the one being deleted
+        if (selectedStaff?.id === chatToDelete.staffId) {
+          setSelectedStaff(null);
+          setStaffMessages([]);
+          setSelectedChatId(null);
+        }
+
+        // Optional: Show success message
+        console.log(`Successfully deleted chat thread: ${chatId}`);
+      } catch (error) {
+        console.error("Failed to delete staff chat:", error);
+        alert("Failed to delete conversation. Please try again.");
       }
     }
   };
@@ -1674,25 +1736,39 @@ const AdvicePage = () => {
                     <div
                       key={chat.id}
                       className={`advice-history-item ${
-                        (activeMode === "ai" && selectedAiChatId === chat.id) ||
-                        (activeMode === "staff" &&
-                          selectedStaff?.id === chat.staffId)
+                        activeMode === "ai"
+                          ? selectedAiChatId === chat.id
+                            ? "selected"
+                            : ""
+                          : selectedStaff?.id === chat.staffId
                           ? "selected"
                           : ""
                       }`}
                     >
                       <div
                         className="advice-history-content"
-                        onClick={() => handleSelectChat(chat)}
+                        onClick={() => {
+                          if (activeMode === "ai") {
+                            handleSelectAiChat(chat);
+                          } else {
+                            // Handle staff chat selection
+                            const staff = staffMembers.find(
+                              (s) => s.id === chat.staffId
+                            );
+                            if (staff) {
+                              setSelectedStaff(staff);
+                            }
+                          }
+                        }}
                       >
                         <div className="advice-history-sender">
                           {activeMode === "ai"
                             ? "AI Assistant"
-                            : `${chat.staffName} (${
+                            : `${chat.staffName} - ${
                                 chat.staffType === "health"
                                   ? "Health Expert"
                                   : "Nutrition Specialist"
-                              })`}
+                              }`}
                         </div>
                         <div className="advice-history-text">
                           {chat.lastMessage || "New conversation"}
@@ -1704,8 +1780,17 @@ const AdvicePage = () => {
                       <button
                         className="advice-delete-button"
                         onClick={(e) => {
-                          e.stopPropagation(); // Prevent triggering the parent onClick
-                          handleDeleteChat(chat.id);
+                          e.stopPropagation();
+                          if (activeMode === "ai") {
+                            handleDeleteAiChat(chat.id);
+                          } else {
+                            const confirmDelete = window.confirm(
+                              "Are you sure you want to delete this conversation?"
+                            );
+                            if (confirmDelete) {
+                              handleDeleteChat(chat.id);
+                            }
+                          }
                         }}
                         title="Delete chat"
                       >
@@ -1861,9 +1946,6 @@ const AdvicePage = () => {
                     {/* AI Typing Indicator */}
                     {isAiLoading && (
                       <div className="advice-message message-ai">
-                        <div className="advice-avatar">
-                          <FaRobot style={{ color: "#0084ff" }} />
-                        </div>
                         <div className="advice-message-content bg-ai">
                           <div
                             style={{
@@ -1915,11 +1997,11 @@ const AdvicePage = () => {
                         width: "50px",
                         height: "50px",
                         borderRadius: "50%",
-                        backgroundColor: "#0084ff",
+                        backgroundColor: "#FFFFFF",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "white",
+                        color: "grey",
                       }}
                     >
                       <FaUser />
@@ -2025,11 +2107,11 @@ const AdvicePage = () => {
                               width: "32px",
                               height: "32px",
                               borderRadius: "50%",
-                              backgroundColor: "#0084ff",
+                              // backgroundColor: "#0084ff",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "white",
+                              color: "grey",
                               marginRight: "0.5rem",
                               flexShrink: 0,
                             }}
@@ -2213,19 +2295,18 @@ const AdvicePage = () => {
 
               <button
                 className="advice-send-button"
-                onClick={
+                onClick={() =>
                   activeMode === "ai"
-                    ? handleSendAiMessage
-                    : handleSendStaffMessage
+                    ? handleSendAiMessage()
+                    : handleSendStaffMessage()
                 }
                 disabled={
-                  (activeMode === "ai" &&
-                    (!newMessage.trim() || isLoading || isAiLoading)) ||
-                  (activeMode === "staff" &&
-                    ((!newMessage.trim() && !selectedFile) ||
+                  activeMode === "ai"
+                    ? !newMessage.trim() || isLoading || isAiLoading
+                    : (!newMessage.trim() && !selectedFile) ||
                       sendingMessage ||
                       !selectedStaff ||
-                      !chatThreads[selectedStaff.id]?.thread))
+                      !chatThreads[selectedStaff.id]?.thread
                 }
               >
                 {(activeMode === "ai" && (isLoading || isAiLoading)) ||
