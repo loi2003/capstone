@@ -898,7 +898,7 @@ export const updateDish = async (dishData) => {
     if (!dishData.dishName || dishData.dishName.trim() === "") {
       throw new Error("Dish name is required");
     }
-  
+
     if (dishData.foodList.some((food) => !food.unit || food.amount <= 0)) {
       throw new Error(
         "All food items must have a valid unit and amount greater than 0"
@@ -986,12 +986,16 @@ export const updateFoodInDish = async (foodData) => {
 
     console.log("Sending update food in dish request with payload:", payload);
 
-    const response = await apiClient.put(`/api/Dish/update-food-in-dish`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    const response = await apiClient.put(
+      `/api/Dish/update-food-in-dish`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
 
     console.log("Update food in dish response:", response.data);
     return response.data;
@@ -1014,7 +1018,12 @@ export const deleteFoodInDish = async (dishId, foodId) => {
       throw new Error("Food ID is null or empty");
     }
 
-    console.log("Sending delete food in dish request for dishId:", dishId, "foodId:", foodId);
+    console.log(
+      "Sending delete food in dish request for dishId:",
+      dishId,
+      "foodId:",
+      foodId
+    );
 
     const response = await apiClient.put(
       `/api/Dish/delete-food-in-dish-by-food-id`,
@@ -1039,7 +1048,6 @@ export const updateDishImage = async (dishId, image) => {
       throw new Error("Dish ID is null or empty");
     }
 
-
     const formData = new FormData();
     formData.append("dishId", dishId);
     formData.append("Image", image);
@@ -1049,12 +1057,16 @@ export const updateDishImage = async (dishId, image) => {
       Array.from(formData.entries())
     );
 
-    const response = await apiClient.put(`/api/Dish/update-dish-image`, formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Accept: "application/json",
-      },
-    });
+    const response = await apiClient.put(
+      `/api/Dish/update-dish-image`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
+        },
+      }
+    );
 
     console.log("Update dish image response:", response.data);
     return response.data;
@@ -1538,10 +1550,18 @@ export const updateMeal = async (mealId, mealData) => {
     if (!mealData.mealType || mealData.mealType.trim() === "") {
       throw new Error("Meal type is required");
     }
-    if (!mealData.dishMeals || !Array.isArray(mealData.dishMeals) || mealData.dishMeals.length === 0) {
+    if (
+      !mealData.dishMeals ||
+      !Array.isArray(mealData.dishMeals) ||
+      mealData.dishMeals.length === 0
+    ) {
       throw new Error("At least one dish is required");
     }
-    if (mealData.dishMeals.some((dish) => !dish.dishId || dish.dishId.trim() === "")) {
+    if (
+      mealData.dishMeals.some(
+        (dish) => !dish.dishId || dish.dishId.trim() === ""
+      )
+    ) {
       throw new Error("All dishes must have a valid dishId");
     }
 
@@ -1553,7 +1573,12 @@ export const updateMeal = async (mealId, mealData) => {
       })),
     };
 
-    console.log("Sending update meal request for mealId:", mealId, "with payload:", payload);
+    console.log(
+      "Sending update meal request for mealId:",
+      mealId,
+      "with payload:",
+      payload
+    );
 
     // Ensure token is included if required
     const token = localStorage.getItem("token");
@@ -1565,9 +1590,13 @@ export const updateMeal = async (mealId, mealData) => {
       headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const response = await apiClient.put(`/api/meal/update-meal/${mealId}`, payload, {
-      headers,
-    });
+    const response = await apiClient.put(
+      `/api/meal/update-meal/${mealId}`,
+      payload,
+      {
+        headers,
+      }
+    );
 
     console.log("Update meal response:", response.data);
 
@@ -1671,10 +1700,17 @@ export const createWarningFoodForDisease = async (warningData) => {
     if (!warningData.diseaseId || warningData.diseaseId === "") {
       throw new Error("Disease ID is null or empty");
     }
-    if (!warningData.warningFoodDtos || warningData.warningFoodDtos.length === 0) {
+    if (
+      !warningData.warningFoodDtos ||
+      warningData.warningFoodDtos.length === 0
+    ) {
       throw new Error("At least one warning food is required");
     }
-    if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
+    if (
+      warningData.warningFoodDtos.some(
+        (food) => !food.foodId || food.foodId === ""
+      )
+    ) {
       throw new Error("All warning foods must have a valid foodId");
     }
     const payload = {
@@ -1684,13 +1720,20 @@ export const createWarningFoodForDisease = async (warningData) => {
         description: food.description || "",
       })),
     };
-    console.log("Sending create warning food for disease request with payload:", payload);
-    const response = await apiClient.put(`/api/food/create-warning-food-for-disease`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    console.log(
+      "Sending create warning food for disease request with payload:",
+      payload
+    );
+    const response = await apiClient.put(
+      `/api/food/create-warning-food-for-disease`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     console.log("Create warning food for disease response:", response.data);
     return response.data;
   } catch (error) {
@@ -1703,7 +1746,9 @@ export const createWarningFoodForDisease = async (warningData) => {
   }
 };
 
-export const removeRecommendOrWarningFoodForDisease = async (foodDiseaseData) => {
+export const removeRecommendOrWarningFoodForDisease = async (
+  foodDiseaseData
+) => {
   try {
     if (!foodDiseaseData.foodId || foodDiseaseData.foodId === "") {
       throw new Error("Food ID is null or empty");
@@ -1715,14 +1760,24 @@ export const removeRecommendOrWarningFoodForDisease = async (foodDiseaseData) =>
       foodId: foodDiseaseData.foodId,
       diseaseId: foodDiseaseData.diseaseId,
     };
-    console.log("Sending remove recommend or warning food for disease request with payload:", payload);
-    const response = await apiClient.put(`/api/food/remove-recommend-or-warning-food-for-disease`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-    console.log("Remove recommend or warning food for disease response:", response.data);
+    console.log(
+      "Sending remove recommend or warning food for disease request with payload:",
+      payload
+    );
+    const response = await apiClient.put(
+      `/api/food/remove-recommend-or-warning-food-for-disease`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    console.log(
+      "Remove recommend or warning food for disease response:",
+      response.data
+    );
     return response.data;
   } catch (error) {
     console.error("Error removing recommend or warning food for disease:", {
@@ -1734,7 +1789,9 @@ export const removeRecommendOrWarningFoodForDisease = async (foodDiseaseData) =>
   }
 };
 
-export const removeRecommendOrWarningFoodForAllergy = async (foodAllergyData) => {
+export const removeRecommendOrWarningFoodForAllergy = async (
+  foodAllergyData
+) => {
   try {
     if (!foodAllergyData.foodId || foodAllergyData.foodId === "") {
       throw new Error("Food ID is null or empty");
@@ -1746,14 +1803,24 @@ export const removeRecommendOrWarningFoodForAllergy = async (foodAllergyData) =>
       foodId: foodAllergyData.foodId,
       allergyId: foodAllergyData.allergyId,
     };
-    console.log("Sending remove recommend or warning food for allergy request with payload:", payload);
-    const response = await apiClient.put(`/api/food/remove-recommend-or-warning-food-for-allergy`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
-    console.log("Remove recommend or warning food for allergy response:", response.data);
+    console.log(
+      "Sending remove recommend or warning food for allergy request with payload:",
+      payload
+    );
+    const response = await apiClient.put(
+      `/api/food/remove-recommend-or-warning-food-for-allergy`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    console.log(
+      "Remove recommend or warning food for allergy response:",
+      response.data
+    );
     return response.data;
   } catch (error) {
     console.error("Error removing recommend or warning food for allergy:", {
@@ -1770,14 +1837,25 @@ export const createWarningFoodForAllergy = async (warningData) => {
     if (!warningData.allergyId || warningData.allergyId === "") {
       throw new Error("Allergy ID is null or empty");
     }
-    if (!warningData.warningFoodDtos || warningData.warningFoodDtos.length === 0) {
+    if (
+      !warningData.warningFoodDtos ||
+      warningData.warningFoodDtos.length === 0
+    ) {
       throw new Error("At least one warning food is required");
     }
-    if (warningData.warningFoodDtos.some((food) => !food.foodId || food.foodId === "")) {
+    if (
+      warningData.warningFoodDtos.some(
+        (food) => !food.foodId || food.foodId === ""
+      )
+    ) {
       throw new Error("All warning foods must have a valid foodId");
     }
     // Validate non-empty descriptions
-    if (warningData.warningFoodDtos.some((food) => !food.description || food.description.trim() === "")) {
+    if (
+      warningData.warningFoodDtos.some(
+        (food) => !food.description || food.description.trim() === ""
+      )
+    ) {
       throw new Error("Description is required for each warning food");
     }
     const payload = {
@@ -1787,13 +1865,20 @@ export const createWarningFoodForAllergy = async (warningData) => {
         description: food.description,
       })),
     };
-    console.log("Sending create warning food for allergy request with payload:", payload);
-    const response = await apiClient.put(`/api/food/create-warning-food-for-allergy`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    console.log(
+      "Sending create warning food for allergy request with payload:",
+      payload
+    );
+    const response = await apiClient.put(
+      `/api/food/create-warning-food-for-allergy`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     console.log("Create warning food for allergy response:", response.data);
     return response.data;
   } catch (error) {
@@ -1812,12 +1897,16 @@ export const viewWarningFoods = async (filterData) => {
       diseaseIds: filterData.diseaseIds || [],
     };
     console.log("Sending view warning foods request with payload:", payload);
-    const response = await apiClient.post(`/api/food/view-warning-foods`, payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    const response = await apiClient.post(
+      `/api/food/view-warning-foods`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     console.log("View warning foods response:", response.data);
     return response.data;
   } catch (error) {
@@ -1838,13 +1927,20 @@ export const viewWarningFoodsByDiseaseIds = async (diseaseIds) => {
     if (diseaseIds.some((id) => !id || id === "")) {
       throw new Error("All disease IDs must be valid");
     }
-    console.log("Sending view warning foods by disease IDs request with payload:", diseaseIds);
-    const response = await apiClient.post(`/api/food/view-warning-foods-by-disease-ids`, diseaseIds, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    console.log(
+      "Sending view warning foods by disease IDs request with payload:",
+      diseaseIds
+    );
+    const response = await apiClient.post(
+      `/api/food/view-warning-foods-by-disease-ids`,
+      diseaseIds,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     console.log("View warning foods by disease IDs response:", response.data);
     return response.data;
   } catch (error) {
@@ -1865,13 +1961,20 @@ export const viewWarningFoodsByAllergyIds = async (allergyIds) => {
     if (allergyIds.some((id) => !id || id === "")) {
       throw new Error("All allergy IDs must be valid");
     }
-    console.log("Sending view warning foods by allergy IDs request with payload:", allergyIds);
-    const response = await apiClient.post(`/api/food/view-warning-foods-by-allergiy-ids`, allergyIds, {
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    });
+    console.log(
+      "Sending view warning foods by allergy IDs request with payload:",
+      allergyIds
+    );
+    const response = await apiClient.post(
+      `/api/food/view-warning-foods-by-allergiy-ids`,
+      allergyIds,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
     console.log("View warning foods by allergy IDs response:", response.data);
     return response.data;
   } catch (error) {
@@ -1938,7 +2041,10 @@ export const getEnergySuggestionById = async (energySuggestionId, token) => {
 };
 export const createEnergySuggestion = async (energySuggestionData, token) => {
   try {
-    if (!energySuggestionData.ageGroupId || energySuggestionData.ageGroupId.trim() === "") {
+    if (
+      !energySuggestionData.ageGroupId ||
+      energySuggestionData.ageGroupId.trim() === ""
+    ) {
       throw new Error("Age Group ID is null or empty");
     }
     if (![1, 2].includes(Number(energySuggestionData.activityLevel))) {
@@ -1950,7 +2056,11 @@ export const createEnergySuggestion = async (energySuggestionData, token) => {
     ) {
       throw new Error("Additional Calories must be 50, 250, or 450");
     }
-    if (!energySuggestionData.baseCalories || isNaN(energySuggestionData.baseCalories) || Number(energySuggestionData.baseCalories) <= 0) {
+    if (
+      !energySuggestionData.baseCalories ||
+      isNaN(energySuggestionData.baseCalories) ||
+      Number(energySuggestionData.baseCalories) <= 0
+    ) {
       throw new Error("Base Calories must be a positive number");
     }
 
@@ -1959,7 +2069,7 @@ export const createEnergySuggestion = async (energySuggestionData, token) => {
       baseCalories: Number(energySuggestionData.baseCalories),
       trimester: Number(energySuggestionData.trimester) || 0,
       additionalCalories: Number(energySuggestionData.additionalCalories) || 0,
-      ageGroupId: energySuggestionData.ageGroupId,  // Keep as string (UUID/GUID)
+      ageGroupId: energySuggestionData.ageGroupId, // Keep as string (UUID/GUID)
     };
 
     console.log("Creating energy suggestion with payload:", payload);
@@ -1996,7 +2106,10 @@ export const updateEnergySuggestion = async (energySuggestionData, token) => {
     if (!energySuggestionData.id || energySuggestionData.id === "") {
       throw new Error("Energy Suggestion ID is null or empty");
     }
-    if (!energySuggestionData.ageGroupId || energySuggestionData.ageGroupId === "") {
+    if (
+      !energySuggestionData.ageGroupId ||
+      energySuggestionData.ageGroupId === ""
+    ) {
       throw new Error("Age Group ID is null or empty");
     }
     if (![1, 2].includes(Number(energySuggestionData.activityLevel))) {
@@ -2008,7 +2121,11 @@ export const updateEnergySuggestion = async (energySuggestionData, token) => {
     ) {
       throw new Error("Additional Calories must be 50, 250, or 450");
     }
-    if (!energySuggestionData.baseCalories || isNaN(energySuggestionData.baseCalories) || Number(energySuggestionData.baseCalories) <= 0) {
+    if (
+      !energySuggestionData.baseCalories ||
+      isNaN(energySuggestionData.baseCalories) ||
+      Number(energySuggestionData.baseCalories) <= 0
+    ) {
       throw new Error("Base Calories must be a positive number");
     }
     console.log("Updating energy suggestion with data:", energySuggestionData);
@@ -2026,7 +2143,8 @@ export const updateEnergySuggestion = async (energySuggestionData, token) => {
         activityLevel: Number(energySuggestionData.activityLevel) || 0,
         baseCalories: Number(energySuggestionData.baseCalories) || 0,
         trimester: Number(energySuggestionData.trimester) || 0,
-        additionalCalories: Number(energySuggestionData.additionalCalories) || 0,
+        additionalCalories:
+          Number(energySuggestionData.additionalCalories) || 0,
         ageGroupId: energySuggestionData.ageGroupId,
       },
       { headers }
@@ -2055,13 +2173,16 @@ export const deleteEnergySuggestion = async (energySuggestionId, token) => {
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }
-    const response = await apiClient.delete(`/api/EnergySuggestion/delete-energy-suggestion-by-id`, {
-      params: {
-        energySuggestionId: energySuggestionId,
-      },
-      headers,
-      timeout: 60000,
-    });
+    const response = await apiClient.delete(
+      `/api/EnergySuggestion/delete-energy-suggestion-by-id`,
+      {
+        params: {
+          energySuggestionId: energySuggestionId,
+        },
+        headers,
+        timeout: 60000,
+      }
+    );
     console.log("Delete energy suggestion response:", response.data);
     return response.data;
   } catch (error) {
@@ -2073,10 +2194,17 @@ export const deleteEnergySuggestion = async (energySuggestionId, token) => {
     });
     throw error;
   }
-};// Nutrient Suggestion Management APIs
-export const createNutrientSuggestion = async (nutrientSuggestionData, token) => {
+};
+// Nutrient Suggestion Management APIs
+export const createNutrientSuggestion = async (
+  nutrientSuggestionData,
+  token
+) => {
   try {
-    if (!nutrientSuggestionData.name || nutrientSuggestionData.name.trim() === "") {
+    if (
+      !nutrientSuggestionData.name ||
+      nutrientSuggestionData.name.trim() === ""
+    ) {
       throw new Error("Nutrient suggestion name is required");
     }
 
@@ -2086,7 +2214,10 @@ export const createNutrientSuggestion = async (nutrientSuggestionData, token) =>
       // These will be handled by adding attributes after creation
     };
 
-    console.log("Sending create nutrient suggestion request with payload:", payload);
+    console.log(
+      "Sending create nutrient suggestion request with payload:",
+      payload
+    );
 
     const headers = {
       "Content-Type": "application/json",
@@ -2120,8 +2251,13 @@ export const addNutrientSuggestionAttribute = async (attributeData, token) => {
       throw new Error("Nutrient suggestion ID and nutrient ID are required");
     }
     const isValidGuid = (guid) => {
-      const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-      return guid && guid !== "00000000-0000-0000-0000-000000000000" && guidRegex.test(guid);
+      const guidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      return (
+        guid &&
+        guid !== "00000000-0000-0000-0000-000000000000" &&
+        guidRegex.test(guid)
+      );
     };
     if (!isValidGuid(attributeData.nutrientSuggestionId)) {
       throw new Error("Nutrient suggestion ID must be a valid GUID");
@@ -2142,11 +2278,15 @@ export const addNutrientSuggestionAttribute = async (attributeData, token) => {
       minValuePerDay: attributeData.minValuePerDay || 0,
       unit: attributeData.unit || "milligrams",
       amount: attributeData.amount || 0,
-      minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire || 0,
+      minAnimalProteinPercentageRequire:
+        attributeData.minAnimalProteinPercentageRequire || 0,
       nutrientId: attributeData.nutrientId,
       type: attributeData.type || 0,
     };
-    console.log("Sending add nutrient suggestion attribute request with payload:", payload);
+    console.log(
+      "Sending add nutrient suggestion attribute request with payload:",
+      payload
+    );
     console.log("Token:", token);
     const headers = {
       "Content-Type": "application/json",
@@ -2183,9 +2323,12 @@ export const getAllNutrientSuggestions = async (token) => {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await apiClient.get(`/api/NutrientSuggestion/view-all-nutrient-suggestions`, {
-      headers,
-    });
+    const response = await apiClient.get(
+      `/api/NutrientSuggestion/view-all-nutrient-suggestions`,
+      {
+        headers,
+      }
+    );
 
     console.log("Get all nutrient suggestions response:", response.data);
     return response.data;
@@ -2215,10 +2358,13 @@ export const getNutrientSuggestionById = async (id, token) => {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await apiClient.get(`/api/NutrientSuggestion/view-nutrient-suggestion-by-id`, {
-      params: { Id: id },
-      headers,
-    });
+    const response = await apiClient.get(
+      `/api/NutrientSuggestion/view-nutrient-suggestion-by-id`,
+      {
+        params: { Id: id },
+        headers,
+      }
+    );
 
     console.log("Get nutrient suggestion by ID response:", response.data);
     return response.data;
@@ -2232,12 +2378,18 @@ export const getNutrientSuggestionById = async (id, token) => {
   }
 };
 
-export const updateNutrientSuggestion = async (nutrientSuggestionData, token) => {
+export const updateNutrientSuggestion = async (
+  nutrientSuggestionData,
+  token
+) => {
   try {
     if (!nutrientSuggestionData.id || nutrientSuggestionData.id === "") {
       throw new Error("Nutrient Suggestion ID is null or empty");
     }
-    if (!nutrientSuggestionData.nutrientSuggetionName || nutrientSuggestionData.nutrientSuggetionName.trim() === "") {
+    if (
+      !nutrientSuggestionData.nutrientSuggetionName ||
+      nutrientSuggestionData.nutrientSuggetionName.trim() === ""
+    ) {
       throw new Error("Nutrient suggestion name is required");
     }
 
@@ -2246,7 +2398,10 @@ export const updateNutrientSuggestion = async (nutrientSuggestionData, token) =>
       nutrientSuggetionName: nutrientSuggestionData.nutrientSuggetionName,
     };
 
-    console.log("Sending update nutrient suggestion request with payload:", payload);
+    console.log(
+      "Sending update nutrient suggestion request with payload:",
+      payload
+    );
 
     const headers = {
       "Content-Type": "application/json",
@@ -2283,7 +2438,8 @@ export const deleteNutrientSuggestion = async (id, token) => {
     }
 
     // Validate GUID format
-    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const guidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!guidRegex.test(id)) {
       throw new Error("Invalid Nutrient Suggestion ID format");
     }
@@ -2318,6 +2474,184 @@ export const deleteNutrientSuggestion = async (id, token) => {
     if (error.response?.status === 400 && error.response?.data?.message) {
       throw new Error(error.response.data.message);
     }
+    throw error;
+  }
+};
+export const deleteNutrientSuggestionById = async (
+  nutrientSuggestionId,
+  token
+) => {
+  try {
+    if (!nutrientSuggestionId || nutrientSuggestionId === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+
+    // Validate GUID format
+    const guidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(nutrientSuggestionId)) {
+      throw new Error("Invalid Nutrient Suggestion ID format");
+    }
+
+    console.log(
+      "Sending delete nutrient suggestion request for ID:",
+      nutrientSuggestionId
+    );
+
+    const headers = {
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.delete(`/api/NutrientSuggestion/Delete`, {
+      params: { nutrientSuggestionId },
+      headers,
+    });
+
+    console.log("Delete nutrient suggestion response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting nutrient suggestion:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
+    if (error.response?.status === 400 && error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw error;
+  }
+};
+export const deleteNutrientSuggestionAttribute = async (
+  nutrientSuggestionId,
+  attributeId,
+  token
+) => {
+  try {
+    if (!nutrientSuggestionId || nutrientSuggestionId === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+    if (!attributeId || attributeId === "") {
+      throw new Error("Attribute ID is null or empty");
+    }
+
+    const guidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(nutrientSuggestionId)) {
+      throw new Error("Invalid Nutrient Suggestion ID format");
+    }
+    if (!guidRegex.test(attributeId)) {
+      throw new Error("Invalid Attribute ID format");
+    }
+
+    console.log(
+      "Sending delete nutrient suggestion attribute request for NutrientSuggestionID:",
+      nutrientSuggestionId,
+      "and AttributeID:",
+      attributeId
+    );
+
+    const headers = {
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.delete(
+      `/api/NutrientSuggestion/delete-attribute`,
+      {
+        params: { nutrientSuggestionId, attributeId },
+        headers,
+      }
+    );
+
+    console.log(
+      "Delete nutrient suggestion attribute response:",
+      response.data
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting nutrient suggestion attribute:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      params: { nutrientSuggestionId, attributeId },
+    });
+    if (error.response?.status === 400 && error.response?.data?.message) {
+      throw new Error(error.response.data.message);
+    }
+    throw error;
+  }
+};export const updateNutrientSuggestionAttribute = async (attributeData, token) => {
+  try {
+    if (!attributeData.nutrientSuggestionAttributeId || attributeData.nutrientSuggestionAttributeId === "") {
+      throw new Error("Nutrient Suggestion Attribute ID is null or empty");
+    }
+    if (!attributeData.nutrientId || attributeData.nutrientId === "") {
+      throw new Error("Nutrient ID is null or empty");
+    }
+    if (!attributeData.nutrientSuggestionId || attributeData.nutrientSuggestionId === "") {
+      throw new Error("Nutrient Suggestion ID is null or empty");
+    }
+
+    // Validate GUID format
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(attributeData.nutrientSuggestionAttributeId)) {
+      throw new Error("Invalid Nutrient Suggestion Attribute ID format");
+    }
+    if (!guidRegex.test(attributeData.nutrientId)) {
+      throw new Error("Invalid Nutrient ID format");
+    }
+    if (!guidRegex.test(attributeData.nutrientSuggestionId)) {
+      throw new Error("Invalid Nutrient Suggestion ID format");
+    }
+
+    const payload = {
+      nutrientSuggestionAttributeId: attributeData.nutrientSuggestionAttributeId, // Changed from attributeId
+      nutrientSuggestionId: attributeData.nutrientSuggestionId,
+      trimester: attributeData.trimester || 0,
+      maxEnergyPercentage: attributeData.maxEnergyPercentage || 0,
+      minEnergyPercentage: attributeData.minEnergyPercentage || 0,
+      maxValuePerDay: attributeData.maxValuePerDay || 0,
+      minValuePerDay: attributeData.minValuePerDay || 0,
+      unit: attributeData.unit || "milligrams",
+      amount: attributeData.amount || 0,
+      minAnimalProteinPercentageRequire: attributeData.minAnimalProteinPercentageRequire || 0,
+      nutrientId: attributeData.nutrientId,
+      type: attributeData.type || 0,
+    };
+
+    console.log("Sending update nutrient suggestion attribute request with payload:", payload);
+
+    const headers = {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await apiClient.put(
+      `/api/NutrientSuggestion/update-attribute`,
+      payload,
+      { headers }
+    );
+
+    console.log("Update nutrient suggestion attribute response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating nutrient suggestion attribute:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      config: error.config,
+    });
     throw error;
   }
 };
