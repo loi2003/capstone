@@ -132,9 +132,29 @@ const AdvicePage = () => {
 
   const saveAiChatSessions = (sessions) => {
     try {
+      // Sanitize sessions to remove any non-serializable data
+      const sanitizedSessions = sessions.map((session) => ({
+        id: session.id,
+        messages: session.messages.map((msg) => ({
+          id: msg.id,
+          text: String(msg.text || ""),
+          sender: msg.sender,
+          timestamp: msg.timestamp,
+          time: msg.time,
+          isError: msg.isError || false,
+          canRetry: msg.canRetry || false,
+          originalMessage: msg.originalMessage
+            ? String(msg.originalMessage)
+            : undefined,
+        })),
+        lastMessage: String(session.lastMessage || ""),
+        timestamp: session.timestamp,
+        createdAt: session.createdAt,
+      }));
+
       localStorage.setItem(
         `ai_chat_sessions_${currentUserId}`,
-        JSON.stringify(sessions)
+        JSON.stringify(sanitizedSessions)
       );
     } catch (error) {
       console.error("Failed to save AI chat sessions:", error);
@@ -208,10 +228,10 @@ const AdvicePage = () => {
 
     if (!messageToSend || isAiLoading) return;
 
-    // Create user message
+    // Create clean user message object
     const userMessage = {
       id: `ai_user_${Date.now()}_${Math.random()}`,
-      text: messageToSend,
+      text: String(messageToSend), // Ensure it's a string
       sender: "user",
       timestamp: new Date().toISOString(),
       time: new Date().toLocaleTimeString([], {
@@ -1645,51 +1665,55 @@ const AdvicePage = () => {
             </button>
 
             <div className="advice-history-container">
-              {currentChats.length === 0 ? (
+              {(activeMode === "ai" ? aiChatSessions : staffChatHistory)
+                .length === 0 ? (
                 <div className="advice-empty-message">No history yet.</div>
               ) : (
-                currentChats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    className={`advice-history-item ${
-                      (activeMode === "ai" && selectedChatId === chat.id) ||
-                      (activeMode === "staff" &&
-                        selectedStaff?.id === chat.staffId)
-                        ? "selected"
-                        : ""
-                    }`}
-                  >
+                (activeMode === "ai" ? aiChatSessions : staffChatHistory).map(
+                  (chat) => (
                     <div
-                      className="advice-history-content"
-                      onClick={() => handleSelectChat(chat)}
+                      key={chat.id}
+                      className={`advice-history-item ${
+                        (activeMode === "ai" && selectedAiChatId === chat.id) ||
+                        (activeMode === "staff" &&
+                          selectedStaff?.id === chat.staffId)
+                          ? "selected"
+                          : ""
+                      }`}
                     >
-                      <div className="advice-history-sender">
-                        {activeMode === "ai"
-                          ? "AI Assistant"
-                          : `${chat.staffName} (${
-                              chat.staffType === "health"
-                                ? "Health Expert"
-                                : "Nutrition Specialist"
-                            })`}
+                      <div
+                        className="advice-history-content"
+                        onClick={() => handleSelectChat(chat)}
+                      >
+                        <div className="advice-history-sender">
+                          {activeMode === "ai"
+                            ? "AI Assistant"
+                            : `${chat.staffName} (${
+                                chat.staffType === "health"
+                                  ? "Health Expert"
+                                  : "Nutrition Specialist"
+                              })`}
+                        </div>
+                        <div className="advice-history-text">
+                          {chat.lastMessage || "New conversation"}
+                        </div>
+                        <div className="advice-history-timestamp">
+                          {chat.timestamp}
+                        </div>
                       </div>
-                      <div className="advice-history-text">
-                        {chat.lastMessage ||
-                          chat.messages?.[0]?.text ||
-                          "New conversation"}
-                      </div>
-                      <div className="advice-history-timestamp">
-                        {chat.timestamp}
-                      </div>
+                      <button
+                        className="advice-delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent triggering the parent onClick
+                          handleDeleteChat(chat.id);
+                        }}
+                        title="Delete chat"
+                      >
+                        <FaTrash className="advice-delete-icon" />
+                      </button>
                     </div>
-                    <button
-                      className="advice-delete-button"
-                      onClick={() => handleDeleteChat(chat.id)}
-                      title="Delete chat"
-                    >
-                      <FaTrash className="advice-delete-icon" />
-                    </button>
-                  </div>
-                ))
+                  )
+                )
               )}
             </div>
 
@@ -2166,9 +2190,10 @@ const AdvicePage = () => {
                     : "Please start consultation first..."
                 }
                 onKeyPress={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault(); // Prevent default Enter behavior
                     if (activeMode === "ai") {
-                      handleSendAiMessage(); // Use the new API function
+                      handleSendAiMessage(); // Don't pass the event
                     } else if (
                       selectedStaff &&
                       chatThreads[selectedStaff.id]?.thread
