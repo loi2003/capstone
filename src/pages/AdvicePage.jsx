@@ -11,6 +11,7 @@ import {
   sendMessage,
   getChatThreadByUserId,
   getChatThreadById,
+  softDeleteChatThread,
 } from "../apis/message-api";
 import { getAllUsers } from "../apis/user-api";
 import { useMessages } from "../utils/useMessages";
@@ -26,6 +27,7 @@ import {
   FaTrash,
   FaChevronLeft,
   FaChevronRight,
+  FaRobot,
 } from "react-icons/fa";
 import { FaFileAlt } from "react-icons/fa";
 import { HiPaperAirplane } from "react-icons/hi2";
@@ -44,6 +46,14 @@ const AdvicePage = () => {
 
   // Separate message states for AI and Staff
   const [aiMessages, setAiMessages] = useState([]);
+  const [aiChatHistory, setAiChatHistory] = useState([]);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiRetryCount, setAiRetryCount] = useState(0);
+
+  // AI chat history management
+  const [aiChatSessions, setAiChatSessions] = useState([]);
+  const [selectedAiChatId, setSelectedAiChatId] = useState(null);
+
   const [staffMessages, setStaffMessages] = useState([]);
 
   // Original AdvicePage states
@@ -87,41 +97,326 @@ const AdvicePage = () => {
   const staffPromptRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Utility functions (keep existing ones)
-  const scrollToBottom = () => {
-  requestAnimationFrame(() => {
-    if (messagesEndRef.current) {
-      // Try to find the specific messages container in AdvicePage
-      const messagesContainer = messagesEndRef.current.closest(
-        ".staff-chat-messages, .ai-chat-messages, .chat-messages-area, .messages-container"
+  // Load AI chat history from localStorage
+  const loadAiChatHistory = () => {
+    try {
+      const savedSessions = localStorage.getItem(
+        `ai_chat_sessions_${currentUserId}`
       );
-      
-      if (messagesContainer) {
-        // Scroll only the messages container
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      } else {
-        // Alternative: Find parent with overflow scroll
-        let parent = messagesEndRef.current.parentElement;
-        while (parent) {
-          const styles = window.getComputedStyle(parent);
-          if (styles.overflowY === 'auto' || styles.overflowY === 'scroll') {
-            parent.scrollTop = parent.scrollHeight;
-            return;
-          }
-          parent = parent.parentElement;
+      if (savedSessions) {
+        const parsedSessions = JSON.parse(savedSessions);
+        setAiChatSessions(parsedSessions);
+        // Load the most recent session if no session is selected
+        if (parsedSessions.length > 0 && !selectedAiChatId) {
+          const latestSession = parsedSessions[0];
+          setSelectedAiChatId(latestSession.id);
+          setAiMessages(latestSession.messages || []);
         }
-        
-        // Last resort: scroll to the element but prevent page scroll
-        messagesEndRef.current.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest", // Changed from "end" to "nearest"
-          inline: "nearest",
-        });
+      }
+    } catch (error) {
+      console.error("Failed to load AI chat history:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (currentUserId) {
+      loadAiChatHistory();
+    }
+  }, [currentUserId]);
+
+  // Save AI chat history to localStorage
+  const saveAiChatHistory = (messages) => {
+    try {
+      localStorage.setItem(
+        `ai_chat_history_${currentUserId}`,
+        JSON.stringify(messages)
+      );
+    } catch (error) {
+      console.error("Failed to save AI chat history:", error);
+    }
+  };
+
+  const saveAiChatSessions = (sessions) => {
+    try {
+      // Sanitize sessions to remove any non-serializable data
+      const sanitizedSessions = sessions.map((session) => ({
+        id: session.id,
+        messages: session.messages.map((msg) => ({
+          id: msg.id,
+          text: String(msg.text || ""),
+          sender: msg.sender,
+          timestamp: msg.timestamp,
+          time: msg.time,
+          isError: msg.isError || false,
+          canRetry: msg.canRetry || false,
+          originalMessage: msg.originalMessage
+            ? String(msg.originalMessage)
+            : undefined,
+        })),
+        lastMessage: String(session.lastMessage || ""),
+        timestamp: session.timestamp,
+        createdAt: session.createdAt,
+      }));
+
+      localStorage.setItem(
+        `ai_chat_sessions_${currentUserId}`,
+        JSON.stringify(sanitizedSessions)
+      );
+    } catch (error) {
+      console.error("Failed to save AI chat sessions:", error);
+    }
+  };
+
+  // Create new AI chat session
+  const handleNewAiChat = () => {
+    const newSession = {
+      id: Date.now(),
+      messages: [],
+      lastMessage: "New AI conversation",
+      timestamp: new Date().toLocaleString(),
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedSessions = [newSession, ...aiChatSessions];
+    setAiChatSessions(updatedSessions);
+    setSelectedAiChatId(newSession.id);
+    setAiMessages([]);
+    saveAiChatSessions(updatedSessions);
+  };
+
+  // Select AI chat session
+  const handleSelectAiChat = (session) => {
+    setSelectedAiChatId(session.id);
+    setAiMessages(session.messages || []);
+    setTimeout(() => scrollToBottom(), 100);
+  };
+
+  // Delete AI chat session
+  const handleDeleteAiChat = (sessionId) => {
+    const updatedSessions = aiChatSessions.filter(
+      (session) => session.id !== sessionId
+    );
+    setAiChatSessions(updatedSessions);
+    saveAiChatSessions(updatedSessions);
+
+    // If deleting the selected session, switch to the next available one
+    if (selectedAiChatId === sessionId) {
+      if (updatedSessions.length > 0) {
+        const nextSession = updatedSessions[0];
+        setSelectedAiChatId(nextSession.id);
+        setAiMessages(nextSession.messages || []);
+      } else {
+        setSelectedAiChatId(null);
+        setAiMessages([]);
       }
     }
-  });
-};
 
+    // Clear from localStorage if this is the user's last session
+    if (updatedSessions.length === 0) {
+      localStorage.removeItem(`ai_chat_sessions_${currentUserId}`);
+    }
+  };
+
+  // Clear all AI chat history
+  const clearAllAiChatHistory = () => {
+    setAiMessages([]);
+    setAiChatSessions([]);
+    setSelectedAiChatId(null);
+    try {
+      localStorage.removeItem(`ai_chat_sessions_${currentUserId}`);
+    } catch (error) {
+      console.error("Failed to clear AI chat history:", error);
+    }
+  };
+
+  const handleSendAiMessage = async (messageText = null, retryAttempt = 0) => {
+    const messageToSend = messageText || newMessage.trim();
+    if (!messageToSend || isAiLoading) return;
+
+    // Create clean user message object
+    const userMessage = {
+      id: `ai_user_${Date.now()}_${Math.random()}`,
+      text: String(messageToSend),
+      sender: "user",
+      timestamp: new Date().toISOString(),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    };
+
+    // Add user message immediately
+    const updatedMessages = [...aiMessages, userMessage];
+    setAiMessages(updatedMessages);
+
+    // Clear input only if this is a new message (not retry)
+    if (!messageText) {
+      setNewMessage("");
+    }
+
+    setIsAiLoading(true);
+    setIsTyping(true);
+
+    try {
+      console.log("🤖 Sending message to AI:", messageToSend);
+      const response = await getAIChatResponse(messageToSend);
+      console.log("🤖 AI Response received:", response);
+
+      // Create AI response message
+      const aiMessage = {
+        id: `ai_response_${Date.now()}_${Math.random()}`,
+        text:
+          response.data?.reply ||
+          response.reply ||
+          "I apologize, but I encountered an issue generating a response. Please try again.",
+        sender: "ai",
+        timestamp: new Date().toISOString(),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      };
+
+      // Add AI response
+      const finalMessages = [...updatedMessages, aiMessage];
+      setAiMessages(finalMessages);
+
+      let currentSessions = [...aiChatSessions];
+      let currentSessionId = selectedAiChatId;
+
+      // Create new session if none exists
+      if (!currentSessionId) {
+        const newSession = {
+          id: Date.now(),
+          messages: finalMessages,
+          lastMessage: messageToSend,
+          timestamp: new Date().toLocaleString(),
+          createdAt: new Date().toISOString(),
+        };
+        currentSessions = [newSession, ...currentSessions];
+        currentSessionId = newSession.id;
+        setSelectedAiChatId(currentSessionId);
+        setAiChatSessions(currentSessions); // ADD THIS LINE
+      } else {
+        // Update existing session
+        currentSessions = currentSessions.map((session) =>
+          session.id === currentSessionId
+            ? {
+                ...session,
+                messages: finalMessages,
+                lastMessage: messageToSend,
+                timestamp: new Date().toLocaleString(),
+              }
+            : session
+        );
+        setAiChatSessions(currentSessions); // ADD THIS LINE
+      }
+
+      // Save to localStorage
+      saveAiChatSessions(currentSessions);
+
+      // Reset retry count on success
+      setAiRetryCount(0);
+
+      // Auto-scroll to bottom
+      setTimeout(() => scrollToBottom(), 100);
+    } catch (error) {
+      console.error("🤖 AI Chat Error:", error);
+
+      // Create error message with retry option
+      const errorMessage = {
+        id: `ai_error_${Date.now()}_${Math.random()}`,
+        text:
+          retryAttempt < 2
+            ? "I encountered an issue. Let me try again..."
+            : "I'm having trouble right now. Please try again in a moment or contact our staff for assistance.",
+        sender: "ai",
+        timestamp: new Date().toISOString(),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        isError: true,
+        canRetry: retryAttempt < 2,
+        originalMessage: messageToSend,
+      };
+
+      const messagesWithError = [...updatedMessages, errorMessage];
+      setAiMessages(messagesWithError);
+
+      // Auto-retry for network errors (up to 2 times)
+      if (
+        retryAttempt < 2 &&
+        (error.name === "NetworkError" || error.code === "NETWORK_ERROR")
+      ) {
+        setAiRetryCount(retryAttempt + 1);
+        setTimeout(() => {
+          handleSendAiMessage(messageToSend, retryAttempt + 1);
+        }, 1000 * (retryAttempt + 1));
+      }
+    } finally {
+      setIsAiLoading(false);
+      setIsTyping(false);
+    }
+  };
+
+  // Clear AI chat history
+  const clearAiChatHistory = () => {
+    setAiMessages([]);
+    setAiChatHistory([]);
+    try {
+      localStorage.removeItem(`ai_chat_history_${currentUserId}`);
+    } catch (error) {
+      console.error("Failed to clear AI chat history:", error);
+    }
+  };
+
+  // Retry failed AI message
+  const retryAiMessage = (originalMessage) => {
+    // Remove the error message
+    setAiMessages((prev) => prev.filter((msg) => !msg.isError));
+    // Set the original message back and retry
+    setNewMessage(originalMessage);
+    handleSendAiMessage(originalMessage, 0);
+  };
+
+  // Utility functions (keep existing ones)
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        // Try to find the specific messages container in AdvicePage
+        const messagesContainer = messagesEndRef.current.closest(
+          ".staff-chat-messages, .ai-chat-messages, .chat-messages-area, .messages-container"
+        );
+
+        if (messagesContainer) {
+          // Scroll only the messages container
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          // Alternative: Find parent with overflow scroll
+          let parent = messagesEndRef.current.parentElement;
+          while (parent) {
+            const styles = window.getComputedStyle(parent);
+            if (styles.overflowY === "auto" || styles.overflowY === "scroll") {
+              parent.scrollTop = parent.scrollHeight;
+              return;
+            }
+            parent = parent.parentElement;
+          }
+
+          // Last resort: scroll to the element but prevent page scroll
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest", // Changed from "end" to "nearest"
+            inline: "nearest",
+          });
+        }
+      }
+    });
+  };
 
   const formatBytes = (bytes) => {
     if (!bytes && bytes !== 0) return "";
@@ -160,6 +455,10 @@ const AdvicePage = () => {
       if (userData?.id) {
         setCurrentUserId(userData.id);
         setIsLoggedIn(true);
+
+        // Load AI chat history after user is set
+        setTimeout(() => loadAiChatHistory(), 100);
+
         await loadAllStaff();
         await loadExistingStaffThreads(userData.id);
       } else {
@@ -169,6 +468,12 @@ const AdvicePage = () => {
       console.error("Failed to initialize user:", error);
       setIsLoggedIn(false);
     }
+  };
+
+  const switchToAiMode = () => {
+    setActiveMode("ai");
+    // No need to load messages - they're already in aiMessages state
+    setTimeout(() => scrollToBottom(), 100);
   };
 
   // Load staff members
@@ -194,6 +499,192 @@ const AdvicePage = () => {
       console.error("Failed to load staff members:", error);
     }
   };
+
+  // AI Message Component
+  const AIMessageComponent = ({ message }) => (
+    <div
+      className={`message ${
+        message.sender === "user" ? "user-message" : "ai-message"
+      }`}
+    >
+      <div className="message-content">
+        {message.sender === "ai" && (
+          <div className="ai-avatar">
+            <FaRobot />
+          </div>
+        )}
+        <div className="message-bubble">
+          <div className="message-text">{message.text}</div>
+          <div className="message-time">
+            {message.time}
+            {message.sender === "ai" && (
+              <span className="ai-label">AI Assistant</span>
+            )}
+          </div>
+          {message.isError && message.canRetry && (
+            <button
+              className="retry-button"
+              onClick={() => retryAiMessage(message.originalMessage)}
+            >
+              Retry
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  const ModeSelector = () => (
+    <div className="consultation-mode-selector">
+      <button
+        className={`mode-btn ${activeMode === "ai" ? "active" : ""}`}
+        onClick={switchToAiMode}
+      >
+        <FaRobot className="mode-icon" />
+        <span>AI Assistant</span>
+        {aiMessages.length > 0 && (
+          <span className="message-count">{aiMessages.length}</span>
+        )}
+      </button>
+
+      <button
+        className={`mode-btn ${activeMode === "staff" ? "active" : ""}`}
+        onClick={switchToStaffMode}
+      >
+        <FaUser className="mode-icon" />
+        <span>Staff Consultation</span>
+        {selectedStaff && (
+          <span className="staff-name">{selectedStaff.userName}</span>
+        )}
+      </button>
+    </div>
+  );
+
+  const ChatInterface = () => (
+    <div className="chat-interface">
+      {activeMode === "ai" ? (
+        <div className="ai-chat-container">
+          <div className="ai-chat-header">
+            <div className="ai-info">
+              <FaRobot className="ai-icon" />
+              <div>
+                <h3>AI Health Assistant</h3>
+                <p>Get instant, evidence-based health guidance</p>
+              </div>
+            </div>
+            {aiMessages.length > 0 && (
+              <button className="clear-chat-btn" onClick={clearAiChatHistory}>
+                <FaTrash /> Clear Chat
+              </button>
+            )}
+          </div>
+
+          <div className="ai-chat-messages">
+            {aiMessages.length === 0 ? (
+              <div className="welcome-message">
+                <FaRobot className="welcome-icon" />
+                <h3>Welcome to AI Health Assistant</h3>
+                <p>
+                  I'm here to provide evidence-based guidance on pregnancy,
+                  nutrition, and health. How can I help you today?
+                </p>
+              </div>
+            ) : (
+              aiMessages.map((message) => (
+                <AIMessageComponent key={message.id} message={message} />
+              ))
+            )}
+            {isAiLoading && (
+              <div className="ai-typing-indicator">
+                <div className="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <span>AI is thinking...</span>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      ) : (
+        // Keep your existing staff chat interface
+        <div className="staff-chat-container">
+          {/* Your existing staff chat UI */}
+        </div>
+      )}
+    </div>
+  );
+
+  // Enhanced Input Area
+  const InputArea = () => (
+    <div className="input-area">
+      <div className="input-container">
+        <textarea
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder={
+            activeMode === "ai"
+              ? "Ask AI about pregnancy, nutrition, or health..."
+              : "Type your message to staff..."
+          }
+          disabled={
+            (activeMode === "ai" && isAiLoading) ||
+            (activeMode === "staff" && sendingMessage)
+          }
+          rows={1}
+          className="message-input"
+        />
+
+        {activeMode === "staff" && (
+          <button
+            className="attachment-btn"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <FaPaperclip />
+          </button>
+        )}
+
+        <button
+          className="send-btn"
+          onClick={handleSendMessage}
+          disabled={
+            !newMessage.trim() ||
+            (activeMode === "ai" && isAiLoading) ||
+            (activeMode === "staff" && sendingMessage)
+          }
+        >
+          {(activeMode === "ai" && isAiLoading) ||
+          (activeMode === "staff" && sendingMessage) ? (
+            <div className="loading-spinner" />
+          ) : (
+            <HiPaperAirplane />
+          )}
+        </button>
+      </div>
+
+      {selectedFile && (
+        <div className="file-preview">
+          <div className="file-info">
+            <FaFile />
+            <span>{selectedFile.name}</span>
+            <button onClick={clearSelectedFile}>
+              <FaTimes />
+            </button>
+          </div>
+        </div>
+      )}
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        onChange={handleFileSelect}
+        accept={allSupportedTypes.join(",")}
+        style={{ display: "none" }}
+      />
+    </div>
+  );
 
   // Load existing staff threads (adapted from ConsultationChat pattern)
   const loadExistingStaffThreads = async (userId) => {
@@ -388,7 +879,17 @@ const AdvicePage = () => {
       return;
     }
 
-    // Mark message as processed immediately
+    // These are already added immediately in handleSendStaffMessage
+    if (latest.senderId === currentUserId) {
+      console.log(
+        "Skipping user's own message to prevent duplication:",
+        latest.id
+      );
+      processedMessageIds.current.add(latest.id);
+      return;
+    }
+
+    // Mark message as processed
     processedMessageIds.current.add(latest.id);
 
     if (selectedStaff?.id && activeMode === "staff") {
@@ -404,7 +905,7 @@ const AdvicePage = () => {
           return prev;
         }
 
-        console.log("Adding new message to staff thread for:", staffId);
+        console.log("Adding new STAFF message to thread:", staffId);
 
         // Process the message (same as ConsultationChat)
         const processedMessage = {
@@ -413,13 +914,7 @@ const AdvicePage = () => {
           time: (() => {
             // Fix UTC timestamp by adding Z if missing
             let timestamp = latest.createdAt || new Date().toISOString();
-            if (
-              typeof timestamp === "string" &&
-              !timestamp.includes("Z")
-              // &&
-              // !timestamp.includes("+") &&
-              // !timestamp.includes("-")
-            ) {
+            if (typeof timestamp === "string" && !timestamp.includes("Z")) {
               timestamp = timestamp + "Z";
             }
             return new Date(timestamp).toLocaleTimeString([], {
@@ -432,7 +927,7 @@ const AdvicePage = () => {
           messageText: latest.messageText?.trim(),
         };
 
-        // Handle media attachments (same as ConsultationChat)
+        // Handle media attachments
         if (
           latest.media &&
           Array.isArray(latest.media) &&
@@ -448,7 +943,6 @@ const AdvicePage = () => {
           };
         }
 
-        // Update both chatThreads and staffMessages
         const updatedMessages = [...existingMessages, processedMessage];
 
         // Update staff messages if this is the active conversation
@@ -517,8 +1011,8 @@ const AdvicePage = () => {
     try {
       setSendingMessage(true);
       const token = localStorage.getItem("token");
-      const formData = new FormData();
 
+      const formData = new FormData();
       formData.append("ChatThreadId", activeThread.id);
       formData.append("SenderId", currentUserId);
 
@@ -533,81 +1027,117 @@ const AdvicePage = () => {
         formData.append("AttachmentFileSize", selectedFile.size.toString());
       }
 
+      // ✅ CRITICAL FIX: Create user message with proper ID
+      const userMessageId = `user_${Date.now()}_${Math.random()}`;
+
+      const userMessage = {
+        id: userMessageId,
+        senderId: currentUserId,
+        receiverId: staffId,
+        text: newMessage.trim(),
+        messageText: newMessage.trim(),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        isUser: true,
+        createdAt: new Date().toISOString(),
+        attachment: selectedFile
+          ? {
+              fileName: selectedFile.name,
+              fileSize: selectedFile.size,
+              fileType: selectedFile.type,
+              isImage: isImageFile(selectedFile.name),
+              url: filePreview,
+            }
+          : null,
+      };
+
+      processedMessageIds.current.add(userMessageId);
+
+      // Add user message to UI immediately
+      setChatThreads((prevThreads) => ({
+        ...prevThreads,
+        [staffId]: {
+          ...prevThreads[staffId],
+          messages: [...(prevThreads[staffId]?.messages || []), userMessage],
+        },
+      }));
+      setStaffMessages((prev) => [...prev, userMessage]);
+
+      // Send to server
       const response = await sendMessage(formData, token);
       console.log("Send message response:", response);
 
       if (response.error === 0) {
-        const attachmentUrl =
-          response.data?.attachmentUrl ||
-          response.data?.attachmentPath ||
-          response.data?.attachment?.url;
+        // but don't add a new message
+        const serverMessageId = response.data?.id;
 
-        const newMsg = {
-          id: response.data?.id || Date.now().toString(),
-          senderId: currentUserId,
-          receiverId: staffId,
-          text: newMessage.trim(),
-          messageText: newMessage.trim(),
-          time: (() => {
-            // Fix UTC timestamp by adding Z if missing
-            let timestamp = response.data?.sentAt || new Date().toISOString();
-            if (
-              typeof timestamp === "string" &&
-              !timestamp.includes("Z")
-              // &&
-              // !timestamp.includes("+") &&
-              // !timestamp.includes("-")
-            ) {
-              timestamp = timestamp + "Z";
-            }
-            return new Date(timestamp).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            });
-          })(),
-          isUser: true,
-          createdAt: (() => {
-            let timestamp = response.data?.sentAt || new Date().toISOString();
-            if (
-              typeof timestamp === "string" &&
-              !timestamp.includes("Z")
-              // &&
-              // !timestamp.includes("+") &&
-              // !timestamp.includes("-")
-            ) {
-              timestamp = timestamp + "Z";
-            }
-            return timestamp;
-          })(),
-          attachment: selectedFile
-            ? {
-                fileName: selectedFile.name,
-                fileSize: selectedFile.size,
-                fileType: selectedFile.type,
-                isImage: isImageFile(selectedFile.name),
-                url: attachmentUrl || filePreview,
-              }
-            : null,
-        };
+        if (serverMessageId && serverMessageId !== userMessageId) {
+          // Map server ID to our message
+          processedMessageIds.current.add(serverMessageId);
 
-        // Update chat threads and staff messages
-        setChatThreads((prevThreads) => ({
-          ...prevThreads,
-          [staffId]: {
-            ...prevThreads[staffId],
-            messages: [...(prevThreads[staffId]?.messages || []), newMsg],
-          },
-        }));
+          // Update existing message with server data
+          setChatThreads((prevThreads) => ({
+            ...prevThreads,
+            [staffId]: {
+              ...prevThreads[staffId],
+              messages: prevThreads[staffId].messages.map((msg) =>
+                msg.id === userMessageId
+                  ? { ...msg, id: serverMessageId, ...response.data }
+                  : msg
+              ),
+            },
+          }));
 
-        setStaffMessages((prev) => [...prev, newMsg]);
+          setStaffMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === userMessageId
+                ? { ...msg, id: serverMessageId, ...response.data }
+                : msg
+            )
+          );
+        }
 
         setNewMessage("");
         clearSelectedFile();
         scrollToBottom();
+      } else {
+        // Remove failed message from UI
+        setChatThreads((prevThreads) => ({
+          ...prevThreads,
+          [staffId]: {
+            ...prevThreads[staffId],
+            messages: prevThreads[staffId].messages.filter(
+              (msg) => msg.id !== userMessageId
+            ),
+          },
+        }));
+        setStaffMessages((prev) =>
+          prev.filter((msg) => msg.id !== userMessageId)
+        );
+
+        alert("Failed to send message. Please try again.");
       }
     } catch (error) {
       console.error("Error sending message:", error);
+
+      // Remove failed message from UI
+      const staffId = selectedStaff?.id;
+      setChatThreads((prevThreads) => ({
+        ...prevThreads,
+        [staffId]: {
+          ...prevThreads[staffId],
+          messages: prevThreads[staffId].messages.filter(
+            (msg) => !msg.id.startsWith("user_")
+          ),
+        },
+      }));
+      setStaffMessages((prev) =>
+        prev.filter((msg) => !msg.id.startsWith("user_"))
+      );
+
       if (
         !isConnected ||
         connection.state !== signalR.HubConnectionState.Connected
@@ -667,7 +1197,9 @@ const AdvicePage = () => {
     if (chatThreads[staffId]?.thread) return;
 
     try {
+      setStartingChat(true);
       const token = localStorage.getItem("token");
+
       const threadData = {
         userId: currentUserId,
         consultantId: staffId,
@@ -686,10 +1218,12 @@ const AdvicePage = () => {
 
       const threadWithMessages = await getChatThreadById(threadId, token);
 
+      // Update chat threads
       setChatThreads((prevThreads) => ({
         ...prevThreads,
         [staffId]: {
-          thread: threadWithMessages?.data || {
+          thread: {
+            ...threadWithMessages?.data,
             id: threadId,
             consultantId: staffId,
             userId: currentUserId,
@@ -698,8 +1232,30 @@ const AdvicePage = () => {
           staff: selectedStaff,
         },
       }));
+
+      // **ADD THIS: Create history entry immediately after starting consultation**
+      const newHistoryEntry = {
+        id: threadId,
+        staffId: staffId,
+        staffName: selectedStaff.userName,
+        staffType: selectedStaff.staffType,
+        lastMessage: "Chat started",
+        timestamp: new Date().toLocaleString({
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+        messages: [],
+      };
+
+      // Add to staff chat history so it appears in the sidebar
+      setStaffChatHistory((prev) => [newHistoryEntry, ...prev]);
     } catch (error) {
       console.error("Failed to start staff chat thread:", error);
+    } finally {
+      setStartingChat(false);
     }
   };
 
@@ -965,6 +1521,7 @@ const AdvicePage = () => {
         },
       }));
       setStaffMessages([]);
+      scrollToBottom();
     }
   };
 
@@ -981,45 +1538,78 @@ const AdvicePage = () => {
   // Chat history management
   const handleNewChat = () => {
     if (activeMode === "ai") {
-      setAiMessages([]);
-      setSelectedChatId(null);
-    } else if (activeMode === "staff") {
-      setStaffMessages([]);
+      handleNewAiChat();
+    } else {
+      // Existing staff chat logic
       setSelectedStaff(null);
-      setRandomStaffSelected(false);
-      setSelectedStaffType(null);
+      setStaffMessages([]);
+      setSelectedChatId(null);
+      setChatThreads({});
+      setShowStaffTypePrompt(true);
     }
   };
 
   const handleSelectChat = (chat) => {
     if (activeMode === "ai") {
-      setAiMessages(chat.messages);
+      handleSelectAiChat(chat);
+    } else {
+      // Existing staff chat selection logic
       setSelectedChatId(chat.id);
-    } else if (activeMode === "staff") {
-      const staff = staffMembers.find((s) => s.id === chat.staffId);
-      if (staff) {
-        setSelectedStaff(staff);
-        setSelectedStaffType(staff.staffType);
-        setRandomStaffSelected(true);
-        setStaffMessages(chat.messages);
+      if (chat.staffId && staffMembers.length > 0) {
+        const staff = staffMembers.find((s) => s.id === chat.staffId);
+        if (staff) {
+          setSelectedStaff(staff);
+          setStaffMessages(chat.messages || []);
+        }
       }
+      scrollToBottom();
     }
   };
 
-  const handleDeleteChat = (chatId) => {
+  const handleDeleteChat = async (chatId) => {
     if (activeMode === "ai") {
-      setChatHistory((prev) => prev.filter((chat) => chat.id !== chatId));
-      if (selectedChatId === chatId) {
-        setAiMessages([]);
-        setSelectedChatId(null);
-      }
-    } else if (activeMode === "staff") {
-      setStaffChatHistory((prev) => prev.filter((chat) => chat.id !== chatId));
-      const chatToDelete = staffChatHistory.find((chat) => chat.id === chatId);
-      if (chatToDelete && selectedStaff?.id === chatToDelete.staffId) {
-        setStaffMessages([]);
-        setSelectedStaff(null);
-        setRandomStaffSelected(false);
+      handleDeleteAiChat(chatId);
+    } else {
+      // Staff chat deletion with API call
+      try {
+        const token = localStorage.getItem("token");
+
+        // Find the chat to delete
+        const chatToDelete = staffChatHistory.find(
+          (chat) => chat.id === chatId
+        );
+        if (!chatToDelete) return;
+
+        // Call the soft delete API
+        await softDeleteChatThread(chatId, token);
+
+        // Remove from local state
+        const updatedHistory = staffChatHistory.filter(
+          (chat) => chat.id !== chatId
+        );
+        setStaffChatHistory(updatedHistory);
+
+        // Remove from chatThreads
+        if (chatToDelete.staffId) {
+          setChatThreads((prev) => {
+            const updated = { ...prev };
+            delete updated[chatToDelete.staffId];
+            return updated;
+          });
+        }
+
+        // Clear current chat if it's the one being deleted
+        if (selectedStaff?.id === chatToDelete.staffId) {
+          setSelectedStaff(null);
+          setStaffMessages([]);
+          setSelectedChatId(null);
+        }
+
+        // Optional: Show success message
+        console.log(`Successfully deleted chat thread: ${chatId}`);
+      } catch (error) {
+        console.error("Failed to delete staff chat:", error);
+        alert("Failed to delete conversation. Please try again.");
       }
     }
   };
@@ -1035,7 +1625,8 @@ const AdvicePage = () => {
   const totalPages = Math.ceil(currentChatHistory.length / chatsPerPage);
   const startIndex = (currentPage - 1) * chatsPerPage;
   const endIndex = startIndex + chatsPerPage;
-  const currentChats = currentChatHistory.slice(startIndex, endIndex);
+
+  const currentChats = activeMode === "ai" ? aiChatSessions : chatHistory;
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -1136,51 +1727,78 @@ const AdvicePage = () => {
             </button>
 
             <div className="advice-history-container">
-              {currentChats.length === 0 ? (
+              {(activeMode === "ai" ? aiChatSessions : staffChatHistory)
+                .length === 0 ? (
                 <div className="advice-empty-message">No history yet.</div>
               ) : (
-                currentChats.map((chat) => (
-                  <div
-                    key={chat.id}
-                    className={`advice-history-item ${
-                      (activeMode === "ai" && selectedChatId === chat.id) ||
-                      (activeMode === "staff" &&
-                        selectedStaff?.id === chat.staffId)
-                        ? "selected"
-                        : ""
-                    }`}
-                  >
+                (activeMode === "ai" ? aiChatSessions : staffChatHistory).map(
+                  (chat) => (
                     <div
-                      className="advice-history-content"
-                      onClick={() => handleSelectChat(chat)}
+                      key={chat.id}
+                      className={`advice-history-item ${
+                        activeMode === "ai"
+                          ? selectedAiChatId === chat.id
+                            ? "selected"
+                            : ""
+                          : selectedStaff?.id === chat.staffId
+                          ? "selected"
+                          : ""
+                      }`}
                     >
-                      <div className="advice-history-sender">
-                        {activeMode === "ai"
-                          ? "AI Assistant"
-                          : `${chat.staffName} (${
-                              chat.staffType === "health"
-                                ? "Health Expert"
-                                : "Nutrition Specialist"
-                            })`}
+                      <div
+                        className="advice-history-content"
+                        onClick={() => {
+                          if (activeMode === "ai") {
+                            handleSelectAiChat(chat);
+                          } else {
+                            // Handle staff chat selection
+                            const staff = staffMembers.find(
+                              (s) => s.id === chat.staffId
+                            );
+                            if (staff) {
+                              setSelectedStaff(staff);
+                            }
+                          }
+                        }}
+                      >
+                        <div className="advice-history-sender">
+                          {activeMode === "ai"
+                            ? "AI Assistant"
+                            : `${chat.staffName} - ${
+                                chat.staffType === "health"
+                                  ? "Health Expert"
+                                  : "Nutrition Specialist"
+                              }`}
+                        </div>
+                        <div className="advice-history-text">
+                          {chat.lastMessage || "New conversation"}
+                        </div>
+                        <div className="advice-history-timestamp">
+                          {chat.timestamp}
+                        </div>
                       </div>
-                      <div className="advice-history-text">
-                        {chat.lastMessage ||
-                          chat.messages?.[0]?.text ||
-                          "New conversation"}
-                      </div>
-                      <div className="advice-history-timestamp">
-                        {chat.timestamp}
-                      </div>
+                      <button
+                        className="advice-delete-button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (activeMode === "ai") {
+                            handleDeleteAiChat(chat.id);
+                          } else {
+                            const confirmDelete = window.confirm(
+                              "Are you sure you want to delete this conversation?"
+                            );
+                            if (confirmDelete) {
+                              handleDeleteChat(chat.id);
+                            }
+                          }
+                        }}
+                        title="Delete chat"
+                      >
+                        <FaTrash className="advice-delete-icon" />
+                      </button>
                     </div>
-                    <button
-                      className="advice-delete-button"
-                      onClick={() => handleDeleteChat(chat.id)}
-                      title="Delete chat"
-                    >
-                      <FaTrash className="advice-delete-icon" />
-                    </button>
-                  </div>
-                ))
+                  )
+                )
               )}
             </div>
 
@@ -1255,31 +1873,103 @@ const AdvicePage = () => {
               <div className="advice-chat-container" ref={chatContainerRef}>
                 {aiMessages.length === 0 ? (
                   <div className="advice-empty-message">
-                    <h3>Welcome to AI Pregnancy Advice</h3>
-                    <p>Start chatting by typing your question below!</p>
+                    <h3>Welcome to AI Health Assistant</h3>
+                    <p>
+                      I'm here to provide evidence-based guidance on pregnancy,
+                      nutrition, and health. Ask me anything!
+                    </p>
                   </div>
                 ) : (
                   <>
                     {aiMessages.map((msg, index) => (
                       <div
-                        key={index}
+                        key={msg.id || index}
                         className={`advice-message ${
-                          msg.isUser ? "message-user" : "message-ai"
+                          msg.sender === "user" ? "message-user" : "message-ai"
                         }`}
                       >
-                        {!msg.isUser && <div className="advice-avatar"></div>}
+                        {/*
+                        {msg.sender !== "user" && (
+                          <div className="advice-avatar">
+                             {/* <FaRobot style={{ color: "#0084ff" }} /> 
+                          </div>
+                        )}
+                        */}
                         <div
                           className={`advice-message-content ${
-                            msg.isUser ? "bg-user" : "bg-ai"
+                            msg.sender === "user"
+                              ? "bg-user"
+                              : msg.isError
+                              ? "bg-error"
+                              : "bg-ai"
                           }`}
                         >
                           {msg.text}
+                          {msg.isError && msg.canRetry && (
+                            <button
+                              className="advice-retry-button"
+                              onClick={() =>
+                                retryAiMessage(msg.originalMessage)
+                              }
+                              style={{
+                                marginTop: "0.5rem",
+                                padding: "0.25rem 0.5rem",
+                                background: "#ff4757",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "4px",
+                                fontSize: "0.8rem",
+                                cursor: "pointer",
+                              }}
+                            >
+                              Retry
+                            </button>
+                          )}
                           <span className="advice-message-timestamp">
                             {msg.time}
+                            {msg.sender === "ai" && !msg.isError && (
+                              <span
+                                style={{
+                                  marginLeft: "0.5rem",
+                                  fontSize: "0.7rem",
+                                  opacity: 0.7,
+                                }}
+                              >
+                                AI Assistant
+                              </span>
+                            )}
                           </span>
                         </div>
                       </div>
                     ))}
+
+                    {/* AI Typing Indicator */}
+                    {isAiLoading && (
+                      <div className="advice-message message-ai">
+                        <div className="advice-message-content bg-ai">
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: "20px",
+                                height: "20px",
+                                border: "2px solid #e0e0e0",
+                                borderTop: "2px solid #0084ff",
+                                borderRadius: "50%",
+                                animation: "spin 1s linear infinite",
+                              }}
+                            />
+                            AI is thinking...
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     <div ref={messagesEndRef} />
                   </>
                 )}
@@ -1307,11 +1997,11 @@ const AdvicePage = () => {
                         width: "50px",
                         height: "50px",
                         borderRadius: "50%",
-                        backgroundColor: "#0084ff",
+                        backgroundColor: "#FFFFFF",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        color: "white",
+                        color: "grey",
                       }}
                     >
                       <FaUser />
@@ -1417,11 +2107,11 @@ const AdvicePage = () => {
                               width: "32px",
                               height: "32px",
                               borderRadius: "50%",
-                              backgroundColor: "#0084ff",
+                              // backgroundColor: "#0084ff",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
-                              color: "white",
+                              color: "grey",
                               marginRight: "0.5rem",
                               flexShrink: 0,
                             }}
@@ -1564,25 +2254,28 @@ const AdvicePage = () => {
                 ref={inputRef}
                 type="text"
                 className="advice-input"
-                value={activeMode === "ai" ? input : newMessage}
+                value={newMessage}
                 onChange={(e) => {
                   if (activeMode === "ai") {
-                    setInput(e.target.value);
+                    setNewMessage(e.target.value); // Use newMessage for both modes
                   } else {
                     setNewMessage(e.target.value);
                   }
                 }}
                 placeholder={
                   activeMode === "ai"
-                    ? "Ask me anything about pregnancy..."
+                    ? isAiLoading
+                      ? "AI is responding..."
+                      : "Ask about pregnancy, nutrition, health..."
                     : selectedStaff && chatThreads[selectedStaff.id]?.thread
                     ? "Type your message..."
                     : "Please start consultation first..."
                 }
                 onKeyPress={(e) => {
-                  if (e.key === "Enter") {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault(); // Prevent default Enter behavior
                     if (activeMode === "ai") {
-                      handleAISubmit();
+                      handleSendAiMessage(); // Don't pass the event
                     } else if (
                       selectedStaff &&
                       chatThreads[selectedStaff.id]?.thread
@@ -1602,19 +2295,21 @@ const AdvicePage = () => {
 
               <button
                 className="advice-send-button"
-                onClick={
-                  activeMode === "ai" ? handleAISubmit : handleSendStaffMessage
+                onClick={() =>
+                  activeMode === "ai"
+                    ? handleSendAiMessage()
+                    : handleSendStaffMessage()
                 }
                 disabled={
-                  (activeMode === "ai" && (!input.trim() || isLoading)) ||
-                  (activeMode === "staff" &&
-                    ((!newMessage.trim() && !selectedFile) ||
+                  activeMode === "ai"
+                    ? !newMessage.trim() || isLoading || isAiLoading
+                    : (!newMessage.trim() && !selectedFile) ||
                       sendingMessage ||
                       !selectedStaff ||
-                      !chatThreads[selectedStaff.id]?.thread))
+                      !chatThreads[selectedStaff.id]?.thread
                 }
               >
-                {(activeMode === "ai" && isLoading) ||
+                {(activeMode === "ai" && (isLoading || isAiLoading)) ||
                 (activeMode === "staff" && sendingMessage) ? (
                   <div
                     style={{

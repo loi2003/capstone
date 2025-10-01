@@ -19,6 +19,16 @@ const SubscriptionPlan = () => {
   const userId = localStorage.getItem("userId");
   const token = localStorage.getItem("token");
 
+  // Define plan tier priority (same as PaymentSuccess)
+  const planTierPriority = {
+    'Free': 1,
+    'free': 1,
+    'Plus': 2,
+    'plus': 2,
+    'Pro': 3,
+    'pro': 3
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -42,13 +52,43 @@ const SubscriptionPlan = () => {
           const userSubData = await viewUserSubscriptionByUserId(userId);
           console.log("User subscription data:", userSubData);
 
-          // Set the user's current subscription (first active subscription)
-          const activeUserSub = Array.isArray(userSubData)
-            ? userSubData.find((sub) => sub.status === "Active")
-            : userSubData && userSubData.status === "Active"
-            ? userSubData
-            : null;
-          setUserSubscription(activeUserSub);
+          // Apply tier priority logic to determine the correct active subscription
+          if (userSubData && userSubData.length > 0) {
+            // Filter active subscriptions (status = 1 or status = "Active")
+            const activeSubscriptions = Array.isArray(userSubData)
+              ? userSubData.filter((sub) => sub.status === 1 || sub.status === "Active")
+              : [];
+
+            if (activeSubscriptions.length > 0) {
+              // Sort by tier priority (highest tier first)
+              const sortedByTier = activeSubscriptions.sort((a, b) => {
+                // Access plan name from nested subscriptionPlan object
+                const planNameA = a.subscriptionPlan?.subscriptionName || '';
+                const planNameB = b.subscriptionPlan?.subscriptionName || '';
+
+                const tierA = planTierPriority[planNameA] || 0;
+                const tierB = planTierPriority[planNameB] || 0;
+
+                return tierB - tierA; // Descending order (highest tier first)
+              });
+
+              // Set the highest tier subscription as the user's current subscription
+              const highestTierSubscription = sortedByTier[0];
+              const planName = highestTierSubscription.subscriptionPlan?.subscriptionName || 'Unknown';
+
+              console.log("Selected highest tier subscription:", {
+                id: highestTierSubscription.id,
+                planName: planName,
+                tier: planTierPriority[planName]
+              });
+
+              setUserSubscription(highestTierSubscription);
+            } else {
+              setUserSubscription(null);
+            }
+          } else {
+            setUserSubscription(null);
+          }
         } catch (userSubError) {
           // Handle different types of errors
           console.warn("Error fetching user subscription:", userSubError);
@@ -106,11 +146,6 @@ const SubscriptionPlan = () => {
       .filter((item) => item.length > 0);
   };
 
-  // const convertToVND = (usdPrice) => {
-  //   const exchangeRate = 24000;
-  //   return Math.round(usdPrice * exchangeRate);
-  // };
-
   const formatDuration = (plan) => {
     if (plan.subscriptionType === "Lifetime") {
       return "/Lifetime";
@@ -128,11 +163,9 @@ const SubscriptionPlan = () => {
   const formatPrice = (price) => {
     if (price === 0) return "0₫";
 
-    // const vndPrice = convertToVND(price);
     const vndPrice = price;
     // Format VND with thousand separators
     return vndPrice.toLocaleString("vi-VN") + "₫";
-    // return vndPrice.toLocaleString('vi-VN');
   };
 
   const getPlanColor = (plan) => {
@@ -175,7 +208,7 @@ const SubscriptionPlan = () => {
       const targetPlanName = targetPlan.subscriptionName.toLowerCase();
 
       // Define plan hierarchy (higher plans include lower plan benefits)
-      const planHierarchy = ["free", "plus", "pro"]; // Add more plans as needed
+      const planHierarchy = ["free", "plus", "pro"];
       const userPlanIndex = planHierarchy.indexOf(userPlanName);
       const targetPlanIndex = planHierarchy.indexOf(targetPlanName);
 
@@ -207,9 +240,6 @@ const SubscriptionPlan = () => {
       <div className="subscription-wrapper">
         <Header />
         <p>Error loading subscription plans: {error}</p>
-        {/* <button onClick={fetchData} className="retry-button">
-            Try Again
-          </button> */}
         <Footer />
       </div>
     );

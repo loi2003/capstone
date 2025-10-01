@@ -45,15 +45,45 @@ const ProfilePage = () => {
       );
 
       if (response.data && Array.isArray(response.data)) {
-        // Find the active subscription
-        const activeSubscription = response.data.find(
-          (sub) => sub.status === "Active"
+        // Define plan tier priority (same as other components)
+        const planTierPriority = {
+          Free: 1,
+          free: 1,
+          Plus: 2,
+          plus: 2,
+          Pro: 3,
+          pro: 3,
+        };
+
+        // Filter active subscriptions (status = 1 or status = "Active")
+        const activeSubscriptions = response.data.filter(
+          (sub) => sub.status === 1 || sub.status === "Active"
         );
 
-        if (activeSubscription && activeSubscription.subscriptionPlan) {
-          setSubscriptionPlan(
-            activeSubscription.subscriptionPlan.subscriptionName
-          );
+        if (activeSubscriptions.length > 0) {
+          // Sort by tier priority (highest tier first)
+          const sortedByTier = activeSubscriptions.sort((a, b) => {
+            const planNameA = a.subscriptionPlan?.subscriptionName || "";
+            const planNameB = b.subscriptionPlan?.subscriptionName || "";
+
+            const tierA = planTierPriority[planNameA] || 0;
+            const tierB = planTierPriority[planNameB] || 0;
+
+            return tierB - tierA; // Descending order (highest tier first)
+          });
+
+          // Get the highest tier subscription
+          const highestTierSubscription = sortedByTier[0];
+          const planName =
+            highestTierSubscription.subscriptionPlan?.subscriptionName || "N/A";
+
+          console.log("ProfilePage - Selected highest tier subscription:", {
+            id: highestTierSubscription.id,
+            planName: planName,
+            tier: planTierPriority[planName],
+          });
+
+          setSubscriptionPlan(planName);
         } else {
           setSubscriptionPlan("N/A");
         }
@@ -390,7 +420,7 @@ const ProfilePage = () => {
                   </div>
                   <div className="profile-detail">
                     <span className="detail-label">
-                      Current Subscription Plan:  
+                      Current Subscription Plan:
                     </span>
                     <span className="detail-value">{subscriptionPlan}</span>
                   </div>
