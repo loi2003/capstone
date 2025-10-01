@@ -26,3 +26,23 @@ export const createCheckoutSession = async (subscriptionPlanId, userSubscription
     throw error;
   }
 };
+
+// PATCH: /api/payment/active-subscription/{userSubscriptionId}
+export const activateUserSubscription = async (userSubscriptionId) => {
+  try {
+    const response = await apiClient.patch(
+      `/api/payment/active-subscription/${userSubscriptionId}`, 
+      null,
+      {
+        headers: {
+          Accept: '*/*',
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("Error activating user subscription:", error.message);
+    throw error;
+  }
+};
