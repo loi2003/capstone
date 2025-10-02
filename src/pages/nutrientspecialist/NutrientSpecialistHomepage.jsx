@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
+import NutritionChart from "./NutritionChart";
 import "../../styles/NutrientSpecialistHomePage.css";
+import "../../styles/NutritionChart.css";
 
 const NutrientSpecialistHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -1075,86 +1077,20 @@ const NutrientSpecialistHomePage = () => {
           </motion.div>
         </section>
         <motion.section
-          className="nutrient-specialist-features"
+          className="nutrient-specialist-charts"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
           <h2 className="nutrient-specialist-features-title">
-            Core Nutrient Specialist Tools
+            Nutrition Data Overview
           </h2>
           <p className="nutrient-specialist-features-description">
-            Leverage a comprehensive suite of tools to manage food and nutrient
-            data, oversee age group categorizations, and create insightful blog
-            content.
+            Visualize key metrics for food, nutrients, allergies, and more to make informed decisions.
           </p>
-          <div className="nutrient-specialist-features-grid">
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Food Management</h3>
-              <p>
-                Organize and update food categories and items to provide
-                accurate nutritional data.
-              </p>
-              <Link
-                to="/nutrient-specialist/food-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Nutrient Management</h3>
-              <p>
-                Maintain detailed nutrient profiles and categories for precise
-                dietary recommendations.
-              </p>
-              <Link
-                to="/nutrient-specialist/nutrient-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Age Group Management</h3>
-              <p>
-                Customize nutritional guidelines for different age groups to
-                ensure targeted advice.
-              </p>
-              <Link
-                to="/nutrient-specialist/age-group-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Blog Management</h3>
-              <p>
-                Create and manage educational content to share your expertise
-                with the community.
-              </p>
-              <Link
-                to="/blog-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-          </div>
+          <NutritionChart />
         </motion.section>
+        <Outlet />
       </main>
     </div>
   );

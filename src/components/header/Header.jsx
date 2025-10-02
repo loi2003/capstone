@@ -1,4 +1,3 @@
-// src/components/Header.js
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -6,7 +5,6 @@ import { viewNotificationsByUserId } from "../../apis/notification-api";
 import { getCurrentUser } from "../../apis/authentication-api";
 import apiClient from "../../apis/url-api";
 import "./Header.css";
-import { set } from "lodash";
 import { FaIdCard, FaComments } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { FaCircleQuestion } from "react-icons/fa6";
@@ -26,7 +24,6 @@ const Header = () => {
 
   // Scroll restoration utility function
   const restoreScrollPosition = () => {
-    // Clean up all body scroll-lock styles
     document.body.classList.remove("menu-open");
     document.body.style.removeProperty("overflow");
     document.body.style.removeProperty("position");
@@ -34,22 +31,18 @@ const Header = () => {
     document.body.style.removeProperty("width");
     document.body.style.removeProperty("height");
     
-    // Handle layout container if it exists
     const layoutContainer = document.querySelector(".layout-container");
     if (layoutContainer) {
       layoutContainer.style.overflowY = "auto";
     }
     
-    // Get stored scroll position
     const storedScrollY = document.body.dataset.scrollY || sessionStorage.getItem('headerScrollPosition') || "0";
     window.scrollTo(0, parseInt(storedScrollY, 10));
     
-    // Clean up stored positions
     delete document.body.dataset.scrollY;
     sessionStorage.removeItem('headerScrollPosition');
   };
 
-  // Clean up scroll lock on route changes
   useEffect(() => {
     if (isMenuOpen) {
       setIsMenuOpen(false);
@@ -57,7 +50,6 @@ const Header = () => {
     }
   }, [location.pathname]);
 
-  // Cleanup on component unmount
   useEffect(() => {
     return () => {
       if (isMenuOpen) {
@@ -66,7 +58,6 @@ const Header = () => {
     };
   }, [isMenuOpen]);
 
-  // Handle browser navigation/refresh
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (isMenuOpen) {
@@ -178,19 +169,16 @@ const Header = () => {
       }
 
       if (newState) {
-        // Store current scroll position in multiple places for reliability
         const scrollY = window.scrollY;
         document.body.dataset.scrollY = scrollY;
         sessionStorage.setItem('headerScrollPosition', scrollY);
         
-        // Apply scroll lock
         document.body.classList.add("menu-open");
         document.body.style.overflow = "hidden";
         document.body.style.position = "fixed";
         document.body.style.top = `-${scrollY}px`;
         document.body.style.width = "100%";
         
-        // Handle layout container if it exists
         const layoutContainer = document.querySelector(".layout-container");
         if (layoutContainer) {
           layoutContainer.style.overflowY = "hidden";
@@ -222,7 +210,6 @@ const Header = () => {
 
   const handleNotificationClick = () => {
     setShowNotification(false);
-    // Close menu and restore scroll when navigating
     if (isMenuOpen) {
       setIsMenuOpen(false);
       restoreScrollPosition();
@@ -231,7 +218,6 @@ const Header = () => {
   };
 
   const handleNavigation = (path) => {
-    // Close menu and restore scroll before navigating
     if (isMenuOpen) {
       setIsMenuOpen(false);
       restoreScrollPosition();
@@ -383,7 +369,6 @@ const Header = () => {
                         <FaCircleQuestion />
                         <span>Support</span>
                       </Link>
-
                       <button
                         onClick={handleLogout}
                         className="dropdown-item logout-btn"
@@ -461,26 +446,6 @@ const Header = () => {
                               )}
                             </div>
                           ))}
-                          <div className="notification-actions">
-                            <button
-                              onClick={handleNotificationClick}
-                              className="notification-btn primary"
-                            >
-                              <svg
-                                width="18"
-                                height="18"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path
-                                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                                  fill="var(--white)"
-                                />
-                              </svg>
-                              <span>View All Notifications</span>
-                            </button>
-                          </div>
                         </>
                       ) : (
                         <div className="notification-empty">
@@ -506,6 +471,26 @@ const Header = () => {
                           </span>
                         </div>
                       )}
+                      <div className="notification-actions">
+                        <button
+                          onClick={handleNotificationClick}
+                          className="notification-btn primary"
+                        >
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+                              fill="var(--white)"
+                            />
+                          </svg>
+                          <span>View All Notifications</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
