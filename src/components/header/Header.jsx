@@ -432,7 +432,7 @@ const Header = () => {
                               }`}
                               onClick={handleNotificationClick}
                             >
-                              <div className="notification-icon">
+                              {/* <div className="notification-icon">
                                 <svg
                                   width="18"
                                   height="18"
@@ -445,7 +445,7 @@ const Header = () => {
                                     fill="var(--white)"
                                   />
                                 </svg>
-                              </div>
+                              </div> */}
                               <div className="notification-details">
                                 <span className="notification-title">
                                   {notification.message}
@@ -494,15 +494,15 @@ const Header = () => {
                             >
                               <path
                                 d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-1.1-.9-2-2-2s-2 .9-2 2v.68C6.63 5.36 5 7.93 5 11v5l-1.29 1.29c-.63.63-.18 1.71.71 1.71h13.17c.89 0 1.34-1.08.71-1.71L18 16z"
-                                fill="var(--accent-color)"
+                                fill="#107193"
                               />
                             </svg>
                           </div>
                           <span className="notification-empty-title">
-                            No Notifications
+                            No Notifications 
                           </span>
                           <span className="notification-empty-message">
-                            You don't have any notifications.
+                             You don't have any notifications.
                           </span>
                         </div>
                       )}

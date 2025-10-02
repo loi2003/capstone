@@ -395,6 +395,8 @@
   border: 1px solid rgba(4, 102, 141, 0.08);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .clinic-card:hover {
@@ -533,6 +535,7 @@
 /* Card Body */
 .clinic-card-body {
   padding: 0 1.5rem 1rem;
+  flex: 1;
 }
 
 .clinic-name {
@@ -603,9 +606,11 @@
 /* Card Footer */
 .clinic-card-footer {
   padding: 1rem 1.5rem 1.5rem;
+  margin-top: auto;
 }
 
 .clinic-select-btn {
+  margin-top: 2rem;
   width: 100%;
   background: var(--co-2);
   color: white;

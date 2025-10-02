@@ -385,7 +385,13 @@ const ClinicList = () => {
                             </div>
                           </div>
 
-                          <div className="clinic-stats">
+                          
+                        </div>
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="clinic-card-footer">
+                        <div className="clinic-stats">
                             <div className="stat-item">
                               <FaUserMd className="stat-icon" />
                               <span>{doctorCount} Doctors</span>
@@ -395,11 +401,6 @@ const ClinicList = () => {
                               <span>{consultantCount} Consultants</span>
                             </div>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Card Footer */}
-                      <div className="clinic-card-footer">
                         <motion.button
                           className="clinic-select-btn"
                           onClick={() => navigate(`/clinic/${clinic.id}`)}

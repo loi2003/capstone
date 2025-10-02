@@ -45,6 +45,33 @@ const SignUp = () => {
     }
   }, [errors.server, successMessage]);
 
+  const [passwordStrength, setPasswordStrength] = useState({
+    length: false,
+    uppercase: false,
+    lowercase: false,
+    number: false,
+    special: false,
+  });
+
+  const handlePasswordChange = (e) => {
+    const value = e.target.value;
+    setPassword(value);
+
+    // Update password strength indicators
+    setPasswordStrength({
+      length: value.length >= 6,
+      uppercase: /[A-Z]/.test(value),
+      lowercase: /[a-z]/.test(value),
+      number: /[0-9]/.test(value),
+      special: /[!@#$%^&*(),.?\[\]{}|<>]/.test(value),
+    });
+
+    // Clear error on change
+    if (errors.password) {
+      setErrors({ ...errors, password: "" });
+    }
+  };
+
   // Timer effect for OTP
   useEffect(() => {
     let interval;
@@ -66,36 +93,6 @@ const SignUp = () => {
     }
     return () => clearInterval(interval);
   }, [showOtpForm, timer]);
-
-  // Validation functions
-  const validateUsername = (value) => {
-    if (!value) return "Please enter your username";
-    if (value.length < 3) return "Username must be at least 3 characters";
-    return "";
-  };
-
-  const validateEmail = (value) => {
-    if (!value) return "Please enter your email";
-    if (!/\S+@\S+\.\S+/.test(value)) return "Invalid email address";
-    return "";
-  };
-
-  const validatePhoneNo = (value) => {
-    if (value && !/^\d{10,15}$/.test(value)) return "Invalid phone number";
-    return "";
-  };
-
-  const validatePassword = (value) => {
-    if (!value) return "Please enter a password";
-    if (value.length < 6) return "Password must be at least 6 characters";
-    return "";
-  };
-
-  const validateConfirmPassword = (value, password) => {
-    if (!value) return "Please confirm your password";
-    if (value !== password) return "Passwords don't match";
-    return "";
-  };
 
   // Validate entire form on submit
   const validateForm = () => {
@@ -172,6 +169,79 @@ const SignUp = () => {
         otp: error.response?.data?.message || "Invalid OTP",
       });
     }
+  };
+
+  const validateUsername = (value) => {
+    if (!value) return "Please enter your username";
+    if (value.length < 3) return "Username must be at least 3 characters";
+    if (value.length > 50) return "Username cannot exceed 50 characters";
+    if (!/^[a-zA-Z0-9_.-]+$/.test(value))
+      return "Username can only contain letters, numbers, underscores, hyphens, and periods";
+    return "";
+  };
+
+  const validateEmail = (value) => {
+    if (!value) return "Please enter your email";
+    if (!/\S+@\S+\.\S+/.test(value)) return "Invalid email address format";
+    if (value.length > 255) return "Email address cannot exceed 255 characters";
+    return "";
+  };
+
+  const validatePhoneNo = (value) => {
+    if (!value) return ""; // Optional field
+
+    // Remove spaces, hyphens, and parentheses for validation
+    const cleanedPhone = value.replace(/[\s\-\(\)]/g, "");
+
+    if (cleanedPhone.length < 10 || cleanedPhone.length > 15) {
+      return "Phone number must be between 10 and 15 digits";
+    }
+
+    if (!/^[\+]?[0-9]+$/.test(cleanedPhone)) {
+      return "Phone number can only contain digits, spaces, hyphens, and parentheses";
+    }
+
+    return "";
+  };
+
+  const validatePassword = (value) => {
+    if (!value) return "Please enter a password";
+
+    const errors = [];
+
+    if (value.length < 6) {
+      errors.push("at least 6 characters");
+    }
+
+    if (value.length > 100) {
+      errors.push("no more than 100 characters");
+    }
+
+    if (!/[A-Z]/.test(value)) {
+      errors.push("one uppercase letter (A-Z)");
+    }
+
+    if (!/[0-9]/.test(value)) {
+      errors.push("one digit (0-9)");
+    }
+
+    if (!/[!@#$%^&*(),.?\[\]{}|<>]/.test(value)) {
+      errors.push("one special character");
+    }
+
+    if (errors.length > 0) {
+      return `Password must contain:\n${errors
+        .map((err) => `-  ${err}`)
+        .join("\n")}`;
+    }
+
+    return "";
+  };
+
+  const validateConfirmPassword = (value, password) => {
+    if (!value) return "Please confirm your password";
+    if (value !== password) return "Passwords don't match";
+    return "";
   };
 
   // Animation variants
@@ -270,7 +340,7 @@ const SignUp = () => {
                   <input
                     id="otp"
                     type="text"
-                    placeholder="Enter 6-digit OTP"
+                    placeholder="Enter 6-digit OTP in your email"
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className={`signup-input ${
@@ -446,7 +516,9 @@ const SignUp = () => {
                 animate="animate"
                 exit="exit"
                 className={`signup-notification-popup ${
-                  errors.server ? "signup-notification-error" : "signup-notification-success"
+                  errors.server
+                    ? "signup-notification-error"
+                    : "signup-notification-success"
                 }`}
               >
                 <span className="notification-icon">

@@ -4,6 +4,7 @@ import {
   editGrowthDataProfile,
   getCurrentWeekGrowthData,
 } from "../../apis/growthdata-api";
+import { BiSolidCalendarStar } from 'react-icons/bi';
 
 const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
   const [isEditing, setIsEditing] = useState(null); // "lmp" | "duedate" | null
@@ -26,9 +27,9 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
 
   const getTrimesterInfo = (trimester) => {
     const trimesterData = {
-      1: { name: "First Trimester", weeks: "1-12 weeks", color: "#4caf50" },
-      2: { name: "Second Trimester", weeks: "13-27 weeks", color: "#2196f3" },
-      3: { name: "Third Trimester", weeks: "28-40 weeks", color: "#9c27b0" },
+      1: { name: "First Trimester", weeks: "1-12 weeks", color: "#038474" },
+      2: { name: "Second Trimester", weeks: "13-27 weeks", color: "#038474" },
+      3: { name: "Third Trimester", weeks: "28-40 weeks", color: "#038474" },
     };
     return trimesterData[trimester] || trimesterData[1];
   };
@@ -103,12 +104,7 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
             className="overview-card-icon"
             style={{ color: trimesterInfo.color }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9M15 11.5C15.8 11.5 16.5 12.2 16.5 13S15.8 14.5 15 14.5 13.5 13.8 13.5 13 14.2 11.5 15 11.5M5 12C5.8 12 6.5 12.7 6.5 13.5S5.8 15 5 15 3.5 14.3 3.5 13.5 4.2 12 5 12Z"
-                fill="currentColor"
-              />
-            </svg>
+            <BiSolidCalendarStar size={30}/>
           </div>
           <div className="overview-card-content">
             <h3>{trimesterInfo.name}</h3>
@@ -169,7 +165,7 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
                         className="preg-overview-save-inline-btn"
                         onClick={handleSave}
                       >
-                        ✓ Save
+                        Save
                       </button>
                       <button
                         className="preg-overview-cancel-inline-btn"
@@ -179,7 +175,7 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
                           setNewDate("");
                         }}
                       >
-                        ✕ Cancel
+                        Cancel
                       </button>
                     </div>
                   </div>
@@ -249,7 +245,7 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
                         className="preg-overview-save-inline-btn"
                         onClick={handleSave}
                       >
-                        ✓ Save
+                        Save
                       </button>
                       <button
                         className="preg-overview-cancel-inline-btn"
@@ -259,7 +255,7 @@ const PregnancyOverview = ({ pregnancyData, setPregnancyData, setError }) => {
                           setNewDate("");
                         }}
                       >
-                        ✕ Cancel
+                        Cancel
                       </button>
                     </div>
                   </div>
