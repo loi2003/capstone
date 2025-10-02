@@ -182,7 +182,7 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
         <div className="chatbox-avatar"></div>
         <div className="chatbox-info">
           <h3>Pregnancy Support</h3>
-          <span className="chatbox-status">Online</span>
+          {/* <span className="chatbox-status">Online</span> */}
         </div>
         <button className="chatbox-close" onClick={onClose} aria-label="Close chat">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -268,7 +268,7 @@ const ChatBoxPage = ({ isOpen, onClose }) => {
         </form>
       </div>
       <p className="chatbox-footer-note">
-        More Function? Try our <Link to="/advice" className="chatbox-link">Advise Chat</Link> page.
+        More Function? Try our <Link to="/advice" className="chatbox-link">Advice Chat</Link> page.
       </p>
     </motion.div>
   );

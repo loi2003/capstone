@@ -191,6 +191,26 @@ const AdvicePage = () => {
     setTimeout(() => scrollToBottom(), 100);
   };
 
+  const handleSelectStaffChat = (chat) => {
+    const staff = staffMembers.find((s) => s.id === chat.staffId);
+    if (!staff) return;
+
+    setSelectedStaff(staff);
+
+    // Load messages from chatThreads
+    if (chatThreads[chat.staffId]) {
+      setStaffMessages(chatThreads[chat.staffId].messages || []);
+    } else {
+      setStaffMessages([]);
+    }
+
+    // Update selected chat ID if needed
+    setSelectedChatId(chat.id);
+
+    // Scroll to bottom
+    setTimeout(() => scrollToBottom(), 100);
+  };
+
   // Delete AI chat session
   const handleDeleteAiChat = (sessionId) => {
     const updatedSessions = aiChatSessions.filter(
@@ -1751,12 +1771,27 @@ const AdvicePage = () => {
                           if (activeMode === "ai") {
                             handleSelectAiChat(chat);
                           } else {
-                            // Handle staff chat selection
+                            // Handle staff chat selection with message loading
                             const staff = staffMembers.find(
                               (s) => s.id === chat.staffId
                             );
                             if (staff) {
                               setSelectedStaff(staff);
+
+                              // Load the messages for this staff
+                              if (chatThreads[chat.staffId]) {
+                                setStaffMessages(
+                                  chatThreads[chat.staffId].messages || []
+                                );
+                              } else {
+                                setStaffMessages([]);
+                              }
+
+                              // Optional: Update any other needed state
+                              setSelectedChatId(chat.id);
+
+                              // Scroll to bottom after state updates
+                              setTimeout(() => scrollToBottom(), 100);
                             }
                           }
                         }}

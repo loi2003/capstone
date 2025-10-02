@@ -9,7 +9,7 @@ export const homepageData = {
     cta: "Explore Now",
     ctaLink: "/about",
     secondaryCta: "Get a Free Consultation",
-    secondaryCtaLink: "/consultation",
+    secondaryCtaLink: "/clinic/list",
     pregnancyTipsLink: "/advice",
     pregnancyTipsText: "Discover essential health tips for your pregnancy journey",
   },
@@ -121,12 +121,12 @@ export const homepageData = {
       {
         title: "Baby Journal",
         description: "Record and cherish every milestone in your pregnancy journey.",
-        link: "/pregnancy-tracking/journal-section",
+        link: "/pregnancy-tracking",
       },
       {
         title: "System Meal Planner",
         description: "Plan healthy meals for you and your baby with our meal planner tool.",
-        link: "/system-meal-planner",
+        link: "/pregnancy-tracking",
       },
     ],
     cta: "Explore More Tools",
@@ -198,7 +198,7 @@ export const homepageData = {
       },
     ],
     cta: "View More Health Tips",
-    ctaLink: "/health-tips",
+    ctaLink: "/advice",
   },
   partners: {
     title: "Our Partners",

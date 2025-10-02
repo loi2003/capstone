@@ -726,17 +726,13 @@ const PregnancyTrackingPage = () => {
                         selectedWeek={selectedWeek}
                       />
                     </div>
-                    <div className="right-column">
+                    {/* <div className="right-column">
                       <UpcomingAppointments
                         growthDataId={pregnancyData?.id}
                         userId={localStorage.getItem("userId")}
                         token={localStorage.getItem("token")}
                       />
-                      {/* <TrimesterChecklists
-                        growthDataId={pregnancyData?.id}
-                        token={localStorage.getItem("token")}
-                      /> */}
-                    </div>
+                    </div> */}
                   </div>
                   {pregnancyData.basicBioMetric && (
                     <div className="biometric-section">

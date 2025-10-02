@@ -28,7 +28,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #867dec;
+  background-color: #0b668b;
   background-image: url('/images/IMG_4602.PNG');
   background-size: cover;
   margin-right: 8px;
@@ -44,7 +44,7 @@
 .chatbox-info h3 {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #98a8f6;
+  color: #0b668b;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -162,7 +162,7 @@
 }
 
 .chatbox-message.user .chatbox-bubble {
-  background-color: #0084ff;
+  background-color: #0C7DA4;
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -250,10 +250,12 @@
 
 .chatbox-input:focus {
   background-color: transparent;
+  border: none !important;
+  outline: none !important;
 }
 
 .chatbox-send-button {
-  background: #0084ff;
+  background: #197495;
   border: none;
   border-radius: 50%;
   width: 36px;
@@ -267,7 +269,7 @@
 }
 
 .chatbox-send-button:hover {
-  background: #006cdc;
+  background: #197495;
 }
 
 .chatbox-send-button:disabled {
@@ -290,14 +292,14 @@
 }
 
 .chatbox-link {
-  color: #0084ff;
+  color: #197495;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s ease;
 }
 
 .chatbox-link:hover {
-  color: #006cdc;
+  color: #197495;
   text-decoration: underline;
 }
 
