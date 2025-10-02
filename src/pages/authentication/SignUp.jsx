@@ -175,8 +175,8 @@ const SignUp = () => {
     if (!value) return "Please enter your username";
     if (value.length < 3) return "Username must be at least 3 characters";
     if (value.length > 50) return "Username cannot exceed 50 characters";
-    if (!/^[a-zA-Z0-9_.-]+$/.test(value))
-      return "Username can only contain letters, numbers, underscores, hyphens, and periods";
+    // if (!/^[a-zA-Z0-9_.-]+$/.test(value))
+    //   return "Username can only contain letters, numbers, underscores, hyphens, and periods";
     return "";
   };
 
