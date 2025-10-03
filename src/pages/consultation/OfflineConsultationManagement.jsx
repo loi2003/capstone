@@ -16,29 +16,19 @@ import {
 import "../../styles/OfflineConsultationManagement.css";
 import "../../styles/ConsultantHomePage.css";
 import {
-  FaComments,
-  FaSearch,
-  FaUser,
-  FaHospital,
-  FaPhone,
-  FaVideo,
-  FaFile,
-  FaPaperclip,
-  FaTimes,
-  FaClock,
-  FaCheckCircle,
-  FaQuestion,
+  FaEye,
+  FaTrash,
+  FaChevronLeft,
+  FaChevronRight,
   FaChartLine,
   FaCalendarAlt,
   FaUsers,
   FaQuestionCircle,
-  FaSignOutAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaBars,
-  FaClipboardList,
+  FaVideo,
+  FaHospital,
+  FaUser,
+  FaSignOutAlt
 } from "react-icons/fa";
-import { FaEye, FaTrash } from "react-icons/fa";
 
 const OfflineConsultationManagement = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -545,11 +535,11 @@ const OfflineConsultationManagement = () => {
         </div>
       )}
       <motion.aside
-        className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
-        variants={sidebarVariants}
-        animate={isSidebarOpen ? "open" : "closed"}
-        initial="open"
-      >
+              className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+              variants={sidebarVariants}
+              animate={isSidebarOpen ? "open" : "closed"}
+              initial="open"
+            >
         <div className="consultant-sidebar-header">
           <Link
             to="/consultant"
@@ -666,7 +656,7 @@ const OfflineConsultationManagement = () => {
                 navigate("/consultation/online-consultation-management")
               }
             >
-              <FaClipboardList size={20} />
+              <FaVideo size={20} />
               {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
@@ -686,99 +676,66 @@ const OfflineConsultationManagement = () => {
             </button>
           </motion.div>
           {user ? (
-            <>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item consultant-profile-section"
-              >
-                <Link
-                  to="/profile"
-                  className="consultant-profile-info"
-                  title={isSidebarOpen ? user.email : ""}
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="User icon for profile"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 
-        10 10 10-4.48 10-10S17.52 2 12 2zm0 
-        3c1.66 0 3 1.34 3 3s-1.34 
-        3-3 3-3-1.34-3-3 1.34-3 
-        3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 
-        4-3.08 6-3.08 1.99 0 5.97 1.09 
-        6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--consultant-background)"
-                    />
-                  </svg>
-                  {isSidebarOpen && (
-                    <span className="consultant-profile-email">
-                      {user.email}
-                    </span>
-                  )}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="consultant-sidebar-nav-item"
-              >
-                <button
-                  className="logout-button"
-                  onClick={handleLogout}
-                  aria-label="Sign out"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    aria-label="Logout icon"
-                  >
-                    <path
-                      stroke="var(--consultant-logout)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Sign Out</span>}
-                </button>
-              </motion.div>
-            </>
-          ) : (
-            <motion.div
-              variants={navItemVariants}
-              className="consultant-sidebar-nav-item"
-            >
-              <Link
-                to="/signin"
-                onClick={() => setIsSidebarOpen(true)}
-                title="Sign In"
-              >
-                <svg
-                  width="24"
-                  height="24"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  aria-label="Sign in icon"
-                >
-                  <path
-                    stroke="var(--consultant-background)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
-                  />
-                </svg>
-                {isSidebarOpen && <span>Sign In</span>}
-              </Link>
-            </motion.div>
-          )}
+                  <>
+                    <motion.div
+                      variants={navItemVariants}
+                      className="sidebar-nav-item consultant-profile-section"
+                    >
+                      <Link
+                        to="/profile"
+                        className="consultant-profile-info"
+                        title={isSidebarOpen ? user.email : ""}
+                      >
+                        <FaUser size={20} />
+                        {isSidebarOpen && (
+                          <span className="consultant-profile-email">
+                            {user.email}
+                          </span>
+                        )}
+                      </Link>
+                    </motion.div>
+                    <motion.div
+                      variants={navItemVariants}
+                      className="sidebar-nav-item"
+                    >
+                      <button
+                        className="logout-button"
+                        onClick={handleLogout}
+                        aria-label="Sign out"
+                      >
+                        <FaSignOutAlt size={20} />
+                        {isSidebarOpen && <span>Sign out</span>}
+                      </button>
+                    </motion.div>
+                  </>
+                ) : (
+                  <motion.div variants={navItemVariants} className="sidebar-nav-item">
+                    <Link
+                      to="/signin"
+                      onClick={() => setIsSidebarOpen(true)}
+                      title="Sign In"
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        aria-label="Sign in icon"
+                      >
+                        <path
+                          stroke="var(--consultant-background)"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
+                        />
+                      </svg>
+                      {isSidebarOpen && <span>Sign In</span>}
+                      <FaSignOutAlt size={20} />
+                      {isSidebarOpen && <span>Sign out</span>}
+                    </Link>
+                  </motion.div>
+                )}
         </motion.nav>
       </motion.aside>
       <main className="consultant-content">

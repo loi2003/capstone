@@ -11,31 +11,21 @@ import {
   getOnlineConsultationById,
   sendOnlineConsultationEmails,
 } from "../../apis/online-consultation-api";
+import "../../styles/OnlineConsultationManagement.css";
 import {
-  FaComments,
-  FaSearch,
-  FaUser,
-  FaHospital,
-  FaPhone,
-  FaVideo,
-  FaFile,
-  FaPaperclip,
-  FaTimes,
-  FaClock,
-  FaCheckCircle,
-  FaQuestion,
+  FaEye,
+  FaTrash,
+  FaChevronLeft,
+  FaChevronRight,
   FaChartLine,
   FaCalendarAlt,
   FaUsers,
   FaQuestionCircle,
+  FaVideo,
+  FaHospital,
+  FaUser,
   FaSignOutAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaBars,
-  FaClipboardList,
 } from "react-icons/fa";
-import "../../styles/OnlineConsultationManagement.css";
-import { FaEye, FaEdit, FaTrash } from "react-icons/fa";
 
 const initialEditState = {
   Id: "",
@@ -504,7 +494,6 @@ const OnlineConsultationManagement = () => {
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
-            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -566,7 +555,7 @@ const OnlineConsultationManagement = () => {
             className="consultant-sidebar-nav-item"
           >
             <Link
-              to="/consultant/support"
+              to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
               title="Support"
             >
@@ -574,10 +563,7 @@ const OnlineConsultationManagement = () => {
               {isSidebarOpen && <span>Support</span>}
             </Link>
           </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
               to="/consultation/consultation-management"
               onClick={() => setIsSidebarOpen(true)}
@@ -587,18 +573,15 @@ const OnlineConsultationManagement = () => {
               {isSidebarOpen && <span>Patient Consultation</span>}
             </Link>
           </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item active"
-          >
+          <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <button
-              className="active-nav-link"
-              title="Online Consultation"
+              className="sidebar-action-button"
+              title="Add Consultation"
               onClick={() =>
                 navigate("/consultation/online-consultation-management")
               }
             >
-              <FaClipboardList size={20} />
+              <FaVideo size={20} />
               {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
@@ -628,19 +611,7 @@ const OnlineConsultationManagement = () => {
                   className="consultant-profile-info"
                   title={isSidebarOpen ? user.email : ""}
                 >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="User icon for profile"
-                  >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
-                      fill="var(--consultant-background)"
-                    />
-                  </svg>
+                  <FaUser size={20} />
                   {isSidebarOpen && (
                     <span className="consultant-profile-email">
                       {user.email}
@@ -657,22 +628,8 @@ const OnlineConsultationManagement = () => {
                   onClick={handleLogout}
                   aria-label="Sign out"
                 >
-                  <svg
-                    width="24"
-                    height="24"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    aria-label="Logout icon"
-                  >
-                    <path
-                      stroke="var(--consultant-logout)"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Sign Out</span>}
+                  <FaSignOutAlt size={20} />
+                  {isSidebarOpen && <span>Sign out</span>}
                 </button>
               </motion.div>
             </>
@@ -702,6 +659,8 @@ const OnlineConsultationManagement = () => {
                   />
                 </svg>
                 {isSidebarOpen && <span>Sign In</span>}
+                <FaSignOutAlt size={20} />
+                {isSidebarOpen && <span>Sign out</span>}
               </Link>
             </motion.div>
           )}
@@ -744,6 +703,11 @@ const OnlineConsultationManagement = () => {
                     <h3>
                       <span>📝</span> Consultation Information
                     </h3>
+                    <div className="online-consultation-step-indicator">
+                      <span className="step 1">Step 1</span>
+                      <span>→</span>
+                      <span className="step 2 active">Step 2</span>
+                    </div>
                     <span
                       className="close"
                       onClick={() => setShowCreateModal(false)}
@@ -1139,6 +1103,11 @@ const OnlineConsultationManagement = () => {
                   <h3>
                     <span>🧑</span> Select Patient
                   </h3>
+                  <div className="online-consultation-step-indicator">
+                    <span className="step 1 active">Step 1</span>
+                    <span>→</span>
+                    <span className="step 2">Step 2</span>
+                  </div>
                   <span
                     className="close"
                     onClick={() => {
