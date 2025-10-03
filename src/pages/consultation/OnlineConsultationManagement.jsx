@@ -11,29 +11,6 @@ import {
   getOnlineConsultationById,
   sendOnlineConsultationEmails,
 } from "../../apis/online-consultation-api";
-import {
-  FaComments,
-  FaSearch,
-  FaUser,
-  FaHospital,
-  FaPhone,
-  FaVideo,
-  FaFile,
-  FaPaperclip,
-  FaTimes,
-  FaClock,
-  FaCheckCircle,
-  FaQuestion,
-  FaChartLine,
-  FaCalendarAlt,
-  FaUsers,
-  FaQuestionCircle,
-  FaSignOutAlt,
-  FaChevronLeft,
-  FaChevronRight,
-  FaBars,
-  FaClipboardList,
-} from "react-icons/fa";
 import "../../styles/OnlineConsultationManagement.css";
 import {
   FaEye,
