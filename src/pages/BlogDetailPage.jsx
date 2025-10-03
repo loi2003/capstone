@@ -49,7 +49,7 @@ const BlogDetailPage = () => {
     "/images/find-a-health-service.svg",
     "/images/pregnancy-tracker.svg",
   ];
-  
+
   const getRandomPlaceholder = () => {
     const randomIndex = Math.floor(Math.random() * placeholderImages.length);
     return placeholderImages[randomIndex];
@@ -333,14 +333,12 @@ const BlogDetailPage = () => {
                   <img
                     src={
                       blog.images && blog.images.length > 0
-                        ? blog.images[currentImageIndex]
+                        ? blog.images[currentImageIndex]?.fileUrl ||
+                          getRandomPlaceholder()
                         : blog.image || getRandomPlaceholder()
                     }
                     alt={blog.title}
                     className="blog-detail-image"
-                    onError={(e) => {
-                      e.target.src = getRandomPlaceholder();
-                    }}
                   />
                 </div>
 

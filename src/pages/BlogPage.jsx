@@ -107,6 +107,7 @@ const BlogPage = () => {
                 createdAt: blog.creationDate || blog.createdAt,
                 likeCount: blog.likeCount || 0,
                 viewCount: blog.viewCount || 0,
+                image: blog.images?.[0]?.fileUrl || null,
               }))
           : [];
 

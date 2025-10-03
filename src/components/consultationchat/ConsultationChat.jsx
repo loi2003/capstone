@@ -235,57 +235,58 @@ const ConsultationChat = () => {
               consultantId,
               token
             );
-            console.log(
-              `Consultant response for ${consultantId}:`,
-              consultantRes
-            );
-
             const consultantData = consultantRes?.data || null;
 
-            // Process messages to include attachment data
+            // Process messages with deduplication logic
             const processedMessages =
               thread.messages?.map((msg) => {
-                // Handle existing attachment data
-                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
-                  return {
-                    ...msg,
-                    attachment: {
-                      fileName:
-                        msg.attachmentFileName || msg.fileName || "Attachment",
-                      fileSize: msg.attachmentFileSize || msg.fileSize,
-                      fileType: msg.attachmentFileType || msg.fileType,
-                      isImage: isImageFile(
-                        msg.attachmentFileName || msg.fileName
-                      ),
-                      url:
-                        msg.attachmentUrl ||
-                        msg.attachmentPath ||
-                        msg.attachment?.url,
-                    },
-                  };
-                }
+                const processed = { ...msg };
 
-                // Handle media array - ADD THIS PART
-                if (
+                // Priority 1: Check for attachment object
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  processed.attachment = {
+                    fileName:
+                      msg.attachmentFileName || msg.fileName || "Attachment",
+                    fileSize: msg.attachmentFileSize || msg.fileSize,
+                    fileType: msg.attachmentFileType || msg.fileType,
+                    isImage: isImageFile(
+                      msg.attachmentFileName || msg.fileName
+                    ),
+                    url:
+                      msg.attachmentUrl ||
+                      msg.attachmentPath ||
+                      msg.attachment?.url,
+                  };
+                  // Clear media array if attachment exists to prevent duplication
+                  delete processed.media;
+                }
+                // Priority 2: Only use media array if no attachment
+                else if (
                   msg.media &&
                   Array.isArray(msg.media) &&
                   msg.media.length > 0
                 ) {
                   const firstMedia = msg.media[0];
-                  return {
-                    ...msg,
-                    attachment: {
-                      fileName: firstMedia.fileName || "Attachment",
-                      fileSize: firstMedia.fileSize,
-                      fileType: firstMedia.fileType,
-                      isImage: isImageFile(firstMedia.fileName || ""),
-                      url: firstMedia.fileUrl || firstMedia.url,
-                    },
+                  processed.attachment = {
+                    fileName: firstMedia.fileName || "Attachment",
+                    fileSize: firstMedia.fileSize,
+                    fileType: firstMedia.fileType,
+                    isImage: isImageFile(firstMedia.fileName || ""),
+                    url: firstMedia.fileUrl || firstMedia.url,
                   };
+                  // Clear media array after converting to attachment
+                  delete processed.media;
                 }
 
-                return msg;
+                return processed;
               }) || [];
+
+            // Mark all existing messages as processed to prevent duplicates
+            processedMessages.forEach((msg) => {
+              if (msg.id) {
+                processedMessageIds.current.add(msg.id);
+              }
+            });
 
             threadsMap[consultantId] = {
               thread,
@@ -303,7 +304,7 @@ const ConsultationChat = () => {
       console.error("Failed to load existing threads:", error);
     }
   };
-
+  
   const loadAllConsultants = async () => {
     try {
       const clinicsData = await getAllClinics();
@@ -584,56 +585,7 @@ const ConsultationChat = () => {
         setNewMessage("");
         clearSelectedFile();
 
-        setTimeout(async () => {
-          try {
-            const updatedThread = await getChatThreadById(
-              activeThread.id,
-              token
-            );
-            if (updatedThread?.data?.messages) {
-              const processedMessages = updatedThread.data.messages.map(
-                (msg) => {
-                  if (
-                    msg.attachmentUrl ||
-                    msg.attachmentPath ||
-                    msg.attachment
-                  ) {
-                    return {
-                      ...msg,
-                      attachment: {
-                        fileName:
-                          msg.attachmentFileName ||
-                          msg.fileName ||
-                          "Attachment",
-                        fileSize: msg.attachmentFileSize || msg.fileSize,
-                        fileType: msg.attachmentFileType || msg.fileType,
-                        isImage: isImageFile(
-                          msg.attachmentFileName || msg.fileName || ""
-                        ),
-                        url:
-                          msg.attachmentUrl ||
-                          msg.attachmentPath ||
-                          msg.attachment?.url,
-                      },
-                    };
-                  }
-                  return msg;
-                }
-              );
-
-              setChatThreads((prevThreads) => ({
-                ...prevThreads,
-                [consultantId]: {
-                  ...prevThreads[consultantId],
-                  messages: processedMessages,
-                },
-              }));
-              scrollToBottom();
-            }
-          } catch (error) {
-            console.error("Error refreshing thread:", error);
-          }
-        }, 1000);
+        setTimeout(() => scrollToBottom(), 100);
       }
     } catch (error) {
       console.error("Error sending message:", error);
@@ -945,10 +897,17 @@ const ConsultationChat = () => {
     const latest = messages[messages.length - 1];
     console.log("Processing incoming message in ConsultationChat:", latest);
 
-    // *** ADD EARLY DUPLICATE CHECK ***
+    // Enhanced duplicate check
     if (!latest.id || processedMessageIds.current.has(latest.id)) {
       console.log("Message already processed, skipping:", latest.id);
       return;
+    }
+
+    // Check if this is our own message that we just sent
+    if (latest.senderId === currentUserId) {
+      console.log("Skipping own message from real-time update");
+      processedMessageIds.current.add(latest.id);
+      return; // Don't process our own messages from SignalR
     }
 
     // Mark message as processed immediately
@@ -960,7 +919,7 @@ const ConsultationChat = () => {
       setChatThreads((prev) => {
         const existingMessages = prev[consultantId]?.messages || [];
 
-        // Secondary check at state level
+        // Check if message already exists by ID
         const messageExists = existingMessages.some((m) => m.id === latest.id);
         if (messageExists) {
           console.log("Message already exists in thread, skipping:", latest.id);
@@ -973,13 +932,14 @@ const ConsultationChat = () => {
         );
 
         // Process the message for attachments
-        // In the useEffect that handles incoming messages, update the message processing:
         const processedMessage = {
           ...latest,
-          // this somehow fix duplicate real-time mesage
           messageText: latest.messageText?.trim(),
         };
+
+        // Only process media if no attachment object exists
         if (
+          !processedMessage.attachment &&
           latest.media &&
           Array.isArray(latest.media) &&
           latest.media.length > 0
@@ -1003,7 +963,6 @@ const ConsultationChat = () => {
         };
       });
 
-      // Auto scroll
       setTimeout(() => scrollToBottom(), 100);
     }
   }, [messages, selectedConsultant?.user?.id, currentUserId]);
