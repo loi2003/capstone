@@ -204,6 +204,12 @@ const UpcomingAppointments = ({
         )}
       </div>
 
+      <div className="appointment-instruction-legend">
+        <span className="appointment confirmed">● Confirmed</span>
+        <span className="appointment pending">● Pending</span>
+        <span className="appointment canceled">● Canceled</span>
+      </div>
+
       <div className="section-header" style={{ marginTop: "32px" }}>
         <h3>Online Consultations</h3>
         {!expanded && onlineAppointments.length > 2 && (
@@ -260,18 +266,14 @@ const UpcomingAppointments = ({
         )}
       </div>
 
-      <div className="appointment-instruction-legend">
-        <span className="appointment confirmed">● Confirmed</span>
-        <span className="appointment pending">● Pending</span>
-        <span className="appointment canceled">● Canceled</span>
-      </div>
-
       {expanded && (
-        <button className="schedule-new-btn"
-        onClick={() => {
-                    // Navigate to OnlineConsultationDetail page with the onlineConsultationId
-                    navigate(`/clinic/list`);
-                  }}>
+        <button
+          className="schedule-new-btn"
+          onClick={() => {
+            // Navigate to OnlineConsultationDetail page with the onlineConsultationId
+            navigate(`/clinic/list`);
+          }}
+        >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path
               d="M12 5v14m-7-7h14"
