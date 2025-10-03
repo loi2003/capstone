@@ -1,4 +1,3 @@
-/* Reset and base styles */
 .payment-management * {
   margin: 0;
   padding: 0;
@@ -12,10 +11,6 @@
   min-height: 100vh;
   line-height: 1.6;
   overflow-x: hidden;
-}
-
-/* Define custom properties for consistent theming */
-.payment-management {
   --admin-primary: #146f89;
   --admin-primary-dark: #122f4b;
   --admin-secondary: #1aa3ab;
@@ -433,8 +428,8 @@
 }
 
 .payment-management__chart-card--full {
-  width: 100%; /* Set to full width to match history card */
-  max-width: 100%; /* Remove max-width restriction */
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -469,8 +464,9 @@
   box-shadow: var(--admin-shadow);
   transition: var(--admin-transition);
   margin-top: 2rem;
-  width: 100%; /* Ensure full width */
-  max-width: 100%; /* Ensure no width restriction */
+  width: 100%;
+  max-width: 100%;
+  position: relative;
 }
 
 .payment-management__history-card:hover {
@@ -488,9 +484,16 @@
 /* History filter */
 .payment-management__history-filter {
   display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.payment-management__filter-group {
+  display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  position: relative;
 }
 
 .payment-management__history-filter label {
@@ -514,6 +517,26 @@
   outline: none;
   border-color: var(--admin-primary);
   box-shadow: var(--admin-shadow);
+}
+
+.payment-management__search-input {
+  padding-left: 2.5rem;
+}
+
+.payment-management__search-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+}
+
+/* History table wrapper */
+.payment-management__history-table-wrapper {
+  position: relative;
+  overflow-x: auto;
+  padding-bottom: 3rem; /* Space for pagination */
 }
 
 /* History table */
@@ -564,6 +587,90 @@
   font-weight: 500;
 }
 
+/* Pagination */
+.payment-management__pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: absolute;
+  bottom: 1rem;
+  left: 2rem;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: var(--admin-border-radius);
+  z-index: 10;
+}
+
+.payment-management__pagination-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--admin-transition);
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-management__pagination-button:focus {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+}
+
+.payment-management__pagination-button--nav {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--admin-accent);
+  background: var(--admin-background);
+  color: var(--admin-text);
+}
+
+.payment-management__pagination-button--nav:hover:not(:disabled) {
+  background: var(--admin-primary);
+  color: var(--admin-background);
+  border-color: var(--admin-primary);
+  transform: scale(1.1);
+}
+
+.payment-management__pagination-button--nav:disabled {
+  background: #e0e0e0;
+  border-color: #ccc;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.payment-management__pagination-button--dot {
+  width: 12px;
+  height: 12px;
+}
+
+.payment-management__pagination-dot {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.payment-management__pagination-button--dot:hover .payment-management__pagination-dot {
+  background: var(--admin-primary);
+  transform: scale(1.2);
+}
+
+.payment-management__pagination-button--active .payment-management__pagination-dot {
+  background: var(--admin-primary);
+  width: 12px;
+  height: 12px;
+  transform: scale(1.4);
+}
+
+.payment-management__pagination-button--nav svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .payment-management__summary-grid {
@@ -575,7 +682,7 @@
   }
 
   .payment-management__chart-card--full {
-    width: 100%; /* Full width on medium screens */
+    width: 100%;
     max-width: 100%;
   }
 }
@@ -610,7 +717,7 @@
   }
 
   .payment-management__chart-card--full {
-    width: 100%; /* Full width on smaller screens */
+    width: 100%;
     max-width: 100%;
   }
 
@@ -647,8 +754,45 @@
     align-items: flex-start;
   }
 
+  .payment-management__filter-group {
+    width: 100%;
+  }
+
   .payment-management__history-input {
     width: 100%;
+  }
+
+  .payment-management__pagination {
+    gap: 0.5rem;
+    padding: 0.4rem;
+    bottom: 0.75rem;
+    left: 1.5rem;
+  }
+
+  .payment-management__pagination-button--nav {
+    width: 22px;
+    height: 22px;
+  }
+
+  .payment-management__pagination-button--dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .payment-management__pagination-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .payment-management__pagination-button--active .payment-management__pagination-dot {
+    width: 10px;
+    height: 10px;
+    transform: scale(1.3);
+  }
+
+  .payment-management__pagination-button--nav svg {
+    width: 14px;
+    height: 14px;
   }
 }
 
@@ -698,5 +842,38 @@
   .payment-management__history-table td {
     font-size: 0.85rem;
     padding: 0.4rem;
+  }
+
+  .payment-management__pagination {
+    gap: 0.4rem;
+    padding: 0.3rem;
+    bottom: 0.5rem;
+    left: 1rem;
+  }
+
+  .payment-management__pagination-button--nav {
+    width: 20px;
+    height: 20px;
+  }
+
+  .payment-management__pagination-button--dot {
+    width: 8px;
+    height: 8px;
+  }
+
+  .payment-management__pagination-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .payment-management__pagination-button--active .payment-management__pagination-dot {
+    width: 8px;
+    height: 8px;
+    transform: scale(1.3);
+  }
+
+  .payment-management__pagination-button--nav svg {
+    width: 12px;
+    height: 12px;
   }
 }

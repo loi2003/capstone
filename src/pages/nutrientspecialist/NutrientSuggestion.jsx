@@ -250,7 +250,6 @@ const NutrientAttributeModal = ({
 
   const handleInputChange = (field, value) => {
     setAttributeData((prev) => ({ ...prev, [field]: value }));
-    // Validation is handled on submit, not during input change
   };
 
   const handleSubmit = async () => {
@@ -297,22 +296,21 @@ const NutrientAttributeModal = ({
       if (isEditing) {
         cleanedAttributeData.attributeId = attributeData.attributeId;
         await onSave(cleanedAttributeData, isEditing);
+        onShowNotification("Attribute updated successfully", "success");
       } else {
         cleanedAttributeData.nutrientSuggestionId =
           attributeData.nutrientSuggestionId;
         await onSave(cleanedAttributeData, isEditing);
+        onShowNotification("Attribute added successfully", "success");
       }
-      onShowNotification(
-        isEditing ? "Attribute updated successfully" : "Attribute added successfully",
-        "success"
-      );
-      onClose();
     } catch (error) {
       onShowNotification(
         "Failed to save attribute: " +
           (error.response?.data?.message || error.message),
         "error"
       );
+    } finally {
+      onClose();
     }
   };
 
@@ -362,7 +360,7 @@ const NutrientAttributeModal = ({
             value={attributeData.ageGroupId}
             onChange={(e) => handleInputChange("ageGroupId", e.target.value)}
             className="input-field"
-            disabled={isEditing} // Lock ageGroupId when editing
+            disabled={isEditing}
           >
             <option value="">Select Age Group</option>
             {ageGroups.length > 0 ? (
@@ -385,7 +383,7 @@ const NutrientAttributeModal = ({
             value={attributeData.trimester}
             onChange={(e) => handleInputChange("trimester", e.target.value)}
             className="input-field"
-            disabled={isEditing} // Lock trimester when editing
+            disabled={isEditing}
           >
             <option value="">Select Trimester</option>
             <option value="1">1</option>
@@ -613,12 +611,15 @@ const NutrientSuggestion = () => {
   }, [navigate, token]);
 
   const showNotification = (message, type) => {
-    setNotification({ message, type });
-    const closeListener = () => {
-      setNotification(null);
-      document.removeEventListener("closeNotification", closeListener);
-    };
-    document.addEventListener("closeNotification", closeListener);
+    setNotification(null);
+    setTimeout(() => {
+      setNotification({ message, type });
+      const closeListener = () => {
+        setNotification(null);
+        document.removeEventListener("closeNotification", closeListener);
+      };
+      document.addEventListener("closeNotification", closeListener);
+    }, 100);
   };
 
   const extractData = (response) => {
@@ -727,11 +728,9 @@ const NutrientSuggestion = () => {
   const handleNameChange = (e) => {
     const name = e.target.value;
     setNewSuggestion({ ...newSuggestion, name });
-    // Validation is now handled on submit, not during typing
   };
 
   const createSuggestionHandler = async () => {
-    // Validate only on submit
     if (!validateSuggestionName(newSuggestion.name)) {
       return;
     }
@@ -755,7 +754,6 @@ const NutrientSuggestion = () => {
   };
 
   const updateSuggestionHandler = async () => {
-    // Validate only on submit
     if (!validateSuggestionName(newSuggestion.name)) {
       return;
     }
@@ -789,8 +787,15 @@ const NutrientSuggestion = () => {
     }
   };
 
-  const deleteSuggestionHandler = async (id) => {
+  const deleteSuggestionHandler = async (id, attributesCount) => {
     if (!id) return;
+    if (attributesCount > 0) {
+      showNotification(
+        "There are attributes inside. Please delete attributes first.",
+        "error"
+      );
+      return;
+    }
     if (!window.confirm("Are you sure you want to delete this suggestion?"))
       return;
     setLoading(true);
@@ -803,11 +808,9 @@ const NutrientSuggestion = () => {
       showNotification("Nutrient suggestion deleted successfully", "success");
     } catch (err) {
       showNotification(
-        err.message.includes("associated attributes")
-          ? "Cannot delete suggestion with associated attributes. Remove attributes first."
-          : `Failed to delete suggestion: ${
-              err.response?.data?.message || err.message
-            }`,
+        `Failed to delete suggestion: ${
+          err.response?.data?.message || err.message
+        }`,
         "error"
       );
     } finally {
@@ -829,7 +832,6 @@ const NutrientSuggestion = () => {
       if (selectedViewSuggestion) {
         await fetchSuggestionByIdForView(selectedViewSuggestion.id);
       }
-      setSelectedEditAttribute(null);
     } catch (error) {
       showNotification(
         `Failed to ${isEditing ? "update" : "add"} attribute: ${
@@ -839,10 +841,12 @@ const NutrientSuggestion = () => {
       );
     } finally {
       setLoading(false);
+      setSelectedAttributeSuggestion(null);
+      setSelectedEditAttribute(null);
     }
   };
 
-  const handleDeleteAttribute = async (attribute) => {
+  const handleDeleteAttribute = async (attribute, closeViewModal) => {
     if (!window.confirm("Are you sure you want to delete this attribute?"))
       return;
     setLoading(true);
@@ -869,7 +873,16 @@ const NutrientSuggestion = () => {
       );
     } finally {
       setLoading(false);
+      if (closeViewModal) {
+        closeViewModal();
+      }
     }
+  };
+
+  const closeAllModals = () => {
+    setSelectedViewSuggestion(null);
+    setSelectedAttributeSuggestion(null);
+    setSelectedEditAttribute(null);
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
@@ -910,6 +923,7 @@ const NutrientSuggestion = () => {
     indexOfFirstSuggestion,
     indexOfLastSuggestion
   );
+
   const totalPages = Math.ceil(filteredSuggestions.length / itemsPerPage);
 
   const containerVariants = {
@@ -1036,7 +1050,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <button
                   onClick={handleHomepageNavigation}
@@ -1074,7 +1087,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/blog-management"
@@ -1104,7 +1116,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <button
                   onClick={toggleFoodDropdown}
@@ -1168,7 +1179,6 @@ const NutrientSuggestion = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-category-management"
@@ -1198,7 +1208,6 @@ const NutrientSuggestion = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/food-management"
@@ -1229,7 +1238,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <button
                   onClick={toggleNutrientDropdown}
@@ -1295,7 +1303,6 @@ const NutrientSuggestion = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
@@ -1325,7 +1332,6 @@ const NutrientSuggestion = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
@@ -1356,7 +1362,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
@@ -1386,7 +1391,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
@@ -1416,7 +1420,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/dish-management"
@@ -1450,7 +1453,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
@@ -1480,7 +1482,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/allergy-management"
@@ -1510,7 +1511,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/disease-management"
@@ -1540,7 +1540,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/warning-management"
@@ -1570,7 +1569,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/meal-management"
@@ -1600,7 +1598,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/energy-suggestion"
@@ -1630,7 +1627,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item active"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-suggestion"
@@ -1660,7 +1656,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/messenger-management"
@@ -1690,7 +1685,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
@@ -1720,7 +1714,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
@@ -1775,7 +1768,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
-                whileHover="hover"
               >
                 <Link
                   to="/profile"
@@ -1805,7 +1797,6 @@ const NutrientSuggestion = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
               >
                 <button
                   className="logout-button"
@@ -1958,111 +1949,98 @@ const NutrientSuggestion = () => {
               <div className="empty-state">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
                   <path
-                    d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4h4m-4 2v2"
+                    d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
                     stroke="var(--nutrient-specialist-text)"
                     strokeWidth="1.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
                 </svg>
-                <h3>No Suggestions Found</h3>
-                <p>Create a new suggestion to get started.</p>
+                <p>No suggestions found.</p>
               </div>
             ) : (
-              <div className="card-grid">
-                {currentSuggestions.map((suggestion) => (
-                  <motion.div
-                    key={suggestion.id}
-                    className="suggestion-card"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <div className="card-content">
-                      <h3>
-                       {suggestion.nutrientSuggestionName || `Suggestion #${suggestion.id}`}
-                    </h3>
-                    <p>ID: {suggestion.id}</p>
-                    <p>
-                      Attributes:{' '}
-                      {suggestion.nutrientSuggestionAttributes
-                        ? suggestion.nutrientSuggestionAttributes.length
-                        : 0}
-                    </p>
-                  </div>
-                  <div className="card-actions">
+              <>
+                <div className="suggestion-list">
+                  {currentSuggestions.map((suggestion) => (
+                      <motion.div
+                      key={suggestion.id}
+                      className="suggestion-card"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="suggestion-content">
+                        <h3>{suggestion.nutrientSuggestionName}</h3>
+                        <p>
+                          Attributes:{" "}
+                          {suggestion.nutrientSuggestionAttributes?.length || 0}
+                        </p>
+                      </div>
+                      <div className="suggestion-actions">
+                        <motion.button
+                          onClick={() => {
+                            fetchSuggestionById(suggestion.id);
+                          }}
+                          className="nutrient-specialist-button primary small"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          title="Edit Suggestion"
+                        >
+                          Edit
+                        </motion.button>
+                        <motion.button
+                          onClick={() =>
+                            deleteSuggestionHandler(
+                              suggestion.id,
+                              suggestion.nutrientSuggestionAttributes?.length || 0
+                            )
+                          }
+                          className="nutrient-specialist-button danger small"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          title="Delete Suggestion"
+                        >
+                          Delete
+                        </motion.button>
+                        <motion.button
+                          onClick={() => fetchSuggestionByIdForView(suggestion.id)}
+                          className="nutrient-specialist-button secondary small"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          title="View Details"
+                        >
+                          View
+                        </motion.button>
+                        <motion.button
+                          onClick={() => setSelectedAttributeSuggestion(suggestion)}
+                          className="nutrient-specialist-button primary small"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          title="Add Attribute"
+                        >
+                          Add Attribute
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+                <div className="pagination">
+                  {Array.from({ length: totalPages }, (_, index) => (
                     <motion.button
-                      onClick={() => {
-                        fetchSuggestionById(suggestion.id);
-                      }}
-                      className="nutrient-specialist-button primary small"
+                      key={index + 1}
+                      onClick={() => setCurrentPage(index + 1)}
+                      className={`pagination-button ${
+                        currentPage === index + 1 ? "active" : ""
+                      }`}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      title="Edit Suggestion"
                     >
-                      Edit
+                      {index + 1}
                     </motion.button>
-                    <motion.button
-                      onClick={() => deleteSuggestionHandler(suggestion.id)}
-                      className="nutrient-specialist-button danger small"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      title="Delete Suggestion"
-                    >
-                      Delete
-                    </motion.button>
-                    <motion.button
-                      onClick={() => {
-                        setSelectedAttributeSuggestion(suggestion);
-                      }}
-                      className="nutrient-specialist-button secondary small"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      title="Add Attribute"
-                    >
-                      Add Attribute
-                    </motion.button>
-                    <motion.button
-                      onClick={() => fetchSuggestionByIdForView(suggestion.id)}
-                      className="nutrient-specialist-button secondary small"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      title="View Attributes"
-                    >
-                      View
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-          {totalPages > 1 && (
-            <div className="pagination">
-              <motion.button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="nutrient-specialist-button secondary"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Previous
-              </motion.button>
-              <span>
-                Page {currentPage} of {totalPages}
-              </span>
-              <motion.button
-                onClick={() =>
-                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-                className="nutrient-specialist-button secondary"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Next
-              </motion.button>
-            </div>
-          )}
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </motion.main>
@@ -2077,23 +2055,17 @@ const NutrientSuggestion = () => {
               setSelectedEditAttribute(attr);
               setSelectedAttributeSuggestion(selectedViewSuggestion);
             }}
-            onDeleteAttribute={handleDeleteAttribute}
+            onDeleteAttribute={(attr) => handleDeleteAttribute(attr, () => setSelectedViewSuggestion(null))}
           />
         )}
         {(selectedAttributeSuggestion || selectedEditAttribute) && (
           <NutrientAttributeModal
-            suggestionId={
-              selectedAttributeSuggestion
-                ? selectedAttributeSuggestion.id
-                : selectedEditAttribute?.nutrientSuggestionId
-            }
+            suggestionId={selectedAttributeSuggestion?.id}
             nutrients={nutrients}
             ageGroups={ageGroups}
-            onClose={() => {
-              setSelectedAttributeSuggestion(null);
-              setSelectedEditAttribute(null);
-            }}
+            onClose={closeAllModals}
             onSave={handleAddAttribute}
+            onShowNotification={showNotification}
             attribute={selectedEditAttribute}
             isEditing={!!selectedEditAttribute}
           />
