@@ -49,7 +49,7 @@ const PaymentSuccess = () => {
           : [userSubscriptions];
 
         const pendingSubscriptions = subscriptions.filter(
-          (sub) => sub.status === 0
+          (sub) => sub.status === "Pending"
         );
 
         if (pendingSubscriptions.length === 0) {
