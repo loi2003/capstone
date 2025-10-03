@@ -242,6 +242,7 @@
 }
 .schedule-new-btn:hover {
   background: #04668D;
+  border: 2.2px solid var(--nguyen-accent-color);
   color: white;
   transform: translateY(-3px);
   box-shadow: 0 8px 15px rgb(4 102 141 / 0.7);

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
+import NutritionChart from "./NutritionChart";
 import "../../styles/NutrientSpecialistHomePage.css";
+import "../../styles/NutritionChart.css";
 
 const NutrientSpecialistHomePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -228,8 +230,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -258,8 +259,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
@@ -322,8 +322,7 @@ const NutrientSpecialistHomePage = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -352,8 +351,7 @@ const NutrientSpecialistHomePage = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -383,8 +381,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -449,8 +446,7 @@ const NutrientSpecialistHomePage = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -479,8 +475,7 @@ const NutrientSpecialistHomePage = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -510,8 +505,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -540,8 +534,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -570,8 +563,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -604,8 +596,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -634,8 +625,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -664,8 +654,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -694,8 +683,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/warning-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -724,8 +712,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/meal-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -754,8 +741,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/energy-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -784,8 +770,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -814,8 +799,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -844,8 +828,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -874,8 +857,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -929,8 +911,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/profile"
                   className="nutrient-specialist-profile-info"
@@ -959,8 +940,7 @@ const NutrientSpecialistHomePage = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -1075,86 +1055,20 @@ const NutrientSpecialistHomePage = () => {
           </motion.div>
         </section>
         <motion.section
-          className="nutrient-specialist-features"
+          className="nutrient-specialist-charts"
           variants={containerVariants}
           initial="initial"
           animate="animate"
         >
           <h2 className="nutrient-specialist-features-title">
-            Core Nutrient Specialist Tools
+            Nutrition Data Overview
           </h2>
           <p className="nutrient-specialist-features-description">
-            Leverage a comprehensive suite of tools to manage food and nutrient
-            data, oversee age group categorizations, and create insightful blog
-            content.
+            Visualize key metrics for food, nutrients, allergies, and more to make informed decisions.
           </p>
-          <div className="nutrient-specialist-features-grid">
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Food Management</h3>
-              <p>
-                Organize and update food categories and items to provide
-                accurate nutritional data.
-              </p>
-              <Link
-                to="/nutrient-specialist/food-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Nutrient Management</h3>
-              <p>
-                Maintain detailed nutrient profiles and categories for precise
-                dietary recommendations.
-              </p>
-              <Link
-                to="/nutrient-specialist/nutrient-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Age Group Management</h3>
-              <p>
-                Customize nutritional guidelines for different age groups to
-                ensure targeted advice.
-              </p>
-              <Link
-                to="/nutrient-specialist/age-group-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-            <motion.div
-              variants={cardVariants}
-              className="nutrient-specialist-feature-card"
-            >
-              <h3>Blog Management</h3>
-              <p>
-                Create and manage educational content to share your expertise
-                with the community.
-              </p>
-              <Link
-                to="/blog-management"
-                className="nutrient-specialist-feature-link"
-              >
-                Explore
-              </Link>
-            </motion.div>
-          </div>
+          <NutritionChart />
         </motion.section>
+        <Outlet />
       </main>
     </div>
   );

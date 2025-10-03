@@ -10,6 +10,8 @@ import {
   removeRecommendOrWarningFoodForDisease,
   removeRecommendOrWarningFoodForAllergy,
   viewWarningFoods,
+  viewWarningFoodsByDiseaseIds,
+  viewWarningFoodsByAllergyIds,
 } from "../../apis/nutriet-api";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
 import "../../styles/WarningManagement.css";
@@ -73,14 +75,14 @@ const WarningModal = ({ warning, onClose, foods }) => {
       >
         <h2>Warning Food Details</h2>
         <h3>
-          Food:{" "}
-          {foods.find((f) => f.id === warning.foodId)?.name || "Unknown Food"}
+          Food: {foods.find((f) => f.id === warning.foodId)?.name || warning.name || "Unknown Food"}
         </h3>
         <p>
-          <strong>Type:</strong> {warning.type}
+          <strong>Type:</strong> {warning.type || "Unknown"}
         </p>
         <p>
-          <strong>Related ID:</strong> {warning.relatedId}
+          <strong>Related:</strong>{" "}
+          {warning.relatedName || "Unknown"}
         </p>
         <p>
           <strong>Description:</strong>{" "}
@@ -109,6 +111,7 @@ const WarningManagement = () => {
     relatedId: "",
     warningFoodDtos: [],
   });
+  const [errors, setErrors] = useState({});
   const [selectedWarning, setSelectedWarning] = useState(null);
   const [selectedViewWarning, setSelectedViewWarning] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -121,7 +124,10 @@ const WarningManagement = () => {
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [foodPage, setFoodPage] = useState(1);
   const itemsPerPage = 6;
+  const foodsPerPage = 50;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -168,46 +174,55 @@ const WarningManagement = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [diseasesResponse, allergiesResponse, foodsResponse] =
-        await Promise.all([
-          getAllDiseases(token),
-          getAllAllergies(token),
-          getAllFoods(),
-        ]);
-
+      const [diseasesResponse, allergiesResponse, foodsResponse] = await Promise.all([
+        getAllDiseases(token),
+        getAllAllergies(token),
+        getAllFoods(),
+      ]);
       const diseasesData = Array.isArray(diseasesResponse?.data?.data)
         ? diseasesResponse.data.data
         : Array.isArray(diseasesResponse?.data)
         ? diseasesResponse.data
         : [];
-
       const allergiesData = Array.isArray(allergiesResponse?.data?.data)
         ? allergiesResponse.data.data
         : Array.isArray(allergiesResponse?.data)
         ? allergiesResponse.data
         : [];
-
       const foodsData = Array.isArray(foodsResponse) ? foodsResponse : [];
-
-      console.log("Foods response:", foodsResponse);
-      console.log("Foods data:", foodsData);
-
       setDiseases(diseasesData);
       setAllergies(allergiesData);
       setFoods(foodsData);
-
       if (diseasesData.length > 0 || allergiesData.length > 0) {
         const diseaseIds = diseasesData.map((disease) => disease.id);
         const allergyIds = allergiesData.map((allergy) => allergy.id);
-        const warningsResponse = await viewWarningFoods({
-          allergyIds,
-          diseaseIds,
-        });
-
-        const warningsData = Array.isArray(warningsResponse?.data?.data)
-          ? warningsResponse.data.data
-          : Array.isArray(warningsResponse?.data)
-          ? warningsResponse.data
+        const warningsResponse = await viewWarningFoods({ allergyIds, diseaseIds });
+        const warningsData = Array.isArray(warningsResponse)
+          ? warningsResponse.flatMap((food, index) => {
+              const actualFood = foodsData.find(f => f.name === food.name);
+              const foodId = actualFood ? actualFood.id : null;
+              if (!foodId) {
+                console.warn(`Could not find food ID for: ${food.name}`);
+                return [];
+              }
+              const allergyWarnings = (food.foodAllergy || []).map((allergy) => ({
+                foodId: foodId,
+                type: "Allergy",
+                relatedId: allergy.id,
+                relatedName: allergiesData.find((a) => a.id === allergy.id)?.name || allergy.allergyName || "Unknown",
+                description: allergy.description || "No description",
+                name: food.name || "Unknown Food",
+              }));
+              const diseaseWarnings = (food.foodDisease || []).map((disease) => ({
+                foodId: foodId,
+                type: "Disease",
+                relatedId: disease.id,
+                relatedName: diseasesData.find((d) => d.id === disease.id)?.name || disease.diseaseName || "Unknown",
+                description: disease.description || "No description",
+                name: food.name || "Unknown Food",
+              }));
+              return [...allergyWarnings, ...diseaseWarnings];
+            })
           : [];
         setWarnings(warningsData);
       } else {
@@ -229,66 +244,212 @@ const WarningManagement = () => {
     }
   };
 
-  const createWarningHandler = async () => {
-    if (!newWarning.type || newWarning.type.trim() === "") {
-      showNotification("Type is required", "error");
-      return;
-    }
-    if (!newWarning.relatedId || newWarning.relatedId.trim() === "") {
-      showNotification("Related ID (Disease or Allergy) is required", "error");
-      return;
-    }
-    if (newWarning.warningFoodDtos.length === 0) {
-      showNotification("Please select at least one food", "error");
-      return;
-    }
-    const invalidFoods = newWarning.warningFoodDtos.filter(
-      (food) => !food.description || food.description.trim() === ""
-    );
-    if (invalidFoods.length > 0) {
-      showNotification(
-        "Please provide a description for each selected food",
-        "error"
-      );
-      return;
-    }
+  const fetchWarningsByFilter = async (type) => {
     setLoading(true);
     try {
-      if (newWarning.type === "Disease") {
-        await createWarningFoodForDisease({
-          diseaseId: newWarning.relatedId,
-          warningFoodDtos: newWarning.warningFoodDtos,
-        });
+      let warningsResponse;
+      if (type === "Disease") {
+        const diseaseIds = diseases.map((disease) => disease.id);
+        warningsResponse = await viewWarningFoodsByDiseaseIds(diseaseIds);
+      } else if (type === "Allergy") {
+        const allergyIds = allergies.map((allergy) => allergy.id);
+        warningsResponse = await viewWarningFoodsByAllergyIds(allergyIds);
       } else {
-        await createWarningFoodForAllergy({
-          allergyId: newWarning.relatedId,
-          warningFoodDtos: newWarning.warningFoodDtos,
+        warningsResponse = await viewWarningFoods({
+          allergyIds: allergies.map((a) => a.id),
+          diseaseIds: diseases.map((d) => d.id),
         });
       }
-      setNewWarning({
-        type: "Disease",
-        relatedId: "",
-        warningFoodDtos: [],
-      });
-      setIsEditing(false);
-      await fetchData();
-      showNotification("Warning created successfully", "success");
+      const warningsData = Array.isArray(warningsResponse)
+        ? warningsResponse.flatMap((food, index) => {
+            const actualFood = foods.find((f) => f.name === food.name);
+            const foodId = actualFood ? actualFood.id : null;
+            if (!foodId) {
+              console.warn(`Could not find food ID for: ${food.name}`);
+              return [];
+            }
+            if (type === "Disease") {
+              return (food.foodDisease || []).map((disease) => ({
+                foodId: foodId,
+                type: "Disease",
+                relatedId: disease.id,
+                relatedName: diseases.find((d) => d.id === disease.id)?.name || "Unknown",
+                description: disease.description || "No description",
+                name: food.name || "Unknown Food",
+              }));
+            } else if (type === "Allergy") {
+              return (food.foodAllergy || []).map((allergy) => ({
+                foodId: foodId,
+                type: "Allergy",
+                relatedId: allergy.id,
+                relatedName: allergies.find((a) => a.id === allergy.id)?.name || "Unknown",
+                description: allergy.description || "No description",
+                name: food.name || "Unknown Food",
+              }));
+            } else {
+              const allergyWarnings = (food.foodAllergy || []).map((allergy) => ({
+                foodId: foodId,
+                type: "Allergy",
+                relatedId: allergy.id,
+                relatedName: allergies.find((a) => a.id === allergy.id)?.name || "Unknown",
+                description: allergy.description || "No description",
+                name: food.name || "Unknown Food",
+              }));
+              const diseaseWarnings = (food.foodDisease || []).map((disease) => ({
+                foodId: foodId,
+                type: "Disease",
+                relatedId: disease.id,
+                relatedName: diseases.find((d) => d.id === disease.id)?.name || "Unknown",
+                description: disease.description || "No description",
+                name: food.name || "Unknown Food",
+              }));
+              return [...allergyWarnings, ...diseaseWarnings];
+            }
+          })
+        : [];
+      setWarnings(warningsData);
+      setSelectedFilter({ type });
+      setCurrentPage(1);
+      showNotification(`Filtered warnings for ${type || "All"}`, "success");
     } catch (err) {
-      console.error("Create warning error:", err);
-      showNotification(
-        `Failed to create warning: ${
-          err.response?.data?.message || err.message
-        }`,
-        "error"
-      );
+      console.error(`Error fetching warnings for ${type || "All"}:`, {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
+      showNotification(`Failed to fetch warnings: ${err.message}`, "error");
+      setWarnings([]);
     } finally {
       setLoading(false);
     }
   };
 
+  const resetFilter = async () => {
+    setSelectedFilter(null);
+    await fetchData();
+  };
+
+  const validateDescription = (description) => {
+  const errors = [];
+  const trimmed = description.trim();
+
+  // Check leading/trailing spaces
+  if (description !== trimmed) {
+    errors.push("Description cannot start or end with a space.");
+  }
+
+  // Must be exactly two words separated by a single space
+  const words = trimmed.split(" ");
+  if (words.length !== 2) {
+    errors.push("Description must contain exactly two words.");
+  } else {
+    for (const word of words) {
+      // Only letters allowed
+      if (!/^[a-zA-Z]+$/.test(word)) {
+        errors.push("Description can only contain letters.");
+        break;
+      }
+      // First letter must not be uppercase
+      if (word[0] === word[0].toUpperCase()) {
+        errors.push("First letter of each word must be lowercase.");
+        break;
+      }
+    }
+  }
+
+  return errors;
+};
+
+
+const createWarningHandler = async () => {
+  if (!newWarning.type || newWarning.type.trim() === "") {
+    showNotification("Type is required", "error");
+    return;
+  }
+  if (!newWarning.relatedId || newWarning.relatedId.trim() === "") {
+    showNotification("Related ID (Disease or Allergy) is required", "error");
+    return;
+  }
+  if (newWarning.warningFoodDtos.length === 0) {
+    showNotification("Please select at least one food", "error");
+    return;
+  }
+
+  // Validate descriptions on submit
+  const validationErrors = {};
+  let firstErrorMessage = null;
+
+  newWarning.warningFoodDtos.forEach((food) => {
+    if (!food.description || food.description.trim() === "") {
+      if (!firstErrorMessage) {
+        firstErrorMessage = `Description for ${
+          foods.find((f) => f.id === food.foodId)?.name || "Unknown Food"
+        } is required.`;
+      }
+      validationErrors[food.foodId] = ["Description is required."];
+    } else {
+      const foodErrors = validateDescription(food.description);
+      if (foodErrors.length > 0 && !firstErrorMessage) {
+        firstErrorMessage = `Invalid description for ${
+          foods.find((f) => f.id === food.foodId)?.name || "Unknown Food"
+        }: ${foodErrors[0]}`; // Show only the first validation error for this food
+        validationErrors[food.foodId] = foodErrors;
+      }
+    }
+  });
+
+  // Set errors but show only the first error message
+  setErrors(validationErrors);
+  if (firstErrorMessage) {
+    showNotification(firstErrorMessage, "error");
+    return;
+  }
+
+  setLoading(true);
+  try {
+    if (newWarning.type === "Disease") {
+      await createWarningFoodForDisease({
+        diseaseId: newWarning.relatedId,
+        warningFoodDtos: newWarning.warningFoodDtos,
+      });
+    } else {
+      await createWarningFoodForAllergy({
+        allergyId: newWarning.relatedId,
+        warningFoodDtos: newWarning.warningFoodDtos,
+      });
+    }
+    setNewWarning({
+      type: "Disease",
+      relatedId: "",
+      warningFoodDtos: [],
+    });
+    setErrors({});
+    setIsEditing(false);
+    await fetchData();
+    showNotification("Warning created successfully", "success");
+  } catch (err) {
+    console.error("Create warning error:", err);
+    showNotification(
+      `Failed to create warning: ${err.response?.data?.message || err.message}`,
+      "error"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
+
   const deleteWarningHandler = async (warning) => {
     if (!window.confirm("Are you sure you want to delete this warning?"))
       return;
+    if (!warning.foodId || !warning.relatedId) {
+      showNotification("Cannot delete warning: Missing required IDs", "error");
+      return;
+    }
+    const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!guidRegex.test(warning.foodId)) {
+      showNotification("Cannot delete warning: Invalid food ID format", "error");
+      return;
+    }
     setLoading(true);
     try {
       if (warning.type === "Disease") {
@@ -309,9 +470,15 @@ const WarningManagement = () => {
         relatedId: "",
         warningFoodDtos: [],
       });
+      setErrors({});
       await fetchData();
       showNotification("Warning deleted successfully", "success");
     } catch (err) {
+      console.error("Delete error details:", {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+      });
       showNotification(`Failed to delete warning: ${err.message}`, "error");
     } finally {
       setLoading(false);
@@ -324,6 +491,7 @@ const WarningManagement = () => {
       relatedId: "",
       warningFoodDtos: [],
     });
+    setErrors({});
     setSelectedWarning(null);
     setIsEditing(false);
   };
@@ -334,6 +502,11 @@ const WarningManagement = () => {
       const index = currentFoods.findIndex((food) => food.foodId === foodId);
       if (index > -1) {
         currentFoods.splice(index, 1);
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[foodId];
+          return newErrors;
+        });
       } else {
         currentFoods.push({ foodId, description: "" });
       }
@@ -393,19 +566,48 @@ const WarningManagement = () => {
   const filteredWarnings = warnings.filter(
     (warning) =>
       (warning.type || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      foods
-        .find((f) => f.id === warning.foodId)
-        ?.name.toLowerCase()
-        .includes(searchTerm.toLowerCase())
+      (warning.name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (warning.relatedName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const indexOfLastWarning = currentPage * itemsPerPage;
-  const indexOfFirstWarning = indexOfLastWarning - itemsPerPage;
-  const currentWarnings = filteredWarnings.slice(
-    indexOfFirstWarning,
-    indexOfLastWarning
+  const groupedWarnings = filteredWarnings.reduce((acc, warning, index) => {
+    const key = `${warning.type || "unknown"}-${warning.relatedId || "unknown"}-${index}`;
+    if (!acc[key]) {
+      acc[key] = {
+        type: warning.type || "Unknown",
+        relatedId: warning.relatedId || "Unknown",
+        relatedName: warning.relatedName || "Unknown",
+        warnings: [],
+      };
+    }
+    acc[key].warnings.push(warning);
+    return acc;
+  }, {});
+
+  const groupedWarningsArray = Object.values(groupedWarnings);
+  const indexOfLastGroup = currentPage * itemsPerPage;
+  const indexOfFirstGroup = indexOfLastGroup - itemsPerPage;
+  const currentGroups = groupedWarningsArray.slice(
+    indexOfFirstGroup,
+    indexOfLastGroup
   );
-  const totalPages = Math.ceil(filteredWarnings.length / itemsPerPage);
+  const totalPages = Math.ceil(groupedWarningsArray.length / itemsPerPage);
+  const indexOfLastFood = foodPage * foodsPerPage;
+  const indexOfFirstFood = indexOfLastFood - foodsPerPage;
+  const currentFoods = foods.slice(indexOfFirstFood, indexOfLastFood);
+  const totalFoodPages = Math.ceil(foods.length / foodsPerPage);
+
+  const handlePreviousFoodPage = () => {
+    if (foodPage > 1) {
+      setFoodPage(foodPage - 1);
+    }
+  };
+
+  const handleNextFoodPage = () => {
+    if (foodPage < totalFoodPages) {
+      setFoodPage(foodPage + 1);
+    }
+  };
 
   const handlePreviousPage = () => {
     if (currentPage > 1) {
@@ -417,6 +619,17 @@ const WarningManagement = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
+  };
+
+  const isFormValid = () => {
+    return (
+      newWarning.warningFoodDtos.every(
+        (food) => food.description && !validateDescription(food.description).length
+      ) &&
+      newWarning.type &&
+      newWarning.relatedId &&
+      newWarning.warningFoodDtos.length > 0
+    );
   };
 
   const containerVariants = {
@@ -1076,7 +1289,7 @@ const WarningManagement = () => {
                   <svg
                     width="24"
                     height="24"
-                    viewBox="0 0 24 16px 0 24 24"
+                    viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                     aria-label="Warning icon for warning management"
@@ -1463,15 +1676,15 @@ const WarningManagement = () => {
               <div className="form-group">
                 <label htmlFor="food-selection">Select Foods</label>
                 <div className="food-selection-container">
-                  {foods.length === 0 ? (
+                  {currentFoods.length === 0 ? (
                     <p>
                       No foods available to select. Please ensure foods are
                       added in the database.
                     </p>
                   ) : (
-                    foods.map((food) => (
+                    currentFoods.map((food) => (
                       <motion.div
-                        key={food.id}
+                        key={food.id || food.name}
                         className={`food-item ${
                           newWarning.warningFoodDtos.some(
                             (f) => f.foodId === food.id
@@ -1491,6 +1704,35 @@ const WarningManagement = () => {
                     ))
                   )}
                 </div>
+                {totalFoodPages > 1 && (
+                  <div className="pagination-controls food-pagination">
+                    <motion.button
+                      onClick={handlePreviousFoodPage}
+                      disabled={foodPage === 1}
+                      className="nutrient-specialist-button secondary"
+                      whileHover={{ scale: foodPage === 1 ? 1 : 1.05 }}
+                      whileTap={{ scale: foodPage === 1 ? 1 : 0.95 }}
+                    >
+                      Previous
+                    </motion.button>
+                    <span className="page-indicator">
+                      Page {foodPage} of {totalFoodPages}
+                    </span>
+                    <motion.button
+                      onClick={handleNextFoodPage}
+                      disabled={foodPage === totalFoodPages}
+                      className="nutrient-specialist-button secondary"
+                      whileHover={{
+                        scale: foodPage === totalFoodPages ? 1 : 1.05,
+                      }}
+                      whileTap={{
+                        scale: foodPage === totalFoodPages ? 1 : 0.95,
+                      }}
+                    >
+                      Next
+                    </motion.button>
+                  </div>
+                )}
               </div>
               <div className="food-details-container">
                 <h4>Food Descriptions</h4>
@@ -1514,18 +1756,11 @@ const WarningManagement = () => {
                                 e.target.value
                               )
                             }
-                            placeholder="Enter description (required)"
+                            placeholder="Enter description (e.g., avoid dairy)"
                             className={`input-field ${
-                              !food.description || food.description.trim() === ""
-                                ? "input-error"
-                                : ""
+                              errors[food.foodId]?.length > 0 ? "input-error" : ""
                             }`}
                           />
-                          {!food.description || food.description.trim() === "" ? (
-                            <span className="error-message">
-                              Description is required
-                            </span>
-                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -1581,10 +1816,23 @@ const WarningManagement = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by type or food name"
+                placeholder="Search by type, food name, or related name"
                 className="search-input"
               />
             </div>
+            {selectedFilter && (
+              <div className="filter-info">
+                <p>Showing warnings for {selectedFilter.type}s</p>
+                <motion.button
+                  onClick={resetFilter}
+                  className="nutrient-specialist-button secondary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Clear Filter
+                </motion.button>
+              </div>
+            )}
             {loading ? (
               <div className="loading-state">
                 <LoaderIcon />
@@ -1611,56 +1859,60 @@ const WarningManagement = () => {
               </div>
             ) : (
               <>
-                <div className="warning-grid">
-                  {currentWarnings.map((warning, index) => (
+                <div className="warning-group-grid">
+                  {currentGroups.map((group, index) => (
                     <motion.div
-                      key={`${warning.foodId}-${warning.relatedId}`}
-                      className="warning-card"
+                      key={`${group.type || "unknown"}-${group.relatedId || "unknown"}-${index}`}
+                      className="warning-group-card"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                       whileHover={{ y: -5 }}
                     >
-                      <div className="card-header">
-                        <h3>
-                          {foods.find((f) => f.id === warning.foodId)?.name ||
-                            `Warning #${index + 1}`}
+                      <div className="group-header">
+                        <h3
+                          className="group-title"
+                          onClick={() => fetchWarningsByFilter(group.type)}
+                        >
+                          {group.relatedName || "Unknown"} ({group.type || "Unknown"})
                         </h3>
                       </div>
-                      <div className="warning-details">
-                        <p>
-                          <strong>Type:</strong> {warning.type}
-                        </p>
-                        <p>
-                          <strong>Related:</strong>{" "}
-                          {(warning.type === "Disease"
-                            ? diseases
-                            : allergies
-                          ).find((item) => item.id === warning.relatedId)
-                            ?.name || "Unknown"}
-                        </p>
-                        <p>
-                          <strong>Description:</strong>{" "}
-                          {warning.description || "No description"}
-                        </p>
-                      </div>
-                      <div className="card-actions">
-                        <motion.button
-                          onClick={() => setSelectedViewWarning(warning)}
-                          className="view-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          View
-                        </motion.button>
-                        <motion.button
-                          onClick={() => deleteWarningHandler(warning)}
-                          className="delete-button nutrient-specialist-button secondary"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                        >
-                          Delete
-                        </motion.button>
+                      <div className="group-warnings">
+                        {group.warnings.map((warning, warningIndex) => (
+                          <div
+                            key={`${warning.foodId || "unknown"}-${warning.relatedId || "unknown"}-${warningIndex}`}
+                            className="warning-item"
+                          >
+                            <p>
+                              <strong>Food:</strong>{" "}
+                              {foods.find((f) => f.id === warning.foodId)?.name ||
+                                 warning.name ||
+                                `Warning #${warningIndex + 1}`}
+                            </p>
+                            <p>
+                              <strong>Description:</strong>{" "}
+                              {warning.description || "No description"}
+                            </p>
+                            <div className="card-actions">
+                              <motion.button
+                                onClick={() => setSelectedViewWarning(warning)}
+                                className="view-button nutrient-specialist-button secondary"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                View
+                              </motion.button>
+                              <motion.button
+                                onClick={() => deleteWarningHandler(warning)}
+                                className="delete-button nutrient-specialist-button secondary"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                Delete
+                              </motion.button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </motion.div>
                   ))}

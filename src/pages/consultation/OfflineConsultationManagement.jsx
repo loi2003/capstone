@@ -540,120 +540,142 @@ const OfflineConsultationManagement = () => {
               animate={isSidebarOpen ? "open" : "closed"}
               initial="open"
             >
-              <div className="sidebar-header">
-                <Link
-                  to="/consultant"
-                  className="logo"
-                  onClick={() => setIsSidebarOpen(true)}
-                >
-                  <motion.div
-                    variants={logoVariants}
-                    animate="animate"
-                    whileHover="hover"
-                    className="logo-svg-container"
-                  >
-                    {/* <FaBars className="logo-svg" /> */}
-                  </motion.div>
-                  {isSidebarOpen && (
-                    <span className="logo-text">Consultant Panel</span>
-                  )}
-                </Link>
-                {isSidebarOpen && <h2 className="sidebar-title"></h2>}
-                <motion.button
-                  className="sidebar-toggle"
-                  onClick={toggleSidebar}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {isSidebarOpen ? (
-                    <FaChevronLeft size={24} />
-                  ) : (
-                    <FaChevronRight size={24} />
-                  )}
-                </motion.button>
-              </div>
-              <motion.nav
-                className="sidebar-nav"
-                aria-label="Sidebar navigation"
-                initial="initial"
-                animate="animate"
-                variants={containerVariants}
-              >
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <Link
-                    to="/consultant"
-                    onClick={() => setIsSidebarOpen(true)}
-                    title="Dashboard"
-                  >
-                    <FaChartLine size={20} />
-                    {isSidebarOpen && <span>Dashboard</span>}
-                  </Link>
-                </motion.div>
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <Link
-                    to="/consultant"
-                    onClick={() => setIsSidebarOpen(true)}
-                    title="Schedule"
-                  >
-                    <FaCalendarAlt size={20} />
-                    {isSidebarOpen && <span>Schedule</span>}
-                  </Link>
-                </motion.div>
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <Link
-                    to="/consultant"
-                    onClick={() => setIsSidebarOpen(true)}
-                    title="Clients"
-                  >
-                    <FaUsers size={20} />
-                    {isSidebarOpen && <span>Clients</span>}
-                  </Link>
-                </motion.div>
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <Link
-                    to="/consultant"
-                    onClick={() => setIsSidebarOpen(true)}
-                    title="Support"
-                  >
-                    <FaQuestionCircle size={20} />
-                    {isSidebarOpen && <span>Support</span>}
-                  </Link>
-                </motion.div>
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <Link
-                    to="/consultation/consultation-management"
-                    onClick={() => setIsSidebarOpen(true)}
-                    title="Consultation Chat"
-                  >
-                    <FaUsers size={20} />
-                    {isSidebarOpen && <span>Patient Consultation</span>}
-                  </Link>
-                </motion.div>
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <button
-                    className="sidebar-action-button"
-                    title="Add Consultation"
-                    onClick={() =>
-                      navigate("/consultation/online-consultation-management")
-                    }
-                  >
-                    <FaVideo size={20} />
-                    {isSidebarOpen && <span>Online Consultation</span>}
-                  </button>
-                </motion.div>
-                <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                  <button
-                    className="sidebar-action-button"
-                    title="Add Consultation"
-                    onClick={() =>
-                      navigate("/consultation/offline-consultation-management")
-                    }
-                  >
-                    <FaHospital size={20} />
-                    {isSidebarOpen && <span>Offline Consultation</span>}
-                  </button>
-                </motion.div>
-                {user ? (
+        <div className="consultant-sidebar-header">
+          <Link
+            to="/consultant"
+            className="logo"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <motion.div
+              variants={logoVariants}
+              animate="animate"
+              whileHover="hover"
+              className="logo-svg-container"
+            >
+              {/* <FaBars className="logo-svg" /> */}
+            </motion.div>
+            {isSidebarOpen && (
+              <span className="logo-text">Consultant Panel</span>
+            )}
+          </Link>
+          {isSidebarOpen && <h2 className="consultant-sidebar-title"></h2>}
+          <motion.button
+            className="sidebar-toggle"
+            onClick={toggleSidebar}
+            aria-label={isSidebarOpen ? "Minimize sidebar" : "Expand sidebar"}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isSidebarOpen ? (
+              <FaChevronLeft size={24} />
+            ) : (
+              <FaChevronRight size={24} />
+            )}
+          </motion.button>
+        </div>
+        <motion.nav
+          className="consultant-sidebar-nav"
+          aria-label="Sidebar navigation"
+          initial="initial"
+          animate="animate"
+          variants={containerVariants}
+        >
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
+            <Link
+              to="/consultant"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Dashboard"
+            >
+              <FaChartLine size={20} />
+              {isSidebarOpen && <span>Dashboard</span>}
+            </Link>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
+            <Link
+              to="/consultant"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Schedule"
+            >
+              <FaCalendarAlt size={20} />
+              {isSidebarOpen && <span>Schedule</span>}
+            </Link>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
+            <Link
+              to="/consultant"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Clients"
+            >
+              <FaUsers size={20} />
+              {isSidebarOpen && <span>Clients</span>}
+            </Link>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
+            <Link
+              to="/consultant/support"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Support"
+            >
+              <FaQuestionCircle size={20} />
+              {isSidebarOpen && <span>Support</span>}
+            </Link>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
+            <Link
+              to="/consultation/consultation-management"
+              onClick={() => setIsSidebarOpen(true)}
+              title="Consultation Chat"
+            >
+              <FaUsers size={20} />
+              {isSidebarOpen && <span>Patient Consultation</span>}
+            </Link>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
+            <button
+              className="sidebar-action-button"
+              title="Online Consultation"
+              onClick={() =>
+                navigate("/consultation/online-consultation-management")
+              }
+            >
+              <FaVideo size={20} />
+              {isSidebarOpen && <span>Online Consultation</span>}
+            </button>
+          </motion.div>
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item active"
+          >
+            <button
+              className="active-nav-link"
+              title="Offline Consultation"
+              onClick={() =>
+                navigate("/consultation/offline-consultation-management")
+              }
+            >
+              <FaHospital size={20} />
+              {isSidebarOpen && <span>Offline Consultation</span>}
+            </button>
+          </motion.div>
+          {user ? (
                   <>
                     <motion.div
                       variants={navItemVariants}
@@ -714,8 +736,8 @@ const OfflineConsultationManagement = () => {
                     </Link>
                   </motion.div>
                 )}
-              </motion.nav>
-            </motion.aside>
+        </motion.nav>
+      </motion.aside>
       <main className="consultant-content">
         <section className="consultant-banner">
           <motion.div

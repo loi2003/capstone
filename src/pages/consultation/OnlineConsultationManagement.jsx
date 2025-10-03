@@ -11,6 +11,29 @@ import {
   getOnlineConsultationById,
   sendOnlineConsultationEmails,
 } from "../../apis/online-consultation-api";
+import {
+  FaComments,
+  FaSearch,
+  FaUser,
+  FaHospital,
+  FaPhone,
+  FaVideo,
+  FaFile,
+  FaPaperclip,
+  FaTimes,
+  FaClock,
+  FaCheckCircle,
+  FaQuestion,
+  FaChartLine,
+  FaCalendarAlt,
+  FaUsers,
+  FaQuestionCircle,
+  FaSignOutAlt,
+  FaChevronLeft,
+  FaChevronRight,
+  FaBars,
+  FaClipboardList,
+} from "react-icons/fa";
 import "../../styles/OnlineConsultationManagement.css";
 import {
   FaEye,
@@ -472,7 +495,7 @@ const OnlineConsultationManagement = () => {
         animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
       >
-        <div className="sidebar-header">
+        <div className="consultant-sidebar-header">
           <Link
             to="/consultant"
             className="logo"
@@ -490,7 +513,7 @@ const OnlineConsultationManagement = () => {
               <span className="logo-text">Consultant Panel</span>
             )}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
+          {isSidebarOpen && <h2 className="consultant-sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -505,13 +528,16 @@ const OnlineConsultationManagement = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="sidebar-nav"
+          className="consultant-sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -521,7 +547,10 @@ const OnlineConsultationManagement = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -531,7 +560,10 @@ const OnlineConsultationManagement = () => {
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -541,7 +573,10 @@ const OnlineConsultationManagement = () => {
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -573,10 +608,13 @@ const OnlineConsultationManagement = () => {
               {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div
+            variants={navItemVariants}
+            className="consultant-sidebar-nav-item"
+          >
             <button
               className="sidebar-action-button"
-              title="Add Consultation"
+              title="Offline Consultation"
               onClick={() =>
                 navigate("/consultation/offline-consultation-management")
               }
@@ -606,7 +644,7 @@ const OnlineConsultationManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="consultant-sidebar-nav-item"
               >
                 <button
                   className="logout-button"
@@ -619,7 +657,10 @@ const OnlineConsultationManagement = () => {
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div
+              variants={navItemVariants}
+              className="consultant-sidebar-nav-item"
+            >
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}

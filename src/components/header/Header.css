@@ -672,7 +672,7 @@ body.menu-open {
   position: relative;
 }
 
-.header .notification-dropdown .dropdown-header::before {
+/* .header .notification-dropdown .dropdown-header::before {
   content: "";
   position: absolute;
   top: 0;
@@ -685,7 +685,7 @@ body.menu-open {
     transparent 70%
   );
   pointer-events: none;
-}
+} */
 
 .header .notification-header {
   display: flex;
@@ -706,16 +706,16 @@ body.menu-open {
   margin-bottom: 15px;
 }
 
-.header .dropdown-title::before {
+/* .header .dropdown-title::before {
   content: "";
   width: 8px;
   height: 8px;
   background: var(--accent-light);
   border-radius: 50%;
   animation: pulse-notification 2s infinite;
-}
+} */
 
-@keyframes pulse-notification {
+/* @keyframes pulse-notification {
   0%,
   100% {
     transform: scale(1);
@@ -725,7 +725,7 @@ body.menu-open {
     transform: scale(1.2);
     opacity: 0.7;
   }
-}
+} */
 
 .header .notification-count {
   background: var(--accent-light);
@@ -774,7 +774,7 @@ body.menu-open {
   overflow: hidden;
 }
 
-.header .notification-item::before {
+/* .header .notification-item::before {
   content: "";
   position: absolute;
   top: 0;
@@ -788,11 +788,11 @@ body.menu-open {
     transparent 100%
   );
   transition: left 0.4s ease;
-}
+} */
 
-.header .notification-item:hover::before {
+/* .header .notification-item:hover::before {
   left: 100%;
-}
+} */
 
 .header .notification-item:hover {
   background: rgba(4, 102, 141, 0.03);
@@ -800,7 +800,7 @@ body.menu-open {
 
 .header .notification-item.unread {
   background: rgba(4, 102, 141, 0.02);
-  border-left: 3px solid var(--accent-light);
+  /* border-left: 3px solid var(--accent-light); */
 }
 
 .header .notification-icon {
@@ -920,14 +920,14 @@ body.menu-open {
 }
 
 .header .notification-btn.primary {
-  background: var(--gradient-primary);
+  background: #02808F;
   color: var(--white);
   border-color: transparent;
 }
 
-.header .notification-btn.primary::before {
+/* .header .notification-btn.primary::before {
   background: rgba(255, 255, 255, 0.1);
-}
+} */
 
 .header .notification-btn.primary:hover {
   color: var(--white);
@@ -961,7 +961,7 @@ body.menu-open {
 .header .notification-empty-icon svg {
   width: 28px;
   height: 28px;
-  fill: var(--accent-color);
+  fill: #107193;
 }
 
 .header .notification-empty-title {
@@ -973,6 +973,7 @@ body.menu-open {
 
 .header .notification-empty-message {
   font-size: 0.9rem;
+  margin-left: 5px;
   color: var(--color-text);
   line-height: 1.5;
 }

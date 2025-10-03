@@ -927,7 +927,7 @@ const ConsultationManagement = () => {
   const handleLogout = async () => {
     if (!currentConsultantData?.userId) {
       localStorage.removeItem("token");
-      setUser(null);
+      setCurrentConsultantData(null);
       navigate("/signin", { replace: true });
       return;
     }
@@ -938,7 +938,7 @@ const ConsultationManagement = () => {
         console.error("Error logging out:", error.message);
       } finally {
         localStorage.removeItem("token");
-        setUser(null);
+        setCurrentConsultantData(null);
         setIsSidebarOpen(true);
         navigate("/signin", { replace: true });
       }
@@ -953,7 +953,7 @@ const ConsultationManagement = () => {
         animate={isSidebarOpen ? "open" : "closed"}
         initial="open"
       >
-        <div className="sidebar-header">
+        <div className="consultant-sidebar-header">
           <Link
             to="/consultant"
             className="logo"
@@ -971,7 +971,7 @@ const ConsultationManagement = () => {
               <span className="logo-text">Consultant Panel</span>
             )}
           </Link>
-          {isSidebarOpen && <h2 className="sidebar-title"></h2>}
+          {isSidebarOpen && <h2 className="consultant-sidebar-title"></h2>}
           <motion.button
             className="sidebar-toggle"
             onClick={toggleSidebar}
@@ -987,13 +987,13 @@ const ConsultationManagement = () => {
           </motion.button>
         </div>
         <motion.nav
-          className="sidebar-nav"
+          className="consultant-sidebar-nav"
           aria-label="Sidebar navigation"
           initial="initial"
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -1003,7 +1003,7 @@ const ConsultationManagement = () => {
               {isSidebarOpen && <span>Dashboard</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -1013,7 +1013,7 @@ const ConsultationManagement = () => {
               {isSidebarOpen && <span>Schedule</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant"
               onClick={() => setIsSidebarOpen(true)}
@@ -1023,7 +1023,7 @@ const ConsultationManagement = () => {
               {isSidebarOpen && <span>Clients</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
               to="/consultant/support"
               onClick={() => setIsSidebarOpen(true)}
@@ -1035,7 +1035,7 @@ const ConsultationManagement = () => {
           </motion.div>
           <motion.div
             variants={navItemVariants}
-            className="sidebar-nav-item active"
+            className="consultant-sidebar-nav-item active"
           >
             <Link
               to="/consultation/consultation-management"
@@ -1047,7 +1047,7 @@ const ConsultationManagement = () => {
               {isSidebarOpen && <span>Patient Consultation</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <button
               className="sidebar-action-button"
               title="Online Consultation"
@@ -1059,7 +1059,7 @@ const ConsultationManagement = () => {
               {isSidebarOpen && <span>Online Consultation</span>}
             </button>
           </motion.div>
-          <motion.div variants={navItemVariants} className="sidebar-nav-item">
+          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <button
               className="sidebar-action-button"
               title="Offline Consultation"
@@ -1075,7 +1075,7 @@ const ConsultationManagement = () => {
             <>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item consultant-profile-section"
+                className="consultant-sidebar-nav-item consultant-profile-section"
               >
                 <Link
                   to="/profile"
@@ -1092,7 +1092,7 @@ const ConsultationManagement = () => {
               </motion.div>
               <motion.div
                 variants={navItemVariants}
-                className="sidebar-nav-item"
+                className="consultant-sidebar-nav-item"
               >
                 <button
                   className="logout-button"
@@ -1100,12 +1100,12 @@ const ConsultationManagement = () => {
                   aria-label="Sign out"
                 >
                   <FaSignOutAlt size={20} />
-                  {isSidebarOpen && <span>Sign out</span>}
+                  {isSidebarOpen && <span>Sign Out</span>}
                 </button>
               </motion.div>
             </>
           ) : (
-            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+            <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
               <Link
                 to="/signin"
                 onClick={() => setIsSidebarOpen(true)}
@@ -1113,6 +1113,7 @@ const ConsultationManagement = () => {
               >
                 <FaSignOutAlt size={20} />
                 {isSidebarOpen && <span>Sign In</span>}
+                {isSidebarOpen && <span>Sign Out</span>}
               </Link>
             </motion.div>
           )}

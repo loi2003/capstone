@@ -36,6 +36,8 @@ import "../styles/PregnancyTrackingPage.css";
 import FoodWarning from "../components/form/FoodWarning";
 import LoadingOverlay from "../components/popup/LoadingOverlay";
 import { NotificationContext } from "../contexts/NotificationContext";
+import { viewUserSubscriptionByUserId } from "../apis/user-subscription-api";
+import { LuCookingPot } from 'react-icons/lu';
 
 const PregnancyTrackingPage = () => {
   const [selectedWeek, setSelectedWeek] = useState(null);
@@ -45,6 +47,9 @@ const PregnancyTrackingPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState(null);
   const [mealPlannerType, setMealPlannerType] = useState("system");
+
+  const [showSubscriptionModal, setShowSubscriptionModal] = useState(false);
+  const [userSubscription, setUserSubscription] = useState(null);
 
   const [searchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(
@@ -433,6 +438,51 @@ const PregnancyTrackingPage = () => {
     setOpenJournalModal(true);
   };
 
+  const handleCustomMealPlannerClick = async () => {
+    if (!user?.id) {
+      console.log("User ID is missing");
+      setShowSubscriptionModal(true);
+      return;
+    }
+
+    try {
+      console.log("Checking subscription for user:", user.id);
+      const subscriptionData = await viewUserSubscriptionByUserId(user.id);
+      console.log("Subscription data:", subscriptionData);
+      const hasValidSubscription = checkValidSubscription(subscriptionData);
+
+      if (!hasValidSubscription) {
+        // alert("Should show subscription modal!"); // Temporary debug
+        setShowSubscriptionModal(true);
+        return;
+      }
+
+      // If subscription is valid, proceed to custom meal planner
+      setActiveTab("mealplanner-custom");
+      navigate(`?growthDataId=${pregnancyData?.id}&mealplanner=custom`);
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+      setShowSubscriptionModal(true);
+    }
+  };
+  const checkValidSubscription = (userSubscriptions) => {
+    if (!userSubscriptions || !Array.isArray(userSubscriptions)) return false;
+
+    const activeValidSubscription = userSubscriptions.find((subscription) => {
+      if (!subscription || !subscription.subscriptionPlan) return false;
+
+      const subscriptionName = subscription.subscriptionPlan.subscriptionName;
+      const status = subscription.status;
+
+      return (
+        (subscriptionName === "Plus" || subscriptionName === "Pro") &&
+        status === "Active"
+      );
+    });
+
+    return !!activeValidSubscription;
+  };
+
   const hasValidPregnancyData =
     pregnancyData &&
     !!pregnancyData.firstDayOfLastMenstrualPeriod &&
@@ -482,6 +532,53 @@ const PregnancyTrackingPage = () => {
 
   return (
     <div className="pregnancy-tracking-page">
+      {/* Subscription Modal */}
+      {showSubscriptionModal && (
+        <div className="modal-overlay">
+          <div className="subscription-modal">
+            <div className="subscription-modal-header">
+              <h3>Premium Feature</h3>
+              <span
+                className="close-modal"
+                onClick={() => setShowSubscriptionModal(false)}
+              >
+                ×
+              </span>
+            </div>
+            <div className="subscription-modal-body">
+              <div className="subscription-modal-icon">
+                <LuCookingPot size={48} color="#02808F" />
+              </div>
+              <h4>Custom Meal Planner</h4>
+              <p>
+                Create personalized meal plans tailored to your specific dietary
+                needs, allergies, and preferences during your pregnancy journey.
+              </p>
+              {/* <p className="subscription-note">
+                Upgrade to <strong>Plus</strong> or <strong>Pro</strong> to
+                unlock this feature.
+              </p> */}
+            </div>
+            <div className="subscription-modal-actions">
+              <button
+                className="subscription-cancel-btn"
+                onClick={() => setShowSubscriptionModal(false)}
+              >
+                Maybe Later
+              </button>
+              <button
+                className="subscription-upgrade-btn"
+                onClick={() => {
+                  navigate("/subscriptionplan");
+                  setShowSubscriptionModal(false);
+                }}
+              >
+                Upgrade Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Header />
       <main className="main-content">
         <div className="pregnancy-tracking-container">
@@ -586,9 +683,9 @@ const PregnancyTrackingPage = () => {
                   </button>
                   <div className="dropdown-menu">
                     <button
-                      className={
+                      className={`dropdown-item ${
                         activeTab === "mealplanner-system" ? "active" : ""
-                      }
+                      }`}
                       onClick={() => {
                         setActiveTab("mealplanner-system");
                         navigate(
@@ -598,17 +695,11 @@ const PregnancyTrackingPage = () => {
                     >
                       System Meal Planner
                     </button>
-
                     <button
-                      className={
+                      className={`dropdown-item ${
                         activeTab === "mealplanner-custom" ? "active" : ""
-                      }
-                      onClick={() => {
-                        setActiveTab("mealplanner-custom");
-                        navigate(
-                          `?growthDataId=${pregnancyData?.id}&mealplanner=custom`
-                        );
-                      }}
+                      }`}
+                      onClick={handleCustomMealPlannerClick}
                     >
                       Custom Meal Planner
                     </button>
@@ -635,17 +726,13 @@ const PregnancyTrackingPage = () => {
                         selectedWeek={selectedWeek}
                       />
                     </div>
-                    <div className="right-column">
+                    {/* <div className="right-column">
                       <UpcomingAppointments
                         growthDataId={pregnancyData?.id}
                         userId={localStorage.getItem("userId")}
                         token={localStorage.getItem("token")}
                       />
-                      {/* <TrimesterChecklists
-                        growthDataId={pregnancyData?.id}
-                        token={localStorage.getItem("token")}
-                      /> */}
-                    </div>
+                    </div> */}
                   </div>
                   {pregnancyData.basicBioMetric && (
                     <div className="biometric-section">

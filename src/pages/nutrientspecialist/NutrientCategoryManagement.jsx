@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import Chart from "chart.js/auto";
 import {
   getAllNutrientCategories,
   getNutrientCategoryById,
@@ -66,8 +65,6 @@ const NutrientCategoryManagement = () => {
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(true);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const categoriesPerPage = 6;
-  const chartRef = useRef(null);
-  const chartInstanceRef = useRef(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [currentSidebarPage, setCurrentSidebarPage] = useState(1);
@@ -80,6 +77,52 @@ const NutrientCategoryManagement = () => {
       document.removeEventListener("closeNotification", closeListener);
     };
     document.addEventListener("closeNotification", closeListener);
+  };
+
+  // Validate inputs
+  const validateInputs = () => {
+    const nameRegex = /^[a-zA-Z0-9\s.,'-]+$/; // Letters, numbers, spaces, basic punctuation
+    const descRegex = /^[a-zA-Z0-9\s.,'-]*$/; // Same as name, but optional
+    const spaceThenLetterRegex = /\s+[a-zA-Z]/; // Detects space followed by a letter
+
+    // Category name validations
+    if (!newCategory.name.trim()) {
+      showNotification("Category name is required", "error");
+      return false;
+    }
+    if (newCategory.name.trim().length <= 2) {
+      showNotification("Category name must be more than 2 letters", "error");
+      return false;
+    }
+    if (newCategory.name.length > 50) {
+      showNotification("Category name must be 50 characters or less", "error");
+      return false;
+    }
+    if (!nameRegex.test(newCategory.name.trim())) {
+      showNotification("Category name contains invalid characters", "error");
+      return false;
+    }
+   
+
+    // Description validations
+    if (!newCategory.description.trim()) {
+      showNotification("Description is required when category name is provided", "error");
+      return false;
+    }
+    if (newCategory.description.trim().split(/\s+/).filter(word => word.length > 0).length <= 1) {
+      showNotification("Description must contain more than one word", "error");
+      return false;
+    }
+    if (newCategory.description.length > 500) {
+      showNotification("Description must be 500 characters or less", "error");
+      return false;
+    }
+    if (newCategory.description && !descRegex.test(newCategory.description)) {
+      showNotification("Description contains invalid characters", "error");
+      return false;
+    }
+    
+    return true;
   };
 
   // Fetch user, categories, and nutrients
@@ -95,13 +138,16 @@ const NutrientCategoryManagement = () => {
         getAllNutrientCategories(),
         getAllNutrients(),
       ]);
+      console.log("Categories:", categoriesData);
+      console.log("Nutrients:", nutrientsData);
       const userData = userResponse.data?.data || userResponse.data;
       if (userData && Number(userData.roleId) === 4) {
         setUser(userData);
+        setNutrients(nutrientsData);
         const enrichedCategories = categoriesData.map((category) => ({
           ...category,
           nutrientCount: nutrientsData.filter(
-            (nutrient) => nutrient.categoryId === category.id
+            (nutrient) => nutrient.nutrientCategoryId === category.id
           ).length,
         }));
         setCategories(enrichedCategories);
@@ -140,8 +186,7 @@ const NutrientCategoryManagement = () => {
 
   // Create new category
   const createCategory = async () => {
-    if (!newCategory.name.trim()) {
-      showNotification("Category name is required", "error");
+    if (!validateInputs()) {
       return;
     }
     if (
@@ -155,7 +200,10 @@ const NutrientCategoryManagement = () => {
     }
     setLoading(true);
     try {
-      await createNutrientCategory(newCategory);
+      await createNutrientCategory({
+        name: newCategory.name.trim(),
+        description: newCategory.description.trim(),
+      });
       setNewCategory({ name: "", description: "" });
       await fetchData();
       showNotification("Category created successfully", "success");
@@ -168,8 +216,7 @@ const NutrientCategoryManagement = () => {
 
   // Update category
   const updateCategory = async () => {
-    if (!newCategory.name.trim()) {
-      showNotification("Category name is required", "error");
+    if (!validateInputs()) {
       return;
     }
     if (
@@ -186,8 +233,8 @@ const NutrientCategoryManagement = () => {
     try {
       await updateNutrientCategory({
         nutrientCategoryId: selectedCategory.id,
-        name: newCategory.name,
-        description: newCategory.description,
+        name: newCategory.name.trim(),
+        description: newCategory.description.trim(),
       });
       setNewCategory({ name: "", description: "" });
       setSelectedCategory(null);
@@ -204,9 +251,9 @@ const NutrientCategoryManagement = () => {
   // Delete category
   const deleteCategory = async (id) => {
     const category = categories.find((cat) => cat.id === id);
-    if (category && category.nutrientCount > 0) {
+    if (category.nutrientCount > 0) {
       showNotification(
-        "Cannot delete category: It contains nutrients",
+        "Cannot delete category: It contains nutrients. Please reassign or delete the nutrients first.",
         "error"
       );
       return;
@@ -310,75 +357,14 @@ const NutrientCategoryManagement = () => {
     fetchData();
   }, []);
 
-  // Initialize chart
-  useEffect(() => {
-    if (chartRef.current && !chartInstanceRef.current) {
-      chartInstanceRef.current = new Chart(chartRef.current, {
-        type: "bar",
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: "Nutrients per Category",
-              data: [],
-              backgroundColor: "rgba(46, 125, 50, 0.6)",
-              borderColor: "rgba(46, 125, 50, 1)",
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: { display: true, text: "Number of Nutrients" },
-              ticks: { stepSize: 1 },
-            },
-            x: { title: { display: true, text: "Categories" } },
-          },
-          plugins: {
-            legend: { display: false },
-            tooltip: { enabled: true },
-          },
-          animation: {
-            duration: 1000,
-            easing: "easeOutQuart",
-          },
-        },
-      });
-    }
-
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-        chartInstanceRef.current = null;
-      }
-    };
-  }, []);
-
-  // Update chart data
-  useEffect(() => {
-    if (chartInstanceRef.current) {
-      chartInstanceRef.current.data.labels = categories.map(
-        (cat) => cat.name || "Unnamed"
-      );
-      chartInstanceRef.current.data.datasets[0].data = categories.map(
-        (cat) => cat.nutrientCount || 0
-      );
-      chartInstanceRef.current.update();
-    }
-  }, [categories]);
-
   // Sidebar animation variants
   const sidebarVariants = {
     open: {
-      width: "280px",
+      width: "min(280px, 25vw)",
       transition: { duration: 0.3, ease: "easeOut", when: "beforeChildren" },
     },
     closed: {
-      width: "60px",
+      width: "min(60px, 15vw)",
       transition: { duration: 0.3, ease: "easeIn", when: "beforeChildren" },
     },
   };
@@ -529,8 +515,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={handleHomepageNavigation}
                   title="Homepage"
@@ -567,8 +552,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -597,8 +581,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
@@ -661,8 +644,7 @@ const NutrientCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -691,8 +673,7 @@ const NutrientCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -722,8 +703,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -783,12 +763,11 @@ const NutrientCategoryManagement = () => {
                 animate={
                   isSidebarOpen && !isNutrientDropdownOpen ? "closed" : "open"
                 }
-                initial="closed"
+                initial="open"
               >
                 <motion.div
                   variants={navItemVariants}
-                  className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
+                  className="sidebar-nav-item nutrient-dropdown-item active"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
@@ -818,7 +797,6 @@ const NutrientCategoryManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
                 >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
@@ -849,8 +827,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -879,8 +856,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -909,8 +885,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -936,7 +911,6 @@ const NutrientCategoryManagement = () => {
                   {isSidebarOpen && <span>Dish Management</span>}
                 </Link>
               </motion.div>
-         
             </>
           )}
           {currentSidebarPage === 2 && (
@@ -944,158 +918,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
-                  to="/nutrient-specialist/allergy-category-management"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Allergy Category Management"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Category icon for allergy category management"
-                  >
-                    <path
-                      d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
-                      fill="var(--nutrient-specialist-secondary)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Allergy Category Management</span>}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
-                  to="/nutrient-specialist/allergy-management"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Allergy Management"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Allergy icon for allergy management"
-                  >
-                    <path
-                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Allergy Management</span>}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
-                  to="/nutrient-specialist/disease-management"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Disease Management"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Medical icon for disease management"
-                  >
-                    <path
-                      d="M19 7h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3H5a2 2 0 00-2 2v6a2 2 0 002 2h3v3a2 2 0 002 2h4a2 2 0 002-2v-3h3a2 2 0 002-2V9a2 2 0 00-2-2zm-7 10v3h-2v-3H7v-2h3V9h2v3h3v2h-3z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Disease Management</span>}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
-                  to="/nutrient-specialist/warning-management"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Warning Management"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Warning icon for warning management"
-                  >
-                    <path
-                      d="M12 2l10 20H2L12 2zm0 4v8m0 4v2"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Warning Management</span>}
-                </Link>
-              </motion.div>
-              <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
-                <Link
-                  to="/nutrient-specialist/meal-management"
-                  onClick={() => setIsSidebarOpen(true)}
-                  title="Meal Management"
-                >
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-label="Meal icon for meal management"
-                  >
-                    <path
-                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 4h8v2H8v-2zm0 4h8v2H8v-2z"
-                      fill="var(--nutrient-specialist-accent)"
-                      stroke="var(--nutrient-specialist-white)"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  {isSidebarOpen && <span>Meal Management</span>}
-                </Link>
-              </motion.div>
-                   <motion.div
-                variants={navItemVariants}
-                className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/energy-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1124,8 +947,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1154,8 +976,152 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
+                <Link
+                  to="/nutrient-specialist/allergy-category-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Allergy Category Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Category icon for allergy category management"
+                  >
+                    <path
+                      d="M4 4h16v2H4V4zm0 7h16v2H4v-2zm0 7h16v2H4v-2z"
+                      fill="var(--nutrient-specialist-secondary)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Allergy Category Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+               >
+                <Link
+                  to="/nutrient-specialist/allergy-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Allergy Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Allergy icon for allergy management"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm0 4v4m0 4v2"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Allergy Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+               >
+                <Link
+                  to="/nutrient-specialist/disease-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Disease Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Medical icon for disease management"
+                  >
+                    <path
+                      d="M19 7h-3V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3H5a2 2 0 00-2 2v6a2 2 0 002 2h3v3a2 2 0 002 2h4a2 2 0 002-2v-3h3a2 2 0 002-2V9a2 2 0 00-2-2zm-7 10v3h-2v-3H7v-2h3V9h2v3h3v2h-3z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Disease Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+               >
+                <Link
+                  to="/nutrient-specialist/warning-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Warning Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Warning icon for warning management"
+                  >
+                    <path
+                      d="M12 2l10 20H2L12 2zm0 4v8m0 4v2"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Warning Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+               >
+                <Link
+                  to="/nutrient-specialist/meal-management"
+                  onClick={() => setIsSidebarOpen(true)}
+                  title="Meal Management"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-label="Meal icon for meal management"
+                  >
+                    <path
+                      d="M12 2a10 10 0 0110 10c0 5.52-4.48 10-10 10S2 17.52 2 12 6.48 2 12 2zm0 2a8 8 0 00-8 8 8 8 0 008 8 8 8 0 008-8 8 8 0 00-8-8zm-4 4h8v2H8v-2zm0 4h8v2H8v-2z"
+                      fill="var(--nutrient-specialist-accent)"
+                      stroke="var(--nutrient-specialist-white)"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  {isSidebarOpen && <span>Meal Management</span>}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+               >
                 <Link
                   to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1184,8 +1150,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1214,8 +1179,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1246,8 +1210,7 @@ const NutrientCategoryManagement = () => {
           <motion.div
             variants={navItemVariants}
             className="sidebar-nav-item page-switcher"
-
-            >
+          >
             <button
               onClick={() => setCurrentSidebarPage(1)}
               className={currentSidebarPage === 1 ? "active" : ""}
@@ -1270,8 +1233,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/profile"
                   className="nutrient-specialist-profile-info"
@@ -1300,8 +1262,7 @@ const NutrientCategoryManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -1378,24 +1339,7 @@ const NutrientCategoryManagement = () => {
             </p>
           </div>
         </div>
-
         <div className="management-container">
-          {/* Chart Section */}
-          <div className="chart-section">
-            <div className="section-header">
-              <h2>Category Overview</h2>
-              <div className="chart-legend">
-                <div className="legend-item">
-                  <div className="legend-color"></div>
-                  <span>Nutrients per Category</span>
-                </div>
-              </div>
-            </div>
-            <div className="chart-container">
-              <canvas ref={chartRef}></canvas>
-            </div>
-          </div>
-
           {/* Form Section */}
           <div className="form-section">
             <div className="section-header">
@@ -1458,7 +1402,6 @@ const NutrientCategoryManagement = () => {
               </div>
             </div>
           </div>
-
           {/* Category List Section */}
           <div className="category-list-section">
             <div className="section-header">

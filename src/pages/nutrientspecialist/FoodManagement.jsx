@@ -268,26 +268,21 @@ const FoodManagement = () => {
       showNotification("Invalid food ID", "error");
       return;
     }
-
     setLoading(true);
     try {
       const response = await getFoodById(id);
-
       let foodData = response;
-
       if (response && response.data) {
         foodData = response.data;
         if (response.data.data) {
           foodData = response.data.data;
         }
       }
-
       if (!foodData) {
         throw new Error(
           "No data received from server (possible food not found)"
         );
       }
-
       const normalizedData = {
         id: foodData?.id || foodData?.Id || "",
         name: foodData?.name || "",
@@ -300,11 +295,9 @@ const FoodManagement = () => {
           ? foodData.imageUrl.split("/").pop()
           : null,
       };
-
       if (!normalizedData.id || !normalizedData.name) {
         throw new Error("Invalid food data structure (missing id or name)");
       }
-
       setSelectedFood(normalizedData);
       setNewFood({
         name: normalizedData.name,
@@ -323,7 +316,6 @@ const FoodManagement = () => {
         status: err.response?.status,
         config: err.config,
       });
-
       const errorMessage =
         err.response?.data?.message ||
         err.message ||
@@ -348,21 +340,124 @@ const FoodManagement = () => {
     setSelectedFoodForModal(null);
   };
 
-  const createFoodHandler = async () => {
-    if (
-      !newFood.name ||
-      typeof newFood.name !== "string" ||
-      !newFood.name.trim()
-    ) {
+  const validateInputs = () => {
+    const nameRegex = /^[a-zA-Z0-9\s.,'-]+$/;
+    const descRegex = /^[a-zA-Z0-9\s.,'-]*$/;
+    const safetyNoteRegex = /^[a-zA-Z0-9\s.,'-]*$/; // Added regex for safetyNote
+    const trimmedName = newFood.name?.trim() || "";
+    const trimmedDescription = newFood.description?.trim() || "";
+    const trimmedSafetyNote = newFood.safetyNote?.trim() || "";
+
+    // Validate name
+    if (!trimmedName) {
       showNotification("Food name is required", "error");
-      return;
+      return false;
+    }
+    if (trimmedName.length <= 2) {
+      showNotification("Food name must be more than 2 characters", "error");
+      return false;
+    }
+    if (trimmedName.length > 50) {
+      showNotification("Food name must be 50 characters or less", "error");
+      return false;
+    }
+    if (!nameRegex.test(trimmedName)) {
+      showNotification("Food name contains invalid characters", "error");
+      return false;
+    }
+    if (
+      foods.some(
+        (food) =>
+          food.name.toLowerCase() === trimmedName.toLowerCase() &&
+          (!isEditing || food.id !== selectedFood?.id)
+      )
+    ) {
+      showNotification("Food name already exists", "error");
+      return false;
+    }
+    if (/^\s+[a-zA-Z]/.test(newFood.name)) {
+      showNotification(
+        "Food name cannot start with a space followed by a letter",
+        "error"
+      );
+      return false;
     }
 
+    // Validate description
+    if (!trimmedDescription) {
+      showNotification("Description is required", "error");
+      return false;
+    }
+    if (
+      trimmedDescription.split(/\s+/).filter((word) => word.length > 0)
+        .length <= 1
+    ) {
+      showNotification("Description must contain more than one word", "error");
+      return false;
+    }
+    if (trimmedDescription.length > 500) {
+      showNotification("Description must be 500 characters or less", "error");
+      return false;
+    }
+    if (!descRegex.test(trimmedDescription)) {
+      showNotification("Description contains invalid characters", "error");
+      return false;
+    }
+    if (/^\s+[a-zA-Z]/.test(newFood.description)) {
+      showNotification(
+        "Description cannot start with a space followed by a letter",
+        "error"
+      );
+      return false;
+    }
+
+    // Validate safety note
+    if (!trimmedSafetyNote) {
+      showNotification("Safety note is required", "error");
+      return false;
+    }
+    if (trimmedSafetyNote.length > 200) {
+      showNotification("Safety note must be 200 characters or less", "error");
+      return false;
+    }
+    if (!safetyNoteRegex.test(trimmedSafetyNote)) {
+      showNotification("Safety note contains invalid characters", "error");
+      return false;
+    }
+    if (/^\s+[a-zA-Z]/.test(newFood.safetyNote)) {
+      showNotification(
+        "Safety note cannot start with a space followed by a letter",
+        "error"
+      );
+      return false;
+    }
+
+    // Validate category
     if (!newFood.foodCategoryId) {
       showNotification("Food category is required", "error");
-      return;
+      return false;
     }
 
+    // Validate image (optional, but if provided, check file type and size)
+    if (newFood.image instanceof File) {
+      const validImageTypes = ["image/jpeg", "image/png", "image/gif"];
+      if (!validImageTypes.includes(newFood.image.type)) {
+        showNotification("Image must be a JPEG, PNG, or GIF", "error");
+        return false;
+      }
+      if (newFood.image.size > 5 * 1024 * 1024) {
+        showNotification("Image size must be less than 5MB", "error");
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const createFoodHandler = async () => {
+    if (!validateInputs()) {
+      return;
+    }
     setLoading(true);
     try {
       await fetchData();
@@ -376,13 +471,12 @@ const FoodManagement = () => {
         showNotification("Food name already exists", "error");
         return;
       }
-
       await createFood({
         name: trimmedName,
-        description: newFood.description?.trim() || "",
+        description: newFood.description.trim(),
         pregnancySafe: newFood.pregnancySafe,
         foodCategoryId: newFood.foodCategoryId,
-        safetyNote: newFood.safetyNote?.trim() || "",
+        safetyNote: newFood.safetyNote.trim(),
         image: newFood.image instanceof File ? newFood.image : null,
       });
       resetForm();
@@ -398,39 +492,33 @@ const FoodManagement = () => {
   };
 
   const updateFoodHandler = async () => {
-    if (!newFood.name?.trim()) {
-      showNotification("Food name is required", "error");
+    if (!validateInputs()) {
       return;
     }
     if (!selectedFood?.id) {
       showNotification("No food selected for update", "error");
       return;
     }
-
     setLoading(true);
     try {
       const foodUpdateResponse = await updateFood({
         id: selectedFood.id,
         name: newFood.name.trim(),
-        description: newFood.description?.trim() || "",
+        description: newFood.description.trim(),
         pregnancySafe: newFood.pregnancySafe,
-        safetyNote: newFood.safetyNote?.trim() || "",
+        safetyNote: newFood.safetyNote.trim(),
       });
-
       if (!foodUpdateResponse) {
         throw new Error("Update failed - no response data from food update");
       }
-
       let imageUpdated = false;
       if (newFood.image instanceof File) {
         await updateFoodImage(selectedFood.id, newFood.image);
         imageUpdated = true;
       } else if (newFood.image === null && selectedFood.imageUrl) {
-        // Assuming API supports null to remove image
         await updateFoodImage(selectedFood.id, null);
         imageUpdated = true;
       }
-
       showNotification(
         `Food ${imageUpdated ? "and image " : ""}updated successfully`,
         "success"
@@ -734,8 +822,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist"
                   onClick={() => setIsSidebarOpen(true)}
@@ -772,8 +859,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -802,8 +888,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
@@ -866,8 +951,7 @@ const FoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -896,8 +980,7 @@ const FoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -927,8 +1010,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -993,8 +1075,7 @@ const FoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -1023,8 +1104,7 @@ const FoodManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -1054,8 +1134,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1084,8 +1163,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1114,8 +1192,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1148,8 +1225,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1178,8 +1254,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1208,8 +1283,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1238,8 +1312,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/warning-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1268,8 +1341,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/meal-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1298,8 +1370,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/energy-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1328,8 +1399,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1358,8 +1428,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1388,8 +1457,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1418,8 +1486,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1473,8 +1540,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item nutrient-specialist-profile-section"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/profile"
                   className="nutrient-specialist-profile-info"
@@ -1503,8 +1569,7 @@ const FoodManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -1581,7 +1646,6 @@ const FoodManagement = () => {
             </p>
           </div>
         </div>
-
         <div className="management-container">
           {/* Form Section */}
           <div className="form-section">
@@ -1601,7 +1665,6 @@ const FoodManagement = () => {
                   className="input-field"
                   aria-label="Food name"
                 />
-
                 <label htmlFor="food-description">Description</label>
                 <textarea
                   id="food-description"
@@ -1613,7 +1676,6 @@ const FoodManagement = () => {
                   rows="4"
                   aria-label="Food description"
                 />
-
                 <label htmlFor="food-category">Food Category</label>
                 <select
                   id="food-category"
@@ -1631,7 +1693,6 @@ const FoodManagement = () => {
                     </option>
                   ))}
                 </select>
-
                 <div className="checkbox-group">
                   <input
                     id="pregnancy-safe"
@@ -1643,7 +1704,6 @@ const FoodManagement = () => {
                   />
                   <label htmlFor="pregnancy-safe">Pregnancy Safe</label>
                 </div>
-
                 <label htmlFor="safety-note">Safety Note</label>
                 <textarea
                   id="safety-note"
@@ -1655,7 +1715,6 @@ const FoodManagement = () => {
                   rows="2"
                   aria-label="Safety note"
                 />
-
                 <label htmlFor="food-image">Image</label>
                 <div className="image-upload-group">
                   <input
@@ -1688,7 +1747,6 @@ const FoodManagement = () => {
                     <div className="no-image">No image selected</div>
                   )}
                 </div>
-
                 <div className="button-group">
                   <motion.button
                     onClick={isEditing ? updateFoodHandler : createFoodHandler}

@@ -163,12 +163,12 @@ const AddingBlog = () => {
           const majorWords = words.filter(
             (word) => !stopWords.includes(word.toLowerCase())
           );
-          if (
-            majorWords.length > 0 &&
-            majorWords.some((word) => word[0] !== word[0].toUpperCase())
-          ) {
-            error = "Major words in title must be capitalized (e.g., Health Tips).";
-          }
+          // if (
+          //   majorWords.length > 0 &&
+          //   majorWords.some((word) => word[0] !== word[0].toUpperCase())
+          // ) {
+          //   error = "Major words in title must be capitalized (e.g., Health Tips).";
+          // }
         }
         break;
       case "body":

@@ -1,8 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import * as signalR from "@microsoft/signalr";
 import { getCurrentUser, logout } from "../../apis/authentication-api";
+import {
+  startChatThread,
+  sendMessage,
+  getChatThreadByUserId,
+  getChatThreadById,
+} from "../../apis/message-api";
+import { getUserById } from "../../apis/user-api";
+import { useMessages } from "../../utils/useMessages";
 import "../../styles/MessengerManagement.css";
+import {
+  FaComments,
+  FaSearch,
+  FaUser,
+  FaPhone,
+  FaVideo,
+  FaFile,
+  FaPaperclip,
+  FaTimes,
+  FaClock,
+  FaCheckCircle,
+} from "react-icons/fa";
+import { FaFileAlt } from "react-icons/fa";
+import { HiPaperAirplane } from "react-icons/hi2";
 
 const LoaderIcon = () => (
   <svg
@@ -44,45 +67,88 @@ const Notification = ({ message, type }) => {
 };
 
 const MessengerManagement = () => {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  // Original states
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth > 768);
   const [notification, setNotification] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [currentSidebarPage, setCurrentSidebarPage] = useState(2);
   const [isFoodDropdownOpen, setIsFoodDropdownOpen] = useState(false);
   const [isNutrientDropdownOpen, setIsNutrientDropdownOpen] = useState(false);
+
+  // Use same pattern as AdvicePage/ConsultationManagement
+  const messagesEndRef = useRef(null);
+  const {
+    connection,
+    messages,
+    addMessage,
+    connectionStatus,
+    isReconnecting,
+    isConnected,
+  } = useMessages();
+
+  // Add processedMessageIds pattern (same as AdvicePage)
+  const processedMessageIds = useRef(new Set());
+
+  // New consultation states (adapted from ConsultationManagement)
+  const [currentStaffId, setCurrentStaffId] = useState(null);
+  const [currentStaffData, setCurrentStaffData] = useState(null);
+  const [chatThreads, setChatThreads] = useState({});
+  const [selectedThread, setSelectedThread] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [newMessage, setNewMessage] = useState("");
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [filePreview, setFilePreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const [filterStatus, setFilterStatus] = useState("all");
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const messagesEndRef = useRef(null);
 
-  const toggleFoodDropdown = () => {
-    setIsFoodDropdownOpen((prev) => !prev);
+  // File handling utilities (same as original)
+  const formatBytes = (bytes) => {
+    if (!bytes || bytes === 0) return "0 B";
+    const units = ["B", "KB", "MB", "GB"];
+    let i = 0;
+    let n = bytes;
+    while (n >= 1024 && i < units.length - 1) {
+      n /= 1024;
+      i++;
+    }
+    return n.toFixed(n >= 10 || i === 0 ? 0 : 1) + " " + units[i];
   };
 
-  const toggleNutrientDropdown = () => {
-    setIsNutrientDropdownOpen((prev) => !prev);
+  const supportedImageTypes = [".jpg", ".jpeg", ".png"];
+  const supportedDocTypes = [".docx", ".xls", ".xlsx", ".pdf"];
+  const allSupportedTypes = [...supportedImageTypes, ...supportedDocTypes];
+
+  const isImageFile = (fileName) => {
+    if (!fileName) return false;
+    const extension = "." + fileName.toLowerCase().split(".").pop();
+    return supportedImageTypes.includes(extension);
   };
 
-  const dropdownVariants = {
-    open: {
-      height: "auto",
-      opacity: 1,
-      transition: { duration: 0.3, ease: "easeOut" },
-    },
-    closed: {
-      height: 0,
-      opacity: 0,
-      transition: { duration: 0.3, ease: "easeIn" },
-    },
+  const scrollToBottom = () => {
+    requestAnimationFrame(() => {
+      if (messagesEndRef.current) {
+        const messagesContainer = messagesEndRef.current.closest(
+          ".messenger-management-messages"
+        );
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        } else {
+          messagesEndRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+            inline: "nearest",
+          });
+        }
+      }
+    });
   };
 
-  const handleHomepageNavigation = () => {
-    setIsSidebarOpen(true);
-    navigate("/nutrient-specialist");
-  };
-
+  // Initialize staff user (same as original)
   useEffect(() => {
     const fetchUser = () => {
       if (!token) {
@@ -94,6 +160,9 @@ const MessengerManagement = () => {
           const userData = response.data?.data || response.data;
           if (userData && Number(userData.roleId) === 4) {
             setUser(userData);
+            setCurrentStaffId(userData.id);
+            setCurrentStaffData(userData);
+            loadStaffThreads(userData.id);
           } else {
             localStorage.removeItem("token");
             setUser(null);
@@ -105,10 +174,486 @@ const MessengerManagement = () => {
           localStorage.removeItem("token");
           setUser(null);
           navigate("/signin", { replace: true });
+        })
+        .finally(() => {
+          setLoading(false);
         });
     };
     fetchUser();
   }, [navigate, token]);
+
+  // Load staff threads (same as original but with UTC timestamp fix)
+  const loadStaffThreads = async (staffUserId) => {
+    try {
+      const threadsResponse = await getChatThreadByUserId(staffUserId, token);
+
+      let threads = [];
+      if (Array.isArray(threadsResponse)) {
+        threads = threadsResponse;
+      } else if (threadsResponse?.data && Array.isArray(threadsResponse.data)) {
+        threads = threadsResponse.data;
+      } else if (threadsResponse?.id) {
+        threads = [threadsResponse];
+      }
+
+      if (threads.length > 0) {
+        const threadsMap = {};
+
+        for (const thread of threads) {
+          let patientUserId = null;
+
+          if (thread.userId && thread.consultantId) {
+            if (thread.consultantId === staffUserId) {
+              patientUserId = thread.userId;
+            } else if (thread.userId === staffUserId) {
+              patientUserId = thread.consultantId;
+            }
+          } else if (thread.userId && thread.userId !== staffUserId) {
+            patientUserId = thread.userId;
+          }
+
+          if (!patientUserId) continue;
+
+          try {
+            const patientRes = await getUserById(patientUserId, token);
+            const patientData = patientRes?.data || patientRes || null;
+
+            const processedMessages =
+              thread.messages?.map((msg) => {
+                // Fix UTC timestamp by adding Z if missing (same as AdvicePage)
+                let createdAt =
+                  msg.createdAt || msg.sentAt || new Date().toISOString();
+                if (typeof createdAt === "string" && !createdAt.includes("Z")) {
+                  createdAt = createdAt + "Z";
+                }
+
+                const processedMsg = {
+                  ...msg,
+                  createdAt: createdAt,
+                  messageText: msg.messageText || msg.message || msg.text || "",
+                };
+
+                // Handle attachments (same as original)
+                if (msg.attachmentUrl || msg.attachmentPath || msg.attachment) {
+                  processedMsg.attachment = {
+                    fileName:
+                      msg.attachmentFileName || msg.fileName || "Attachment",
+                    fileSize: msg.attachmentFileSize || msg.fileSize,
+                    fileType: msg.attachmentFileType || msg.fileType,
+                    isImage: isImageFile(
+                      msg.attachmentFileName || msg.fileName
+                    ),
+                    url:
+                      msg.attachmentUrl ||
+                      msg.attachmentPath ||
+                      msg.attachment?.url,
+                  };
+                }
+
+                // Handle media array (same as AdvicePage)
+                if (
+                  msg.media &&
+                  Array.isArray(msg.media) &&
+                  msg.media.length > 0
+                ) {
+                  const firstMedia = msg.media[0];
+                  processedMsg.attachment = {
+                    fileName: firstMedia.fileName || "Attachment",
+                    fileSize: firstMedia.fileSize,
+                    fileType: firstMedia.fileType,
+                    isImage: isImageFile(firstMedia.fileName || ""),
+                    url: firstMedia.fileUrl || firstMedia.url,
+                  };
+                }
+
+                return processedMsg;
+              }) || [];
+
+            const unreadCount = processedMessages.filter(
+              (msg) => !msg.isRead && msg.senderId === patientUserId
+            ).length;
+
+            threadsMap[patientUserId] = {
+              thread,
+              messages: processedMessages,
+              patient: patientData,
+              lastActivity: thread.updatedAt || thread.createdAt,
+              unreadCount: unreadCount,
+            };
+          } catch (err) {
+            console.error(`Failed to fetch patient ${patientUserId}:`, err);
+          }
+        }
+
+        setChatThreads(threadsMap);
+      }
+    } catch (error) {
+      console.error("Failed to load staff threads:", error);
+    }
+  };
+
+  // Real-time message handling - DEBUG VERSION
+  useEffect(() => {
+    // console.log("=== MESSAGE EFFECT TRIGGERED ===");
+    // console.log("messages.length:", messages.length);
+    // console.log("currentStaffId:", currentStaffId);
+    // console.log(
+    //   "selectedThread?.patientUserId:",
+    //   selectedThread?.patientUserId
+    // );
+
+    if (messages.length === 0) {
+      console.log("No messages, returning early");
+      return;
+    }
+
+    const latest = messages[messages.length - 1];
+    console.log("=== PROCESSING NEW MESSAGE ===");
+    // console.log("Latest message:", JSON.stringify(latest, null, 2));
+
+    // Early duplicate check
+    if (!latest.id || processedMessageIds.current.has(latest.id)) {
+      console.log("Message already processed, skipping:", latest.id);
+      return;
+    }
+
+    // Mark message as processed immediately
+    processedMessageIds.current.add(latest.id);
+    console.log("Message marked as processed:", latest.id);
+
+    const senderId = latest.senderId;
+    console.log("=== MESSAGE ROUTING BASED ON CHAT THREADS ===");
+    console.log("senderId:", senderId);
+    console.log("currentStaffId:", currentStaffId);
+
+    // Check if the sender is a patient we have a conversation with
+    // OR if the sender is the current staff (but we probably don't want to process our own messages in real-time)
+    setChatThreads((prev) => {
+      console.log("=== CHECKING CHAT THREADS ===");
+      console.log("Available threads:", Object.keys(prev));
+
+      // Find if this message is from a patient we have a thread with
+      const patientUserId = Object.keys(prev).find((userId) => {
+        const thread = prev[userId];
+        // Check if message sender is the patient (userId) and current staff is the consultant
+        return (
+          senderId === userId && thread.thread.consultantId === currentStaffId
+        );
+      });
+
+      if (!patientUserId) {
+        // console.log("Message not from any patient in our threads");
+        // console.log("Sender ID:", senderId);
+        // console.log("Expected patients:", Object.keys(prev));
+        return prev;
+      }
+
+      // console.log("Message from patient:", patientUserId);
+
+      const existingMessages = prev[patientUserId]?.messages || [];
+      console.log("Existing messages count:", existingMessages.length);
+
+      // Secondary check at state level
+      const messageExists = existingMessages.some((m) => m.id === latest.id);
+      if (messageExists) {
+        // console.log(
+        //   "Message already exists in thread, skipping:",
+        //   latest.id
+        // );
+        return prev;
+      }
+
+      // console.log(
+      //   "Adding new message to thread for patient:",
+      //   patientUserId
+      // );
+
+      // Process the message
+      const processedMessage = {
+        ...latest,
+        messageText: latest.messageText || latest.message || latest.text,
+        createdAt: (() => {
+          // Fix UTC timestamp by adding Z if missing
+          let timestamp = latest.createdAt || new Date().toISOString();
+          if (typeof timestamp === "string" && !timestamp.includes("Z")) {
+            timestamp = timestamp + "Z";
+          }
+          return timestamp;
+        })(),
+      };
+
+      console.log(
+        "Processed message:",
+        JSON.stringify(processedMessage, null, 2)
+      );
+
+      // Handle media attachments
+      if (
+        latest.media &&
+        Array.isArray(latest.media) &&
+        latest.media.length > 0
+      ) {
+        const firstMedia = latest.media[0];
+        processedMessage.attachment = {
+          fileName: firstMedia.fileName || "Attachment",
+          fileSize: firstMedia.fileSize,
+          fileType: firstMedia.fileType,
+          isImage: isImageFile(firstMedia.fileName || ""),
+          url: firstMedia.fileUrl || firstMedia.url,
+        };
+        console.log("Added attachment to message");
+      }
+
+      const updatedMessages = [...existingMessages, processedMessage];
+      console.log("Updated messages count:", updatedMessages.length);
+
+      // Update selected thread if this is the active conversation
+      if (selectedThread && selectedThread.patientUserId === patientUserId) {
+        console.log("Updating selected thread for active conversation");
+        setTimeout(() => {
+          setSelectedThread((prevSelected) => ({
+            ...prevSelected,
+            messages: updatedMessages,
+          }));
+          console.log("Selected thread updated");
+          scrollToBottom();
+          console.log("Scrolled to bottom");
+        }, 100);
+      }
+
+      const updatedThreadData = {
+        ...prev,
+        [patientUserId]: {
+          ...prev[patientUserId],
+          messages: updatedMessages,
+          unreadCount:
+            selectedThread?.patientUserId === patientUserId
+              ? 0
+              : (prev[patientUserId]?.unreadCount || 0) + 1,
+        },
+      };
+
+      console.log("=== THREAD UPDATE COMPLETE ===");
+      console.log("Updated thread for patient:", patientUserId);
+      return updatedThreadData;
+    });
+  }, [messages, selectedThread?.patientUserId, currentStaffId]);
+
+  useEffect(() => {
+    if (connection && selectedThread?.thread?.id && isConnected) {
+      const threadId = selectedThread.thread.id;
+      console.log("=== JOINING THREAD ===");
+      console.log("Joining thread:", threadId);
+
+      connection
+        .invoke("JoinThread", threadId)
+        .then(() => {
+          console.log("Successfully joined thread:", threadId);
+        })
+        .catch((err) => {
+          console.error("JoinThread failed:", err);
+        });
+    }
+  }, [connection, selectedThread?.thread?.id, isConnected]);
+
+  // Cleanup for processed message IDs (same as AdvicePage)
+  useEffect(() => {
+    const cleanup = setInterval(() => {
+      if (processedMessageIds.current.size > 1000) {
+        console.log("Cleaning up processed message IDs");
+        processedMessageIds.current.clear();
+      }
+    }, 5 * 60 * 1000);
+
+    return () => clearInterval(cleanup);
+  }, []);
+
+  // Handle selecting a chat thread (same as original)
+  const handleSelectThread = (patientUserId) => {
+    const threadData = chatThreads[patientUserId];
+    if (threadData) {
+      setSelectedThread({
+        ...threadData,
+        patientUserId: patientUserId,
+      });
+
+      setChatThreads((prevThreads) => ({
+        ...prevThreads,
+        [patientUserId]: {
+          ...prevThreads[patientUserId],
+          unreadCount: 0,
+          messages: prevThreads[patientUserId].messages.map((msg) => ({
+            ...msg,
+            isRead: msg.senderId === patientUserId ? true : msg.isRead,
+          })),
+        },
+      }));
+    }
+  };
+
+  // Send message (same as original but with UTC timestamp fix)
+  const handleSendMessage = async () => {
+    if (!connection || !isConnected) {
+      console.error("SignalR connection not established");
+      if (isReconnecting) {
+        showNotification(
+          "Reconnecting... Please try again in a moment.",
+          "error"
+        );
+      } else {
+        showNotification(
+          "Connection lost. Please wait while we reconnect...",
+          "error"
+        );
+      }
+      return;
+    }
+
+    if (connection.state !== signalR.HubConnectionState.Connected) {
+      console.error(
+        "SignalR connection not ready. Current state:",
+        connection.state
+      );
+      showNotification(
+        "Connection not ready. Please wait a moment and try again.",
+        "error"
+      );
+      return;
+    }
+
+    const patientUserId = selectedThread?.patientUserId;
+    const activeThread = selectedThread?.thread;
+
+    if (
+      (!newMessage.trim() && !selectedFile) ||
+      !activeThread ||
+      sendingMessage
+    ) {
+      return;
+    }
+
+    try {
+      setSendingMessage(true);
+      const formData = new FormData();
+
+      formData.append("ChatThreadId", activeThread.id);
+      formData.append("SenderId", currentStaffId);
+
+      if (newMessage.trim()) {
+        formData.append("MessageText", newMessage.trim());
+      }
+
+      if (selectedFile) {
+        formData.append("Attachments", selectedFile);
+        formData.append("AttachmentFileName", selectedFile.name);
+        formData.append("AttachmentFileType", selectedFile.type);
+        formData.append("AttachmentFileSize", selectedFile.size.toString());
+      }
+
+      const response = await sendMessage(formData, token);
+
+      if (response.error === 0) {
+        const attachmentUrl =
+          response.data?.attachmentUrl ||
+          response.data?.attachmentPath ||
+          response.data?.attachment?.url;
+
+        const newMsg = {
+          id: response.data?.id || Date.now().toString(),
+          senderId: currentStaffId,
+          receiverId: patientUserId,
+          messageText: newMessage.trim(),
+          createdAt: (() => {
+            // Fix UTC timestamp by adding Z if missing
+            let timestamp =
+              response.data?.sentAt ||
+              response.data?.createdAt ||
+              new Date().toISOString();
+            if (typeof timestamp === "string" && !timestamp.includes("Z")) {
+              timestamp = timestamp + "Z";
+            }
+            return timestamp;
+          })(),
+          messageType: selectedFile ? "attachment" : "text",
+          isRead: false,
+          attachmentUrl: attachmentUrl,
+          attachmentFileName: selectedFile?.name,
+          attachmentFileType: selectedFile?.type,
+          attachmentFileSize: selectedFile?.size,
+          attachment: selectedFile
+            ? {
+                fileName: selectedFile.name,
+                fileSize: selectedFile.size,
+                fileType: selectedFile.type,
+                isImage: isImageFile(selectedFile.name),
+                url: attachmentUrl || filePreview,
+              }
+            : null,
+        };
+
+        // Update chat threads
+        setChatThreads((prevThreads) => ({
+          ...prevThreads,
+          [patientUserId]: {
+            ...prevThreads[patientUserId],
+            messages: [...(prevThreads[patientUserId]?.messages || []), newMsg],
+            lastActivity: newMsg.createdAt,
+          },
+        }));
+
+        setSelectedThread((prev) => ({
+          ...prev,
+          messages: [...(prev?.messages || []), newMsg],
+        }));
+
+        setNewMessage("");
+        clearSelectedFile();
+        scrollToBottom();
+        showNotification("Message sent successfully", "success");
+      }
+    } catch (error) {
+      console.error("Error sending message:", error);
+      showNotification("Failed to send message", "error");
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Keep all your original file handling functions, sidebar functions, etc.
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const fileName = file.name.toLowerCase();
+    const fileExtension = "." + fileName.split(".").pop();
+
+    if (!allSupportedTypes.includes(fileExtension)) {
+      alert(
+        `Unsupported file type. Supported types: ${allSupportedTypes.join(
+          ", "
+        )}`
+      );
+      return;
+    }
+
+    setSelectedFile(file);
+
+    if (supportedImageTypes.includes(fileExtension)) {
+      const reader = new FileReader();
+      reader.onload = (e) => setFilePreview(e.target.result);
+      reader.readAsDataURL(file);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
+  const clearSelectedFile = () => {
+    setSelectedFile(null);
+    setFilePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
@@ -119,29 +664,70 @@ const MessengerManagement = () => {
     document.addEventListener("closeNotification", closeListener);
   };
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim()) {
-      showNotification("Message cannot be empty", "error");
-      return;
-    }
+  // Keep all your original sidebar functions (toggleSidebar, handleLogout, etc.)
+  // ... (I'll keep this collapsed to focus on the real-time messaging changes)
 
-    setLoading(true);
+  // Helper functions
+  const formatMessageTime = (timestamp) => {
+    if (!timestamp) return "Just now";
+
     try {
-      const message = {
-        id: Date.now(),
-        content: newMessage,
-        sender: user?.email || "User",
-        timestamp: new Date().toLocaleTimeString(),
-      };
-      setMessages((prev) => [...prev, message]);
-      setNewMessage("");
-      showNotification("Message sent successfully", "success");
-    } catch (err) {
-      showNotification("Failed to send message", "error");
-    } finally {
-      setLoading(false);
+      // Add Z to UTC timestamp if missing
+      if (typeof timestamp === "string" && !timestamp.includes("Z")) {
+        timestamp = timestamp + "Z";
+      }
+
+      const date = new Date(timestamp);
+
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return "Invalid";
+      }
+
+      const now = new Date();
+      const diffMs = now - date;
+      const diffMinutes = Math.floor(diffMs / 60000);
+      const diffHours = Math.floor(diffMs / 3600000);
+      const diffDays = Math.floor(diffMs / 86400000);
+
+      if (diffMinutes < 1) return "Just now";
+      if (diffMinutes < 60) return `${diffMinutes}m ago`;
+      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffDays < 7) return `${diffDays}d ago`;
+
+      return date.toLocaleDateString([], {
+        month: "short",
+        day: "numeric",
+      });
+    } catch (error) {
+      console.error("Error formatting message time:", error);
+      return "Unknown";
     }
   };
+
+  // Filter threads
+  const filteredThreads = Object.entries(chatThreads).filter(
+    ([userId, thread]) => {
+      const searchMatch =
+        !searchTerm ||
+        thread.patient?.userName
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        thread.patient?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const statusMatch =
+        filterStatus === "all" ||
+        (filterStatus === "unread" && thread.unreadCount > 0) ||
+        (filterStatus === "active" && thread.messages?.length > 0);
+
+      return searchMatch && statusMatch;
+    }
+  );
+
+  const totalUnreadCount = Object.values(chatThreads).reduce(
+    (sum, thread) => sum + thread.unreadCount,
+    0
+  );
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -162,6 +748,133 @@ const MessengerManagement = () => {
   };
 
   useEffect(() => {
+    if (!connection || !isConnected) return;
+
+    const messageListener = (message) => {
+      console.log("Staff received message:", message);
+
+      // Find which user conversation this message belongs to
+      const senderId = message.senderId;
+      const receiverId = message.receiverId || currentStaffId;
+
+      // Check if this message is for a conversation we have open
+      Object.keys(chatThreads).forEach((patientUserId) => {
+        const thread = chatThreads[patientUserId];
+
+        // If message is from a user to this staff member
+        if (senderId === patientUserId && receiverId === currentStaffId) {
+          // Process the incoming message
+          const incomingMsg = {
+            id: message.id || Date.now(),
+            senderId: message.senderId,
+            receiverId: message.receiverId || currentStaffId,
+            messageText: message.messageText || message.message || message.text,
+            createdAt: message.createdAt || new Date().toISOString(),
+            attachment: message.attachment || null,
+          };
+
+          // Update chat threads
+          setChatThreads((prev) => ({
+            ...prev,
+            [patientUserId]: {
+              ...prev[patientUserId],
+              messages: prev[patientUserId]?.messages.some(
+                (msg) => msg.id === incomingMsg.id
+              )
+                ? prev[patientUserId].messages
+                : [...(prev[patientUserId]?.messages || []), incomingMsg],
+              unreadCount:
+                selectedThread?.patientUserId === patientUserId
+                  ? 0
+                  : (prev[patientUserId]?.unreadCount || 0) + 1,
+            },
+          }));
+
+          // Update selected thread if this is the active conversation
+          if (
+            selectedThread &&
+            selectedThread.patientUserId === patientUserId
+          ) {
+            setSelectedThread((prev) => ({
+              ...prev,
+              messages: prev.messages.some((msg) => msg.id === incomingMsg.id)
+                ? prev.messages
+                : [...prev.messages, incomingMsg],
+            }));
+          }
+
+          // Auto-scroll to bottom if this conversation is active
+          if (selectedThread?.patientUserId === patientUserId) {
+            setTimeout(() => scrollToBottom(), 100);
+          }
+        }
+      });
+    };
+
+    // Add message listener
+    connection.on("ReceiveMessage", messageListener);
+
+    // Cleanup
+    return () => {
+      if (connection) {
+        connection.off("ReceiveMessage", messageListener);
+      }
+    };
+  }, [connection, isConnected, chatThreads, selectedThread, currentStaffId]);
+
+  const ConnectionStatusIndicator = () => {
+    if (isConnected && !isReconnecting) {
+      return null; // Don't show anything when connected
+    }
+
+    const getStatusMessage = () => {
+      switch (connectionStatus) {
+        case "connecting":
+          return "Connecting...";
+        case "reconnecting":
+          return "Reconnecting...";
+        case "disconnected":
+          return "Connection lost - Attempting to reconnect...";
+        default:
+          return "Connection status unknown";
+      }
+    };
+
+    const getStatusColor = () => {
+      switch (connectionStatus) {
+        case "connecting":
+          return "#2196f3";
+        case "reconnecting":
+          return "#ff9800";
+        case "disconnected":
+          return "#f44336";
+        default:
+          return "#9e9e9e";
+      }
+    };
+
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: "10px",
+          right: "10px",
+          background: getStatusColor(),
+          color: "white",
+          padding: "8px 16px",
+          borderRadius: "4px",
+          fontSize: "14px",
+          fontWeight: "500",
+          zIndex: 1000,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        }}
+      >
+        {getStatusMessage()}
+      </div>
+    );
+  };
+
+  useEffect(() => {
     const handleResize = () => {
       setIsSidebarOpen(window.innerWidth > 768);
     };
@@ -170,9 +883,10 @@ const MessengerManagement = () => {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    scrollToBottom();
+  }, [selectedThread?.messages]);
 
+  // Animation variants (keep original)
   const containerVariants = {
     initial: { opacity: 0 },
     animate: { opacity: 1, transition: { duration: 0.5 } },
@@ -223,6 +937,7 @@ const MessengerManagement = () => {
 
   return (
     <div className="messenger-management">
+      <ConnectionStatusIndicator />
       <AnimatePresence>
         {notification && (
           <Notification
@@ -301,8 +1016,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={handleHomepageNavigation}
                   title="Homepage"
@@ -339,8 +1053,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/blog-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -369,8 +1082,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleFoodDropdown}
                   className="food-dropdown-toggle"
@@ -425,14 +1137,15 @@ const MessengerManagement = () => {
               <motion.div
                 className="food-dropdown"
                 variants={dropdownVariants}
-                animate={isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"}
+                animate={
+                  isSidebarOpen && isFoodDropdownOpen ? "open" : "closed"
+                }
                 initial="closed"
               >
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -461,8 +1174,7 @@ const MessengerManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item food-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/food-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -492,8 +1204,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   onClick={toggleNutrientDropdown}
                   className="nutrient-dropdown-toggle"
@@ -558,8 +1269,7 @@ const MessengerManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/nutrient-category-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -588,8 +1298,7 @@ const MessengerManagement = () => {
                 <motion.div
                   variants={navItemVariants}
                   className="sidebar-nav-item nutrient-dropdown-item"
-                  whileHover="hover"
-                >
+                   >
                   <Link
                     to="/nutrient-specialist/nutrient-management"
                     onClick={() => setIsSidebarOpen(true)}
@@ -619,8 +1328,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-in-food-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -649,8 +1357,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/age-group-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -679,8 +1386,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/dish-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -713,8 +1419,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/allergy-category-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -743,8 +1448,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/allergy-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -773,8 +1477,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/disease-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -803,8 +1506,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/warning-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -833,8 +1535,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/meal-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -863,8 +1564,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/energy-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -893,8 +1593,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-suggestion"
                   onClick={() => setIsSidebarOpen(true)}
@@ -923,8 +1622,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item active"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/messenger-management"
                   onClick={() => setIsSidebarOpen(true)}
@@ -953,8 +1651,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-policy"
                   onClick={() => setIsSidebarOpen(true)}
@@ -983,8 +1680,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/nutrient-specialist/nutrient-tutorial"
                   onClick={() => setIsSidebarOpen(true)}
@@ -1038,8 +1734,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item profile-section"
-                whileHover="hover"
-              >
+               >
                 <Link
                   to="/profile"
                   className="profile-info"
@@ -1066,8 +1761,7 @@ const MessengerManagement = () => {
               <motion.div
                 variants={navItemVariants}
                 className="sidebar-nav-item"
-                whileHover="hover"
-              >
+               >
                 <button
                   className="logout-button"
                   onClick={handleLogout}
@@ -1126,94 +1820,384 @@ const MessengerManagement = () => {
         </motion.nav>
       </motion.aside>
       <motion.main
-        className={`content ${isSidebarOpen ? "sidebar-open" : "sidebar-closed"}`}
+        className={`content ${
+          isSidebarOpen ? "sidebar-open" : "sidebar-closed"
+        }`}
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className="management-header">
           <div className="header-content">
-            <h1>Messenger Management</h1>
-            <p>Communicate and manage messages for nutrient-related queries</p>
+            <h1>User Consultation Management</h1>
+            <p>Connect with users for nutrition guidance and consultation</p>
           </div>
         </div>
+
+        {/* NEW: Refactored management-container with consultation functionality */}
         <div className="management-container">
-          <div className="chat-section">
-            <div className="section-header">
-              <h2>Chat Box</h2>
+          {loading ? (
+            <div className="loading-state">
+              <LoaderIcon />
+              <p>Loading conversations...</p>
             </div>
-            <div className="chat-card">
-              <div className="chat-messages">
-                {loading ? (
-                  <div className="loading-state">
-                    <LoaderIcon />
-                    <p>Loading messages...</p>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="empty-state">
-                    <svg
-                      width="64"
-                      height="64"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="1.5"
-                        d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+          ) : (
+            <div className="consultation-layout">
+              {/* Conversations Sidebar */}
+              <div className="conversations-sidebar">
+                <div className="conversations-header">
+                  <h3>
+                    <FaComments />
+                    Conversations
+                    {totalUnreadCount > 0 && (
+                      <span className="unread-badge">{totalUnreadCount}</span>
+                    )}
+                  </h3>
+
+                  <div className="search-section">
+                    <div className="search-input-wrapper">
+                      <FaSearch className="search-icon" />
+                      <input
+                        type="text"
+                        placeholder="Search conversations..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="search-input"
                       />
-                    </svg>
-                    <h3>No messages yet</h3>
-                    <p>Start a conversation by sending a message</p>
+                    </div>
                   </div>
-                ) : (
-                  <div className="messages-container">
-                    {messages.map((message) => (
-                      <motion.div
-                        key={message.id}
-                        className="message-bubble"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
+
+                  <div className="filter-tabs">
+                    <button
+                      className={`filter-tab ${
+                        filterStatus === "all" ? "active" : ""
+                      }`}
+                      onClick={() => setFilterStatus("all")}
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`filter-tab ${
+                        filterStatus === "unread" ? "active" : ""
+                      }`}
+                      onClick={() => setFilterStatus("unread")}
+                    >
+                      Unread
+                    </button>
+                    {/* <button
+                      className={`filter-tab ${
+                        filterStatus === "active" ? "active" : ""
+                      }`}
+                      onClick={() => setFilterStatus("active")}
+                    >
+                      Active
+                    </button> */}
+                  </div>
+                </div>
+
+                <div className="conversations-list">
+                  {filteredThreads.length === 0 ? (
+                    <div className="no-conversations">
+                      <FaComments className="no-conversations-icon" />
+                      <p>
+                        {searchTerm || filterStatus !== "all"
+                          ? "No conversations match your criteria."
+                          : "You don't have any user conversations yet."}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredThreads.map(([userId, thread]) => (
+                      <div
+                        key={userId}
+                        className={`conversation-item ${
+                          selectedThread?.patientUserId === userId
+                            ? "active"
+                            : ""
+                        }`}
+                        onClick={() => handleSelectThread(userId)}
                       >
-                        <div className="message-header">
-                          <span className="message-sender">{message.sender}</span>
-                          <span className="message-timestamp">{message.timestamp}</span>
+                        <div className="conversation-avatar">
+                          <FaUser />
                         </div>
-                        <p className="message-content">{message.content}</p>
-                      </motion.div>
-                    ))}
-                    <div ref={messagesEndRef} />
+
+                        <div className="conversation-info">
+                          <div className="conversation-header">
+                            <h5 className="patient-name">
+                              {thread.patient?.userName || `User ${userId}`}
+                            </h5>
+                            {thread.unreadCount > 0 && (
+                              <span className="unread-count">
+                                {thread.unreadCount}
+                              </span>
+                            )}
+                          </div>
+
+                          <p className="last-message">
+                            {thread.messages?.length > 0
+                              ? thread.messages[thread.messages.length - 1]
+                                  .messageText || "Attachment"
+                              : "No messages yet"}
+                          </p>
+
+                          <div className="conversation-meta">
+                            <span className="last-activity">
+                              {formatMessageTime(thread.lastActivity)}
+                            </span>
+                            {thread.patient?.email && (
+                              <span className="patient-email">
+                                {thread.patient.email}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Chat Area */}
+              <div className="chat-area">
+                {selectedThread ? (
+                  <>
+                    {/* Chat Header */}
+                    <div className="chat-header">
+                      <div className="patient-info">
+                        <div className="patient-avatar">
+                          <FaUser />
+                        </div>
+                        <div className="patient-details">
+                          <h3>{selectedThread.patient?.userName || "User"}</h3>
+                          <p className="patient-status">
+                            {selectedThread.patient?.email || "Consultation"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* <div className="chat-actions">
+                        <button className="action-btn" title="User Profile">
+                          <FaUser />
+                        </button>
+                        <button className="action-btn" title="Call">
+                          <FaPhone />
+                        </button>
+                        <button className="action-btn" title="Video Call">
+                          <FaVideo />
+                        </button>
+                      </div> */}
+                    </div>
+
+                    {/* Messages Area */}
+                    <div className="messenger-management-messages">
+                      {selectedThread.messages?.length === 0 ? (
+                        <div className="no-messages">
+                          <FaComments className="no-messages-icon" />
+                          <p>Send a message to begin the consultation.</p>
+                        </div>
+                      ) : (
+                        <>
+                          {selectedThread.messages?.map((msg, idx) => {
+                            const isSent = msg.senderId === currentStaffId;
+                            const messageClass = isSent ? "sent" : "received";
+                            const hasAttachment = msg.attachment;
+
+                            return (
+                              <motion.div
+                                key={idx}
+                                className={`message ${messageClass}`}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <div className="message-content">
+                                  {msg.messageText && (
+                                    <div className="message-text">
+                                      {msg.messageText}
+                                    </div>
+                                  )}
+
+                                  {hasAttachment && (
+                                    <div className="message-attachment">
+                                      {msg.attachment.isImage ? (
+                                        <img
+                                          src={msg.attachment.url}
+                                          alt="Attachment"
+                                          className="attachment-image"
+                                          onClick={() =>
+                                            window.open(
+                                              msg.attachment.url,
+                                              "_blank"
+                                            )
+                                          }
+                                        />
+                                      ) : (
+                                        <div className="attachment-file">
+                                          <FaFileAlt className="file-icon" />
+                                          <div className="file-info">
+                                            <span className="file-name">
+                                              {msg.attachment.fileName}
+                                            </span>
+                                            <span className="file-size">
+                                              {formatBytes(
+                                                msg.attachment.fileSize
+                                              )}
+                                            </span>
+                                          </div>
+                                          <button
+                                            onClick={() =>
+                                              window.open(
+                                                msg.attachment.url,
+                                                "_blank"
+                                              )
+                                            }
+                                            className="download-btn"
+                                          >
+                                            <FaFile />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                  <div className="message-time">
+                                    {(() => {
+                                      try {
+                                        let timestamp =
+                                          msg.createdAt ||
+                                          msg.sentAt ||
+                                          Date.now();
+
+                                        // Add Z to UTC timestamp if missing
+                                        if (
+                                          typeof timestamp === "string" &&
+                                          !timestamp.includes("Z")
+                                          // !timestamp.includes("+") &&
+                                          // !timestamp.includes("-")
+                                        ) {
+                                          timestamp = timestamp + "Z";
+                                        }
+
+                                        const date = new Date(timestamp);
+
+                                        // Check if date is valid
+                                        if (isNaN(date.getTime())) {
+                                          return "Now";
+                                        }
+
+                                        return date.toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                          hour12: true,
+                                        });
+                                      } catch (error) {
+                                        console.error(
+                                          "Error formatting message time:",
+                                          error
+                                        );
+                                        return "Now";
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+                              </motion.div>
+                            );
+                          })}
+                          <div ref={messagesEndRef} />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Message Input */}
+                    <div className="message-input-area">
+                      {selectedFile && (
+                        <div className="file-preview">
+                          {filePreview ? (
+                            <img
+                              src={filePreview}
+                              alt="Preview"
+                              className="preview-image"
+                            />
+                          ) : (
+                            <div className="file-info">
+                              <FaFileAlt className="file-icon" />
+                              <span>{selectedFile.name}</span>
+                              <span className="file-size">
+                                ({formatBytes(selectedFile.size)})
+                              </span>
+                            </div>
+                          )}
+                          <button
+                            onClick={clearSelectedFile}
+                            className="remove-file"
+                          >
+                            <FaTimes />
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="input-container">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          accept={allSupportedTypes.join(",")}
+                          style={{ display: "none" }}
+                        />
+
+                        {/* <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="attach-btn"
+                          title="Attach file"
+                        >
+                          <FaPaperclip />
+                        </button> */}
+
+                        <input
+                          type="text"
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="Type your message..."
+                          onKeyPress={(e) => {
+                            if (e.key === "Enter" && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSendMessage();
+                            }
+                          }}
+                          disabled={sendingMessage}
+                          className="message-input"
+                        />
+
+                        <button
+                          onClick={handleSendMessage}
+                          disabled={
+                            (!newMessage.trim() && !selectedFile) ||
+                            sendingMessage
+                          }
+                          className="send-btn"
+                        >
+                          {sendingMessage ? (
+                            <div className="loading-spinner" />
+                          ) : (
+                            <HiPaperAirplane />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="no-selection">
+                    <div className="no-selection-content">
+                      <FaComments className="no-selection-icon" />
+                      <h3>Nutrition Staff Dashboard</h3>
+                      <p>
+                        Choose a user conversation from the list to view and
+                        respond to messages.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
-              <div className="chat-input">
-                <div className="form-group">
-                  <input
-                    type="text"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type your message..."
-                    className="input-field"
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") handleSendMessage();
-                    }}
-                  />
-                </div>
-                <motion.button
-                  onClick={handleSendMessage}
-                  disabled={loading}
-                  className="button primary"
-                  whileHover={{ scale: loading ? 1 : 1.05 }}
-                  whileTap={{ scale: loading ? 1 : 0.95 }}
-                >
-                  {loading ? "Sending..." : "Send"}
-                </motion.button>
-              </div>
             </div>
-          </div>
+          )}
         </div>
       </motion.main>
     </div>

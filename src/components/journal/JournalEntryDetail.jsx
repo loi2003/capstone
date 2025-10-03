@@ -1,13 +1,13 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  FaArrowLeft, 
-  FaCalendarAlt, 
-  FaWeight, 
-  FaHeartbeat, 
-  FaThermometer, 
-  FaTint, 
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  FaArrowLeft,
+  FaCalendarAlt,
+  FaWeight,
+  FaHeartbeat,
+  FaThermometer,
+  FaTint,
   FaStethoscope,
   FaExclamationTriangle,
   FaCheckCircle,
@@ -17,6 +17,8 @@ import {
   FaWeightHanging,
   FaCube,
   FaHandHoldingHeart,
+  FaNotesMedical,
+  FaBandAid,
   // Mood Icons
   FaSadTear,
   FaDizzy,
@@ -24,21 +26,21 @@ import {
   FaSmile,
   FaGrinBeam,
   FaFrown,
-  FaGrinStars
-} from 'react-icons/fa';
-import './JournalEntryDetail.css';
+  FaGrinStars,
+} from "react-icons/fa";
+import "./JournalEntryDetail.css";
 
 const JournalEntryDetail = () => {
   const { state, search } = useLocation();
   const navigate = useNavigate();
   const journal = state?.journal;
   const journalData = journal?.data;
-  const growthDataId = new URLSearchParams(search).get('growthDataId');
+  const growthDataId = new URLSearchParams(search).get("growthDataId");
 
   // Modal state & refs
   const [modalOpen, setModalOpen] = useState(false);
   const [modalSrc, setModalSrc] = useState(null);
-  const [modalTitle, setModalTitle] = useState('');
+  const [modalTitle, setModalTitle] = useState("");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const modalRef = useRef(null);
 
@@ -52,7 +54,7 @@ const JournalEntryDetail = () => {
   const closePreview = () => {
     setModalOpen(false);
     setModalSrc(null);
-    setModalTitle('');
+    setModalTitle("");
   };
 
   useEffect(() => {
@@ -70,59 +72,59 @@ const JournalEntryDetail = () => {
 
   const getMoodConfig = (mood) => {
     const moodConfigs = {
-      'sad': {
+      sad: {
         icon: FaSadTear,
         // emoji: '😢',
-        color: '#6b7280',
-        bgColor: 'rgba(107, 114, 128, 0.1)',
-        label: 'Sad Mood'
+        color: "#6b7280",
+        bgColor: "rgba(107, 114, 128, 0.1)",
+        label: "Sad Mood",
       },
-      'terrible': {
+      terrible: {
         icon: FaDizzy,
         // emoji: '😵',
-        color: '#dc2626',
-        bgColor: 'rgba(220, 38, 38, 0.1)',
-        label: 'Terrible Mood'
+        color: "#dc2626",
+        bgColor: "rgba(220, 38, 38, 0.1)",
+        label: "Terrible Mood",
       },
-      'neutral': {
+      neutral: {
         icon: FaMeh,
         // emoji: '😐',
-        color: '#64748b',
-        bgColor: 'rgba(100, 116, 139, 0.1)',
-        label: 'Neutral Mood'
+        color: "#64748b",
+        bgColor: "rgba(100, 116, 139, 0.1)",
+        label: "Neutral Mood",
       },
-      'normal': {
+      normal: {
         icon: FaSmile,
         // emoji: '🙂',
-        color: '#059669',
-        bgColor: 'rgba(5, 150, 105, 0.1)',
-        label: 'Normal Mood'
+        color: "#059669",
+        bgColor: "rgba(5, 150, 105, 0.1)",
+        label: "Normal Mood",
       },
-      'happy': {
+      happy: {
         icon: FaGrinBeam,
         // emoji: '😊',
-        color: '#0ea5e9',
-        bgColor: 'rgba(14, 165, 233, 0.1)',
-        label: 'Happy Mood'
+        color: "#0ea5e9",
+        bgColor: "rgba(14, 165, 233, 0.1)",
+        label: "Happy Mood",
       },
-      'anxious': {
+      anxious: {
         icon: FaFrown,
         // emoji: '😰',
-        color: '#f59e0b',
-        bgColor: 'rgba(245, 158, 11, 0.1)',
-        label: 'Anxious Mood'
+        color: "#f59e0b",
+        bgColor: "rgba(245, 158, 11, 0.1)",
+        label: "Anxious Mood",
       },
-      'excited': {
+      excited: {
         icon: FaGrinStars,
         // emoji: '🤩',
-        color: '#8b5cf6',
-        bgColor: 'rgba(139, 92, 246, 0.1)',
-        label: 'Excited Mood'
-      }
+        color: "#8b5cf6",
+        bgColor: "rgba(139, 92, 246, 0.1)",
+        label: "Excited Mood",
+      },
     };
 
     const moodKey = mood?.toLowerCase();
-    return moodConfigs[moodKey] || moodConfigs['neutral'];
+    return moodConfigs[moodKey] || moodConfigs["neutral"];
   };
 
   const getAbnormalStatus = (bio) => {
@@ -132,22 +134,22 @@ const JournalEntryDetail = () => {
     if (bio?.systolicBP && bio?.diastolicBP) {
       const sys = Number(bio.systolicBP);
       const dia = Number(bio.diastolicBP);
-      
+
       if (sys >= 160 || dia >= 110) {
-        results.bloodPressure = { 
-          abnormal: true, 
-          severity: 'severe', 
-          message: `BP ${sys}/${dia} mmHg (severe ≥160/110)` 
+        results.bloodPressure = {
+          abnormal: true,
+          severity: "severe",
+          message: `BP ${sys}/${dia} mmHg (severe ≥160/110)`,
         };
       } else if (sys >= 140 || dia >= 90) {
-        results.bloodPressure = { 
-          abnormal: true, 
-          message: `BP ${sys}/${dia} mmHg (elevated ≥140/90)` 
+        results.bloodPressure = {
+          abnormal: true,
+          message: `BP ${sys}/${dia} mmHg (elevated ≥140/90)`,
         };
       } else if (sys < 90 || dia < 60) {
-        results.bloodPressure = { 
-          abnormal: true, 
-          message: `BP ${sys}/${dia} mmHg (hypotension)` 
+        results.bloodPressure = {
+          abnormal: true,
+          message: `BP ${sys}/${dia} mmHg (hypotension)`,
         };
       }
     }
@@ -156,14 +158,14 @@ const JournalEntryDetail = () => {
     if (bio?.bloodSugarLevelMgDl != null) {
       const sugar = Number(bio.bloodSugarLevelMgDl);
       if (sugar > 95) {
-        results.bloodSugarLevelMgDl = { 
-          abnormal: true, 
-          message: `Blood sugar ${sugar} mg/dL (above fasting target >95)` 
+        results.bloodSugarLevelMgDl = {
+          abnormal: true,
+          message: `Blood sugar ${sugar} mg/dL (above fasting target >95)`,
         };
       } else if (sugar < 70) {
-        results.bloodSugarLevelMgDl = { 
-          abnormal: true, 
-          message: `Blood sugar ${sugar} mg/dL (hypoglycemia <70)` 
+        results.bloodSugarLevelMgDl = {
+          abnormal: true,
+          message: `Blood sugar ${sugar} mg/dL (hypoglycemia <70)`,
         };
       }
     }
@@ -172,14 +174,14 @@ const JournalEntryDetail = () => {
     if (bio?.heartRateBPM != null) {
       const hr = Number(bio.heartRateBPM);
       if (hr > 110) {
-        results.heartRateBPM = { 
-          abnormal: true, 
-          message: `Heart rate ${hr} bpm (elevated >110)` 
+        results.heartRateBPM = {
+          abnormal: true,
+          message: `Heart rate ${hr} bpm (elevated >110)`,
         };
       } else if (hr < 50) {
-        results.heartRateBPM = { 
-          abnormal: true, 
-          message: `Heart rate ${hr} bpm (bradycardia <50)` 
+        results.heartRateBPM = {
+          abnormal: true,
+          message: `Heart rate ${hr} bpm (bradycardia <50)`,
         };
       }
     }
@@ -199,22 +201,26 @@ const JournalEntryDetail = () => {
 
   const allImages = [
     ...(journalData.relatedImages || []),
-    ...(journalData.ultraSoundImages || [])
+    ...(journalData.ultraSoundImages || []),
   ];
 
   return (
     <div className="journal-detail-page">
       <div className="journal-detail-container">
         {/* Enhanced Back Button */}
-        <motion.div 
+        <motion.div
           className="journal-detail-back"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <button 
+          <button
             className="journal-detail-back-btn"
-            onClick={() => navigate(`/pregnancy-tracking?growthDataId=${growthDataId}&journalinfo=true`)}
+            onClick={() =>
+              navigate(
+                `/pregnancy-tracking?growthDataId=${growthDataId}&journalinfo=true`
+              )
+            }
           >
             {/* <FaArrowLeft /> */}
             <span>Back</span>
@@ -222,7 +228,7 @@ const JournalEntryDetail = () => {
         </motion.div>
 
         {/* Enhanced Journal Content */}
-        <motion.article 
+        <motion.article
           className="journal-detail-content"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -232,23 +238,23 @@ const JournalEntryDetail = () => {
           <header className="journal-detail-header">
             <div className="journal-detail-meta-top">
               <div className="journal-week-badge">
-                Week {journalData.currentWeek || 'N/A'}
+                Week {journalData.currentWeek || "N/A"}
               </div>
               <div className="journal-trimester-badge">
-                {journalData.currentTrimester || 'N/A'} Trimester
+                {journalData.currentTrimester || "N/A"} Trimester
               </div>
             </div>
-            
-            <h1 className="journal-detail-title">
-              Journal Entry
-            </h1>
-            
+
+            <h1 className="journal-detail-title">Journal Detail</h1>
+
             <div className="journal-detail-meta">
               <div className="journal-detail-meta-item">
                 <FaCalendarAlt className="meta-icon" />
                 <span>
-                  {new Date(journalData.createdAt || Date.now()).toLocaleDateString('en-US', { 
-                    dateStyle: 'full' 
+                  {new Date(
+                    journalData.createdAt || Date.now()
+                  ).toLocaleDateString("en-US", {
+                    dateStyle: "full",
                   })}
                 </span>
               </div>
@@ -257,7 +263,7 @@ const JournalEntryDetail = () => {
 
           {/* Journal Notes */}
           {journalData.note && (
-            <motion.section 
+            <motion.section
               className="journal-detail-section notes-section"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -271,12 +277,30 @@ const JournalEntryDetail = () => {
               </div>
             </motion.section>
           )}
+          {journalData.symptoms && journalData.symptoms.length > 0 && (
+            <div className="symptoms-section">
+              <div className="section-header">
+                {/* <FaBandAid className="section-icon" /> */}
+                <h2>Recorded Symptoms</h2>
+              </div>
+              <div className="symptoms-list">
+                {journalData.symptoms.map((symptom, index) => (
+                  <div key={index} className="symptom-tag">
+                    <span className="symptom-name">{symptom.symptomName}</span>
+                    {/* {!symptom.isTemplate && (
+                      <span className="custom-badge">Custom</span>
+                    )} */}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Health Metrics Grid */}
           <div className="health-metrics-grid">
             {/* Weight */}
             {journalData.currentWeight && (
-              <motion.div 
+              <motion.div
                 className="metric-card"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -294,8 +318,10 @@ const JournalEntryDetail = () => {
 
             {/* Blood Pressure */}
             {(journalData.systolicBP || journalData.diastolicBP) && (
-              <motion.div 
-                className={`metric-card ${abnormal.bloodPressure?.abnormal ? 'abnormal' : 'normal'}`}
+              <motion.div
+                className={`metric-card ${
+                  abnormal.bloodPressure?.abnormal ? "abnormal" : "normal"
+                }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 }}
@@ -308,8 +334,8 @@ const JournalEntryDetail = () => {
                   )}
                 </div>
                 <div className="metric-value">
-                  {journalData.systolicBP || 'N/A'}/
-                  {journalData.diastolicBP || 'N/A'} 
+                  {journalData.systolicBP || "N/A"}/
+                  {journalData.diastolicBP || "N/A"}
                   <span className="unit"> mmHg</span>
                 </div>
                 {abnormal.bloodPressure?.abnormal && (
@@ -322,8 +348,10 @@ const JournalEntryDetail = () => {
 
             {/* Heart Rate */}
             {journalData.heartRateBPM != null && (
-              <motion.div 
-                className={`metric-card ${abnormal.heartRateBPM?.abnormal ? 'abnormal' : 'normal'}`}
+              <motion.div
+                className={`metric-card ${
+                  abnormal.heartRateBPM?.abnormal ? "abnormal" : "normal"
+                }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
@@ -348,8 +376,10 @@ const JournalEntryDetail = () => {
 
             {/* Blood Sugar */}
             {journalData.bloodSugarLevelMgDl != null && (
-              <motion.div 
-                className={`metric-card ${abnormal.bloodSugarLevelMgDl?.abnormal ? 'abnormal' : 'normal'}`}
+              <motion.div
+                className={`metric-card ${
+                  abnormal.bloodSugarLevelMgDl?.abnormal ? "abnormal" : "normal"
+                }`}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 }}
@@ -362,7 +392,8 @@ const JournalEntryDetail = () => {
                   )}
                 </div>
                 <div className="metric-value">
-                  {journalData.bloodSugarLevelMgDl} <span className="unit">mg/dL</span>
+                  {journalData.bloodSugarLevelMgDl}{" "}
+                  <span className="unit">mg/dL</span>
                 </div>
                 {abnormal.bloodSugarLevelMgDl?.abnormal && (
                   <div className="abnormal-note">
@@ -374,40 +405,40 @@ const JournalEntryDetail = () => {
 
             {/* Enhanced Mood Card with React Icons */}
             {journalData.mood && (
-              <motion.div 
+              <motion.div
                 className="metric-card mood-card"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 }}
-                style={{ 
+                style={{
                   background: moodConfig.bgColor,
-                  borderColor: moodConfig.color 
+                  borderColor: moodConfig.color,
                 }}
               >
                 <div className="metric-header">
-                  <div className="mood-header-icon" style={{ color: moodConfig.color }}>
-                    <moodConfig.icon />
+                  <div
+                    className="mood-header-icon"
+                    style={{ color: moodConfig.color }}
+                  >
+                    {/* <moodConfig.icon /> */}
                   </div>
                   {/* <h3>Mood</h3> */}
                 </div>
                 <div className="mood-content">
-                  <div 
+                  <div
                     className="mood-icon-container"
-                    style={{ 
+                    style={{
                       color: moodConfig.color,
-                      background: `linear-gradient(135deg, ${moodConfig.color}20, transparent)`
+                      background: `linear-gradient(135deg, ${moodConfig.color}20, transparent)`,
                     }}
                   >
                     <moodConfig.icon className="mood-react-icon" />
                   </div>
                   <div className="mood-details">
-                    <span 
-                      className="mood-emoji"
-                      style={{ fontSize: '2rem' }}
-                    >
+                    <span className="mood-emoji" style={{ fontSize: "2rem" }}>
                       {moodConfig.emoji}
                     </span>
-                    <span 
+                    <span
                       className="mood-text"
                       style={{ color: moodConfig.color }}
                     >
@@ -421,7 +452,7 @@ const JournalEntryDetail = () => {
 
           {/* Image Galleries */}
           {allImages.length > 0 && (
-            <motion.section 
+            <motion.section
               className="journal-images-section"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -431,23 +462,31 @@ const JournalEntryDetail = () => {
                 {/* <FaImage className="section-icon" /> */}
                 <h2>Images</h2>
               </div>
-              
+
               <div className="images-tabs">
                 {journalData.relatedImages?.length > 0 && (
                   <div className="image-category">
                     <h3>Related Images</h3>
                     <div className="image-gallery">
                       {journalData.relatedImages.map((img, index) => (
-                        <motion.div 
+                        <motion.div
                           key={`related-${index}`}
                           className="image-card"
                           whileHover={{ y: -5 }}
-                          onClick={() => openPreview(getImageSrc(img), `Related Image ${index + 1}`, index)}
+                          onClick={() =>
+                            openPreview(
+                              getImageSrc(img),
+                              `Related Image ${index + 1}`,
+                              index
+                            )
+                          }
                         >
-                          <img 
-                            src={getImageSrc(img)} 
+                          <img
+                            src={getImageSrc(img)}
                             alt={`Related ${index + 1}`}
-                            onError={(e) => e.currentTarget.style.display = 'none'}
+                            onError={(e) =>
+                              (e.currentTarget.style.display = "none")
+                            }
                           />
                           <div className="image-overlay">
                             <FaExpand />
@@ -457,22 +496,30 @@ const JournalEntryDetail = () => {
                     </div>
                   </div>
                 )}
-                
+
                 {journalData.ultraSoundImages?.length > 0 && (
                   <div className="image-category">
                     <h3>Ultrasound Images</h3>
                     <div className="image-gallery">
                       {journalData.ultraSoundImages.map((img, index) => (
-                        <motion.div 
+                        <motion.div
                           key={`ultrasound-${index}`}
                           className="image-card"
                           whileHover={{ y: -5 }}
-                          onClick={() => openPreview(getImageSrc(img), `Ultrasound Image ${index + 1}`, index)}
+                          onClick={() =>
+                            openPreview(
+                              getImageSrc(img),
+                              `Ultrasound Image ${index + 1}`,
+                              index
+                            )
+                          }
                         >
-                          <img 
-                            src={getImageSrc(img)} 
+                          <img
+                            src={getImageSrc(img)}
                             alt={`Ultrasound ${index + 1}`}
-                            onError={(e) => e.currentTarget.style.display = 'none'}
+                            onError={(e) =>
+                              (e.currentTarget.style.display = "none")
+                            }
                           />
                           <div className="image-overlay">
                             <FaExpand />
@@ -491,14 +538,14 @@ const JournalEntryDetail = () => {
       {/* Enhanced Image Modal */}
       <AnimatePresence>
         {modalOpen && (
-          <motion.div 
+          <motion.div
             className="image-modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={closePreview}
           >
-            <motion.div 
+            <motion.div
               className="image-modal-content"
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}

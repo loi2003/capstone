@@ -74,6 +74,7 @@ import PaymentCancel from "../components/subscription/PaymentCancel";
 import PaymentSuccess from "../components/subscription/PaymentSuccess";
 import OfflineConsultationDetail from "../pages/consultation/OfflineConsultationDetail";
 import OnlineConsultationDetail from "../pages/consultation/OnlineConsultationDetail";
+import HealthExpertConsultation from "../pages/healthexpert/HealthExpertConsultation";
 
 
 const AppRoutes = () => {
@@ -122,6 +123,7 @@ const AppRoutes = () => {
         <Route path="/nutrient-specialist/energy-suggestion" element={<EnergySuggestion />} />
         <Route path="/nutrient-specialist/nutrient-suggestion" element={<NutrientSuggestion />} /> 
         <Route path="/nutrient-specialist/messenger-management" element={<MessengerManagement />} /> 
+        <Route path="/health-expert/consultation" element={<HealthExpertConsultation />} /> 
         <Route path="/clinic" element={<ClinicHomePage />} />
         <Route path="/duedate-calculator" element={<DueDateCalculator />} />
         <Route path="/pregnancy-tracking" element={<PregnancyTrackingPage />} />
