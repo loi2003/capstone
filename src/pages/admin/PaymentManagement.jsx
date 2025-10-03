@@ -8,7 +8,6 @@ import {
   getYearlyRevenue,
   getPaymentDashboardByYear,
   getPaymentHistory,
-  getUserPaymentHistory,
 } from "../../apis/paymentmanagement-api";
 import Chart from "chart.js/auto";
 import "../../styles/PaymentManagement.css";
@@ -22,7 +21,13 @@ const PaymentManagement = () => {
   const [yearlyData, setYearlyData] = useState([]);
   const [dashboardData, setDashboardData] = useState(null);
   const [paymentHistory, setPaymentHistory] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [status, setStatus] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc"); // Default to descending (newest first)
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 20;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -53,7 +58,6 @@ const PaymentManagement = () => {
         const userData = response.data?.data || response.data;
         if (userData && userData.roleId === 1) {
           setUser(userData);
-          setSelectedUserId(userData.id); // Default to current user's ID
         } else {
           localStorage.removeItem("token");
           setUser(null);
@@ -72,38 +76,37 @@ const PaymentManagement = () => {
   useEffect(() => {
     const fetchPaymentData = async () => {
       try {
+        const params = { year };
+        if (fromDate) params.fromDate = fromDate;
+        if (toDate) params.toDate = toDate;
+        if (status) params.status = status;
+        if (searchEmail) params.userEmail = searchEmail;
+
         const [monthly, quarterly, yearly, dashboard, history] = await Promise.all([
           getMonthlyRevenue(year),
           getQuarterlyRevenue(year),
           getYearlyRevenue(),
           getPaymentDashboardByYear(year),
-          getPaymentHistory({ year }), // Fetch history for the selected year
+          getPaymentHistory(params),
         ]);
+        // Sort history by createdAt based on sortOrder
+        const sortedHistory = [...history].sort((a, b) => {
+          const dateA = new Date(a.createdAt);
+          const dateB = new Date(b.createdAt);
+          return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+        });
         setMonthlyData(monthly);
         setQuarterlyData(quarterly);
         setYearlyData(yearly);
         setDashboardData(dashboard);
-        setPaymentHistory(history);
+        setPaymentHistory(sortedHistory);
+        setCurrentPage(1); // Reset to first page when filters or sort change
       } catch (error) {
         console.error("Error fetching payment data:", error);
       }
     };
     fetchPaymentData();
-  }, [year]);
-
-  useEffect(() => {
-    const fetchUserPaymentHistory = async () => {
-      if (selectedUserId) {
-        try {
-          const history = await getUserPaymentHistory(selectedUserId);
-          setPaymentHistory(history);
-        } catch (error) {
-          console.error("Error fetching user payment history:", error);
-        }
-      }
-    };
-    fetchUserPaymentHistory();
-  }, [selectedUserId]);
+  }, [year, fromDate, toDate, status, searchEmail, sortOrder]);
 
   useEffect(() => {
     const destroyChart = (chartId) => {
@@ -340,6 +343,19 @@ const PaymentManagement = () => {
   // Format amount for display
   const formatAmount = (amount) => {
     return (amount / 100).toFixed(2); // Assuming amount is in cents
+  };
+
+  // Pagination logic
+  const totalPages = Math.ceil(paymentHistory.length / recordsPerPage);
+  const paginatedHistory = paymentHistory.slice(
+    (currentPage - 1) * recordsPerPage,
+    currentPage * recordsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   return (
@@ -789,50 +805,179 @@ const PaymentManagement = () => {
           >
             <h3>Payment History</h3>
             <div className="payment-management__history-filter">
-              <label htmlFor="userId">Filter by User ID: </label>
-              <input
-                type="text"
-                id="userId"
-                value={selectedUserId}
-                onChange={(e) => setSelectedUserId(e.target.value)}
-                placeholder="Enter User ID"
-                className="payment-management__history-input"
-              />
+              <div className="payment-management__filter-group">
+                <input
+                  type="text"
+                  id="searchEmail"
+                  value={searchEmail}
+                  onChange={(e) => setSearchEmail(e.target.value)}
+                  placeholder="Search by User Email"
+                  className="payment-management__history-input payment-management__search-input"
+                />
+                <svg
+                  className="payment-management__search-icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M21 21l-4.35-4.35M19 11a8 8 0 11-16 0 8 8 0 0116 0z"
+                    stroke="var(--admin-text)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+              <div className="payment-management__filter-group">
+                <label htmlFor="fromDate">From Date: </label>
+                <input
+                  type="date"
+                  id="fromDate"
+                  value={fromDate}
+                  onChange={(e) => setFromDate(e.target.value)}
+                  className="payment-management__history-input"
+                />
+              </div>
+              <div className="payment-management__filter-group">
+                <label htmlFor="toDate">To Date: </label>
+                <input
+                  type="date"
+                  id="toDate"
+                  value={toDate}
+                  onChange={(e) => setToDate(e.target.value)}
+                  className="payment-management__history-input"
+                />
+              </div>
+              <div className="payment-management__filter-group">
+                <label htmlFor="status">Status: </label>
+                <select
+                  id="status"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="payment-management__history-input"
+                >
+                  <option value="">All</option>
+                  <option value="Success">Success</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Failed">Failed</option>
+                  <option value="Expired">Expired</option>
+                </select>
+              </div>
+              <div className="payment-management__filter-group">
+                <label htmlFor="sortOrder">Sort by Date: </label>
+                <select
+                  id="sortOrder"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  className="payment-management__history-input"
+                >
+                  <option value="desc">Newest First</option>
+                  <option value="asc">Oldest First</option>
+                </select>
+              </div>
             </div>
-            <table className="payment-management__history-table">
-              <thead>
-                <tr>
-                  <th>Payment ID</th>
-                  <th>User Email</th>
-                  <th>Subscription Plan</th>
-                  <th>Amount ($)</th>
-                  <th>Status</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paymentHistory.length > 0 ? (
-                  paymentHistory.map((payment) => (
-                    <tr key={payment.paymentId}>
-                      <td>{payment.paymentId}</td>
-                      <td>{payment.userEmail}</td>
-                      <td>{payment.subscriptionPlan}</td>
-                      <td>${formatAmount(payment.amount)}</td>
-                      <td
-                        className={`payment-management__history-status payment-management__history-status--${payment.status.toLowerCase()}`}
-                      >
-                        {payment.status}
-                      </td>
-                      <td>{formatDate(payment.createdAt)}</td>
-                    </tr>
-                  ))
-                ) : (
+            <div className="payment-management__history-table-wrapper">
+              <table className="payment-management__history-table">
+                <thead>
                   <tr>
-                    <td colSpan="6">No payment history available</td>
+                    <th>Payment ID</th>
+                    <th>User Email</th>
+                    <th>Subscription Plan</th>
+                    <th>Amount ($)</th>
+                    <th>Status</th>
+                    <th>Date</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {paginatedHistory.length > 0 ? (
+                    paginatedHistory.map((payment) => (
+                      <tr key={payment.paymentId}>
+                        <td>{payment.paymentId}</td>
+                        <td>{payment.userEmail}</td>
+                        <td>{payment.subscriptionPlan}</td>
+                        <td>${formatAmount(payment.amount)}</td>
+                        <td
+                          className={`payment-management__history-status payment-management__history-status--${payment.status.toLowerCase()}`}
+                        >
+                          {payment.status}
+                        </td>
+                        <td>{formatDate(payment.createdAt)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6">No payment history available</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+              {totalPages > 1 && (
+                <div className="payment-management__pagination">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="payment-management__pagination-button payment-management__pagination-button--nav"
+                    aria-label="Previous page"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M15 18L9 12L15 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                  {[...Array(totalPages)].map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handlePageChange(index + 1)}
+                      className={`payment-management__pagination-button payment-management__pagination-button--dot ${
+                        currentPage === index + 1
+                          ? "payment-management__pagination-button--active"
+                          : ""
+                      }`}
+                      aria-label={`Page ${index + 1}`}
+                      aria-current={currentPage === index + 1 ? "page" : undefined}
+                    >
+                      <span className="payment-management__pagination-dot"></span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="payment-management__pagination-button payment-management__pagination-button--nav"
+                    aria-label="Next page"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M9 18L15 12L9 6"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              )}
+            </div>
           </motion.div>
         </motion.section>
       </main>
