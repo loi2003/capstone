@@ -190,6 +190,7 @@ const OfflineConsultationManagement = () => {
 
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
+    if (createLoading) return;
     setCreateLoading(true);
 
     // Get values from form
@@ -225,18 +226,30 @@ const OfflineConsultationManagement = () => {
       };
     } else if (consultationType === "1") {
       // Periodic
+      const incomplete = periodicDates.some(
+        (d) => !d.date || !d.startTime || !d.endTime
+      );
+      if (incomplete) {
+        setErrorMessage("Please fill all fields for each schedule.");
+        setTimeout(() => setErrorMessage(""), 3000);
+        setCreateLoading(false);
+        return;
+      }
+
+      const toMonthInput = e.target.toMonth.value;
+      const lastDay = getLastDayOfMonth(toMonthInput);
+      const toMonthFull = `${toMonthInput}-${String(lastDay).padStart(2, "0")}`;
+
       payload = {
         ...payload,
         fromMonth: `${e.target.fromMonth.value}-01T00:00:00Z`,
-        toMonth: `${e.target.toMonth.value}-01T00:00:00Z`,
-        schedule: periodicDates
-          .filter((d) => d.date && d.startTime && d.endTime)
-          .map((d) => ({
-            slot: {
-              startTime: `${d.date}T${d.startTime}`,
-              endTime: `${d.date}T${d.endTime}`,
-            },
-          })),
+        toMonth: `${toMonthFull}T00:00:00Z`,
+        schedule: periodicDates.map((d) => ({
+          slot: {
+            startTime: `${d.date}T${d.startTime}`,
+            endTime: `${d.date}T${d.endTime}`,
+          },
+        })),
       };
     }
 
@@ -248,6 +261,7 @@ const OfflineConsultationManagement = () => {
         setErrorMessage(response.message);
         setTimeout(() => setErrorMessage(""), 4000);
         setCreateLoading(false);
+        clearCreateModalState();
         return;
       }
       if (createAttachments.length > 0 && response?.data?.id) {
@@ -277,9 +291,11 @@ const OfflineConsultationManagement = () => {
       setLoading(false);
       setSuccessMessage("Create Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);
+      clearCreateModalState();
     } catch (err) {
       setErrorMessage("Create Consultation Fail!", err.message);
       setTimeout(() => setErrorMessage(""), 3000);
+      clearCreateModalState();
     }
     setCreateLoading(false);
   };
@@ -338,11 +354,17 @@ const OfflineConsultationManagement = () => {
 
   const handleRemoveExistingAttachment = (id) => {
     setRemovedAttachmentIds((prev) => {
-      // Prevent duplicates
+      // Only add the id if not already present
       if (prev.includes(id)) return prev;
       return [...prev, id];
     });
   };
+
+  function getLastDayOfMonth(monthStr) {
+    // monthStr format: "YYYY-MM"
+    const [year, month] = monthStr.split("-");
+    return new Date(year, month, 0).getDate();
+  }
 
   const logoVariants = {
     animate: {
@@ -429,7 +451,7 @@ const OfflineConsultationManagement = () => {
             []
           ).map((s) => ({
             date: s.slot?.startTime
-              ? new Date(s.slot.startTime).toISOString().slice(0, 10)
+              ? new Date(s.slot.startTime).toLocaleDateString("en-CA") // <-- FIXED: use local date
               : "",
             startTime: s.slot?.startTime ? s.slot.startTime.slice(11, 16) : "",
             endTime: s.slot?.endTime ? s.slot.endTime.slice(11, 16) : "",
@@ -463,7 +485,9 @@ const OfflineConsultationManagement = () => {
     setEditLoading(true);
 
     const healthNote = e.target.healthNotes.value;
-    const consultationTypeValue = e.target.consultationType.value;
+    // Use editConsultation.consultationType instead of e.target.consultationType.value
+    const consultationTypeValue =
+      editConsultation.consultationType === "OneTime" ? "0" : "1";
 
     let payload = {
       id: editConsultation.id,
@@ -495,10 +519,14 @@ const OfflineConsultationManagement = () => {
       };
     } else if (consultationTypeValue === "1") {
       // Periodic
+      const toMonthInput = e.target.editToMonth.value;
+      const lastDay = getLastDayOfMonth(toMonthInput);
+      const toMonthFull = `${toMonthInput}-${String(lastDay).padStart(2, "0")}`;
+
       payload = {
         ...payload,
         fromMonth: `${editFromMonth}-01T00:00:00Z`,
-        toMonth: `${editToMonth}-01T00:00:00Z`,
+        toMonth: `${toMonthFull}T00:00:00Z`,
         schedule: editPeriodicDates
           .filter((d) => d.date && d.startTime && d.endTime)
           .map((d) => ({
@@ -1292,8 +1320,17 @@ const OfflineConsultationManagement = () => {
                                 id="toMonth"
                                 name="toMonth"
                                 required
-                                value={toMonth}
-                                onChange={(e) => setToMonth(e.target.value)}
+                                value={toMonth ? toMonth.slice(0, 7) : ""}
+                                onChange={(e) => {
+                                  const value = e.target.value; // e.g. "2025-11"
+                                  const lastDay = getLastDayOfMonth(value); // e.g. 30 for November
+                                  setToMonth(
+                                    `${value}-${String(lastDay).padStart(
+                                      2,
+                                      "0"
+                                    )}`
+                                  ); // "2025-11-30"
+                                }}
                               />
                             </div>
                           </div>
@@ -1315,7 +1352,7 @@ const OfflineConsultationManagement = () => {
                                     min={
                                       fromMonth ? `${fromMonth}-01` : undefined
                                     }
-                                    max={toMonth ? `${toMonth}-31` : undefined}
+                                    max={toMonth || undefined}
                                     onChange={(e) => {
                                       const arr = [...periodicDates];
                                       arr[idx].date = e.target.value;
@@ -1773,7 +1810,9 @@ const OfflineConsultationManagement = () => {
                                     }
                                     max={
                                       editToMonth
-                                        ? `${editToMonth}-31`
+                                        ? `${editToMonth}-${String(
+                                            getLastDayOfMonth(editToMonth)
+                                          ).padStart(2, "0")}`
                                         : undefined
                                     }
                                     onChange={(e) => {
@@ -1917,7 +1956,7 @@ const OfflineConsultationManagement = () => {
                                       </a>
                                     )}
                                     <span>{att.fileName || "Attachment"}</span>
-                                    <button
+                                    {/* <button
                                       type="button"
                                       style={{
                                         marginLeft: 8,
@@ -1933,7 +1972,7 @@ const OfflineConsultationManagement = () => {
                                       title="Remove"
                                     >
                                       &times;
-                                    </button>
+                                    </button> */}
                                   </li>
                                 ))}
                             </ul>
@@ -2052,7 +2091,7 @@ const OfflineConsultationManagement = () => {
                                     </span>
                                   )}
                                   <span>{file.name}</span>
-                                  <button
+                                  {/* <button
                                     type="button"
                                     style={{
                                       marginLeft: 8,
@@ -2068,7 +2107,7 @@ const OfflineConsultationManagement = () => {
                                     title="Remove"
                                   >
                                     &times;
-                                  </button>
+                                  </button> */}
                                 </li>
                               ))}
                             </ul>
