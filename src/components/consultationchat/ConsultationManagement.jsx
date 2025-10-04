@@ -993,46 +993,6 @@ const ConsultationManagement = () => {
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Dashboard"
-            >
-              <FaChartLine size={20} />
-              {isSidebarOpen && <span>Dashboard</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Schedule"
-            >
-              <FaCalendarAlt size={20} />
-              {isSidebarOpen && <span>Schedule</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Clients"
-            >
-              <FaUsers size={20} />
-              {isSidebarOpen && <span>Clients</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant/support"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Support"
-            >
-              <FaQuestionCircle size={20} />
-              {isSidebarOpen && <span>Support</span>}
-            </Link>
-          </motion.div>
           <motion.div
             variants={navItemVariants}
             className="consultant-sidebar-nav-item active"

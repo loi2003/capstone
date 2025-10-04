@@ -180,46 +180,6 @@ const ConsultantHomePage = () => {
         >
           <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
             <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Dashboard"
-            >
-              <FaChartLine size={20} />
-              {isSidebarOpen && <span>Dashboard</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Schedule"
-            >
-              <FaCalendarAlt size={20} />
-              {isSidebarOpen && <span>Schedule</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Clients"
-            >
-              <FaUsers size={20} />
-              {isSidebarOpen && <span>Clients</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Support"
-            >
-              <FaQuestionCircle size={20} />
-              {isSidebarOpen && <span>Support</span>}
-            </Link>
-          </motion.div>
-          <motion.div variants={navItemVariants} className="consultant-sidebar-nav-item">
-            <Link
               to="/consultation/consultation-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Consultation Chat"
@@ -345,20 +305,6 @@ const ConsultantHomePage = () => {
             <p className="consultant-banner-subtitle">
               Manage consultations, client records, and support efficiently.
             </p>
-            <div className="consultant-banner-buttons">
-              <Link
-                to="/consultant/schedule"
-                className="consultant-banner-button primary"
-              >
-                View Schedule
-              </Link>
-              <Link
-                to="/consultant/support"
-                className="consultant-banner-button secondary"
-              >
-                Contact Support
-              </Link>
-            </div>
           </motion.div>
           <motion.div
             className="consultant-banner-image"
@@ -386,10 +332,10 @@ const ConsultantHomePage = () => {
               variants={cardVariants}
               className="consultant-feature-card"
             >
-              <h3>Schedule</h3>
-              <p>Manage and view consultation schedules.</p>
+              <h3>Patient</h3>
+              <p>Manage and view consultation patients.</p>
               <Link
-                to="/consultant/schedule"
+                to="/consultation/consultation-management"
                 className="consultant-feature-link"
               >
                 Explore
@@ -399,10 +345,10 @@ const ConsultantHomePage = () => {
               variants={cardVariants}
               className="consultant-feature-card"
             >
-              <h3>Clients</h3>
-              <p>Access and update client records securely.</p>
+              <h3>Online Consultation</h3>
+              <p>Access and update online consultation records.</p>
               <Link
-                to="/consultant/clients"
+                to="/consultation/online-consultation-management"
                 className="consultant-feature-link"
               >
                 Explore
@@ -412,10 +358,10 @@ const ConsultantHomePage = () => {
               variants={cardVariants}
               className="consultant-feature-card"
             >
-              <h3>Support</h3>
-              <p>Contact support for assistance with consulting operations.</p>
+              <h3>Offline Consultation</h3>
+              <p>Access and update offline consultation records.</p>
               <Link
-                to="/consultant/support"
+                to="/consultation/offline-consultation-management"
                 className="consultant-feature-link"
               >
                 Explore

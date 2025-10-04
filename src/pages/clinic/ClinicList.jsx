@@ -80,11 +80,7 @@ const ClinicList = () => {
       if (!search.trim() && !specialization && !insuranceOnly) {
         data = await getAllClinics();
       } else {
-        data = await getClinicsByName({
-          nameOrAddress: search,
-          specialization,
-          insuranceOnly,
-        });
+        data = await getClinicsByName(search);
       }
 
       setClinics(
@@ -384,23 +380,21 @@ const ClinicList = () => {
                                 : "General Practice"}
                             </div>
                           </div>
-
-                          
                         </div>
                       </div>
 
                       {/* Card Footer */}
                       <div className="clinic-card-footer">
                         <div className="clinic-stats">
-                            <div className="stat-item">
-                              <FaUserMd className="stat-icon" />
-                              <span>{doctorCount} Doctors</span>
-                            </div>
-                            <div className="stat-item">
-                              <FaUserMd className="stat-icon" />
-                              <span>{consultantCount} Consultants</span>
-                            </div>
+                          <div className="stat-item">
+                            <FaUserMd className="stat-icon" />
+                            <span>{doctorCount} Doctors</span>
                           </div>
+                          <div className="stat-item">
+                            <FaUserMd className="stat-icon" />
+                            <span>{consultantCount} Consultants</span>
+                          </div>
+                        </div>
                         <motion.button
                           className="clinic-select-btn"
                           onClick={() => navigate(`/clinic/${clinic.id}`)}

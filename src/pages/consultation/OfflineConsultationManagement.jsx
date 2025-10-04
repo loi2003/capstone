@@ -27,7 +27,7 @@ import {
   FaVideo,
   FaHospital,
   FaUser,
-  FaSignOutAlt
+  FaSignOutAlt,
 } from "react-icons/fa";
 
 const OfflineConsultationManagement = () => {
@@ -86,6 +86,11 @@ const OfflineConsultationManagement = () => {
   const [editFromMonth, setEditFromMonth] = useState("");
   const [editToMonth, setEditToMonth] = useState("");
   const [editPeriodicDates, setEditPeriodicDates] = useState([]);
+  const [createSelectedAttachments, setCreateSelectedAttachments] = useState(
+    []
+  );
+  const [removedAttachmentIds, setRemovedAttachmentIds] = useState([]);
+  const [editSelectedAttachments, setEditSelectedAttachments] = useState([]);
 
   useEffect(() => {
     const fetchUserAndConsultations = async () => {
@@ -239,6 +244,7 @@ const OfflineConsultationManagement = () => {
       const token = localStorage.getItem("token");
       const response = await bookOfflineConsultation(payload, token);
       if (response?.error === 1 && response?.message) {
+        setShowCreateModal(false);
         setErrorMessage(response.message);
         setTimeout(() => setErrorMessage(""), 4000);
         setCreateLoading(false);
@@ -276,6 +282,66 @@ const OfflineConsultationManagement = () => {
       setTimeout(() => setErrorMessage(""), 3000);
     }
     setCreateLoading(false);
+  };
+
+  const handleCreateAttachmentChange = (e) => {
+    const files = Array.from(e.target.files);
+    const maxFiles = 4;
+    const totalFiles = createAttachments.length + files.length;
+    if (totalFiles > maxFiles) {
+      alert(`You can only upload up to ${maxFiles} attachments in total.`);
+      return;
+    }
+    setCreateSelectedAttachments(files);
+  };
+
+  const handleAddCreateAttachments = () => {
+    setCreateAttachments((prev) => [...prev, ...createSelectedAttachments]);
+    setCreateSelectedAttachments([]);
+  };
+
+  const handleRemoveCreateAttachment = (idx) => {
+    setCreateAttachments((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const handleEditAttachmentChange = (e) => {
+    const files = Array.from(e.target.files);
+    const maxFiles = 4;
+    const totalFiles =
+      (editConsultation.attachments?.length || 0) -
+      removedAttachmentIds.length +
+      editAttachments.length +
+      files.length;
+    if (totalFiles > maxFiles) {
+      alert(`You can only upload up to ${maxFiles} attachments in total.`);
+      return;
+    }
+    setEditSelectedAttachments(files);
+  };
+
+  const handleAddEditAttachments = () => {
+    setEditAttachments((prev) => [...prev, ...editSelectedAttachments]);
+    setEditSelectedAttachments([]);
+  };
+
+  const handleRemoveEditAttachment = (idx) => {
+    setEditAttachments((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  useEffect(() => {
+    if (showEditModal) {
+      setRemovedAttachmentIds([]);
+      setEditSelectedAttachments([]);
+      setEditAttachments([]);
+    }
+  }, [showEditModal]);
+
+  const handleRemoveExistingAttachment = (id) => {
+    setRemovedAttachmentIds((prev) => {
+      // Prevent duplicates
+      if (prev.includes(id)) return prev;
+      return [...prev, id];
+    });
   };
 
   const logoVariants = {
@@ -402,6 +468,8 @@ const OfflineConsultationManagement = () => {
     let payload = {
       id: editConsultation.id,
       healthNote,
+      removedAttachmentIds,
+      // ...other fields...
     };
 
     if (consultationTypeValue === "0") {
@@ -446,6 +514,7 @@ const OfflineConsultationManagement = () => {
       const token = localStorage.getItem("token");
       const response = await updateOfflineConsultation(payload, token);
       if (response?.error === 1 && response?.message) {
+        setShowEditModal(false);
         setErrorMessage(response.message);
         setTimeout(() => setErrorMessage(""), 4000);
         setEditLoading(false);
@@ -459,6 +528,8 @@ const OfflineConsultationManagement = () => {
         );
       }
       setEditAttachments([]);
+      setEditSelectedAttachments([]);
+      setRemovedAttachmentIds([]);
       setShowEditModal(false);
       setLoading(true);
       const consultationsRes = await viewOfflineConsultationsByCreatedBy(
@@ -535,11 +606,11 @@ const OfflineConsultationManagement = () => {
         </div>
       )}
       <motion.aside
-              className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
-              variants={sidebarVariants}
-              animate={isSidebarOpen ? "open" : "closed"}
-              initial="open"
-            >
+        className={`consultant-sidebar ${isSidebarOpen ? "open" : "closed"}`}
+        variants={sidebarVariants}
+        animate={isSidebarOpen ? "open" : "closed"}
+        initial="open"
+      >
         <div className="consultant-sidebar-header">
           <Link
             to="/consultant"
@@ -585,58 +656,6 @@ const OfflineConsultationManagement = () => {
             className="consultant-sidebar-nav-item"
           >
             <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Dashboard"
-            >
-              <FaChartLine size={20} />
-              {isSidebarOpen && <span>Dashboard</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Schedule"
-            >
-              <FaCalendarAlt size={20} />
-              {isSidebarOpen && <span>Schedule</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Clients"
-            >
-              <FaUsers size={20} />
-              {isSidebarOpen && <span>Clients</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant/support"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Support"
-            >
-              <FaQuestionCircle size={20} />
-              {isSidebarOpen && <span>Support</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
               to="/consultation/consultation-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Consultation Chat"
@@ -676,66 +695,66 @@ const OfflineConsultationManagement = () => {
             </button>
           </motion.div>
           {user ? (
-                  <>
-                    <motion.div
-                      variants={navItemVariants}
-                      className="sidebar-nav-item consultant-profile-section"
-                    >
-                      <Link
-                        to="/profile"
-                        className="consultant-profile-info"
-                        title={isSidebarOpen ? user.email : ""}
-                      >
-                        <FaUser size={20} />
-                        {isSidebarOpen && (
-                          <span className="consultant-profile-email">
-                            {user.email}
-                          </span>
-                        )}
-                      </Link>
-                    </motion.div>
-                    <motion.div
-                      variants={navItemVariants}
-                      className="sidebar-nav-item"
-                    >
-                      <button
-                        className="logout-button"
-                        onClick={handleLogout}
-                        aria-label="Sign out"
-                      >
-                        <FaSignOutAlt size={20} />
-                        {isSidebarOpen && <span>Sign out</span>}
-                      </button>
-                    </motion.div>
-                  </>
-                ) : (
-                  <motion.div variants={navItemVariants} className="sidebar-nav-item">
-                    <Link
-                      to="/signin"
-                      onClick={() => setIsSidebarOpen(true)}
-                      title="Sign In"
-                    >
-                      <svg
-                        width="24"
-                        height="24"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        aria-label="Sign in icon"
-                      >
-                        <path
-                          stroke="var(--consultant-background)"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
-                        />
-                      </svg>
-                      {isSidebarOpen && <span>Sign In</span>}
-                      <FaSignOutAlt size={20} />
-                      {isSidebarOpen && <span>Sign out</span>}
-                    </Link>
-                  </motion.div>
-                )}
+            <>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item consultant-profile-section"
+              >
+                <Link
+                  to="/profile"
+                  className="consultant-profile-info"
+                  title={isSidebarOpen ? user.email : ""}
+                >
+                  <FaUser size={20} />
+                  {isSidebarOpen && (
+                    <span className="consultant-profile-email">
+                      {user.email}
+                    </span>
+                  )}
+                </Link>
+              </motion.div>
+              <motion.div
+                variants={navItemVariants}
+                className="sidebar-nav-item"
+              >
+                <button
+                  className="logout-button"
+                  onClick={handleLogout}
+                  aria-label="Sign out"
+                >
+                  <FaSignOutAlt size={20} />
+                  {isSidebarOpen && <span>Sign out</span>}
+                </button>
+              </motion.div>
+            </>
+          ) : (
+            <motion.div variants={navItemVariants} className="sidebar-nav-item">
+              <Link
+                to="/signin"
+                onClick={() => setIsSidebarOpen(true)}
+                title="Sign In"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  aria-label="Sign in icon"
+                >
+                  <path
+                    stroke="var(--consultant-background)"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-6-4l6-6-6-6m0 12h8"
+                  />
+                </svg>
+                {isSidebarOpen && <span>Sign In</span>}
+                <FaSignOutAlt size={20} />
+                {isSidebarOpen && <span>Sign out</span>}
+              </Link>
+            </motion.div>
+          )}
         </motion.nav>
       </motion.aside>
       <main className="consultant-content">
@@ -914,7 +933,7 @@ const OfflineConsultationManagement = () => {
                           handleSelectDoctor(selectedDoctor);
                         }}
                       >
-                        <span>👥</span> Select Patient
+                        <span>👥</span> Select Doctor
                       </button>
                     </div>
                   </div>
@@ -1070,7 +1089,7 @@ const OfflineConsultationManagement = () => {
                           handleSelectUser(selectedUserForConsultation)
                         }
                       >
-                        <span>📝</span> Select Consultation Type
+                        <span>📝</span> Select Patient
                       </button>
                     </div>
                   </div>
@@ -1151,7 +1170,7 @@ const OfflineConsultationManagement = () => {
                           setShowCreateModal(true);
                         }}
                       >
-                        <span>📝</span> Enter Consultation Info
+                        <span>📝</span> Select Consultation Type
                       </button>
                     </div>
                   </div>
@@ -1368,16 +1387,129 @@ const OfflineConsultationManagement = () => {
                           id="attachments"
                           name="attachments"
                           multiple
-                          onChange={(e) =>
-                            setCreateAttachments(Array.from(e.target.files))
-                          }
+                          accept="image/*,application/pdf"
+                          onChange={handleCreateAttachmentChange}
                         />
-                        {createAttachments.length > 0 && (
-                          <div style={{ marginTop: "8px" }}>
+                        {createSelectedAttachments.length > 0 && (
+                          <div className="attachments-preview-list">
                             <strong>Selected Attachments:</strong>
                             <ul>
+                              {createSelectedAttachments.map((file, idx) => (
+                                <li key={idx} style={{ marginBottom: 8 }}>
+                                  {file.type.startsWith("image/") ? (
+                                    <img
+                                      src={URL.createObjectURL(file)}
+                                      alt={file.name}
+                                      style={{
+                                        width: 60,
+                                        height: 60,
+                                        objectFit: "cover",
+                                        borderRadius: 8,
+                                        marginRight: 8,
+                                        border: "1px solid #eee",
+                                      }}
+                                    />
+                                  ) : (
+                                    <span
+                                      style={{
+                                        display: "inline-block",
+                                        marginRight: 8,
+                                        color: "#4f8edc",
+                                      }}
+                                    >
+                                      📄
+                                    </span>
+                                  )}
+                                  <span>{file.name}</span>
+                                  <button
+                                    type="button"
+                                    style={{
+                                      marginLeft: 8,
+                                      color: "#d32f2f",
+                                      background: "none",
+                                      border: "none",
+                                      fontSize: "1em",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                      setCreateSelectedAttachments((prev) =>
+                                        prev.filter((_, i) => i !== idx)
+                                      )
+                                    }
+                                    title="Remove"
+                                  >
+                                    &times;
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                            <button
+                              type="button"
+                              className="offline-consultation-modal-btn offline-consultation-btn-primary"
+                              style={{
+                                marginTop: 6,
+                                padding: "6px 18px",
+                                fontSize: "0.98em",
+                              }}
+                              onClick={handleAddCreateAttachments}
+                            >
+                              Add Attachment
+                              {createSelectedAttachments.length > 1 ? "s" : ""}
+                            </button>
+                          </div>
+                        )}
+                        {createAttachments.length > 0 && (
+                          <div
+                            className="attachments-preview-list"
+                            style={{ marginTop: 8 }}
+                          >
+                            <strong>Attachments to upload:</strong>
+                            <ul>
                               {createAttachments.map((file, idx) => (
-                                <li key={idx}>{file.name}</li>
+                                <li key={idx} style={{ marginBottom: 8 }}>
+                                  {file.type.startsWith("image/") ? (
+                                    <img
+                                      src={URL.createObjectURL(file)}
+                                      alt={file.name}
+                                      style={{
+                                        width: 60,
+                                        height: 60,
+                                        objectFit: "cover",
+                                        borderRadius: 8,
+                                        marginRight: 8,
+                                        border: "1px solid #eee",
+                                      }}
+                                    />
+                                  ) : (
+                                    <span
+                                      style={{
+                                        display: "inline-block",
+                                        marginRight: 8,
+                                        color: "#4f8edc",
+                                      }}
+                                    >
+                                      📄
+                                    </span>
+                                  )}
+                                  <span>{file.name}</span>
+                                  <button
+                                    type="button"
+                                    style={{
+                                      marginLeft: 8,
+                                      color: "#d32f2f",
+                                      background: "none",
+                                      border: "none",
+                                      fontSize: "1em",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                      handleRemoveCreateAttachment(idx)
+                                    }
+                                    title="Remove"
+                                  >
+                                    &times;
+                                  </button>
+                                </li>
                               ))}
                             </ul>
                           </div>
@@ -1726,52 +1858,214 @@ const OfflineConsultationManagement = () => {
                         </select>
                       </div>
                       <div className="offline-consultation-form-group">
-                        <label htmlFor="attachments">Attachments</label>
-                        {/* Show existing attachments if any */}
+                        <label htmlFor="editAttachments">Attachments</label>
                         {editConsultation.attachments &&
-                          editConsultation.attachments.length > 0 && (
-                            <div>
-                              <ul>
-                                {editConsultation.attachments.map(
-                                  (att, idx) => (
-                                    <li key={idx}>
-                                      {att.fileName ? (
-                                        <a
-                                          href={att.fileUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                        >
-                                          {att.fileName}
-                                        </a>
-                                      ) : typeof att === "string" ? (
-                                        att
-                                      ) : (
-                                        "Unknown file"
-                                      )}
-                                    </li>
-                                  )
-                                )}
-                              </ul>
-                            </div>
-                          )}
-                      </div>
-                      <div className="offline-consultation-form-group">
-                        <label htmlFor="editAttachments">Add Attachments</label>
+                        editConsultation.attachments.length > 0 ? (
+                          <div className="attachments-preview-list">
+                            <strong>Current Attachments:</strong>
+                            <ul>
+                              {editConsultation.attachments
+                                .filter(
+                                  (att) =>
+                                    !removedAttachmentIds.includes(att.id)
+                                )
+                                .map((att, idx) => (
+                                  <li
+                                    key={att.id || idx}
+                                    style={{ marginBottom: 8 }}
+                                  >
+                                    {att.fileUrl &&
+                                    att.fileType &&
+                                    att.fileType.startsWith("image/") ? (
+                                      <a
+                                        href={att.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="View full image"
+                                      >
+                                        <img
+                                          src={att.fileUrl}
+                                          alt={att.fileName || "Attachment"}
+                                          style={{
+                                            width: 60,
+                                            height: 60,
+                                            objectFit: "cover",
+                                            borderRadius: 8,
+                                            marginRight: 8,
+                                            border: "1px solid #eee",
+                                            cursor: "pointer",
+                                          }}
+                                        />
+                                      </a>
+                                    ) : (
+                                      <a
+                                        href={att.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                          marginRight: 8,
+                                          color: "#4f8edc",
+                                          fontSize: "1.5em",
+                                        }}
+                                        title="View file"
+                                      >
+                                        📄
+                                      </a>
+                                    )}
+                                    <span>{att.fileName || "Attachment"}</span>
+                                    <button
+                                      type="button"
+                                      style={{
+                                        marginLeft: 8,
+                                        color: "#d32f2f",
+                                        background: "none",
+                                        border: "none",
+                                        fontSize: "1em",
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={() =>
+                                        handleRemoveExistingAttachment(att.id)
+                                      }
+                                      title="Remove"
+                                    >
+                                      &times;
+                                    </button>
+                                  </li>
+                                ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <span>No attachments</span>
+                        )}
+                        {/* Add new attachments */}
                         <input
                           type="file"
                           id="editAttachments"
                           name="editAttachments"
                           multiple
-                          onChange={(e) =>
-                            setEditAttachments(Array.from(e.target.files))
-                          }
+                          accept="image/*,application/pdf"
+                          onChange={handleEditAttachmentChange}
                         />
-                        {editAttachments.length > 0 && (
-                          <div style={{ marginTop: "8px" }}>
+                        {editSelectedAttachments.length > 0 && (
+                          <div className="attachments-preview-list">
                             <strong>Selected Attachments:</strong>
                             <ul>
+                              {editSelectedAttachments.map((file, idx) => (
+                                <li key={idx} style={{ marginBottom: 8 }}>
+                                  {file.type.startsWith("image/") ? (
+                                    <img
+                                      src={URL.createObjectURL(file)}
+                                      alt={file.name}
+                                      style={{
+                                        width: 60,
+                                        height: 60,
+                                        objectFit: "cover",
+                                        borderRadius: 8,
+                                        marginRight: 8,
+                                        border: "1px solid #eee",
+                                      }}
+                                    />
+                                  ) : (
+                                    <span
+                                      style={{
+                                        display: "inline-block",
+                                        marginRight: 8,
+                                        color: "#4f8edc",
+                                      }}
+                                    >
+                                      📄
+                                    </span>
+                                  )}
+                                  <span>{file.name}</span>
+                                  <button
+                                    type="button"
+                                    style={{
+                                      marginLeft: 8,
+                                      color: "#d32f2f",
+                                      background: "none",
+                                      border: "none",
+                                      fontSize: "1em",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                      setEditSelectedAttachments((prev) =>
+                                        prev.filter((_, i) => i !== idx)
+                                      )
+                                    }
+                                    title="Remove"
+                                  >
+                                    &times;
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                            <button
+                              type="button"
+                              className="offline-consultation-modal-btn offline-consultation-btn-primary"
+                              style={{
+                                marginTop: 6,
+                                padding: "6px 18px",
+                                fontSize: "0.98em",
+                              }}
+                              onClick={handleAddEditAttachments}
+                            >
+                              Add Attachment
+                              {editSelectedAttachments.length > 1 ? "s" : ""}
+                            </button>
+                          </div>
+                        )}
+                        {editAttachments.length > 0 && (
+                          <div
+                            className="attachments-preview-list"
+                            style={{ marginTop: 8 }}
+                          >
+                            <strong>Attachments to upload:</strong>
+                            <ul>
                               {editAttachments.map((file, idx) => (
-                                <li key={idx}>{file.name}</li>
+                                <li key={idx} style={{ marginBottom: 8 }}>
+                                  {file.type.startsWith("image/") ? (
+                                    <img
+                                      src={URL.createObjectURL(file)}
+                                      alt={file.name}
+                                      style={{
+                                        width: 60,
+                                        height: 60,
+                                        objectFit: "cover",
+                                        borderRadius: 8,
+                                        marginRight: 8,
+                                        border: "1px solid #eee",
+                                      }}
+                                    />
+                                  ) : (
+                                    <span
+                                      style={{
+                                        display: "inline-block",
+                                        marginRight: 8,
+                                        color: "#4f8edc",
+                                      }}
+                                    >
+                                      📄
+                                    </span>
+                                  )}
+                                  <span>{file.name}</span>
+                                  <button
+                                    type="button"
+                                    style={{
+                                      marginLeft: 8,
+                                      color: "#d32f2f",
+                                      background: "none",
+                                      border: "none",
+                                      fontSize: "1em",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                      handleRemoveEditAttachment(idx)
+                                    }
+                                    title="Remove"
+                                  >
+                                    &times;
+                                  </button>
+                                </li>
                               ))}
                             </ul>
                           </div>
