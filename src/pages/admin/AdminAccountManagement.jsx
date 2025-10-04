@@ -706,7 +706,7 @@ const AdminAccountManagement = () => {
               {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
-          <motion.div
+          {/* <motion.div
             variants={navItemVariants}
             className="admin-account-management__sidebar-nav-item"
           >
@@ -726,7 +726,7 @@ const AdminAccountManagement = () => {
               </svg>
               {isSidebarOpen && <span>System Configuration</span>}
             </Link>
-          </motion.div>
+          </motion.div> */}
           <motion.div
             variants={navItemVariants}
             className="admin-account-management__sidebar-nav-item"

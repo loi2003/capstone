@@ -404,19 +404,7 @@ const NutritionalGuidance = () => {
           </motion.div>
         </motion.div>
 
-        <motion.div 
-          className="contact-icon" 
-          role="button" 
-          tabIndex={0} 
-          aria-label="Contact nutritionist"
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          whileTap={{ scale: 0.9 }}
-          transition={{ type: "spring", stiffness: 400, damping: 17 }}
-          onClick={() => navigate('/consultation')}
-        >
-          <FaCircleInfo size={24} />
-        </motion.div>
-
+     
         <ChatBoxPage />
       </div>
       <Footer />
