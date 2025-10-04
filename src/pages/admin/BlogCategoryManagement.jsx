@@ -662,7 +662,7 @@ const BlogCategoryManagement = () => {
               {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
-          <motion.div variants={navItemVariants} className="blog-category-management__sidebar-nav-item">
+          {/* <motion.div variants={navItemVariants} className="blog-category-management__sidebar-nav-item">
             <Link to="/admin/system-configuration" onClick={() => setIsSidebarOpen(true)} title="System Configuration">
               <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                 <path
@@ -675,7 +675,7 @@ const BlogCategoryManagement = () => {
               </svg>
               {isSidebarOpen && <span>System Configuration</span>}
             </Link>
-          </motion.div>
+          </motion.div> */}
           <motion.div variants={navItemVariants} className="blog-category-management__sidebar-nav-item">
             <Link to="/admin/payment-management" onClick={() => setIsSidebarOpen(true)} title="Payment Management">
               <svg width="22" height="22" fill="none" viewBox="0 0 24 24">

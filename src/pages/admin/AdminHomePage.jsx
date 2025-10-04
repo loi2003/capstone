@@ -293,7 +293,7 @@ const AdminHomePage = () => {
               {isSidebarOpen && <span>Account Management</span>}
             </Link>
           </motion.div>
-          <motion.div
+          {/* <motion.div
             variants={navItemVariants}
             className="blog-category-management__sidebar-nav-item"
           >
@@ -313,7 +313,7 @@ const AdminHomePage = () => {
               </svg>
               {isSidebarOpen && <span>System Configuration</span>}
             </Link>
-          </motion.div>
+          </motion.div> */}
           <motion.div
             variants={navItemVariants}
             className="blog-category-management__sidebar-nav-item"

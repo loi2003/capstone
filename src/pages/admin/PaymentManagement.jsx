@@ -25,13 +25,12 @@ const PaymentManagement = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [status, setStatus] = useState("");
-  const [sortOrder, setSortOrder] = useState("desc"); // Default to descending (newest first)
+  const [sortOrder, setSortOrder] = useState("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 20;
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  // Refs to store chart instances
   const chartRefs = useRef({
     monthlyRevenueChart: null,
     quarterlyRevenueChart: null,
@@ -61,7 +60,7 @@ const PaymentManagement = () => {
         } else {
           localStorage.removeItem("token");
           setUser(null);
-          navigate("/signin", { replace: true });
+          navigate("/signin.css", { replace: true });
         }
       } catch (error) {
         console.error("Error fetching user:", error.message);
@@ -89,7 +88,6 @@ const PaymentManagement = () => {
           getPaymentDashboardByYear(year),
           getPaymentHistory(params),
         ]);
-        // Sort history by createdAt based on sortOrder
         const sortedHistory = [...history].sort((a, b) => {
           const dateA = new Date(a.createdAt);
           const dateB = new Date(b.createdAt);
@@ -100,7 +98,7 @@ const PaymentManagement = () => {
         setYearlyData(yearly);
         setDashboardData(dashboard);
         setPaymentHistory(sortedHistory);
-        setCurrentPage(1); // Reset to first page when filters or sort change
+        setCurrentPage(1);
       } catch (error) {
         console.error("Error fetching payment data:", error);
       }
@@ -116,7 +114,6 @@ const PaymentManagement = () => {
       }
     };
 
-    // Monthly Revenue Chart
     const monthlyCtx = document.getElementById("monthlyRevenueChart")?.getContext("2d");
     if (monthlyCtx) {
       destroyChart("monthlyRevenueChart");
@@ -126,7 +123,7 @@ const PaymentManagement = () => {
           labels: monthlyData.map((item) => `Month ${item.period.value}`),
           datasets: [
             {
-              label: "Revenue ($)",
+              label: "Revenue (₫)",
               data: monthlyData.map((item) => item.totalRevenue),
               backgroundColor: "rgba(32, 218, 204, 0.6)",
               borderColor: "var(--admin-accent)",
@@ -136,7 +133,7 @@ const PaymentManagement = () => {
         },
         options: {
           scales: {
-            y: { beginAtZero: true, title: { display: true, text: "Revenue ($)" } },
+            y: { beginAtZero: true, title: { display: true, text: "Revenue (₫)" } },
             x: { title: { display: true, text: "Month" } },
           },
           plugins: { legend: { display: true } },
@@ -144,7 +141,6 @@ const PaymentManagement = () => {
       });
     }
 
-    // Quarterly Revenue Chart
     const quarterlyCtx = document.getElementById("quarterlyRevenueChart")?.getContext("2d");
     if (quarterlyCtx) {
       destroyChart("quarterlyRevenueChart");
@@ -154,7 +150,7 @@ const PaymentManagement = () => {
           labels: quarterlyData.map((item) => `Q${item.period.value}`),
           datasets: [
             {
-              label: "Revenue ($)",
+              label: "Revenue (₫)",
               data: quarterlyData.map((item) => item.totalRevenue),
               backgroundColor: "rgba(26, 163, 171, 0.6)",
               borderColor: "var(--admin-secondary)",
@@ -164,7 +160,7 @@ const PaymentManagement = () => {
         },
         options: {
           scales: {
-            y: { beginAtZero: true, title: { display: true, text: "Revenue ($)" } },
+            y: { beginAtZero: true, title: { display: true, text: "Revenue (₫)" } },
             x: { title: { display: true, text: "Quarter" } },
           },
           plugins: { legend: { display: true } },
@@ -172,7 +168,6 @@ const PaymentManagement = () => {
       });
     }
 
-    // Yearly Revenue Chart
     const yearlyCtx = document.getElementById("yearlyRevenueChart")?.getContext("2d");
     if (yearlyCtx) {
       destroyChart("yearlyRevenueChart");
@@ -182,7 +177,7 @@ const PaymentManagement = () => {
           labels: yearlyData.map((item) => item.period.year),
           datasets: [
             {
-              label: "Revenue ($)",
+              label: "Revenue (₫)",
               data: yearlyData.map((item) => item.totalRevenue),
               borderColor: "var(--admin-primary)",
               backgroundColor: "rgba(20, 111, 137, 0.2)",
@@ -193,7 +188,7 @@ const PaymentManagement = () => {
         },
         options: {
           scales: {
-            y: { beginAtZero: true, title: { display: true, text: "Revenue ($)" } },
+            y: { beginAtZero: true, title: { display: true, text: "Revenue (₫)" } },
             x: { title: { display: true, text: "Year" } },
           },
           plugins: { legend: { display: true } },
@@ -201,7 +196,6 @@ const PaymentManagement = () => {
       });
     }
 
-    // User Subscription Statistics Chart
     const userStatsCtx = document.getElementById("userSubscriptionChart")?.getContext("2d");
     if (userStatsCtx && dashboardData?.userSubscriptionStatistics) {
       destroyChart("userSubscriptionChart");
@@ -318,7 +312,6 @@ const PaymentManagement = () => {
     },
   };
 
-  // Calculate summary data for cards
   const monthlySummary = monthlyData.reduce((acc, item) => acc + item.totalRevenue, 0);
   const quarterlySummary = quarterlyData.reduce((acc, item) => acc + item.totalRevenue, 0);
   const yearlySummary = yearlyData.find((item) => item.period.year === year)?.totalRevenue || 0;
@@ -331,7 +324,6 @@ const PaymentManagement = () => {
     { active: 0, expired: 0, canceled: 0 }
   ) || { active: 0, expired: 0, canceled: 0 };
 
-  // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -340,12 +332,10 @@ const PaymentManagement = () => {
     });
   };
 
-  // Format amount for display
   const formatAmount = (amount) => {
-    return (amount / 100).toFixed(2); // Assuming amount is in cents
+    return amount.toLocaleString("vi-VN"); // Format as VND without decimals
   };
 
-  // Pagination logic
   const totalPages = Math.ceil(paymentHistory.length / recordsPerPage);
   const paginatedHistory = paymentHistory.slice(
     (currentPage - 1) * recordsPerPage,
@@ -537,27 +527,6 @@ const PaymentManagement = () => {
             className="payment-management__sidebar-nav-item"
           >
             <Link
-              to="/admin/system-configuration"
-              onClick={() => setIsSidebarOpen(true)}
-              title="System Configuration"
-            >
-              <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-                <path
-                  stroke="var(--admin-background)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 8a4 4 0 100 8 4 4 0 000-8zm0 0v-6m0 18v-6m6 0h6m-18 0H3"
-                />
-              </svg>
-              {isSidebarOpen && <span>System Configuration</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="payment-management__sidebar-nav-item"
-          >
-            <Link
               to="/admin/payment-management"
               onClick={() => setIsSidebarOpen(true)}
               title="Payment Management"
@@ -697,9 +666,9 @@ const PaymentManagement = () => {
               </div>
               <div className="payment-management__summary-content">
                 <h3>Monthly Revenue Summary</h3>
-                <p>Total Revenue: ${monthlySummary.toFixed(2)}</p>
+                <p>Total Revenue: {formatAmount(monthlySummary)} ₫</p>
                 <p>Months: {monthlyData.length}</p>
-                <p>Average Monthly: ${(monthlySummary / (monthlyData.length || 1)).toFixed(2)}</p>
+                <p>Average Monthly: {formatAmount(monthlySummary / (monthlyData.length || 1))} ₫</p>
               </div>
             </motion.div>
             <motion.div variants={cardVariants} className="payment-management__summary-card">
@@ -711,6 +680,7 @@ const PaymentManagement = () => {
                   fill="none"
                   stroke="#124966"
                   strokeWidth="2"
+                  strokeWidth="2"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d="M12 2v6m0 4v10m-6-6h12" strokeLinecap="round" strokeLinejoin="round" />
@@ -718,9 +688,9 @@ const PaymentManagement = () => {
               </div>
               <div className="payment-management__summary-content">
                 <h3>Quarterly Revenue Summary</h3>
-                <p>Total Revenue: ${quarterlySummary.toFixed(2)}</p>
+                <p>Total Revenue: {formatAmount(quarterlySummary)} ₫</p>
                 <p>Quarters: {quarterlyData.length}</p>
-                <p>Average Quarterly: ${(quarterlySummary / (quarterlyData.length || 1)).toFixed(2)}</p>
+                <p>Average Quarterly: {formatAmount(quarterlySummary / (quarterlyData.length || 1))} ₫</p>
               </div>
             </motion.div>
             <motion.div variants={cardVariants} className="payment-management__summary-card">
@@ -744,7 +714,7 @@ const PaymentManagement = () => {
               <div className="payment-management__summary-content">
                 <h3>Yearly Revenue Summary</h3>
                 <p>Selected Year: {year}</p>
-                <p>Total Revenue: ${yearlySummary.toFixed(2)}</p>
+                <p>Total Revenue: {formatAmount(yearlySummary)} ₫</p>
               </div>
             </motion.div>
             <motion.div variants={cardVariants} className="payment-management__summary-card">
@@ -886,7 +856,7 @@ const PaymentManagement = () => {
                     <th>Payment ID</th>
                     <th>User Email</th>
                     <th>Subscription Plan</th>
-                    <th>Amount ($)</th>
+                    <th>Amount (₫)</th>
                     <th>Status</th>
                     <th>Date</th>
                   </tr>
@@ -898,7 +868,7 @@ const PaymentManagement = () => {
                         <td>{payment.paymentId}</td>
                         <td>{payment.userEmail}</td>
                         <td>{payment.subscriptionPlan}</td>
-                        <td>${formatAmount(payment.amount)}</td>
+                        <td>{formatAmount(payment.amount)} ₫</td>
                         <td
                           className={`payment-management__history-status payment-management__history-status--${payment.status.toLowerCase()}`}
                         >
