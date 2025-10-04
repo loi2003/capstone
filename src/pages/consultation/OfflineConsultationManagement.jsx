@@ -1322,6 +1322,7 @@ const OfflineConsultationManagement = () => {
                                       setPeriodicDates(arr);
                                     }}
                                     required
+                                    disabled={!fromMonth || !toMonth}
                                   />
                                   <input
                                     type="time"
@@ -1332,6 +1333,7 @@ const OfflineConsultationManagement = () => {
                                       setPeriodicDates(arr);
                                     }}
                                     required
+                                    disabled={!d.date}
                                   />
                                   <input
                                     type="time"
@@ -1342,6 +1344,7 @@ const OfflineConsultationManagement = () => {
                                       setPeriodicDates(arr);
                                     }}
                                     required
+                                    disabled={!d.date}
                                   />
                                   <button
                                     type="button"
@@ -1373,6 +1376,7 @@ const OfflineConsultationManagement = () => {
                                     { date: "", startTime: "", endTime: "" },
                                   ])
                                 }
+                                disabled={!fromMonth || !toMonth}
                               >
                                 Add Consultation Date
                               </button>
