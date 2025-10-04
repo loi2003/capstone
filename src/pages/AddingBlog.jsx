@@ -12,6 +12,7 @@ const AddingBlog = () => {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
+  const [selectedCategoryTag, setSelectedCategoryTag] = useState(""); // New state for category tag
   const [formData, setFormData] = useState({
     categoryId: "",
     title: "",
@@ -101,6 +102,10 @@ const AddingBlog = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "categoryId") {
+      const selectedCategory = categories.find((c) => c.id === value);
+      setSelectedCategoryTag(selectedCategory ? selectedCategory.blogCategoryTag || "" : "");
+    }
     validateField(name, value);
   };
 
@@ -158,17 +163,6 @@ const AddingBlog = () => {
             .every((word) => stopWords.includes(word))
         ) {
           error = "Title must contain meaningful keywords, not just stop words.";
-        } else {
-          const words = value.split(" ");
-          const majorWords = words.filter(
-            (word) => !stopWords.includes(word.toLowerCase())
-          );
-          // if (
-          //   majorWords.length > 0 &&
-          //   majorWords.some((word) => word[0] !== word[0].toUpperCase())
-          // ) {
-          //   error = "Major words in title must be capitalized (e.g., Health Tips).";
-          // }
         }
         break;
       case "body":
@@ -297,6 +291,7 @@ const AddingBlog = () => {
         tags: "",
         images: [],
       });
+      setSelectedCategoryTag(""); // Reset tag when form is cleared
       navigate("/blog-management");
     } catch (error) {
       console.error(
@@ -334,13 +329,18 @@ const AddingBlog = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="blog-header-title">Add New Blog</h1>
-          <button
+          <motion.button
+            className="blog-action-button--secondary"
             onClick={() => navigate("/blog-management")}
-            className="blog-action-button blog-action-button--secondary"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Back to Blog Management"
           >
-            Back to Blog Management
-          </button>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </motion.button>
+          <h1 className="blog-header-title">Add New Blog</h1>
         </motion.div>
       </header>
       <main className="blog-content">
@@ -374,6 +374,16 @@ const AddingBlog = () => {
                     </option>
                   ))}
                 </select>
+                {selectedCategoryTag && (
+                  <motion.span
+                    className="category-tag"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    Tag: {selectedCategoryTag}
+                  </motion.span>
+                )}
                 {formErrors.categoryId && (
                   <p className="error-message">{formErrors.categoryId}</p>
                 )}
@@ -474,7 +484,7 @@ const AddingBlog = () => {
               </div>
               <motion.button
                 type="submit"
-                className="blog-action-button blog-action-button--primary"
+                className="blog-action-button--primary"
                 disabled={loading || !user}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

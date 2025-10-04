@@ -763,20 +763,7 @@ const BlogCategoryManagement = () => {
             <p className="blog-category-management__banner-subtitle">
               Create, edit, and organize blog categories to streamline content management and enhance user experience.
             </p>
-            <div className="blog-category-management__banner-buttons">
-              <button
-                className="blog-category-management__banner-button primary"
-                onClick={() => {
-                  setEditingCategory(null);
-                  setCategoryName('');
-                  setBlogCategoryTag('Nutrient');
-                  setMessage('');
-                  setError('');
-                }}
-              >
-                Create New Category
-              </button>
-            </div>
+           
           </div>
           <motion.div
             className="blog-category-management__banner-image"

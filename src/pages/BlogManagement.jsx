@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
-import Chart from "chart.js/auto";
 import {
   getAllBlogs,
   getAllCategories,
@@ -36,9 +35,8 @@ const BlogManagement = () => {
   const [showRejectModal, setShowRejectModal] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [showViewModal, setShowViewModal] = useState(null);
+
   const blogsPerPage = 6;
-  const chartRef = useRef(null);
-  const chartInstanceRef = useRef(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,6 +46,15 @@ const BlogManagement = () => {
     "4": { canApprove: true, canReject: true, restrictedTags: ["nutrient"] },
     "5": { canApprove: true, canReject: true, restrictedTags: ["health"] },
   };
+
+  // Optimize category lookup with useMemo
+  const categoryMap = useMemo(() => {
+    const map = {};
+    categories.forEach((c) => {
+      map[c.id] = c;
+    });
+    return map;
+  }, [categories]);
 
   const clearError = () => {
     setTimeout(() => {
@@ -110,84 +117,11 @@ const BlogManagement = () => {
       }
     };
     fetchData();
-  }, []);
-
-  const categoryCounts = useMemo(() => {
-    return categories.reduce((acc, category) => {
-      acc[category.categoryName] = (
-        showPersonalBlogs ? personalBlogs : blogs
-      ).filter((blog) => blog.categoryName === category.categoryName).length;
-      return acc;
-    }, {});
-  }, [categories, blogs, personalBlogs, showPersonalBlogs]);
-
-  useEffect(() => {
-    if (!loading && chartRef.current) {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-      }
-      const labels = Object.keys(categoryCounts).filter(
-        (key) => categoryCounts[key] > 0
-      );
-      const data = labels.map((key) => categoryCounts[key]);
-      const colors = labels.map(
-        (_, index) => `hsl(${(index * 137.5) % 360}, 70%, 60%)`
-      );
-      chartInstanceRef.current = new Chart(chartRef.current, {
-        type: "pie",
-        data: {
-          labels,
-          datasets: [
-            {
-              data,
-              backgroundColor: colors,
-              borderColor: "#ffffff",
-              borderWidth: 2,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: {
-                font: { family: "'Inter', sans-serif", size: 14 },
-                color: "#124966",
-                padding: 20,
-              },
-            },
-            tooltip: {
-              backgroundColor: "rgba(0, 0, 0, 0.8)",
-              titleFont: { family: "'Inter', sans-serif", size: 14 },
-              bodyFont: { family: "'Inter', sans-serif", size: 12 },
-            },
-          },
-        },
-      });
-    }
-    return () => {
-      if (chartInstanceRef.current) {
-        chartInstanceRef.current.destroy();
-        chartInstanceRef.current = null;
-      }
-    };
-  }, [categoryCounts, loading]);
+  }, [navigate]);
 
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, statusFilter, sortOption, showPersonalBlogs]);
-
-  const handleShowAllBlogs = () => {
-    setShowPersonalBlogs(false);
-    setCurrentPage(1);
-  };
-
-  const handleShowPersonalBlogs = () => {
-    setShowPersonalBlogs(true);
-    setCurrentPage(1);
-  };
 
   const openImageModal = (image, index, images) => {
     setSelectedImage({ image, images });
@@ -258,57 +192,50 @@ const BlogManagement = () => {
       images: prev.images.filter((_, i) => i !== index),
     }));
   };
-const validateEditForm = () => {
-  if (!editBlogData.title.trim()) {
-    return "Title is required.";
-  }
-  if (!/^[a-zA-Z0-9\s-_]{3,100}$/.test(editBlogData.title.trim())) {
-    return "Title must be 3-100 characters long and contain only letters, numbers, spaces, hyphens, or underscores.";
-  }
-  const titleLowerCase = editBlogData.title.trim().toLowerCase();
-  const existingBlogs = showPersonalBlogs ? personalBlogs : blogs;
-  console.log("Checking for duplicates:", {
-    editedBlogId: editBlogData.id,
-    editedTitle: titleLowerCase,
-    existingBlogs: existingBlogs.map((b) => ({
-      id: b.id,
-      title: b.title ? b.title.trim().toLowerCase() : "undefined",
-    })),
-  });
-  const isDuplicate = existingBlogs.some(
-    (blog) =>
-      String(blog.id) !== String(editBlogData.id) &&
-      blog.title &&
-      blog.title.trim().toLowerCase() === titleLowerCase
-  );
-  if (isDuplicate) {
-    return "This title is already in use. Please choose a unique title.";
-  }
-  if (!editBlogData.body.trim()) {
-    return "Blog content is required.";
-  }
-  if (editBlogData.body.trim().length < 10) {
-    return "Blog content must be at least 10 characters long.";
-  }
-  if (
-    !editBlogData.categoryId ||
-    !categories.some((c) => c.id === editBlogData.categoryId)
-  ) {
-    return "Please select a valid category.";
-  }
-  if (editBlogData.tags && editBlogData.tags.length > 0) {
-    if (editBlogData.tags.length > 10) {
-      return "You can only add up to 10 tags.";
+
+  const validateEditForm = () => {
+    if (!editBlogData.title.trim()) {
+      return "Title is required.";
     }
-    const invalidTag = editBlogData.tags.find(
-      (tag) => !tag.trim() || !/^[a-zA-Z0-9-_]+$/.test(tag.trim())
+    if (!/^[a-zA-Z0-9\s-_]{3,100}$/.test(editBlogData.title.trim())) {
+      return "Title must be 3-100 characters long and contain only letters, numbers, spaces, hyphens, or underscores.";
+    }
+    const titleLowerCase = editBlogData.title.trim().toLowerCase();
+    const existingBlogs = showPersonalBlogs ? personalBlogs : blogs;
+    const isDuplicate = existingBlogs.some(
+      (blog) =>
+        String(blog.id) !== String(editBlogData.id) &&
+        blog.title &&
+        blog.title.trim().toLowerCase() === titleLowerCase
     );
-    if (invalidTag) {
-      return "Tags must contain only letters, numbers, hyphens, or underscores, and cannot be empty.";
+    if (isDuplicate) {
+      return "This title is already in use. Please choose a unique title.";
     }
-  }
-  return null;
-};
+    if (!editBlogData.body.trim()) {
+      return "Blog content is required.";
+    }
+    if (editBlogData.body.trim().length < 10) {
+      return "Blog content must be at least 10 characters long.";
+    }
+    if (
+      !editBlogData.categoryId ||
+      !categories.some((c) => c.id === editBlogData.categoryId)
+    ) {
+      return "Please select a valid category.";
+    }
+    if (editBlogData.tags && editBlogData.tags.length > 0) {
+      if (editBlogData.tags.length > 10) {
+        return "You can only add up to 10 tags.";
+      }
+      const invalidTag = editBlogData.tags.find(
+        (tag) => !tag.trim() || !/^[a-zA-Z0-9-_]+$/.test(tag.trim())
+      );
+      if (invalidTag) {
+        return "Tags must contain only letters, numbers, hyphens, or underscores, and cannot be empty.";
+      }
+    }
+    return null;
+  };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -402,14 +329,14 @@ const validateEditForm = () => {
       const blog =
         blogs.find((b) => b.id === blogId) ||
         personalBlogs.find((b) => b.id === blogId);
+      const category = categoryMap[blog.categoryId];
       const permissions = rolePermissions[user.roleId];
       if (
-        permissions.restrictedTags.some((tag) =>
-          blog.tags?.map((t) => t.toLowerCase()).includes(tag)
-        )
+        category?.blogCategoryTag &&
+        permissions.restrictedTags.includes(category.blogCategoryTag.toLowerCase())
       ) {
         setShowErrorModal(
-          `Only authorized roles can approve blogs with restricted tags (${permissions.restrictedTags.join(", ")}).`
+          `Only authorized roles can approve blogs with the ${category.blogCategoryTag} tag.`
         );
         clearError();
         return;
@@ -448,14 +375,14 @@ const validateEditForm = () => {
       const blog =
         blogs.find((b) => b.id === blogId) ||
         personalBlogs.find((b) => b.id === blogId);
+      const category = categoryMap[blog.categoryId];
       const permissions = rolePermissions[user.roleId];
       if (
-        permissions.restrictedTags.some((tag) =>
-          blog.tags?.map((t) => t.toLowerCase()).includes(tag)
-        )
+        category?.blogCategoryTag &&
+        permissions.restrictedTags.includes(category.blogCategoryTag.toLowerCase())
       ) {
         setShowErrorModal(
-          `Only authorized roles can reject blogs with restricted tags (${permissions.restrictedTags.join(", ")}).`
+          `Only authorized roles can reject blogs with the ${category.blogCategoryTag} tag.`
         );
         clearError();
         return;
@@ -491,6 +418,44 @@ const validateEditForm = () => {
 
   const closeViewModal = () => {
     setShowViewModal(null);
+  };
+
+  const handleShowAllBlogs = () => {
+    setShowPersonalBlogs(false);
+    setCurrentPage(1);
+  };
+
+  const handleShowPersonalBlogs = () => {
+    setShowPersonalBlogs(true);
+    setCurrentPage(1);
+  };
+
+  const handleAddBlog = () => {
+    navigate("/blog-management/add");
+  };
+
+  const handleBack = () => {
+    switch (user?.roleId) {
+      case "5":
+        navigate("/clinic");
+        break;
+      case "3":
+        navigate("/health-expert");
+        break;
+      case "4":
+        navigate("/nutrient-specialist");
+        break;
+      default:
+        navigate("/");
+        break;
+    }
+  };
+
+  const truncateBody = (body, maxLength = 100) => {
+    if (!body) return "No content";
+    return body.length > maxLength
+      ? `${body.substring(0, maxLength)}...`
+      : body;
   };
 
   const filteredBlogs = (showPersonalBlogs ? personalBlogs : blogs).filter(
@@ -552,34 +517,6 @@ const validateEditForm = () => {
     }
   };
 
-  const handleBack = () => {
-    switch (user?.roleId) {
-      case "5":
-        navigate("/clinic");
-        break;
-      case "3":
-        navigate("/health-expert");
-        break;
-      case "4":
-        navigate("/nutrient-specialist");
-        break;
-      default:
-        navigate("/");
-        break;
-    }
-  };
-
-  const handleAddBlog = () => {
-    navigate("/blog-management/add");
-  };
-
-  const truncateBody = (body, maxLength = 100) => {
-    if (!body) return "No content";
-    return body.length > maxLength
-      ? `${body.substring(0, maxLength)}...`
-      : body;
-  };
-
   if (loading) {
     return (
       <motion.div
@@ -588,7 +525,9 @@ const validateEditForm = () => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="loading-spinner">Loading...</div>
+        <div className="loading-container">
+          <div className="loading-spinner">Loading...</div>
+        </div>
       </motion.div>
     );
   }
@@ -600,93 +539,72 @@ const validateEditForm = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      <header className="blog-header">
-        <motion.button
-          className="blog-back-button"
-          onClick={handleBack}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          aria-label="Go back to homepage"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+      {/* Header */}
+      <header className="dashboard-header">
+        <div className="header-content">
+          <motion.button
+            className="back-button"
+            onClick={handleBack}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <path
-              d="M15 18l-6-6 6-6"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </motion.button>
-        <h1 className="blog-management-title">Blog Management</h1>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </motion.button>
+          <h1 className="page-title">Blog Management</h1>
+          <div className="header-actions">
+            <motion.button
+              className="add-button"
+              onClick={handleAddBlog}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" />
+              </svg>
+              Add Blog
+            </motion.button>
+          </div>
+        </div>
       </header>
-      <div className="blog-content">
-        {error && (
-          <motion.p
-            className="error-message"
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {error}
-          </motion.p>
-        )}
-        <section className="blog-stats-section">
-          <h2 className="blog-stats-title">Blog Statistics</h2>
+
+      {/* Stats Section */}
+      <section className="stats-section">
+        <div className="stats-grid">
           <motion.div
-            className="blog-stats"
-            initial={{ opacity: 0, y: 10 }}
+            className="stat-card"
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            role="region"
-            aria-label="Blog statistics"
+            transition={{ delay: 0.1 }}
           >
-            <div className="blog-stat-item">
-              <span className="stat-icon" aria-hidden="true">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"
-                    fill="currentColor"
-                  />
-                </svg>
-              </span>
-              <span className="stat-label">Total Blogs</span>
-              <span className="stat-value">
+            <div className="stat-icon total">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" fill="currentColor" />
+              </svg>
+            </div>
+            <div className="stat-info">
+              <h3>Total Blogs</h3>
+              <span className="stat-number">
                 {(showPersonalBlogs ? personalBlogs : blogs).length}
               </span>
             </div>
-            <div className="blog-stat-item">
-              <span className="stat-icon" aria-hidden="true">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M20 6L9 17l-5-5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <span className="stat-label">Approved Blogs</span>
-              <span className="stat-value">
+          </motion.div>
+
+          <motion.div
+            className="stat-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="stat-icon approved">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="stat-info">
+              <h3>Approved</h3>
+              <span className="stat-number">
                 {
                   (showPersonalBlogs ? personalBlogs : blogs).filter(
                     (blog) => blog.status?.toLowerCase() === "approved"
@@ -694,26 +612,22 @@ const validateEditForm = () => {
                 }
               </span>
             </div>
-            <div className="blog-stat-item">
-              <span className="stat-icon" aria-hidden="true">
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 5v14m7-7H5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-              <span className="stat-label">Pending Blogs</span>
-              <span className="stat-value">
+          </motion.div>
+
+          <motion.div
+            className="stat-card"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="stat-icon pending">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 5v14m7-7H5" stroke="currentColor" strokeWidth="2" />
+              </svg>
+            </div>
+            <div className="stat-info">
+              <h3>Pending</h3>
+              <span className="stat-number">
                 {
                   (showPersonalBlogs ? personalBlogs : blogs).filter(
                     (blog) => blog.status?.toLowerCase() === "pending"
@@ -722,1079 +636,720 @@ const validateEditForm = () => {
               </span>
             </div>
           </motion.div>
-        </section>
-        <section className="blog-add-section">
-          <motion.button
-            className="blog-add-button"
-            onClick={handleAddBlog}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Add new blog"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="button-icon"
-            >
-              <path
-                d="M12 5v14m7-7H5"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            Add Blog
-          </motion.button>
-        </section>
-        <section className="blog-list-section">
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <motion.button
-              className={`blog-action-button ${
-                showPersonalBlogs ? "" : "active"
-              }`}
-              onClick={handleShowAllBlogs}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Show all blogs"
-            >
-              All Blogs
-            </motion.button>
-            <motion.button
-              className={`blog-action-button ${
-                showPersonalBlogs ? "active" : ""
-              }`}
-              onClick={handleShowPersonalBlogs}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="Show personal blogs"
-            >
-              Personal Blogs
-            </motion.button>
-          </div>
-          <motion.section
-            className="blog-controls-section"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            role="search"
-            aria-label="Search and filter blogs"
-            aria-controls="blog-table"
-          >
-            <div className="control-group">
-              <label htmlFor="searchQuery">Search by Title</label>
-              <input
-                type="text"
-                id="searchQuery"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Enter blog title"
-                aria-label="Search blogs by title"
-              />
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <div className="main-content">
+        {/* Controls Section */}
+        <section className="controls-section">
+          <div className="tabs-container">
+            <div className="tabs">
+              <button
+                className={`tab ${!showPersonalBlogs ? 'active' : ''}`}
+                onClick={handleShowAllBlogs}
+              >
+                All Blogs
+              </button>
+              <button
+                className={`tab ${showPersonalBlogs ? 'active' : ''}`}
+                onClick={handleShowPersonalBlogs}
+              >
+                Personal Blogs
+              </button>
             </div>
-            <div className="control-group">
-              <label htmlFor="statusFilter">Functions</label>
+          </div>
+
+          <div className="filters-container">
+            <div className="filter-group">
+              <div className="search-box">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search blogs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="filter-group">
               <select
-                id="statusFilter"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                aria-label="Filter blogs by status"
+                className="filter-select"
               >
-                <option value="all">All</option>
+                <option value="all">All Status</option>
                 <option value="approved">Approved</option>
                 <option value="pending">Pending</option>
                 <option value="rejected">Rejected</option>
               </select>
             </div>
-            <div className="control-group">
-              <label htmlFor="sortOption">Sort By</label>
+
+            <div className="filter-group">
               <select
-                id="sortOption"
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
-                aria-label="Sort blogs"
+                className="filter-select"
               >
-                <option value="title-asc">Title (A-Z)</option>
-                <option value="title-desc">Title (Z-A)</option>
+                <option value="title-asc">Title A-Z</option>
+                <option value="title-desc">Title Z-A</option>
                 <option value="approved-first">Approved First</option>
                 <option value="pending-first">Pending First</option>
               </select>
             </div>
-          </motion.section>
-          {currentBlogs.length === 0 ? (
-            <p>No blogs found.</p>
-          ) : (
-            <div className="blog-table" id="blog-table">
-              <div className="blog-table-header">
-                <span>Title</span>
-                <span>Category</span>
-                <span>Status</span>
-                <span>Actions</span>
+          </div>
+        </section>
+
+        {/* Blogs Table */}
+        <section className="table-section">
+          <div className="table-container">
+            {currentBlogs.length === 0 ? (
+              <div className="empty-state">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+                  <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" stroke="currentColor" strokeWidth="1" />
+                </svg>
+                <h3>No blogs found</h3>
+                <p>Try adjusting your search or filters</p>
               </div>
-              {currentBlogs.map((blog) => (
-                <motion.div
-                  key={blog.id}
-                  className="blog-table-row"
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <span>{blog.title}</span>
-                  <span>{blog.categoryName || "Uncategorized"}</span>
-                  <span>
-                    <motion.span
-                      className="status-dot"
-                      title={blog.status || "Pending"}
-                      style={{
-                        backgroundColor:
-                          blog.status?.toLowerCase() === "approved"
-                            ? "#34C759"
-                            : blog.status?.toLowerCase() === "rejected"
-                            ? "#FF3B30"
-                            : "#FBC107",
-                      }}
-                      whileHover={{
-                        scale: 1.2,
-                        boxShadow: "0 0 8px rgba(0,0,0,0.2)",
-                      }}
-                    />
-                  </span>
-                  <span className="blog-actions">
-                    <motion.button
-                      className="blog-action-button view"
-                      onClick={() => handleViewBlog(blog)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label={`View blog ${blog.title}`}
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
+            ) : (
+              <>
+                <div className="table-header">
+                  <div className="table-row">
+                    <div className="table-cell">Title</div>
+                    <div className="table-cell">Category</div>
+                    <div className="table-cell">Tag</div>
+                    <div className="table-cell">Status</div>
+                    <div className="table-cell actions-header">Actions</div>
+                  </div>
+                </div>
+                <div className="table-body">
+                  {currentBlogs.map((blog) => {
+                    const category = categoryMap[blog.categoryId];
+                    return (
+                      <motion.div
+                        key={blog.id}
+                        className="table-row"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.3 }}
                       >
-                        <path
-                          d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    </motion.button>
-                    <motion.button
-                      className="blog-action-button edit"
-                      onClick={() => handleEditBlog(blog)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label={`Edit blog ${blog.title}`}
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </motion.button>
-                    <motion.button
-                      className="blog-action-button delete"
-                      onClick={() => setShowDeleteConfirm(blog.id)}
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label={`Delete blog ${blog.title}`}
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M3 6h18v2H3zm2 3h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9zm5-4V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h4v2H6V5h4z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                    </motion.button>
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                        <div className="table-cell title-cell">
+                          <span className="blog-title">{blog.title}</span>
+                        </div>
+                        <div className="table-cell">
+                          <span className="category-tag">{blog.categoryName || "Uncategorized"}</span>
+                        </div>
+                        <div className="table-cell">
+                          <span className={`category-tag ${category?.blogCategoryTag?.toLowerCase() || ''}`}>
+                            {category?.blogCategoryTag || "N/A"}
+                          </span>
+                        </div>
+                        <div className="table-cell">
+                          <div className={`status-badge ${blog.status?.toLowerCase()}`}>
+                            {blog.status || "Pending"}
+                          </div>
+                        </div>
+                        <div className="table-cell actions-cell">
+                          <div className="action-buttons">
+                            <motion.button
+                              className="action-btn view"
+                              onClick={() => handleViewBlog(blog)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              title="View blog"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor" />
+                              </svg>
+                            </motion.button>
+                            <motion.button
+                              className="action-btn edit"
+                              onClick={() => handleEditBlog(blog)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              title="Edit blog"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" />
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" />
+                              </svg>
+                            </motion.button>
+                            <motion.button
+                              className="action-btn delete"
+                              onClick={() => setShowDeleteConfirm(blog.id)}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              title="Delete blog"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6h18v2H3zm2 3h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9zm5-4V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h4v2H6V5h4z" fill="currentColor" />
+                              </svg>
+                            </motion.button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="pagination">
               <motion.button
-                className="pagination-button previous"
+                className="pagination-btn prev"
                 onClick={handlePreviousPage}
                 disabled={currentPage === 1}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                aria-label="Go to previous page"
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M15 18l-6-6 6-6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" />
                 </svg>
               </motion.button>
+              
               {Array.from({ length: totalPages }, (_, index) => (
                 <motion.button
                   key={index + 1}
-                  className={`pagination-button ${
-                    currentPage === index + 1 ? "active" : ""
-                  }`}
+                  className={`pagination-btn ${currentPage === index + 1 ? 'active' : ''}`}
                   onClick={() => handlePageChange(index + 1)}
-                  whileHover={{ scale: 1.1 }}
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  aria-label={`Go to page ${index + 1}`}
                 >
                   {index + 1}
                 </motion.button>
               ))}
+              
               <motion.button
-                className="pagination-button next"
+                className="pagination-btn next"
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages}
-                whileHover={{ scale: 1.1 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                aria-label="Go to next page"
               >
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M9 18l6-6-6-6"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" />
                 </svg>
               </motion.button>
             </div>
           )}
         </section>
-        <section className="blog-chart-section">
-          <h2 className="blog-chart-title">Blog Distribution by Category</h2>
-          <div className="chart-container">
-            <canvas ref={chartRef} />
-          </div>
-        </section>
-        {["3", "4"].includes(user?.roleId) && (
-          <section className="blog-approve-section">
-            <h2 className="blog-approve-title">Approve Blogs</h2>
-            {approvalBlogs.length === 0 ? (
-              <p>No blogs pending approval.</p>
-            ) : (
-              <div className="blog-table" id="approve-blog-table">
-                <div className="blog-table-header">
-                  <span>Title</span>
-                  <span>Category</span>
-                  <span>Status</span>
-                  <span>Actions</span>
+
+        {/* Approval Section for specific roles */}
+        {["3", "4"].includes(user?.roleId) && approvalBlogs.length > 0 && (
+          <section className="approval-section">
+            <div className="section-header">
+              <h2>Pending Approval</h2>
+              <span className="badge">{approvalBlogs.length}</span>
+            </div>
+            <div className="table-container">
+              <div className="table-header">
+                <div className="table-row">
+                  <div className="table-cell">Title</div>
+                  <div className="table-cell">Category</div>
+                  <div className="table-cell">Tag</div>
+                  <div className="table-cell">Status</div>
+                  <div className="table-cell actions-header">Actions</div>
                 </div>
-                {approvalBlogs.map((blog) => (
-                  <motion.div
-                    key={blog.id}
-                    className="blog-table-row"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <span>{blog.title}</span>
-                    <span>{blog.categoryName || "Uncategorized"}</span>
-                    <span>
-                      <motion.span
-                        className="status-dot"
-                        title={blog.status || "Pending"}
-                        style={{
-                          backgroundColor:
-                            blog.status?.toLowerCase() === "approved"
-                              ? "#34C759"
-                              : blog.status?.toLowerCase() === "rejected"
-                              ? "#FF3B30"
-                              : "#FBC107",
-                        }}
-                        whileHover={{
-                          scale: 1.2,
-                          boxShadow: "0 0 8px rgba(0,0,0,0.2)",
-                        }}
-                      />
-                    </span>
-                    <span className="blog-actions">
-                      <motion.button
-                        className="blog-action-button view"
-                        onClick={() => handleViewBlog(blog)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label={`View blog ${blog.title}`}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
-                            fill="currentColor"
-                          />
-                        </svg>
-                      </motion.button>
-                      <motion.button
-                        className="blog-action-button approve"
-                        onClick={() => handleApproveBlog(blog.id)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label={`Approve blog ${blog.title}`}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M20 6L9 17l-5-5"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </motion.button>
-                      <motion.button
-                        className="blog-action-button reject"
-                        onClick={() => setShowRejectModal(blog.id)}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        aria-label={`Reject blog ${blog.title}`}
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M18 6L6 18M6 6l12 12"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </motion.button>
-                    </span>
-                  </motion.div>
-                ))}
               </div>
-            )}
-          </section>
-        )}
-        <AnimatePresence>
-          {selectedImage && (
-            <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="image-modal-title"
-            >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") closeImageModal();
-                }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={closeImageModal}
-                  aria-label="Close image modal"
-                >
-                  ×
-                </button>
-                {selectedImage.images.length > 1 && (
-                  <>
-                    <button
-                      className="blog-image-modal-nav prev"
-                      onClick={prevImage}
-                      aria-label="Previous image"
-                    >
-                      ←
-                    </button>
-                    <button
-                      className="blog-image-modal-nav next"
-                      onClick={nextImage}
-                      aria-label="Next image"
-                    >
-                      →
-                    </button>
-                  </>
-                )}
-                <img
-                  src={selectedImage.images[currentImageIndex].fileUrl || ""}
-                  alt={
-                    selectedImage.images[currentImageIndex].fileName ||
-                    "Blog image"
-                  }
-                  onError={() =>
-                    console.error(
-                      `Failed to load modal image: ${selectedImage.images[currentImageIndex].fileUrl}`
-                    )
-                  }
-                />
-              </motion.div>
-            </motion.div>
-          )}
-          {editBlogData && (
-            <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="edit-blog-title"
-            >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setEditBlogData(null);
-                }}
-              >
-                <form className="blog-form-section" onSubmit={handleEditSubmit}>
-                  <h2 id="edit-blog-title" className="blog-form-title">Edit Blog</h2>
-                  {error && (
-                    <motion.p
-                      className="error-message"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
+              <div className="table-body">
+                {approvalBlogs.map((blog) => {
+                  const category = categoryMap[blog.categoryId];
+                  return (
+                    <motion.div
+                      key={blog.id}
+                      className="table-row"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      {error}
-                    </motion.p>
-                  )}
-                  <div className="form-group">
-                    <div className="input-group">
-                      <label htmlFor="edit-title">Title</label>
-                      <input
-                        id="edit-title"
-                        type="text"
-                        value={editBlogData.title}
-                        onChange={(e) =>
-                          setEditBlogData({
-                            ...editBlogData,
-                            title: e.target.value,
-                          })
-                        }
-                        required
-                        aria-label="Blog title"
-                        disabled={isSubmitting}
-                        placeholder="Enter title (3-100 characters)"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label htmlFor="edit-category">Category</label>
-                      <select
-                        id="edit-category"
-                        value={editBlogData.categoryId}
-                        onChange={(e) =>
-                          setEditBlogData({
-                            ...editBlogData,
-                            categoryId: e.target.value,
-                          })
-                        }
-                        required
-                        aria-label="Blog category"
-                        disabled={isSubmitting}
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map((category) => (
-                          <option key={category.id} value={category.id}>
-                            {category.categoryName}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label htmlFor="edit-body">Body</label>
-                    <textarea
-                      id="edit-body"
-                      value={editBlogData.body}
-                      onChange={(e) =>
-                        setEditBlogData({
-                          ...editBlogData,
-                          body: e.target.value,
-                        })
-                      }
-                      required
-                      aria-label="Blog content"
-                      disabled={isSubmitting}
-                      placeholder="Enter blog content (min 10 characters)"
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label htmlFor="edit-tags">Tags (comma-separated)</label>
-                    <input
-                      id="edit-tags"
-                      type="text"
-                      value={
-                        Array.isArray(editBlogData.tags)
-                          ? editBlogData.tags.join(", ")
-                          : ""
-                      }
-                      onChange={(e) =>
-                        setEditBlogData({
-                          ...editBlogData,
-                          tags: e.target.value
-                            .split(",")
-                            .map((tag) => tag.trim())
-                            .filter((tag) => tag),
-                        })
-                      }
-                      aria-label="Blog tags"
-                      disabled={isSubmitting}
-                      placeholder="Enter tags (e.g., health, nutrition)"
-                    />
-                  </div>
-                  <div className="input-group">
-                    <label>Current Images</label>
-                    <div className="blog-images">
-                      {editBlogData.images.length > 0 ? (
-                        editBlogData.images.map((image, index) => (
-                          <div key={index} className="blog-image-wrapper">
-                            <img
-                              src={image.fileUrl || ""}
-                              alt={image.fileName || "Blog image"}
-                              className="blog-image"
-                            />
-                            <button
-                              type="button"
-                              className="blog-image-remove"
-                              onClick={() => handleRemoveImage(index)}
-                              aria-label={`Remove image ${index + 1}`}
-                              disabled={isSubmitting}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))
-                      ) : (
-                        <span className="text-gray-500">No images</span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="input-group">
-                    <label htmlFor="edit-images">Add New Images (max 5 total)</label>
-                    <input
-                      id="edit-images"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      ref={fileInputRef}
-                      aria-label="Upload new images"
-                      disabled={isSubmitting}
-                    />
-                    {newImages.length > 0 && (
-                      <div className="blog-images">
-                        {newImages.map((image, index) => (
-                          <div key={index} className="blog-image-wrapper">
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`New image ${index + 1}`}
-                              className="blog-image"
-                            />
-                            <button
-                              type="button"
-                              className="blog-image-remove"
-                              onClick={() =>
-                                setNewImages((prev) =>
-                                  prev.filter((_, i) => i !== index)
-                                )
-                              }
-                              aria-label={`Remove new image ${index + 1}`}
-                              disabled={isSubmitting}
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
+                      <div className="table-cell title-cell">
+                        <span className="blog-title">{blog.title}</span>
                       </div>
-                    )}
-                  </div>
-                  <div className="form-actions">
-                    <motion.button
-                      type="submit"
-                      className="blog-submit-button"
-                      whileHover={{ scale: isSubmitting ? 1 : 1.05 }}
-                      whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
-                      aria-label="Save changes"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <span className="loading-spinner">Saving...</span>
-                      ) : (
-                        <>
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="button-icon"
+                      <div className="table-cell">
+                        <span className="category-tag">{blog.categoryName || "Uncategorized"}</span>
+                      </div>
+                      <div className="table-cell">
+                        <span className={`category-tag ${category?.blogCategoryTag?.toLowerCase() || ''}`}>
+                          {category?.blogCategoryTag || "N/A"}
+                        </span>
+                      </div>
+                      <div className="table-cell">
+                        <div className="status-badge pending">{blog.status || "Pending"}</div>
+                      </div>
+                      <div className="table-cell actions-cell">
+                        <div className="action-buttons">
+                          <motion.button
+                            className="action-btn view"
+                            onClick={() => handleViewBlog(blog)}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="View blog"
                           >
-                            <path
-                              d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M17 21v-8H7v8"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                            <path
-                              d="M7 3v5h5"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                          Save Changes
-                        </>
-                      )}
-                    </motion.button>
-                    <motion.button
-                      type="button"
-                      className="blog-cancel-button"
-                      onClick={() => setEditBlogData(null)}
-                      whileHover={{ scale: isSubmitting ? 1 : 1.05 }}
-                      whileTap={{ scale: isSubmitting ? 1 : 0.95 }}
-                      aria-label="Cancel edit"
-                      disabled={isSubmitting}
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button-icon"
-                      >
-                        <path
-                          d="M18 6L6 18M6 6l12 12"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Cancel
-                    </motion.button>
-                  </div>
-                </form>
-              </motion.div>
-            </motion.div>
-          )}
-          {showDeleteConfirm && (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor" />
+                            </svg>
+                          </motion.button>
+                          <motion.button
+                            className="action-btn approve"
+                            onClick={() => handleApproveBlog(blog.id)}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="Approve blog"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                              <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" />
+                            </svg>
+                          </motion.button>
+                          <motion.button
+                            className="action-btn reject"
+                            onClick={() => setShowRejectModal(blog.id)}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            title="Reject blog"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                            </svg>
+                          </motion.button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+      </div>
+
+      {/* Modals */}
+      <AnimatePresence>
+        {/* Image Modal */}
+        {selectedImage && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeImageModal}
+          >
             <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="delete-confirm-title"
+              className="image-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setShowDeleteConfirm(null);
-                }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={() => setShowDeleteConfirm(null)}
-                  aria-label="Close delete confirmation"
-                >
-                  ×
-                </button>
-                <div className="delete-confirm">
-                  <h2 id="delete-confirm-title" className="delete-confirm-title">Confirm Delete</h2>
-                  <p>Are you sure you want to delete this blog?</p>
-                  <div className="form-actions">
-                    <motion.button
-                      className="blog-submit-button delete"
-                      onClick={() => handleDeleteBlog(showDeleteConfirm)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label="Confirm delete"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button-icon"
-                      >
-                        <path
-                          d="M3 6h18v2H3zm2 3h14v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9zm5-4V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1h4v2H6V5h4z"
-                          fill="currentColor"
-                        />
-                      </svg>
-                      Delete
-                    </motion.button>
-                    <motion.button
-                      className="blog-cancel-button"
-                      onClick={() => setShowDeleteConfirm(null)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label="Cancel delete"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button-icon"
-                      >
-                        <path
-                          d="M18 6L6 18M6 6l12 12"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Cancel
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
+              <button className="modal-close" onClick={closeImageModal}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              </button>
+              {selectedImage.images.length > 1 && (
+                <>
+                  <button className="nav-btn prev" onClick={prevImage}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  </button>
+                  <button className="nav-btn next" onClick={nextImage}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                  </button>
+                </>
+              )}
+              <img
+                src={selectedImage.images[currentImageIndex].fileUrl || ""}
+                alt={selectedImage.images[currentImageIndex].fileName || "Blog image"}
+              />
             </motion.div>
-          )}
-          {showRejectModal && (
+          </motion.div>
+        )}
+
+        {/* Edit Blog Modal */}
+        {editBlogData && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setEditBlogData(null)}
+          >
             <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="reject-blog-title"
+              className="form-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setShowRejectModal(null);
-                }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={() => setShowRejectModal(null)}
-                  aria-label="Close reject modal"
-                >
-                  ×
+              <div className="modal-header">
+                <h2>Edit Blog</h2>
+                <button className="modal-close" onClick={() => setEditBlogData(null)}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                  </svg>
                 </button>
-                <div className="delete-confirm">
-                  <h2 id="reject-blog-title" className="delete-confirm-title">Reject Blog</h2>
-                  <p>Please provide a reason for rejecting this blog:</p>
-                  <div className="input-group">
-                    <textarea
-                      value={rejectionReason}
-                      onChange={(e) => setRejectionReason(e.target.value)}
-                      placeholder="Enter rejection reason"
-                      aria-label="Rejection reason"
+              </div>
+
+              <form className="edit-form" onSubmit={handleEditSubmit}>
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label>Title</label>
+                    <input
+                      type="text"
+                      value={editBlogData.title}
+                      onChange={(e) => setEditBlogData({ ...editBlogData, title: e.target.value })}
+                      placeholder="Enter blog title"
                       required
                     />
                   </div>
-                  <div className="form-actions">
-                    <motion.button
-                      className="blog-submit-button reject"
-                      onClick={() => handleRejectBlog(showRejectModal)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label="Confirm reject"
-                      disabled={!rejectionReason.trim()}
+
+                  <div className="form-group">
+                    <label>Category</label>
+                    <select
+                      value={editBlogData.categoryId}
+                      onChange={(e) => setEditBlogData({ ...editBlogData, categoryId: e.target.value })}
+                      required
+                      disabled
                     >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button-icon"
-                      >
-                        <path
-                          d="M18 6L6 18M6 6l12 12"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Reject
-                    </motion.button>
-                    <motion.button
-                      className="blog-cancel-button"
-                      onClick={() => setShowRejectModal(null)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label="Cancel reject"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button-icon"
-                      >
-                        <path
-                          d="M18 6L6 18M6 6l12 12"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Cancel
-                    </motion.button>
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.categoryName}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
-          )}
-          {showViewModal && (
-            <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="view-blog-title"
-            >
-              <motion.div
-                className="blog-view-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") closeViewModal();
-                }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={closeViewModal}
-                  aria-label="Close view modal"
-                >
-                  ×
-                </button>
-                <div className="blog-view-header">
-                  <h2 id="view-blog-title" className="blog-view-title">{showViewModal.title}</h2>
-                  <div className="blog-view-meta">
-                    <span className="blog-view-category">
-                      <strong>Category:</strong>{" "}
-                      {showViewModal.categoryName || "Uncategorized"}
-                    </span>
-                    <span className="blog-view-status">
-                      <strong>Status:</strong>
-                      <motion.span
-                        className="status-dot"
-                        title={showViewModal.status || "Pending"}
-                        style={{
-                          backgroundColor:
-                            showViewModal.status?.toLowerCase() === "approved"
-                              ? "#34C759"
-                              : showViewModal.status?.toLowerCase() ===
-                                "rejected"
-                              ? "#FF3B30"
-                              : "#FBC107",
-                        }}
-                      />
-                    </span>
+
+                <div className="form-group">
+                  <label>Content</label>
+                  <textarea
+                    value={editBlogData.body}
+                    onChange={(e) => setEditBlogData({ ...editBlogData, body: e.target.value })}
+                    placeholder="Enter blog content"
+                    rows="6"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Tags (comma separated)</label>
+                  <input
+                    type="text"
+                    value={Array.isArray(editBlogData.tags) ? editBlogData.tags.join(", ") : ""}
+                    onChange={(e) => setEditBlogData({
+                      ...editBlogData,
+                      tags: e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag)
+                    })}
+                    placeholder="health, nutrition, wellness"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Current Images</label>
+                  <div className="images-grid">
+                    {editBlogData.images.map((image, index) => (
+                      <div key={index} className="image-item">
+                        <img src={image.fileUrl} alt={`Blog image ${index + 1}`} />
+                        <button
+                          type="button"
+                          className="remove-image"
+                          onClick={() => handleRemoveImage(index)}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                            <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className="blog-view-body">
-                  <h3 className="blog-view-subtitle">Content</h3>
-                  <div className="blog-view-text">
-                    {showViewModal.body || "No content available"}
-                  </div>
-                </div>
-                {showViewModal.images?.length > 0 && (
-                  <div className="blog-view-images">
-                    <h3 className="blog-view-subtitle">Images</h3>
-                    <div className="blog-images-grid">
-                      {showViewModal.images.map((image, index) => (
-                        <div className="blog-image-wrapper" key={index}>
-                          <img
-                            src={image.fileUrl || ""}
-                            alt={image.fileName || "Blog image"}
-                            className="blog-image"
-                            onClick={() =>
-                              openImageModal(image, index, showViewModal.images)
-                            }
-                            onError={() =>
-                              console.error(
-                                `Failed to load image: ${image.fileUrl}`
-                              )
-                            }
-                          />
+
+                <div className="form-group">
+                  <label>Add New Images</label>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    ref={fileInputRef}
+                  />
+                  {newImages.length > 0 && (
+                    <div className="images-grid">
+                      {newImages.map((image, index) => (
+                        <div key={index} className="image-item">
+                          <img src={URL.createObjectURL(image)} alt={`New image ${index + 1}`} />
+                          <button
+                            type="button"
+                            className="remove-image"
+                            onClick={() => setNewImages(prev => prev.filter((_, i) => i !== index))}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                            </svg>
+                          </button>
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
-                <div className="blog-view-footer">
-                  <button
-                    className="blog-view-close-button"
-                    onClick={closeViewModal}
+                  )}
+                </div>
+
+                <div className="form-actions">
+                  <motion.button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setEditBlogData(null)}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    Close
-                  </button>
+                    Cancel
+                  </motion.button>
+                  <motion.button
+                    type="submit"
+                    className="btn-primary"
+                    disabled={isSubmitting}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {isSubmitting ? "Saving..." : "Save Changes"}
+                  </motion.button>
                 </div>
-              </motion.div>
+              </form>
             </motion.div>
-          )}
-          {showErrorModal && (
+          </motion.div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowDeleteConfirm(null)}
+          >
             <motion.div
-              className="blog-image-modal"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="error-modal-title"
+              className="confirm-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div
-                className="blog-image-modal-content"
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Escape") setShowErrorModal(null);
-                }}
-              >
-                <button
-                  className="blog-image-modal-close"
-                  onClick={() => setShowErrorModal(null)}
-                  aria-label="Close error modal"
+              <div className="modal-icon warning">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              </div>
+              <h3>Delete Blog</h3>
+              <p>Are you sure you want to delete this blog? This action cannot be undone.</p>
+              <div className="modal-actions">
+                <motion.button
+                  className="btn-secondary"
+                  onClick={() => setShowDeleteConfirm(null)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  ×
+                  Cancel
+                </motion.button>
+                <motion.button
+                  className="btn-danger"
+                  onClick={() => handleDeleteBlog(showDeleteConfirm)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Delete
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Reject Modal */}
+        {showRejectModal && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowRejectModal(null)}
+          >
+            <motion.div
+              className="form-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2>Reject Blog</h2>
+                <button className="modal-close" onClick={() => setShowRejectModal(null)}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                  </svg>
                 </button>
-                <div className="delete-confirm">
-                  <h2 id="error-modal-title" className="delete-confirm-title">Error</h2>
-                  <p>{showErrorModal}</p>
-                  <div className="form-actions">
-                    <motion.button
-                      className="blog-cancel-button"
-                      onClick={() => setShowErrorModal(null)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      aria-label="Close error"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="button-icon"
-                      >
-                        <path
-                          d="M18 6L6 18M6 6l12 12"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      Close
-                    </motion.button>
+              </div>
+
+              <div className="form-group">
+                <label>Rejection Reason</label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please provide a reason for rejecting this blog..."
+                  rows="4"
+                  required
+                />
+              </div>
+
+              <div className="form-actions">
+                <motion.button
+                  className="btn-secondary"
+                  onClick={() => setShowRejectModal(null)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  className="btn-danger"
+                  onClick={() => handleRejectBlog(showRejectModal)}
+                  disabled={!rejectionReason.trim()}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Reject Blog
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* View Blog Modal */}
+        {showViewModal && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={closeViewModal}
+          >
+            <motion.div
+              className="view-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <h2>{showViewModal.title}</h2>
+                <button className="modal-close" onClick={closeViewModal}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="blog-meta">
+                <div className="meta-item">
+                  <span className="label">Category:</span>
+                  <span className="value">{showViewModal.categoryName || "Uncategorized"}</span>
+                </div>
+                <div className="meta-item">
+                  <span className="label">Tag:</span>
+                  <span className="value">
+                    {categoryMap[showViewModal.categoryId]?.blogCategoryTag || "N/A"}
+                  </span>
+                </div>
+                <div className="meta-item">
+                  <span className="label">Status:</span>
+                  <div className={`status-badge ${showViewModal.status?.toLowerCase()}`}>
+                    {showViewModal.status || "Pending"}
                   </div>
                 </div>
-              </motion.div>
+              </div>
+
+              <div className="blog-content">
+                <h3>Content</h3>
+                <div className="content-text">
+                  {showViewModal.body || "No content available"}
+                </div>
+              </div>
+
+              {showViewModal.images?.length > 0 && (
+                <div className="blog-images">
+                  <h3>Images ({showViewModal.images.length})</h3>
+                  <div className="images-grid">
+                    {showViewModal.images.map((image, index) => (
+                      <div
+                        key={index}
+                        className="image-item view"
+                        onClick={() => openImageModal(image, index, showViewModal.images)}
+                      >
+                        <img src={image.fileUrl} alt={`Blog image ${index + 1}`} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <motion.button
+                  className="btn-primary"
+                  onClick={closeViewModal}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Close
+                </motion.button>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        )}
+
+        {/* Error Modal */}
+        {showErrorModal && (
+          <motion.div
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowErrorModal(null)}
+          >
+            <motion.div
+              className="confirm-modal"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-icon error">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" />
+                </svg>
+              </div>
+              <h3>Error</h3>
+              <p>{showErrorModal}</p>
+              <div className="modal-actions">
+                <motion.button
+                  className="btn-primary"
+                  onClick={() => setShowErrorModal(null)}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  OK
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
