@@ -173,10 +173,10 @@ const JournalEntryDetail = () => {
     // Heart rate analysis
     if (bio?.heartRateBPM != null) {
       const hr = Number(bio.heartRateBPM);
-      if (hr > 110) {
+      if (hr > 120) {
         results.heartRateBPM = {
           abnormal: true,
-          message: `Heart rate ${hr} bpm (elevated >110)`,
+          message: `Heart rate ${hr} bpm (elevated >120)`,
         };
       } else if (hr < 50) {
         results.heartRateBPM = {

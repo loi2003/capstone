@@ -337,7 +337,7 @@
   white-space: nowrap;
   min-height: 45px;
   font-family: inherit;
-  width:auto;
+  min-width: 120px;
 }
 
 .action-btn:hover {
@@ -378,7 +378,9 @@
   border-color: #e74c3c !important;
   color: var(--white) !important;
 }
-
+.action-btn.like-btn {
+  min-width: 50px !important;
+} 
 .action-btn.share-btn {
   background: #0D7AA5;
   border-color: var(--co-3);

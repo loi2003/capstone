@@ -135,10 +135,10 @@ const PregnancyTrackingPage = () => {
     // Heart Rate
     if (bio?.heartRateBPM) {
       const hr = bio.heartRateBPM;
-      if (hr > 110) {
+      if (hr > 120) {
         results.heartRateBPM = {
           abnormal: true,
-          message: `Heart Rate ${hr}: elevated (>110)`,
+          message: `Heart Rate ${hr}: elevated (>120)`,
         };
       } else if (hr < 50) {
         results.heartRateBPM = {
@@ -156,12 +156,12 @@ const PregnancyTrackingPage = () => {
           abnormal: true,
           message: `BMI ${bmi.toFixed(1)}: underweight`,
         };
-      } else if (bmi >= 30) {
+      } else if (bmi > 35) {
         results.bmi = {
           abnormal: true,
           message: `BMI ${bmi.toFixed(
             1
-          )}: obesity (≥30) increases pregnancy risks`,
+          )}: obesity (>35) increases pregnancy risks`,
         };
       }
     }

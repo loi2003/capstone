@@ -758,6 +758,7 @@
 }
 
 .blog-page__page-btn {
+  width: 200px;
   background: #0d7aa5;
   color: var(--white);
   border: none;
@@ -820,10 +821,9 @@
   padding: 40px;
   border-radius: var(--border-radius-large);
   text-align: center;
-  max-width: 500px;
-  width: 90%;
+  width: 600px;
   box-shadow: var(--shadow-heavy);
-  max-height: 80vh;
+  max-height: 100vh;
   overflow-y: auto;
   border: 1px solid rgba(4, 102, 141, 0.1);
 }
@@ -1055,6 +1055,9 @@
 .blog-page__bookmark-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start !important;
 }
 
 .blog-page__bookmark-title {
@@ -1070,6 +1073,8 @@
 }
 
 .blog-page__bookmark-excerpt {
+  display: flex;
+  align-items: flex-start !important;
   font-size: 0.9rem;
   color: var(--color-text);
   margin: 8px 0;

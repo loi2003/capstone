@@ -12,10 +12,12 @@
   background-color: #1780a6;
   color: white;
   padding: 30px;
-  text-align: center;
+  text-align: left;
   position: relative;
   border-radius: 12px;
   margin-top: 3rem;
+  margin-right: 2rem;
+  margin-left: 2rem;
 }
 
 .online-consultation-detail-header h1 {
@@ -24,10 +26,12 @@
   position: relative;
   z-index: 1;
   color: white;
+  text-align: left;
 }
 
 .online-consultation-detail-consultation-date {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 8px 20px;
   background: rgba(255, 255, 255, 0.2);
   border-radius: 25px;
@@ -42,16 +46,19 @@
 }
 
 .online-consultation-detail-back-btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   padding: 12px 25px;
   background-color: #1780a6;
   color: white;
   text-decoration: none;
+  border: none;
   border-radius: 25px;
   font-weight: 600;
   transition: all 0.3s ease;
   margin-bottom: 30px;
   width: fit-content;
+  cursor: pointer;
 }
 
 .online-consultation-detail-back-btn:hover {
@@ -68,7 +75,7 @@
   border-radius: 15px;
   padding: 25px;
   margin-bottom: 30px;
-  border-left: 5px solid #ff6b6b;
+  /* border-left: 5px solid #ff6b6b; */
   display: flex;
   justify-content: space-around;
   text-align: center;
@@ -112,7 +119,7 @@
   overflow: hidden;
 }
 
-.online-consultation-detail-info-card::before {
+/* .online-consultation-detail-info-card::before {
   content: "";
   position: absolute;
   top: 0;
@@ -120,7 +127,7 @@
   width: 4px;
   height: 100%;
   background: #067dad;
-}
+} */
 
 .online-consultation-detail-info-card:hover {
   transform: translateY(-5px);
@@ -134,15 +141,7 @@
   font-weight: 600;
   display: flex;
   align-items: center;
-}
-
-.online-consultation-detail-card-title::before {
-  content: "";
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  background: linear-gradient(135deg, var(--nguyen-primary-bg), #02808f);
-  border-radius: 50%;
+  text-align: left;
 }
 
 .online-consultation-detail-medical-section {
@@ -151,7 +150,7 @@
   padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   margin-bottom: 30px;
-  border-left: 5px solid #067dad;
+  /* border-left: 5px solid #067dad; */
 }
 
 .online-consultation-detail-medical-section h3 {
@@ -160,18 +159,14 @@
   margin-bottom: 15px;
   display: flex;
   align-items: center;
-}
-
-.online-consultation-detail-medical-section h3::before {
-  margin-right: 10px;
-  font-size: 1.2em;
+  text-align: left;
 }
 
 .online-consultation-detail-medical-content {
   background: rgba(0, 49, 184, 0.05);
   border-radius: 10px;
   padding: 20px;
-  border-left: 3px solid #067dad;
+  /* border-left: 3px solid #067dad; */
   font-size: 1.1em;
   line-height: 1.6;
   color: #333;
@@ -218,21 +213,11 @@
 
 .online-consultation-detail-contact-info {
   display: flex;
+  margin-top: 1rem;
   align-items: center;
   margin-bottom: 10px;
   font-size: 0.95em;
   color: #666;
-}
-
-.online-consultation-detail-contact-info::before {
-  margin-right: 8px;
-}
-
-.online-consultation-detail-phone::before {
-  content: "📞";
-}
-.online-consultation-detail-email::before {
-  content: "✉️";
 }
 
 .online-consultation-detail-specialization-list {
@@ -247,6 +232,7 @@
   border-radius: 10px;
   padding: 15px;
   margin-top: 15px;
+  margin-bottom: 1rem;
   font-size: 0.95em;
   line-height: 1.5;
   color: #555;
@@ -262,7 +248,8 @@
 }
 
 .online-consultation-detail-experience-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   background: linear-gradient(135deg, #fdcb6e, #e17055);
   color: white;
   padding: 5px 15px;
@@ -301,14 +288,23 @@
   padding: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   margin-bottom: 30px;
-  text-align: center;
   border: 2px dashed #ddd;
+}
+
+.online-consultation-detail-attachment-section h3 {
+  font-size: 1.3em;
+  color: #333;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  text-align: left;
 }
 
 .online-consultation-detail-no-attachments {
   color: #999;
   font-style: italic;
   padding: 20px;
+  text-align: center;
 }
 
 .online-consultation-detail-trimester-indicator {
