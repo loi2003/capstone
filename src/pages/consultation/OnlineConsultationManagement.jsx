@@ -51,6 +51,7 @@ const OnlineConsultationManagement = () => {
   const [editLoading, setEditLoading] = useState(false);
   const navigate = useNavigate();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editSelectedAttachments, setEditSelectedAttachments] = useState([]);
   const [userList, setUserList] = useState([]);
   const [userListLoading, setUserListLoading] = useState(true);
   const [showUserListModal, setShowUserListModal] = useState(false);
@@ -234,28 +235,29 @@ const OnlineConsultationManagement = () => {
   };
 
   const handleEditChange = (e) => {
-    const { type, files } = e.target;
+    const { type, files, name, value } = e.target;
     if (type === "file") {
-      setEditForm((prev) => ({
-        ...prev,
-        selectedAttachments: Array.from(files),
-      }));
+      setEditSelectedAttachments(Array.from(files));
     } else {
       setEditForm((prev) => ({
         ...prev,
-        [e.target.name]: e.target.value,
+        [name]: value,
       }));
     }
   };
 
-  const handleAddAttachments = () => {
+  const handleAddEditAttachments = () => {
     setEditForm((prev) => ({
       ...prev,
-      Attachments: [
-        ...(prev.Attachments || []),
-        ...(prev.selectedAttachments || []),
-      ],
-      selectedAttachments: [],
+      Attachments: [...(prev.Attachments || []), ...editSelectedAttachments],
+    }));
+    setEditSelectedAttachments([]);
+  };
+
+  const handleRemoveEditAttachment = (idx) => {
+    setEditForm((prev) => ({
+      ...prev,
+      Attachments: prev.Attachments.filter((_, i) => i !== idx),
     }));
   };
 
@@ -511,58 +513,6 @@ const OnlineConsultationManagement = () => {
           animate="animate"
           variants={containerVariants}
         >
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Dashboard"
-            >
-              <FaChartLine size={20} />
-              {isSidebarOpen && <span>Dashboard</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Schedule"
-            >
-              <FaCalendarAlt size={20} />
-              {isSidebarOpen && <span>Schedule</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Clients"
-            >
-              <FaUsers size={20} />
-              {isSidebarOpen && <span>Clients</span>}
-            </Link>
-          </motion.div>
-          <motion.div
-            variants={navItemVariants}
-            className="consultant-sidebar-nav-item"
-          >
-            <Link
-              to="/consultant"
-              onClick={() => setIsSidebarOpen(true)}
-              title="Support"
-            >
-              <FaQuestionCircle size={20} />
-              {isSidebarOpen && <span>Support</span>}
-            </Link>
-          </motion.div>
           <motion.div variants={navItemVariants} className="sidebar-nav-item">
             <Link
               to="/consultation/consultation-management"
@@ -884,76 +834,88 @@ const OnlineConsultationManagement = () => {
                         </div>
                       </div>
                       <div className="online-consultation-form-group">
-                        <label>Attachments</label>
-                        {createForm.Attachments &&
-                          createForm.Attachments.length > 0 && (
-                            <ul
-                              style={{
-                                margin: "8px 0 0 0",
-                                padding: 0,
-                                listStyle: "none",
-                                fontSize: "0.95em",
-                              }}
-                            >
-                              {createForm.Attachments.map((file, idx) => (
-                                <li
-                                  key={idx}
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 8,
-                                  }}
-                                >
-                                  {file.fileName
-                                    ? file.fileName
-                                    : file.name
-                                    ? file.name
-                                    : typeof file === "string"
-                                    ? file
-                                    : "Attachment"}
-                                  <button
-                                    type="button"
-                                    style={{
-                                      marginLeft: 8,
-                                      background: "none",
-                                      border: "none",
-                                      color: "#d32f2f",
-                                      cursor: "pointer",
-                                      fontSize: "1em",
-                                    }}
-                                    title="Remove"
-                                    onClick={() =>
-                                      handleRemoveCreateAttachment(idx)
-                                    }
-                                  >
-                                    &times;
-                                  </button>
-                                </li>
-                              ))}
-                            </ul>
-                          )}
+                        <label htmlFor="attachments">Attachments</label>
                         <input
                           type="file"
-                          name="Attachments"
+                          id="attachments"
+                          name="attachments"
                           multiple
-                          onChange={handleCreateChange}
-                          style={{ marginTop: 8 }}
+                          accept="image/*,application/pdf"
+                          onChange={(e) => {
+                            const files = Array.from(e.target.files);
+                            const maxFiles = 4;
+                            const totalFiles =
+                              (createForm.Attachments?.length || 0) +
+                              files.length;
+                            if (totalFiles > maxFiles) {
+                              alert(
+                                `You can only upload up to ${maxFiles} attachments in total.`
+                              );
+                              return;
+                            }
+                            setCreateForm((prev) => ({
+                              ...prev,
+                              selectedAttachments: files,
+                            }));
+                          }}
                         />
                         {createForm.selectedAttachments &&
                           createForm.selectedAttachments.length > 0 && (
-                            <div style={{ marginTop: 8 }}>
-                              <strong>Selected to add:</strong>
-                              <ul
-                                style={{
-                                  margin: "4px 0 0 0",
-                                  padding: 0,
-                                  listStyle: "none",
-                                  fontSize: "0.95em",
-                                }}
-                              >
+                            <div className="attachments-preview-list">
+                              <strong>Selected Attachments:</strong>
+                              <ul>
                                 {createForm.selectedAttachments.map(
                                   (file, idx) => (
-                                    <li key={idx}>{file.name}</li>
+                                    <li key={idx} style={{ marginBottom: 8 }}>
+                                      {file.type.startsWith("image/") ? (
+                                        <img
+                                          src={URL.createObjectURL(file)}
+                                          alt={file.name}
+                                          style={{
+                                            width: 60,
+                                            height: 60,
+                                            objectFit: "cover",
+                                            borderRadius: 8,
+                                            marginRight: 8,
+                                            border: "1px solid #eee",
+                                          }}
+                                        />
+                                      ) : (
+                                        <span
+                                          style={{
+                                            display: "inline-block",
+                                            marginRight: 8,
+                                            color: "#4f8edc",
+                                          }}
+                                        >
+                                          📄
+                                        </span>
+                                      )}
+                                      <span>{file.name}</span>
+                                      <button
+                                        type="button"
+                                        style={{
+                                          marginLeft: 8,
+                                          color: "#d32f2f",
+                                          background: "none",
+                                          border: "none",
+                                          fontSize: "1em",
+                                          cursor: "pointer",
+                                        }}
+                                        onClick={() =>
+                                          setCreateForm((prev) => ({
+                                            ...prev,
+                                            selectedAttachments:
+                                              prev.selectedAttachments.filter(
+                                                (_, i) => i !== idx
+                                              ),
+                                          }))
+                                        }
+                                        title="Remove"
+                                      >
+                                        &times;
+                                      </button>
+                                    </li>
                                   )
                                 )}
                               </ul>
@@ -965,13 +927,85 @@ const OnlineConsultationManagement = () => {
                                   padding: "6px 18px",
                                   fontSize: "0.98em",
                                 }}
-                                onClick={handleAddCreateAttachments}
+                                onClick={() =>
+                                  setCreateForm((prev) => ({
+                                    ...prev,
+                                    Attachments: [
+                                      ...(prev.Attachments || []),
+                                      ...(prev.selectedAttachments || []),
+                                    ],
+                                    selectedAttachments: [],
+                                  }))
+                                }
                               >
                                 Add Attachment
                                 {createForm.selectedAttachments.length > 1
                                   ? "s"
                                   : ""}
                               </button>
+                            </div>
+                          )}
+                        {createForm.Attachments &&
+                          createForm.Attachments.length > 0 && (
+                            <div
+                              className="attachments-preview-list"
+                              style={{ marginTop: 8 }}
+                            >
+                              <strong>Attachments to upload:</strong>
+                              <ul>
+                                {createForm.Attachments.map((file, idx) => (
+                                  <li key={idx} style={{ marginBottom: 8 }}>
+                                    {file.type &&
+                                    file.type.startsWith("image/") ? (
+                                      <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={file.name}
+                                        style={{
+                                          width: 60,
+                                          height: 60,
+                                          objectFit: "cover",
+                                          borderRadius: 8,
+                                          marginRight: 8,
+                                          border: "1px solid #eee",
+                                        }}
+                                      />
+                                    ) : (
+                                      <span
+                                        style={{
+                                          display: "inline-block",
+                                          marginRight: 8,
+                                          color: "#4f8edc",
+                                        }}
+                                      >
+                                        📄
+                                      </span>
+                                    )}
+                                    <span>{file.name}</span>
+                                    <button
+                                      type="button"
+                                      style={{
+                                        marginLeft: 8,
+                                        color: "#d32f2f",
+                                        background: "none",
+                                        border: "none",
+                                        fontSize: "1em",
+                                        cursor: "pointer",
+                                      }}
+                                      onClick={() => {
+                                        setCreateForm((prev) => ({
+                                          ...prev,
+                                          Attachments: prev.Attachments.filter(
+                                            (_, i) => i !== idx
+                                          ),
+                                        }));
+                                      }}
+                                      title="Remove"
+                                    >
+                                      &times;
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
                             </div>
                           )}
                       </div>
@@ -1395,96 +1429,152 @@ const OnlineConsultationManagement = () => {
                       <label>Attachments</label>
                       {editForm.Attachments &&
                         editForm.Attachments.length > 0 && (
-                          <ul
-                            style={{
-                              margin: "8px 0 0 0",
-                              padding: 0,
-                              listStyle: "none",
-                              fontSize: "0.95em",
-                            }}
+                          <div
+                            className="attachments-preview-list"
+                            style={{ marginTop: 8 }}
                           >
-                            {editForm.Attachments.map((file, idx) => (
-                              <li
-                                key={idx}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 8,
-                                }}
-                              >
-                                {file.fileName
-                                  ? file.fileName
-                                  : file.name
-                                  ? file.name
-                                  : typeof file === "string"
-                                  ? file
-                                  : "Attachment"}
-                                <button
-                                  type="button"
-                                  style={{
-                                    marginLeft: 8,
-                                    background: "none",
-                                    border: "none",
-                                    color: "#d32f2f",
-                                    cursor: "pointer",
-                                    fontSize: "1em",
-                                  }}
-                                  title="Remove"
-                                  onClick={() => {
-                                    setEditForm((prev) => ({
-                                      ...prev,
-                                      Attachments: prev.Attachments.filter(
-                                        (_, i) => i !== idx
-                                      ),
-                                    }));
-                                  }}
-                                >
-                                  &times;
-                                </button>
-                              </li>
-                            ))}
-                          </ul>
+                            <strong>Attachments to upload:</strong>
+                            <ul>
+                              {editForm.Attachments.map((file, idx) => (
+                                <li key={idx} style={{ marginBottom: 8 }}>
+                                  {/* If file is a File object (new upload) */}
+                                  {file instanceof File ? (
+                                    file.type.startsWith("image/") ? (
+                                      <a
+                                        href={URL.createObjectURL(file)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="View full image"
+                                      >
+                                        <img
+                                          src={URL.createObjectURL(file)}
+                                          alt={file.name}
+                                          style={{
+                                            width: 60,
+                                            height: 60,
+                                            objectFit: "cover",
+                                            borderRadius: 8,
+                                            marginRight: 8,
+                                            border: "1px solid #eee",
+                                            cursor: "pointer",
+                                          }}
+                                        />
+                                      </a>
+                                    ) : (
+                                      <a
+                                        href={URL.createObjectURL(file)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                          marginRight: 8,
+                                          color: "#4f8edc",
+                                          fontSize: "1.5em",
+                                        }}
+                                        title="View file"
+                                      >
+                                        📄
+                                      </a>
+                                    )
+                                  ) : // If file is an existing attachment object
+                                  file.fileUrl &&
+                                    file.fileType &&
+                                    file.fileType.startsWith("image/") ? (
+                                    <a
+                                      href={file.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      title="View full image"
+                                    >
+                                      <img
+                                        src={file.fileUrl}
+                                        alt={file.fileName}
+                                        style={{
+                                          width: 60,
+                                          height: 60,
+                                          objectFit: "cover",
+                                          borderRadius: 8,
+                                          marginRight: 8,
+                                          border: "1px solid #eee",
+                                          cursor: "pointer",
+                                        }}
+                                      />
+                                    </a>
+                                  ) : (
+                                    <a
+                                      href={file.fileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{
+                                        marginRight: 8,
+                                        color: "#4f8edc",
+                                        fontSize: "1.5em",
+                                      }}
+                                      title="View file"
+                                    >
+                                      📄
+                                    </a>
+                                  )}
+                                  <span>{file.name || file.fileName}</span>
+                                  <button
+                                    type="button"
+                                    style={{
+                                      marginLeft: 8,
+                                      color: "#d32f2f",
+                                      background: "none",
+                                      border: "none",
+                                      fontSize: "1em",
+                                      cursor: "pointer",
+                                    }}
+                                    onClick={() =>
+                                      handleRemoveEditAttachment(idx)
+                                    }
+                                    title="Remove"
+                                  >
+                                    &times;
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
                       <input
                         type="file"
                         name="Attachments"
                         multiple
+                        accept="image/*,application/pdf"
                         onChange={handleEditChange}
                         style={{ marginTop: 8 }}
                       />
-                      {editForm.selectedAttachments &&
-                        editForm.selectedAttachments.length > 0 && (
-                          <div style={{ marginTop: 8 }}>
-                            <strong>Selected to add:</strong>
-                            <ul
-                              style={{
-                                margin: "4px 0 0 0",
-                                padding: 0,
-                                listStyle: "none",
-                                fontSize: "0.95em",
-                              }}
-                            >
-                              {editForm.selectedAttachments.map((file, idx) => (
-                                <li key={idx}>{file.name}</li>
-                              ))}
-                            </ul>
-                            <button
-                              type="button"
-                              className="online-consultation-modal-btn online-consultation-btn-primary"
-                              style={{
-                                marginTop: 6,
-                                padding: "6px 18px",
-                                fontSize: "0.98em",
-                              }}
-                              onClick={handleAddAttachments}
-                            >
-                              Add Attachment
-                              {editForm.selectedAttachments.length > 1
-                                ? "s"
-                                : ""}
-                            </button>
-                          </div>
-                        )}
+                      {editSelectedAttachments.length > 0 && (
+                        <div style={{ marginTop: 8 }}>
+                          <strong>Selected to add:</strong>
+                          <ul
+                            style={{
+                              margin: "4px 0 0 0",
+                              padding: 0,
+                              listStyle: "none",
+                              fontSize: "0.95em",
+                            }}
+                          >
+                            {editSelectedAttachments.map((file, idx) => (
+                              <li key={idx}>{file.name}</li>
+                            ))}
+                          </ul>
+                          <button
+                            type="button"
+                            className="online-consultation-modal-btn online-consultation-btn-primary"
+                            style={{
+                              marginTop: 6,
+                              padding: "6px 18px",
+                              fontSize: "0.98em",
+                            }}
+                            onClick={handleAddEditAttachments}
+                          >
+                            Add Attachment
+                            {editSelectedAttachments.length > 1 ? "s" : ""}
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <div className="online-consultation-modal-actions">
                       <button
