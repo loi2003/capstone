@@ -56,6 +56,8 @@ const ProfilePage = () => {
   const [allAllergies, setAllAllergies] = useState([]);
   const [allDiseases, setAllDiseases] = useState([]);
 
+  const [selectedDiseaseType, setSelectedDiseaseType] = useState(null);
+
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
@@ -393,6 +395,7 @@ const ProfilePage = () => {
     setModalType(type);
     setModalMode(mode);
     setShowModal(true);
+    setSelectedDiseaseType(null); // Reset the selected disease type
 
     if (mode === "add") {
       if (type === "disease") {
@@ -416,6 +419,13 @@ const ProfilePage = () => {
       }
     } else if (mode === "edit" && data) {
       setNewMedicalData(data);
+      // For edit mode, set the selected disease type
+      if (type === "disease") {
+        const disease = allDiseases.find((d) => d.id === data.diseaseId);
+        if (disease) {
+          setSelectedDiseaseType(disease.typeOfDisease);
+        }
+      }
     }
   };
 
@@ -428,6 +438,21 @@ const ProfilePage = () => {
 
   const handleMedicalInputChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // When disease selection changes, find its typeOfDisease
+    if (name === "diseaseId" && modalType === "disease") {
+      const selectedDisease = allDiseases.find((d) => d.id === value);
+      if (selectedDisease) {
+        setSelectedDiseaseType(selectedDisease.typeOfDisease);
+        setNewMedicalData((prev) => ({
+          ...prev,
+          [name]: value,
+          diseaseType: selectedDisease.typeOfDisease === "Chronic" ? 1 : 0,
+        }));
+        return;
+      }
+    }
+
     setNewMedicalData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -820,7 +845,13 @@ const ProfilePage = () => {
               ) : (
                 // Medical Information Section
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <h2 style={{ marginBottom: "1.5rem", color: "#1e3a5f" , fontSize: "2rem"}}>
+                  <h2
+                    style={{
+                      marginBottom: "1.5rem",
+                      color: "#1e3a5f",
+                      fontSize: "2rem",
+                    }}
+                  >
                     Medical Information
                   </h2>
 
@@ -1146,7 +1177,10 @@ const ProfilePage = () => {
                         </label>
                       </div>
                       <div className="form-group">
-                        <label>Disease Type <span className="must-enter-info">* (Required)</span></label>
+                        <label>
+                          Disease Type{" "}
+                          <span className="must-enter-info">* (Required)</span>
+                        </label>
                         <select
                           name="diseaseType"
                           value={newMedicalData.diseaseType || 0}
@@ -1194,7 +1228,7 @@ const ProfilePage = () => {
                             alignItems: "center",
                           }}
                         >
-                          Cured
+                          Cured (Optional)
                           <input
                             type="checkbox"
                             name="isCured"
