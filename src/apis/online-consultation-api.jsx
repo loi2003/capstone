@@ -187,3 +187,23 @@ export const sendOnlineConsultationEmails = async (consultationId, token) => {
     throw error;
   }
 };
+
+// POST: /api/online-consultation/send-updated-online-consultation-emails/{consultationId}
+export const sendUpdatedOnlineConsultationEmails = async (consultationId, token) => {
+  try {
+    const response = await apiClient.post(
+      `/api/online-consultation/send-updated-online-consultation-emails/${consultationId}`,
+      {}, // empty body
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error sending updated online consultation emails:", error.message);
+    throw error;
+  }
+};

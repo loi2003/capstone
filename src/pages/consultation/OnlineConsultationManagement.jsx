@@ -10,6 +10,7 @@ import {
   createOnlineConsultation,
   getOnlineConsultationById,
   sendOnlineConsultationEmails,
+  sendUpdatedOnlineConsultationEmails,
 } from "../../apis/online-consultation-api";
 import "../../styles/OnlineConsultationManagement.css";
 import {
@@ -237,7 +238,8 @@ const OnlineConsultationManagement = () => {
   const handleEditChange = (e) => {
     const { type, files, name, value } = e.target;
     if (type === "file") {
-      setEditSelectedAttachments(Array.from(files));
+      // Add selected files to editSelectedAttachments
+      setEditSelectedAttachments((prev) => [...prev, ...Array.from(files)]);
     } else {
       setEditForm((prev) => ({
         ...prev,
@@ -254,11 +256,17 @@ const OnlineConsultationManagement = () => {
     setEditSelectedAttachments([]);
   };
 
-  const handleRemoveEditAttachment = (idx) => {
+  // Remove attachment (like BlogManagement's handleRemoveImage)
+  const handleRemoveEditAttachment = (index) => {
     setEditForm((prev) => ({
       ...prev,
-      Attachments: prev.Attachments.filter((_, i) => i !== idx),
+      Attachments: prev.Attachments.filter((_, i) => i !== index),
     }));
+  };
+
+  // Remove selected attachment before upload
+  const handleRemoveSelectedEditAttachment = (index) => {
+    setEditSelectedAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleEditSubmit = async (e) => {
@@ -286,6 +294,7 @@ const OnlineConsultationManagement = () => {
     try {
       const token = localStorage.getItem("token");
       await updateOnlineConsultation(payload, token);
+      await sendUpdatedOnlineConsultationEmails(editForm.Id, token);
       setShowEditModal(false);
       setSuccessMessage("Update Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);
@@ -421,6 +430,42 @@ const OnlineConsultationManagement = () => {
       setTimeout(() => setErrorMessage(""), 3000);
     }
   };
+
+  const handleEditAttachmentChange = (e) => {
+    const files = Array.from(e.target.files);
+    const maxFiles = 5;
+    const totalFiles =
+      editAttachments.length + editSelectedAttachments.length + files.length;
+    if (totalFiles > maxFiles) {
+      setErrorMessage(
+        `You can only upload up to ${maxFiles} attachments in total.`
+      );
+      setTimeout(() => setErrorMessage(""), 5000);
+      return;
+    }
+    const validFiles = files.filter((file) => {
+      const isValidType =
+        file.type.startsWith("image/") || file.type === "application/pdf";
+      const isUnderSizeLimit = file.size <= 5 * 1024 * 1024;
+      if (!isValidType) {
+        setErrorMessage("Only image or PDF files are allowed.");
+        setTimeout(() => setErrorMessage(""), 5000);
+        return false;
+      }
+      if (!isUnderSizeLimit) {
+        setErrorMessage("File size must be less than 5MB.");
+        setTimeout(() => setErrorMessage(""), 5000);
+        return false;
+      }
+      return true;
+    });
+    setEditSelectedAttachments((prev) => [...prev, ...validFiles]);
+  };
+
+  function truncateText(text, maxLength = 60) {
+  if (!text) return "";
+  return text.length > maxLength ? text.slice(0, maxLength) + "..." : text;
+}
 
   return (
     <div className="consultant-homepage">
@@ -1061,7 +1106,7 @@ const OnlineConsultationManagement = () => {
                           {item.user?.email}
                         </span>
                       </td>
-                      <td>{item.summary}</td>
+                      <td>{truncateText(item.summary, 60)}</td>
                       <td>
                         {item.date
                           ? new Date(item.date).toLocaleString("en-GB", {
@@ -1078,7 +1123,7 @@ const OnlineConsultationManagement = () => {
                           ? "Consulting"
                           : "Completed"}
                       </td>
-                      <td>{item.consultantNote}</td>
+                      <td>{truncateText(item.consultantNote, 60)}</td>
                       <td>
                         <div style={{ display: "flex", gap: "4px" }}>
                           <button
@@ -1515,7 +1560,7 @@ const OnlineConsultationManagement = () => {
                                     </a>
                                   )}
                                   <span>{file.name || file.fileName}</span>
-                                  <button
+                                  {/* <button
                                     type="button"
                                     style={{
                                       marginLeft: 8,
@@ -1531,7 +1576,7 @@ const OnlineConsultationManagement = () => {
                                     title="Remove"
                                   >
                                     &times;
-                                  </button>
+                                  </button> */}
                                 </li>
                               ))}
                             </ul>
@@ -1546,23 +1591,59 @@ const OnlineConsultationManagement = () => {
                         style={{ marginTop: 8 }}
                       />
                       {editSelectedAttachments.length > 0 && (
-                        <div style={{ marginTop: 8 }}>
-                          <strong>Selected to add:</strong>
-                          <ul
-                            style={{
-                              margin: "4px 0 0 0",
-                              padding: 0,
-                              listStyle: "none",
-                              fontSize: "0.95em",
-                            }}
-                          >
+                        <div className="attachments-preview-list">
+                          <strong>Selected Attachments:</strong>
+                          <ul>
                             {editSelectedAttachments.map((file, idx) => (
-                              <li key={idx}>{file.name}</li>
+                              <li key={idx} style={{ marginBottom: 8 }}>
+                                {file.type.startsWith("image/") ? (
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={file.name}
+                                    style={{
+                                      width: 60,
+                                      height: 60,
+                                      objectFit: "cover",
+                                      borderRadius: 8,
+                                      marginRight: 8,
+                                      border: "1px solid #eee",
+                                    }}
+                                  />
+                                ) : (
+                                  <span
+                                    style={{
+                                      display: "inline-block",
+                                      marginRight: 8,
+                                      color: "#4f8edc",
+                                    }}
+                                  >
+                                    📄
+                                  </span>
+                                )}
+                                <span>{file.name}</span>
+                                <button
+                                  type="button"
+                                  style={{
+                                    marginLeft: 8,
+                                    color: "#d32f2f",
+                                    background: "none",
+                                    border: "none",
+                                    fontSize: "1em",
+                                    cursor: "pointer",
+                                  }}
+                                  onClick={() =>
+                                    handleRemoveSelectedEditAttachment(idx)
+                                  }
+                                  title="Remove"
+                                >
+                                  &times;
+                                </button>
+                              </li>
                             ))}
                           </ul>
                           <button
                             type="button"
-                            className="online-consultation-modal-btn online-consultation-btn-primary"
+                            className="offline-consultation-modal-btn offline-consultation-btn-primary"
                             style={{
                               marginTop: 6,
                               padding: "6px 18px",
