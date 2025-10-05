@@ -10,6 +10,7 @@ import {
   createOnlineConsultation,
   getOnlineConsultationById,
   sendOnlineConsultationEmails,
+  sendUpdatedOnlineConsultationEmails,
 } from "../../apis/online-consultation-api";
 import "../../styles/OnlineConsultationManagement.css";
 import {
@@ -293,6 +294,7 @@ const OnlineConsultationManagement = () => {
     try {
       const token = localStorage.getItem("token");
       await updateOnlineConsultation(payload, token);
+      await sendUpdatedOnlineConsultationEmails(editForm.Id, token);
       setShowEditModal(false);
       setSuccessMessage("Update Consultation Successful!");
       setTimeout(() => setSuccessMessage(""), 3000);

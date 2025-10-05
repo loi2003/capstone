@@ -189,3 +189,23 @@ export const sendBookingOfflineConsultationEmails = async (consultationId, token
     throw error;
   }
 };
+
+// POST: /api/offline-consultation/send-updated-booking-offline-consultation-emails/{consultationId}
+export const sendUpdatedBookingOfflineConsultationEmails = async (consultationId, token) => {
+  try {
+    const response = await apiClient.post(
+      `/api/offline-consultation/send-updated-booking-offline-consultation-emails/${consultationId}`,
+      {}, // empty body
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error sending updated booking offline consultation emails:", error.message);
+    throw error;
+  }
+};

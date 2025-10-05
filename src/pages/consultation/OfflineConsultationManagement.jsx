@@ -12,6 +12,7 @@ import {
   updateOfflineConsultation,
   addAttachmentsToOfflineConsultation,
   sendBookingOfflineConsultationEmails,
+  sendUpdatedBookingOfflineConsultationEmails,
 } from "../../apis/offline-consultation-api";
 import "../../styles/OfflineConsultationManagement.css";
 import "../../styles/ConsultantHomePage.css";
@@ -555,6 +556,7 @@ const OfflineConsultationManagement = () => {
           token
         );
       }
+      await sendUpdatedBookingOfflineConsultationEmails(payload.id, token);
       setEditAttachments([]);
       setEditSelectedAttachments([]);
       setRemovedAttachmentIds([]);
