@@ -680,7 +680,6 @@ const PaymentManagement = () => {
                   fill="none"
                   stroke="#124966"
                   strokeWidth="2"
-                  strokeWidth="2"
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path d="M12 2v6m0 4v10m-6-6h12" strokeLinecap="round" strokeLinejoin="round" />
