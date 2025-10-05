@@ -409,6 +409,10 @@
   font-size: 0.95rem;
   color: var(--admin-text);
   margin-bottom: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap;
 }
 
 /* Charts grid */
@@ -565,6 +569,11 @@
 
 .payment-management__history-table tr:hover {
   background: rgba(20, 111, 137, 0.05);
+}
+
+.payment-management__history-table td {
+  display: table-cell;
+  vertical-align: middle;
 }
 
 .payment-management__history-status--success {
